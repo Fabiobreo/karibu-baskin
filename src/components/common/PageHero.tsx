@@ -16,7 +16,7 @@ interface PageHeroProps {
   subtitle?: React.ReactNode;
   /** Breadcrumb facoltativo sopra il titolo (liste di secondo livello). */
   breadcrumb?: React.ReactNode;
-  /** Navigazione di sezione facoltativa sotto il titolo (UX-36). */
+  /** Navigazione di sezione facoltativa sotto il titolo, sul bordo basso della fascia (UX-36). */
   nav?: React.ReactNode;
   /** Azione facoltativa a destra del titolo (su mobile va sotto). */
   action?: React.ReactNode;
@@ -26,11 +26,13 @@ interface PageHeroProps {
 
 interface PageHeroFrameProps {
   column?: PageColumn;
+  /** Il contenuto finisce con una navigazione di sezione, che tocca il bordo basso della fascia. */
+  flush?: boolean;
   children: React.ReactNode;
 }
 
 /** La fascia senza contenuto: la usa anche lo skeleton dei `loading.tsx`. */
-export function PageHeroFrame({ column = "full", children }: PageHeroFrameProps) {
+export function PageHeroFrame({ column = "full", flush = false, children }: PageHeroFrameProps) {
   return (
     <Box
       style={{ backgroundImage: heroGradient.band }}
@@ -38,9 +40,10 @@ export function PageHeroFrame({ column = "full", children }: PageHeroFrameProps)
         ...heroBottomBorder,
         color: "common.white",
         minHeight: { xs: 96, md: 120 },
-        py: { xs: 2, md: 2.5 },
+        pt: { xs: 2, md: 2.5 },
+        pb: flush ? 0 : { xs: 2, md: 2.5 },
         display: "flex",
-        alignItems: "center",
+        alignItems: flush ? "flex-end" : "center",
       }}
     >
       <Container maxWidth="lg">
@@ -59,7 +62,7 @@ export default function PageHero({
   column,
 }: PageHeroProps) {
   return (
-    <PageHeroFrame column={column}>
+    <PageHeroFrame column={column} flush={!!nav}>
       {breadcrumb && <Box sx={{ mb: 1 }}>{breadcrumb}</Box>}
       <Box
         sx={{
@@ -93,7 +96,7 @@ export default function PageHero({
         </Box>
         {action && <Box sx={{ flexShrink: 0 }}>{action}</Box>}
       </Box>
-      {nav && <Box sx={{ mt: 2 }}>{nav}</Box>}
+      {nav && <Box sx={{ mt: { xs: 1.5, md: 2 } }}>{nav}</Box>}
     </PageHeroFrame>
   );
 }

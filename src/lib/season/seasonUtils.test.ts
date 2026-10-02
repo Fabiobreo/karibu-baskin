@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getCurrentSeason,
+  parseSeasonParam,
   getSeasonStartDate,
   pickCurrentSeason,
   resolveActiveSeason,
@@ -141,5 +142,28 @@ describe("resolveActiveSeason()", () => {
       seasonsWithData: ["2025-26"],
     });
     expect(r.seasons).toEqual(["2025-26"]);
+  });
+});
+
+describe("parseSeasonParam()", () => {
+  it("accetta una stagione ben formata", () => {
+    expect(parseSeasonParam("2025-26")).toBe("2025-26");
+    expect(parseSeasonParam("2099-00")).toBe("2099-00");
+  });
+
+  it("senza parametro non c'e' scelta", () => {
+    expect(parseSeasonParam(undefined)).toBeNull();
+    expect(parseSeasonParam("")).toBeNull();
+  });
+
+  it("scarta un parametro ripetuto, che arriva come array", () => {
+    expect(parseSeasonParam(["2025-26", "2024-25"])).toBeNull();
+  });
+
+  it("scarta testo libero e anni non consecutivi", () => {
+    expect(parseSeasonParam("<b>ciao")).toBeNull();
+    expect(parseSeasonParam("2025-27")).toBeNull();
+    expect(parseSeasonParam("2025-2026")).toBeNull();
+    expect(parseSeasonParam(" 2025-26")).toBeNull();
   });
 });

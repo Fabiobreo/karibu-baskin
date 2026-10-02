@@ -1,15 +1,17 @@
 import { prisma } from "@/lib/db";
 import TeamSectionHeader from "@/components/teams/TeamSectionHeader";
 import { RADIUS } from "@/lib/radius";
-import { Container, Typography, Box, Chip, Stack } from "@mui/material";
+import { Container, Box, Chip, Stack } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
 import PageHero from "@/components/common/PageHero";
+import SeasonSelector from "@/components/common/SeasonSelector";
+import MatchesSectionNav from "@/components/matches/MatchesSectionNav";
 import EmptyState from "@/components/common/EmptyState";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getActiveSeason } from "@/lib/season/activeSeason";
+import { parseSeasonParam } from "@/lib/season/seasonUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -27,7 +29,7 @@ export const metadata: Metadata = buildMetadata({
 
 export const revalidate = 3600;
 
-type Props = { searchParams: Promise<Record<string, string | undefined>> };
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default async function RisultatiPage({ searchParams }: Props) {
   // Stagione attiva del sito: con la stagione appena aperta e ancora senza
@@ -35,20 +37,19 @@ export default async function RisultatiPage({ searchParams }: Props) {
   const [
     sp,
     t,
-    tCommon,
     locale,
     { matchResultLabel },
     { activeSeason, displaySeason, isFallback, seasons },
   ] = await Promise.all([
     searchParams,
     getTranslations("matches"),
-    getTranslations("common"),
     getLocale(),
     getEntityLabels(),
     getActiveSeason("results"),
   ]);
-  const season = sp.season ?? displaySeason;
-  const showFallbackNotice = !sp.season && isFallback;
+  const chosenSeason = parseSeasonParam(sp.season);
+  const season = chosenSeason ?? displaySeason;
+  const showFallbackNotice = !chosenSeason && isFallback;
   const dateLocale = getDateFnsLocale(locale);
   // Per esteso ("3 vittorie", non "3V"): le sigle erano gergo (UX-17).
   const wins = (count: number) => t("resultWins", { count });
@@ -105,44 +106,23 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero column="main" title={t("resultsTitle")} />
+      <PageHero
+        // Colonna piena come Classifiche e Marcatori, anche se il contenuto sta
+        // nella colonna `main`: le tab di sezione restano ferme da una pagina
+        // all'altra (UX-36), invece di spostarsi di 128 px sotto il cursore.
+        title={t("resultsTitle")}
+        subtitle={t("resultsSubtitle")}
+        nav={<MatchesSectionNav current="results" season={chosenSeason} />}
+      />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Box sx={columnSx("main")}>
-          {/* ── Filtri stagione ──────────────────────────────────────────────── */}
-          {chipSeasons.length > 1 && (
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={FONT_WEIGHT.semibold}
-                sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
-              >
-                {t("seasonLabel")}
-              </Typography>
-              {chipSeasons.map((s) => (
-                <Link
-                  key={s}
-                  href={`/risultati?season=${encodeURIComponent(s)}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <Chip
-                    label={s}
-                    size="small"
-                    variant={season === s ? "filled" : "outlined"}
-                    color={season === s ? "primary" : "default"}
-                    sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
-                  />
-                </Link>
-              ))}
-            </Box>
-          )}
-
-          {showFallbackNotice && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
-            </Typography>
-          )}
+          <SeasonSelector
+            seasons={chipSeasons}
+            current={season}
+            basePath="/risultati"
+            notice={showFallbackNotice ? { active: activeSeason, shown: displaySeason } : null}
+          />
 
           {/* ── Nessun dato ─────────────────────────────────────────────────── */}
           {teamGroups.length === 0 && (
@@ -251,24 +231,6 @@ export default async function RisultatiPage({ searchParams }: Props) {
               );
             })}
           </Stack>
-
-          {/* ── Link a prossime partite ─────────────────────────────────────── */}
-          {teamGroups.length > 0 && (
-            <Box sx={{ textAlign: "right", mt: 4 }}>
-              <Link href="/partite" style={{ textDecoration: "none" }}>
-                <Typography
-                  variant="body2"
-                  color="primary.onLight"
-                  sx={{
-                    fontWeight: FONT_WEIGHT.semibold,
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  {t("seeMatches")}
-                </Typography>
-              </Link>
-            </Box>
-          )}
         </Box>
       </Container>
     </>

@@ -11,7 +11,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getActiveSeason } from "@/lib/season/activeSeason";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
+import MatchesSectionNav from "@/components/matches/MatchesSectionNav";
 import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -31,28 +32,21 @@ export const metadata: Metadata = buildMetadata({
 
 export const revalidate = 3600;
 
-type Props = { searchParams: Promise<Record<string, string | undefined>> };
-
-export default async function PartitePage({ searchParams }: Props) {
-  // Nessuna ricaduta qui: le "prossime partite" di una stagione conclusa non
-  // esistono, quindi si resta sulla stagione attiva del sito.
-  const [sp, { activeSeason, seasons }, t, locale] = await Promise.all([
-    searchParams,
-    getActiveSeason("teams"),
+export default async function PartitePage() {
+  // Niente selettore di stagione e nessuna ricaduta (UX-36): le "prossime
+  // partite" di una stagione conclusa non esistono, quindi si resta sulla
+  // stagione in corso del sito.
+  const [season, t, locale] = await Promise.all([
+    getCurrentSeasonLabel(),
     getTranslations("matches"),
     getLocale(),
   ]);
-  const season = sp.season ?? activeSeason;
   const dateLocale = getDateFnsLocale(locale);
   const matchTypeLabel = (type: string) =>
     ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
       type
     ] ?? type;
   const now = new Date();
-
-  const chipSeasons = seasons.includes(season)
-    ? seasons
-    : [...seasons, season].sort((a, b) => b.localeCompare(a));
 
   const upcoming = await prisma.match.findMany({
     where: { result: null, date: { gte: now }, team: { season } },
@@ -92,45 +86,16 @@ export default async function PartitePage({ searchParams }: Props) {
   return (
     <>
       <PageHero
-        column="main"
+        // Colonna piena come Classifiche e Marcatori, anche se il contenuto sta
+        // nella colonna `main`: le tab di sezione restano ferme da una pagina
+        // all'altra (UX-36), invece di spostarsi di 128 px sotto il cursore.
         title={t("upcomingTitle")}
-        subtitle={
-          upcoming.length === 0
-            ? t("upcomingEmpty")
-            : t("upcomingCount", { count: upcoming.length })
-        }
+        subtitle={t("upcomingSubtitle")}
+        nav={<MatchesSectionNav current="upcoming" />}
       />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Box sx={columnSx("main")}>
-          {chipSeasons.length > 1 && (
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={FONT_WEIGHT.semibold}
-                sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
-              >
-                {t("seasonLabel")}
-              </Typography>
-              {chipSeasons.map((s) => (
-                <Link
-                  key={s}
-                  href={`/partite?season=${encodeURIComponent(s)}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <Chip
-                    label={s}
-                    size="small"
-                    variant={season === s ? "filled" : "outlined"}
-                    color={season === s ? "primary" : "default"}
-                    sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
-                  />
-                </Link>
-              ))}
-            </Box>
-          )}
-
           {teamGroups.length === 0 && (
             <EmptyState
               icon={<CalendarTodayIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
@@ -347,24 +312,6 @@ export default async function PartitePage({ searchParams }: Props) {
               </Box>
             ))}
           </Stack>
-
-          {/* Link a risultati */}
-          {teamGroups.length > 0 && (
-            <Box sx={{ textAlign: "right", mt: 4 }}>
-              <Link href="/risultati" style={{ textDecoration: "none" }}>
-                <Typography
-                  variant="body2"
-                  color="primary.onLight"
-                  sx={{
-                    fontWeight: FONT_WEIGHT.semibold,
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  {t("seeResults")}
-                </Typography>
-              </Link>
-            </Box>
-          )}
         </Box>
       </Container>
     </>

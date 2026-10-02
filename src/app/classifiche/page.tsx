@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
-import { Container, Typography, Box, Stack, Button } from "@mui/material";
+import { Container, Stack } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
+import SeasonSelector from "@/components/common/SeasonSelector";
+import MatchesSectionNav from "@/components/matches/MatchesSectionNav";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import type { Metadata } from "next";
 import GironeFullView from "@/components/teams/GironeFullView";
@@ -12,6 +14,7 @@ import type {
   ExternalMatchData,
 } from "@/components/teams/GironeFullView";
 import { getActiveSeason } from "@/lib/season/activeSeason";
+import { parseSeasonParam } from "@/lib/season/seasonUtils";
 import { computeStandings } from "@/lib/season/standings";
 import { buildMetadata } from "@/lib/seo";
 
@@ -106,74 +109,64 @@ function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
   return Array.from(map.values()).sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999));
 }
 
-export default async function ClassifichePage() {
-  const [t, tCommon, { activeSeason, displaySeason, isFallback }] = await Promise.all([
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+export default async function ClassifichePage({ searchParams }: Props) {
+  const [sp, t, { activeSeason, displaySeason, isFallback, seasons }] = await Promise.all([
+    searchParams,
     getTranslations("standings"),
-    getTranslations("common"),
     getActiveSeason("groups"),
   ]);
-  const currentGroups = await groupsQuery(displaySeason);
-  const hasCurrentGroups = currentGroups.length > 0;
+  const chosenSeason = parseSeasonParam(sp.season);
+  const season = chosenSeason ?? displaySeason;
+  // La riga di ricaduta si mostra solo quando la stagione non è stata scelta a mano.
+  const showFallbackNotice = !chosenSeason && isFallback;
+  // Una stagione chiesta a mano (per esempio arrivando da Risultati) e senza
+  // gironi resta fra i chip: si vede dove ci si trova e come tornare indietro.
+  const chipSeasons = seasons.includes(season)
+    ? seasons
+    : [...seasons, season].sort((a, b) => b.localeCompare(a));
+  const groups = await groupsQuery(season);
 
   return (
     <>
       <PageHero
         title={t("pageTitle")}
-        subtitle={t("seasonValue", { season: displaySeason })}
-        nav={
-          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            <Button href="/marcatori" size="small" variant="outlined" color="inherit">
-              {t("linkScorers")}
-            </Button>
-            <Button href="/risultati" size="small" variant="outlined" color="inherit">
-              {t("linkResults")}
-            </Button>
-            <Button href="/calendario" size="small" variant="outlined" color="inherit">
-              {t("linkCalendar")}
-            </Button>
-          </Box>
-        }
+        subtitle={t("pageSubtitle")}
+        nav={<MatchesSectionNav current="standings" season={chosenSeason} />}
       />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        {isFallback && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
-          </Typography>
-        )}
+        <SeasonSelector
+          seasons={chipSeasons}
+          current={season}
+          basePath="/classifiche"
+          notice={showFallbackNotice ? { active: activeSeason, shown: displaySeason } : null}
+        />
 
-        {hasCurrentGroups ? (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 1 }}>
-              {t("standingsTitle")}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {t("standingsDesc", { season: displaySeason })}
-            </Typography>
-
-            <Stack spacing={3}>
-              {currentGroups.map((g) => {
-                const ourTeams = g.competitiveTeams.map((gct) => gct.competitiveTeam);
-                const standings = computeStandings(ourTeams, g.matches, g.groupMatches);
-                const matchdays = buildMatchdays(g);
-                return (
-                  <GironeFullView
-                    key={g.id}
-                    groupName={g.name}
-                    championship={g.championship}
-                    ourTeams={ourTeams}
-                    season={g.season}
-                    standings={standings}
-                    matchdays={matchdays}
-                  />
-                );
-              })}
-            </Stack>
-          </Box>
+        {groups.length > 0 ? (
+          <Stack spacing={3}>
+            {groups.map((g) => {
+              const ourTeams = g.competitiveTeams.map((gct) => gct.competitiveTeam);
+              const standings = computeStandings(ourTeams, g.matches, g.groupMatches);
+              const matchdays = buildMatchdays(g);
+              return (
+                <GironeFullView
+                  key={g.id}
+                  groupName={g.name}
+                  championship={g.championship}
+                  ourTeams={ourTeams}
+                  season={g.season}
+                  standings={standings}
+                  matchdays={matchdays}
+                />
+              );
+            })}
+          </Stack>
         ) : (
           <EmptyState
             icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={t("noGroups", { season: displaySeason })}
+            title={t("noGroups", { season })}
             message={t("noGroupsDesc")}
           />
         )}

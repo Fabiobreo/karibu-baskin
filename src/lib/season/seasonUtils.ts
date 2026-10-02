@@ -23,6 +23,21 @@ export function getSeasonStartDate(date: Date = new Date()): Date {
   return new Date(y, 7, 1);
 }
 
+/**
+ * Stagione letta da `?season=` (UX-36): la accetta solo se ha la forma di una
+ * stagione vera ("2025-26", anni consecutivi). Tutto il resto vale "nessuna
+ * scelta": un valore ripetuto (`?season=a&season=b` arriva come array e faceva
+ * cadere la query) o un testo qualunque, che altrimenti finirebbe scritto nella
+ * pagina ("Nessun girone per la stagione …") con l'indirizzo del sito sopra.
+ */
+export function parseSeasonParam(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const match = /^(\d{4})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const nextYear = (Number(match[1]) + 1) % 100;
+  return Number(match[2]) === nextYear ? value : null;
+}
+
 // ── Stagione attiva ──────────────────────────────────────────────────────────
 // Il sito ha una sola definizione di "stagione corrente": la stagione marcata
 // `isCurrent` a database (lo staff sa quando la stagione comincia davvero), con

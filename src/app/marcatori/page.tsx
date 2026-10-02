@@ -3,18 +3,18 @@ import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { isMinor, isMinorChild } from "@/lib/minors";
 import { getTranslations } from "next-intl/server";
-import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
+import SeasonSelector from "@/components/common/SeasonSelector";
+import MatchesSectionNav from "@/components/matches/MatchesSectionNav";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import Link from "next/link";
 import type { Metadata } from "next";
 import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
 import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
 import { getActiveSeason } from "@/lib/season/activeSeason";
+import { parseSeasonParam } from "@/lib/season/seasonUtils";
 import { buildMetadata } from "@/lib/seo";
-import { TYPE_SCALE } from "@/lib/typeScale";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Marcatori",
@@ -25,7 +25,7 @@ export const metadata: Metadata = buildMetadata({
 
 export const revalidate = 3600;
 
-type Props = { searchParams: Promise<Record<string, string | undefined>> };
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default async function MarcatoriPage({ searchParams }: Props) {
   // Stagione attiva del sito + stagioni con statistiche (per i chip). Senza
@@ -33,19 +33,17 @@ export default async function MarcatoriPage({ searchParams }: Props) {
   // sull'ultima popolata quando la attiva non è ancora iniziata.
   const [
     t,
-    tCommon,
     session,
     sp,
     { activeSeason: siteSeason, displaySeason, isFallback, seasons: chipSeasons, hasAnyData },
   ] = await Promise.all([
     getTranslations("scorers"),
-    getTranslations("common"),
     auth(),
     searchParams,
     getActiveSeason("playerStats"),
   ]);
   const viewerIsMember = isMemberRole(session?.user?.appRole);
-  const seasonFilter = sp.season ?? null;
+  const seasonFilter = parseSeasonParam(sp.season);
   const activeSeason = seasonFilter ?? displaySeason;
   // La riga di ricaduta si mostra solo quando l'utente non ha scelto lui la stagione.
   const showFallbackNotice = !seasonFilter && isFallback;
@@ -265,63 +263,24 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     <>
       <PageHero
         title={t("pageTitle")}
-        nav={
-          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            <Button href="/classifiche" size="small" variant="outlined" color="inherit">
-              {t("linkStandings")}
-            </Button>
-            <Button href="/risultati" size="small" variant="outlined" color="inherit">
-              {t("linkResults")}
-            </Button>
-          </Box>
-        }
+        subtitle={t("pageSubtitle")}
+        nav={<MatchesSectionNav current="scorers" season={seasonFilter} />}
       />
 
       {/* `lg` e non `md`: questa e' l'unica tabella larga del sito, e dentro un
           contenitore da testo l'ultima colonna restava tagliata. */}
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        {/* Filtri stagione */}
-        {availableSeasons.length > 0 && (
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 3, alignItems: "center" }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              fontWeight={FONT_WEIGHT.semibold}
-              sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
-            >
-              {t("seasonLabel")}
-            </Typography>
-            {availableSeasons.map((s) => (
-              <Link
-                key={s}
-                href={`/marcatori?season=${encodeURIComponent(s)}`}
-                style={{ textDecoration: "none" }}
-              >
-                <Chip
-                  label={s}
-                  size="small"
-                  variant={activeSeason === s ? "filled" : "outlined"}
-                  color={activeSeason === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
-                />
-              </Link>
-            ))}
-          </Box>
-        )}
-
-        {showFallbackNotice && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {tCommon("seasonNotStarted", { active: siteSeason, shown: displaySeason })}
-          </Typography>
-        )}
+        <SeasonSelector
+          seasons={availableSeasons}
+          current={activeSeason}
+          basePath="/marcatori"
+          notice={showFallbackNotice ? { active: siteSeason, shown: displaySeason } : null}
+        />
 
         {hasStats ? (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {t.rich("helpText", {
-                season: activeSeason,
-                b: (chunks) => <strong>{chunks}</strong>,
-              })}
+              {t("helpText")}
             </Typography>
             <ClassificaInternaTable rows={statRows} />
             {hiddenMinors > 0 && (

@@ -158,7 +158,9 @@ export default function GironeFullView({
             />
           );
         })}
-        <Typography variant="subtitle2">{groupName}</Typography>
+        <Typography variant="subtitle2" component="h2">
+          {groupName}
+        </Typography>
         {championship && (
           <Chip
             label={championship}
@@ -181,7 +183,14 @@ export default function GironeFullView({
           {t("noResults")}
         </Typography>
       ) : (
-        <Box sx={{ overflowX: "auto" }}>
+        <Box
+          // Su telefono la tabella scorre di lato: la regione deve ricevere il
+          // focus, altrimenti da tastiera le ultime colonne non si raggiungono.
+          role="region"
+          aria-label={`${t("classification")}: ${groupName}`}
+          tabIndex={0}
+          sx={{ overflowX: "auto" }}
+        >
           <Table size="small">
             <TableHead>
               <TableRow
@@ -341,7 +350,12 @@ export default function GironeFullView({
           </Tabs>
 
           {current && (
-            <Box sx={{ overflowX: "auto" }}>
+            <Box
+              role="region"
+              aria-label={`${t("calendarSection")}: ${groupName}`}
+              tabIndex={0}
+              sx={{ overflowX: "auto" }}
+            >
               <Table size="small">
                 <TableBody>
                   {current.ours.map((m) => {

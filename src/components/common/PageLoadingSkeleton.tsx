@@ -11,6 +11,10 @@ interface PageLoadingSkeletonProps {
   items?: number;
   /** Colonna del contenuto, come nella pagina vera (UX-37): piena, principale o di lettura. */
   column?: PageColumn;
+  /** Colonna della fascia, quando non e' quella del contenuto (sezione Partite, UX-36). */
+  heroColumn?: PageColumn;
+  /** Navigazione di sezione della pagina vera (UX-36): la fascia resta alta uguale. */
+  nav?: React.ReactNode;
 }
 
 // Sulla hero scura lo skeleton di default (testo su sfondo chiaro) sparisce:
@@ -25,12 +29,15 @@ export default function PageLoadingSkeleton({
   variant = "list",
   items = 5,
   column = "full",
+  heroColumn = column,
+  nav,
 }: PageLoadingSkeletonProps) {
   return (
     <Box aria-busy="true">
-      <PageHeroFrame column={column}>
+      <PageHeroFrame column={heroColumn} flush={!!nav}>
         <Skeleton variant="text" width="min(360px, 70%)" height={48} sx={onDark} />
         <Skeleton variant="text" width="min(300px, 60%)" height={24} sx={onDark} />
+        {nav && <Box sx={{ mt: { xs: 1.5, md: 2 } }}>{nav}</Box>}
       </PageHeroFrame>
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
