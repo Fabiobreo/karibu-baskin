@@ -325,6 +325,7 @@ async function main() {
         ["classifiche", "/classifiche"],
         ["marcatori", "/marcatori"],
         ["giocatore", playerProfile],
+        ["il-baskin", "/il-baskin"],
         ["contatti", "/contatti"],
         ["login", "/login"],
         ["eventi", "/eventi"],

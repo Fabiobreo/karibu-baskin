@@ -1187,7 +1187,6 @@
     "ilbaskin": {
       "heroTitle": "What is Baskin?",
       "heroSubtitle": "Baskin is an inclusive sport that allows people with and without disabilities to play together on the same team.",
-      "rolesSection": "The roles",
       "roleCanestro": "Basket",
       "rolePunteggio": "Score",
       "roleMarcatura": "Who can mark them",
@@ -1199,7 +1198,21 @@
       "mainRules": "The main rules",
       "thePlayers": "The players",
       "the5Roles": "The 5 roles of Baskin",
-      "rolesIntro": "Roles are assigned based on the player's motor abilities: use of hands, walking, running and balance. The sum of the roles of the players on court cannot exceed 23."
+      "rolesIntro": "Roles are assigned based on the player's motor abilities: use of hands, walking, running and balance. The sum of the roles of the players on court cannot exceed 23.",
+      "roleMore": "How they play and who can mark them",
+      "moreRules": "More rules",
+      "inBrief": "In short",
+      "threeThings": "Three things to know",
+      "fact1": "6 players are on the court. Men and women, with and without disabilities, on the same team.",
+      "fact2": "Every player has a role, from 1 to 5. Every role has its own basket and its own rules.",
+      "fact3": "Roles 1 and 2 are the pivots. They shoot from their own area and nobody can mark them.",
+      "whereWePlay": "Where we play",
+      "courtTitle": "The court",
+      "courtAlt": "Diagram of a Baskin court seen from above. It is a basketball court, with a big basket at each end. At half court, on both sides, there are two more baskets. In front of each one there is a semicircular area where Roles 1 and 2 stay. Roles 3, 4 and 5 shoot at the big baskets. Role 3 also shoots at the side baskets.",
+      "courtLegendBig": "<b>Big baskets.</b> The same as in basketball. Roles 3, 4 and 5 shoot here.",
+      "courtLegendSide": "<b>Side baskets.</b> A high one (2.20 metres) for Roles 2 and 3. Below it, a low one (1.10 metres) for Role 1.",
+      "courtLegendZone": "<b>Pivot areas.</b> Roles 1 and 2 stay here. Opponents do not enter.",
+      "courtCaption": "Each team shoots at two baskets: a big one and a side one. The side one is on its right, when it faces the big basket where it scores."
     },
     "privacy": {
       "breadcrumb": "Privacy"

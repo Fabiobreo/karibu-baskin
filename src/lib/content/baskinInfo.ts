@@ -16,10 +16,19 @@ export interface RoleInfo {
 }
 
 export interface RuleInfo {
+  /** Argomento, uguale nelle due lingue: la pagina lo usa per icona e posizione. */
+  key: "court" | "duration" | "team" | "pivots" | "points" | "special";
   title: string;
-  /** Una informazione per frase (linguaggio facile, UX-17). */
+  /**
+   * Una informazione per frase (linguaggio facile, UX-17), dalla piu'
+   * importante: `/il-baskin` mostra le prime `RULE_VISIBLE_ITEMS` e chiude le
+   * altre in "Altre regole" (UX-41).
+   */
   items: string[];
 }
+
+/** Quanti punti di una regola si vedono senza aprire "Altre regole". */
+export const RULE_VISIBLE_ITEMS = 3;
 
 const ROLES_INFO_IT: RoleInfo[] = [
   {
@@ -195,6 +204,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
 
 const RULES_IT: RuleInfo[] = [
   {
+    key: "court",
     title: "Il campo",
     items: [
       "È un campo da basket normale.",
@@ -204,6 +214,7 @@ const RULES_IT: RuleInfo[] = [
     ],
   },
   {
+    key: "duration",
     title: "Durata",
     items: [
       "Una partita ha 4 tempi.",
@@ -213,16 +224,18 @@ const RULES_IT: RuleInfo[] = [
     ],
   },
   {
+    key: "team",
     title: "La squadra",
     items: [
-      "Una squadra ha fino a 14 giocatori.",
       "In campo giocano in 6.",
       "Sommando i numeri dei ruoli in campo, il totale non supera 23.",
       "In campo ci sono sempre un pivot (Ruolo 1 o 2), un Ruolo 3 e almeno due Ruolo 5.",
+      "Una squadra ha fino a 14 giocatori.",
       "Tra i Ruoli 4 e 5 in campo ci sono almeno una donna e un uomo.",
     ],
   },
   {
+    key: "pivots",
     title: "Protezione dei pivot",
     items: [
       "Nessuno può marcare i Ruoli 1 e 2.",
@@ -232,27 +245,30 @@ const RULES_IT: RuleInfo[] = [
     ],
   },
   {
+    key: "points",
     title: "Canestri e punti",
     items: [
-      "Dal Ruolo 1 al Ruolo 4, ogni giocatore segna al massimo 3 canestri per tempo.",
-      "Il Ruolo 5 può tirare al massimo 3 volte per tempo.",
       "Un canestro vale 2 o 3 punti.",
       "Dipende dal ruolo e dal punto in cui si tira.",
+      "Dal Ruolo 1 al Ruolo 4, ogni giocatore segna al massimo 3 canestri per tempo.",
+      "Il Ruolo 5 può tirare al massimo 3 volte per tempo.",
     ],
   },
   {
+    key: "special",
     title: "Regole speciali",
     items: [
-      "Per i Ruoli 3, 4 e 5 non c'è la regola dei 3 secondi.",
-      "I Ruoli 3, 4 e 5 possono tornare nella propria metà campo.",
       "Per il Ruolo 3 non contano passi e doppio palleggio.",
+      "Per i Ruoli 3, 4 e 5 non c'è la regola dei 3 secondi.",
       "Per i Ruoli 1 e 2 non contano i falli in campo.",
+      "I Ruoli 3, 4 e 5 possono tornare nella propria metà campo.",
     ],
   },
 ];
 
 const RULES_EN: RuleInfo[] = [
   {
+    key: "court",
     title: "The court",
     items: [
       "It is a normal basketball court.",
@@ -262,6 +278,7 @@ const RULES_EN: RuleInfo[] = [
     ],
   },
   {
+    key: "duration",
     title: "Duration",
     items: [
       "A match has 4 periods.",
@@ -271,16 +288,18 @@ const RULES_EN: RuleInfo[] = [
     ],
   },
   {
+    key: "team",
     title: "The team",
     items: [
-      "A team has up to 14 players.",
       "6 players are on the court.",
       "If you add up the role numbers on the court, the total is 23 or less.",
       "On the court there is always a pivot (Role 1 or 2), a Role 3 and at least two Role 5 players.",
+      "A team has up to 14 players.",
       "Among Roles 4 and 5 on the court there are at least one woman and one man.",
     ],
   },
   {
+    key: "pivots",
     title: "Pivot protection",
     items: [
       "Nobody can mark Roles 1 and 2.",
@@ -290,21 +309,23 @@ const RULES_EN: RuleInfo[] = [
     ],
   },
   {
+    key: "points",
     title: "Baskets and points",
     items: [
-      "From Role 1 to Role 4, each player scores at most 3 baskets per period.",
-      "Role 5 can shoot at most 3 times per period.",
       "A basket is worth 2 or 3 points.",
       "It depends on the role and on where you shoot from.",
+      "From Role 1 to Role 4, each player scores at most 3 baskets per period.",
+      "Role 5 can shoot at most 3 times per period.",
     ],
   },
   {
+    key: "special",
     title: "Special rules",
     items: [
-      "For Roles 3, 4 and 5 there is no 3-second rule.",
-      "Roles 3, 4 and 5 can go back into their own half.",
       "For Role 3, travelling and double dribble don't count.",
+      "For Roles 3, 4 and 5 there is no 3-second rule.",
       "For Roles 1 and 2, court fouls don't count.",
+      "Roles 3, 4 and 5 can go back into their own half.",
     ],
   },
 ];

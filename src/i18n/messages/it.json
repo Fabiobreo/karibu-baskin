@@ -1187,7 +1187,6 @@
     "ilbaskin": {
       "heroTitle": "Cos'è il Baskin?",
       "heroSubtitle": "Il Baskin è uno sport inclusivo che permette a persone con e senza disabilità di giocare insieme nella stessa squadra.",
-      "rolesSection": "I ruoli",
       "roleCanestro": "Canestro",
       "rolePunteggio": "Punteggio",
       "roleMarcatura": "Chi lo può marcare",
@@ -1199,7 +1198,21 @@
       "mainRules": "Le regole principali",
       "thePlayers": "I giocatori",
       "the5Roles": "I 5 ruoli del Baskin",
-      "rolesIntro": "I ruoli vengono assegnati in base alle capacità motorie del giocatore: uso delle mani, cammino, corsa ed equilibrio. La somma dei ruoli dei giocatori in campo non può superare 23."
+      "rolesIntro": "I ruoli vengono assegnati in base alle capacità motorie del giocatore: uso delle mani, cammino, corsa ed equilibrio. La somma dei ruoli dei giocatori in campo non può superare 23.",
+      "roleMore": "Come gioca e chi lo può marcare",
+      "moreRules": "Altre regole",
+      "inBrief": "In breve",
+      "threeThings": "Tre cose da sapere",
+      "fact1": "Si gioca in 6. Maschi e femmine, con e senza disabilità, nella stessa squadra.",
+      "fact2": "Ogni giocatore ha un ruolo, da 1 a 5. Ogni ruolo ha il suo canestro e le sue regole.",
+      "fact3": "I Ruoli 1 e 2 sono i pivot. Tirano dalla loro zona e nessuno li può marcare.",
+      "whereWePlay": "Dove si gioca",
+      "courtTitle": "Il campo",
+      "courtAlt": "Schema del campo da Baskin visto dall'alto. È un campo da basket, con un canestro grande a ogni estremità. A metà campo, sui due lati, ci sono altri due canestri. Davanti a ciascuno c'è una zona a semicerchio dove stanno i Ruoli 1 e 2. I Ruoli 3, 4 e 5 tirano nei canestri grandi. Il Ruolo 3 tira anche nei canestri a lato.",
+      "courtLegendBig": "<b>Canestri grandi.</b> Sono quelli del basket. Ci tirano i Ruoli 3, 4 e 5.",
+      "courtLegendSide": "<b>Canestri a lato.</b> Uno alto (2,20 metri) per i Ruoli 2 e 3. Sotto, uno basso (1,10 metri) per il Ruolo 1.",
+      "courtLegendZone": "<b>Zone dei pivot.</b> Ci stanno i Ruoli 1 e 2. Gli avversari non entrano.",
+      "courtCaption": "Ogni squadra tira in due canestri: uno grande e uno a lato. Quello a lato è alla sua destra, quando guarda il canestro grande in cui segna."
     },
     "privacy": {
       "breadcrumb": "Privacy"
