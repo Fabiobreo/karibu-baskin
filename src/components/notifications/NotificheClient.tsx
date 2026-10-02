@@ -3,7 +3,6 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { Typography, Box, Button, CircularProgress, Divider, Paper, List } from "@mui/material";
 import { useTranslations } from "next-intl";
 import { isToday, isThisWeek } from "date-fns";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
 import NotificationItem from "@/components/notifications/NotificationItem";
 import EmptyState from "@/components/common/EmptyState";
 import { useNotifications } from "@/context/NotificationContext";
@@ -70,14 +69,12 @@ export default function NotificheClient({
     [showToast, t]
   );
 
-  // Auto-mark as read dopo 1.5s dall'apertura della pagina
+  // Aprire la pagina vuol dire aver visto le notifiche: si segnano lette subito
+  // sul server (il contatore si azzera). A schermo il segno "non letta" resta
+  // per tutta la visita: prima spariva dopo un secondo e mezzo, meno del tempo
+  // che serve a leggere una riga.
   useEffect(() => {
-    if (!notifications.some((n) => !n.isRead)) return;
-    const timer = setTimeout(async () => {
-      await markAllRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    }, 1500);
-    return () => clearTimeout(timer);
+    if (initialNotifications.some((n) => !n.isRead)) void markAllRead();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,11 +102,6 @@ export default function NotificheClient({
     setLoadingMore(false);
   }
 
-  async function handleMarkAllRead() {
-    await markAllRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  }
-
   function handleRead(id: string) {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
     refreshCount();
@@ -121,21 +113,10 @@ export default function NotificheClient({
     earlier: t("notifiche.groupEarlier"),
   };
 
-  const hasUnread = notifications.some((n) => !n.isRead);
-
+  // Niente "Segna tutte come lette" (UX-42): la pagina le segna da sola dopo
+  // un attimo, il bottone restava quasi sempre spento.
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <Button
-          size="small"
-          onClick={handleMarkAllRead}
-          disabled={!hasUnread}
-          startIcon={<DoneAllIcon sx={{ fontSize: "1rem !important" }} />}
-        >
-          {t("notifiche.markAllRead")}
-        </Button>
-      </Box>
-
       {notifications.length === 0 ? (
         <EmptyState
           icon={<NotificationsNoneIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
@@ -151,7 +132,7 @@ export default function NotificheClient({
               color="text.secondary"
               sx={{ display: "block", mb: 1 }}
             >
-              {groupLabel[group.key]} ({group.items.length})
+              {groupLabel[group.key]}
             </Typography>
             <Paper variant="outlined" sx={{ overflow: "hidden" }}>
               <List disablePadding>

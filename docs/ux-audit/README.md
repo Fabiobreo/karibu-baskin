@@ -112,10 +112,7 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-| #   | Ticket | Perché in questa posizione                                   | In attesa di                                    |
-| --- | ------ | ------------------------------------------------------------ | ----------------------------------------------- |
-| 1   | UX-42  | Area utente                                                  |                                                 |
-| 2   | UX-36b | `/squadre` solo squadre e pagina "Il club" (da UX-36, 01/10) | Testi del club; quale numero di atleti mostrare |
+Al 02/10/2026 la lista è vuota: tutti i ticket delle ondate 0-4 sono fatti.
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

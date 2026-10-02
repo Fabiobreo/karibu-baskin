@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Box, Button, Divider, List, Skeleton, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useNotifications } from "@/context/NotificationContext";
 import NotificationItem from "./NotificationItem";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -18,41 +18,34 @@ interface NotifItem {
 }
 
 export default function NotificationDropdown({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const { markAllRead, refreshCount } = useNotifications();
+  const t = useTranslations("pages.notifiche");
+  const { refreshCount } = useNotifications();
   const [notifications, setNotifications] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Aprire la tendina vuol dire aver visto queste notifiche: si segnano lette
+  // subito sul server, e solo quelle mostrate (le altre restano non lette e il
+  // contatore le conta ancora). A schermo il segno "non letta" resta finché la
+  // tendina è aperta: serve a capire quali sono le nuove.
   useEffect(() => {
     fetch("/api/notifications?limit=6")
       .then((r) => r.json())
       .then((data: { notifications?: NotifItem[] }) => {
-        setNotifications(data.notifications ?? []);
+        const items = data.notifications ?? [];
+        setNotifications(items);
+        const unread = items.filter((n) => !n.isRead);
+        if (unread.length === 0) return;
+        void Promise.allSettled(
+          unread.map((n) => fetch(`/api/notifications/${n.id}`, { method: "PATCH" }))
+        ).then(() => refreshCount());
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
-
-  // Auto-mark as read dopo 2s — mostra brevemente le nuove evidenziate poi le segna silenziosamente
-  useEffect(() => {
-    if (loading) return;
-    if (!notifications.some((n) => !n.isRead)) return;
-    const timer = setTimeout(async () => {
-      await markAllRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    }, 2000);
-    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  async function handleMarkAllRead() {
-    await markAllRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  }
+  }, []);
 
   function handleRead(id: string) {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
-    refreshCount();
   }
 
   return (
@@ -65,21 +58,9 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
         flexDirection: "column",
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          px: 2,
-          py: 1.5,
-          flexShrink: 0,
-        }}
-      >
-        <Typography variant="subtitle1">Notifiche</Typography>
-        <Button size="small" onClick={handleMarkAllRead} sx={{ fontSize: TYPE_SCALE.xs }}>
-          Segna tutte lette
-        </Button>
+      {/* Header: niente "Segna tutte lette", si segnano da sole (UX-42). */}
+      <Box sx={{ px: 2, py: 1.5, flexShrink: 0 }}>
+        <Typography variant="subtitle1">{t("heroTitle")}</Typography>
       </Box>
       <Divider />
 
@@ -98,7 +79,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
       ) : notifications.length === 0 ? (
         <Box sx={{ py: 4, textAlign: "center" }}>
           <Typography variant="body2" color="text.secondary">
-            Nessuna notifica
+            {t("empty")}
           </Typography>
         </Box>
       ) : (
@@ -118,13 +99,11 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
         <Button
           fullWidth
           size="small"
+          href="/notifiche"
           sx={{ py: 1.25, fontSize: TYPE_SCALE.xs }}
-          onClick={() => {
-            router.push("/notifiche");
-            onClose();
-          }}
+          onClick={onClose}
         >
-          Mostra tutte
+          {t("showAll")}
         </Button>
       </Box>
     </Box>

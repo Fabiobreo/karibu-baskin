@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
-import ChildCareIcon from "@mui/icons-material/ChildCare";
+import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLES } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
@@ -108,6 +108,7 @@ export default function RegistrationForm({
     confirmedRole,
     hasConfirmedRole,
     effectiveRegisteredChildIds,
+    subjectChildren,
     selfRegistered,
     currentSubjectRegistered,
     isDuplicateName,
@@ -144,14 +145,14 @@ export default function RegistrationForm({
 
   // Se è un genitore e tutti (figli + sé stesso) sono già iscritti, mostra il messaggio
   const allChildrenRegistered =
-    hasChildren && parentChildren.every((c) => effectiveRegisteredChildIds.includes(c.id));
+    hasChildren && subjectChildren.every((c) => effectiveRegisteredChildIds.includes(c.id));
   if (isParent && hasChildren && allChildrenRegistered && selfRegistered) {
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
         <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
-          {parentChildren.length === 1
-            ? t("alreadyRegisteredParentAndChild", { name: parentChildren[0].name })
+          {subjectChildren.length === 1
+            ? t("alreadyRegisteredParentAndChild", { name: subjectChildren[0].name })
             : t("alreadyRegisteredFamilyAll")}
         </Typography>
       </Box>
@@ -293,11 +294,11 @@ export default function RegistrationForm({
       )}
 
       {/* ── Selettore soggetto (solo genitori) ── */}
-      {isParent && (
+      {isParent && subjectChildren.length > 0 && (
         <RegistrationSubjectSelector
-          selfName={currentUser?.name ?? t("registerSelf")}
+          selfName={currentUser?.name ?? null}
           selfRegistered={selfRegistered}
-          parentChildren={parentChildren}
+          parentChildren={subjectChildren}
           subject={subject}
           effectiveRegisteredChildIds={effectiveRegisteredChildIds}
           onSelect={setSubject}
@@ -401,7 +402,7 @@ export default function RegistrationForm({
             {selectedChild && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
                 <Avatar sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}>
-                  <ChildCareIcon sx={{ fontSize: 18 }} />
+                  <PersonIcon sx={{ fontSize: 18 }} />
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>

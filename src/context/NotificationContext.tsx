@@ -49,8 +49,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [status, fetchCount]);
 
   const markAllRead = useCallback(async () => {
-    await fetch("/api/notifications/read-all", { method: "PATCH" });
-    setUnreadCount(0);
+    // Parte da un timer (pagina e tendina le segnano da sole): se la rete
+    // manca non deve restare un errore non gestito, e il contatore non si
+    // azzera finché il server non ha davvero segnato.
+    const res = await fetch("/api/notifications/read-all", { method: "PATCH" }).catch(() => null);
+    if (res?.ok) setUnreadCount(0);
   }, []);
 
   const effectiveUnreadCount = status === "authenticated" ? unreadCount : 0;

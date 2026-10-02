@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { splitOwnChild } from "@/lib/registrationSubjects";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { SportRoleResult } from "@/components/training/SportRoleQuestionnaire";
@@ -75,6 +76,8 @@ export interface UseRegistrationFormReturn {
   confirmedVariant: string | null;
   hasConfirmedRole: boolean;
   effectiveRegisteredChildIds: (string | null)[];
+  /** Figli fra cui scegliere: senza la scheda di chi sta guardando. */
+  subjectChildren: ChildInfo[];
   selfRegistered: boolean;
   currentSubjectRegistered: boolean;
   isDuplicateName: boolean;
@@ -102,7 +105,7 @@ interface Params {
 export function useRegistrationForm({
   sessionId,
   currentUser,
-  parentChildren,
+  parentChildren: allChildren,
   registeredNames,
   registeredUserIds,
   registeredChildIds,
@@ -110,6 +113,14 @@ export function useRegistrationForm({
   onOptimisticAdd,
   onSubmitError,
 }: Params): UseRegistrationFormReturn {
+  // Una persona, una voce (UX-42): la scheda figlio di chi sta guardando (stesso
+  // account, `Child.userId`) è già "Io" nel selettore.
+  const selfId = currentUser?.id ?? null;
+  const selfChildId = currentUser?.linkedChildId ?? null;
+  const { own: ownChild, others: parentChildren } = useMemo(
+    () => splitOwnChild(allChildren, selfId, selfChildId),
+    [allChildren, selfId, selfChildId]
+  );
   const isParent = currentUser?.appRole === "PARENT";
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
   const isCoach = isStaff;
@@ -127,21 +138,27 @@ export function useRegistrationForm({
     !!currentUser &&
     (registeredUserIds.includes(currentUser.id) ||
       (!!currentUser.linkedChildId && registeredChildIds.includes(currentUser.linkedChildId)));
+  // Il primo figlio ancora da iscrivere; se sono tutti iscritti resta "Io", non
+  // una voce già iscritta (che nel selettore non si può scegliere).
   const defaultSubject: Subject = isParent
-    ? (parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ??
-      parentChildren[0]?.id ??
-      "self")
+    ? (parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ?? "self")
     : "self";
   const [subject, setSubject] = useState<Subject>(defaultSubject);
 
   const selectedChild =
     subject !== "self" ? (parentChildren.find((c) => c.id === subject) ?? null) : null;
 
+  // Per sé: il ruolo dell'account o, se manca, quello confermato sulla propria
+  // scheda figlio (il collegamento non lo copia sull'account).
   const confirmedRole =
-    subject === "self" ? (currentUser?.sportRole ?? null) : (selectedChild?.sportRole ?? null);
+    subject === "self"
+      ? (currentUser?.sportRole ?? ownChild?.sportRole ?? null)
+      : (selectedChild?.sportRole ?? null);
   const confirmedVariant =
     subject === "self"
-      ? (currentUser?.sportRoleVariant ?? null)
+      ? currentUser?.sportRole != null
+        ? (currentUser.sportRoleVariant ?? null)
+        : (ownChild?.sportRoleVariant ?? null)
       : (selectedChild?.sportRoleVariant ?? null);
   const hasConfirmedRole = confirmedRole !== null;
 
@@ -169,11 +186,11 @@ export function useRegistrationForm({
   useEffect(() => {
     if (!isParent || parentChildren.length === 0) return;
     if (subject === "self") {
-      const firstAvailable =
-        parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ??
-        parentChildren[0];
+      const firstAvailable = parentChildren.find(
+        (c) => !effectiveRegisteredChildIds.includes(c.id)
+      );
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSubject(firstAvailable.id);
+      if (firstAvailable) setSubject(firstAvailable.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentChildren]);
@@ -353,6 +370,7 @@ export function useRegistrationForm({
     confirmedVariant,
     hasConfirmedRole,
     effectiveRegisteredChildIds,
+    subjectChildren: parentChildren,
     selfRegistered,
     currentSubjectRegistered,
     isDuplicateName,

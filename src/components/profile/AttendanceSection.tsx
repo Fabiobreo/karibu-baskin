@@ -1,18 +1,14 @@
-import { Chip, Paper, Stack, Typography } from "@mui/material";
+import { Paper, Stack, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
 import ProfileRow from "@/components/profile/ProfileRow";
 
 interface AttendanceSectionProps {
   /** Coppie [stagione, presenze] ordinate dalla più recente. */
   seasons: [string, number][];
-  currentSeason: string;
 }
 
 /** Sezione "Presenze agli allenamenti" per stagione (Server Component). */
-export default async function AttendanceSection({
-  seasons,
-  currentSeason,
-}: AttendanceSectionProps) {
+export default async function AttendanceSection({ seasons }: AttendanceSectionProps) {
   const t = await getTranslations("profile");
 
   return (
@@ -25,15 +21,11 @@ export default async function AttendanceSection({
           {t("attendanceEmpty")}
         </Typography>
       )}
-      <Stack spacing={1}>
+      {/* Un elenco, non chip: un numero non si tocca (UX-42). */}
+      <Stack component="dl" spacing={1} sx={{ m: 0 }}>
         {seasons.map(([season, count]) => (
           <ProfileRow key={season} label={t("seasonLabel", { season })}>
-            <Chip
-              label={t("trainingsCount", { count })}
-              size="small"
-              variant={season === currentSeason ? "filled" : "outlined"}
-              color={season === currentSeason ? "primary" : "default"}
-            />
+            <Typography variant="body2">{t("trainingsCount", { count })}</Typography>
           </ProfileRow>
         ))}
       </Stack>

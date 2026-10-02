@@ -113,6 +113,19 @@ export const GenitoreGiaIscrittoConFiglio: Story = {
   },
 };
 
+// Una persona, una voce (UX-42): la scheda figlio collegata all'account di chi
+// guarda non compare, è già "Io".
+export const GenitoreConLaPropriaScheda: Story = {
+  name: "Genitore — con la propria scheda figlio",
+  args: {
+    currentUser: userParent,
+    parentChildren: [
+      { ...childOne, id: "child-self", name: userParent.name ?? "", userId: userParent.id },
+      childTwo,
+    ],
+  },
+};
+
 // ── Coach ─────────────────────────────────────────────────────────────────────
 
 export const Coach: Story = {

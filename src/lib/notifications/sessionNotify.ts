@@ -6,6 +6,7 @@ import {
   createTargetedAppNotifications,
 } from "@/lib/notifications/appNotifications";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
+import { NEW_TRAINING_TITLE } from "@/lib/notifications/notificationDisplay";
 
 export interface SessionNotifyInput {
   id: string;
@@ -42,7 +43,7 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
         ? "Allenamento aggiornato"
         : kind === "closed"
           ? "Iscrizioni chiuse"
-          : "Nuovo allenamento",
+          : NEW_TRAINING_TITLE,
     body,
     url,
   };

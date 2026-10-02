@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { splitOwnChild } from "@/lib/registrationSubjects";
 import { prisma } from "@/lib/db";
 import { guardianOf } from "@/lib/guardians";
 import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
@@ -136,24 +137,32 @@ export const loadNextAction = cache(async function loadNextAction(
       select: {
         id: true,
         name: true,
+        userId: true,
         sportRole: true,
         teamMemberships: { select: { teamId: true } },
       },
     }),
   ]);
+  // La scheda figlio collegata al proprio account è la stessa persona, non un
+  // figlio: come nel form d'iscrizione (`splitOwnChild`).
+  const { own, others } = splitOwnChild(children, userId);
+  const selfRole = user?.sportRole ?? own?.sportRole ?? null;
 
   const subjects: Subject[] = [];
   // Il genitore che non gioca (senza ruolo) non si propone come atleta.
-  if (user && (appRole !== "PARENT" || user.sportRole != null)) {
+  if (user && (appRole !== "PARENT" || selfRole != null)) {
     subjects.push({
       kind: "self",
       id: userId,
       name: user.name ?? "",
-      sportRole: user.sportRole,
-      teamIds: user.teamMemberships.map((m) => m.teamId),
+      sportRole: selfRole,
+      teamIds: [
+        ...user.teamMemberships.map((m) => m.teamId),
+        ...(own?.teamMemberships.map((m) => m.teamId) ?? []),
+      ],
     });
   }
-  for (const c of children) {
+  for (const c of others) {
     subjects.push({
       kind: "child",
       id: c.id,
@@ -222,7 +231,10 @@ export const loadNextAction = cache(async function loadNextAction(
       allowedRoles: s.allowedRoles,
       restrictTeamId: s.restrictTeamId,
       openRoles: s.openRoles,
-      registeredIds: s.registrations.map((r) => r.userId ?? r.childId ?? ""),
+      // Un'iscrizione fatta con la propria scheda figlio vale come propria.
+      registeredIds: s.registrations.map((r) =>
+        own && r.childId === own.id ? userId : (r.userId ?? r.childId ?? "")
+      ),
     })),
     registered: nextRegistered
       ? {

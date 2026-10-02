@@ -448,7 +448,7 @@ export default async function ProfiloPage() {
 
       {/* Le presenze erano già calcolate ma comparivano solo con più di una
           stagione alle spalle: per chi è al primo anno sparivano del tutto. */}
-      <AttendanceSection seasons={attendanceSeasons} currentSeason={currentSeason} />
+      <AttendanceSection seasons={attendanceSeasons} />
     </>
   );
 

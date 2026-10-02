@@ -6,9 +6,16 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
+import ArticleIcon from "@mui/icons-material/Article";
+import PollIcon from "@mui/icons-material/Poll";
+import EventIcon from "@mui/icons-material/Event";
+import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
+import CakeIcon from "@mui/icons-material/Cake";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "next-intl";
+import { notificationDisplay } from "@/lib/notifications/notificationDisplay";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -34,12 +41,20 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "MATCH_RESULT") return <EmojiEventsIcon fontSize="small" sx={ICON_SX} />;
   if (type === "LINK_REQUEST" || type === "LINK_RESPONSE")
     return <FamilyRestroomIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "NEW_POST") return <ArticleIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "NEW_POLL") return <PollIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "NEW_EVENT") return <EventIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "BADGE_UNLOCKED") return <MilitaryTechIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "BIRTHDAY") return <CakeIcon fontSize="small" sx={ICON_SX} />;
   return <NotificationsIcon fontSize="small" sx={ICON_SX} />;
 }
 
 export default function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const dateLocale = useActiveDateLocale();
-  const { id, type, title, body, url, createdAt, isRead } = notification;
+  const t = useTranslations("pages.notifiche");
+  const { id, type, url, createdAt, isRead } = notification;
+  // Il contenuto è il titolo, il tipo è l'occhiello (UX-42).
+  const { headline, detail, eyebrow, eyebrowKey } = notificationDisplay(notification);
 
   function markRead() {
     if (isRead) return;
@@ -47,26 +62,20 @@ export default function NotificationItem({ notification, onRead }: NotificationI
     onRead(id);
   }
 
-  // Non letta (UX-29): fondo neutro di selezione, titolo in grassetto e un
-  // pallino prima del titolo. Il pallino e' arancio solo se la riga si tocca.
+  // Non letta (UX-29): fondo neutro di selezione e un pallino prima del titolo.
+  // Il pallino e' arancio solo se la riga si tocca.
   const unreadStyles: SxProps<Theme> = isRead ? {} : { bgcolor: "action.selected" };
 
   const content = (
     <>
-      <Avatar sx={{ width: 36, height: 36, flexShrink: 0, bgcolor: "transparent", mt: 0.25 }}>
+      <Avatar sx={{ width: 36, height: 36, flexShrink: 0, bgcolor: "transparent" }}>
         <NotifIcon type={type} />
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           variant="body2"
-          fontWeight={isRead ? FONT_WEIGHT.regular : FONT_WEIGHT.semibold}
-          sx={{
-            lineHeight: 1.3,
-            mb: 0.25,
-            // Il titolo è il bersaglio del link: si sottolinea in hover come
-            // qualunque altro link del sito.
-            ...(url ? { color: "primary.onLight" } : {}),
-          }}
+          fontWeight={FONT_WEIGHT.semibold}
+          sx={{ lineHeight: 1.3, color: "text.primary" }}
         >
           {!isRead && (
             <Box
@@ -83,18 +92,20 @@ export default function NotificationItem({ notification, onRead }: NotificationI
               }}
             />
           )}
-          {title}
+          {headline}
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
-          {body}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
+        {detail && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+            {detail}
+          </Typography>
+        )}
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25 }}>
+          {eyebrow ?? t(`type.${eyebrowKey}`)}
+          {" · "}
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: dateLocale })}
         </Typography>
       </Box>
-      {url && (
-        <ChevronRightIcon sx={{ fontSize: 20, color: "text.secondary", flexShrink: 0, mt: 0.5 }} />
-      )}
+      {url && <ChevronRightIcon sx={{ fontSize: 20, color: "text.secondary", flexShrink: 0 }} />}
     </>
   );
 
@@ -108,9 +119,9 @@ export default function NotificationItem({ notification, onRead }: NotificationI
         href={url}
         onClick={markRead}
         sx={{
-          alignItems: "flex-start",
+          alignItems: "center",
           gap: 1.5,
-          py: 1.5,
+          py: 1.25,
           px: 2,
           textDecoration: "none",
           color: "inherit",
@@ -129,7 +140,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
   return (
     <ListItem
       component="div"
-      sx={{ alignItems: "flex-start", gap: 1.5, py: 1.5, px: 2, ...(unreadStyles as object) }}
+      sx={{ alignItems: "center", gap: 1.5, py: 1.25, px: 2, ...(unreadStyles as object) }}
     >
       {content}
     </ListItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { useTranslations } from "next-intl";
 import ImageUploader from "@/components/common/ImageUploader";
@@ -16,6 +16,20 @@ export default function ProfileAvatarEditor({
   customImage: initialCustomImage,
 }: ProfileAvatarEditorProps) {
   const [customImage, setCustomImage] = useState<string | null>(initialCustomImage);
+  // La foto di Google può esserci a DB e non caricarsi (URL scaduto): sotto un
+  // avatar vuoto la didascalia "Foto da Google" non ha senso (UX-42). La prova
+  // la fa un'immagine a parte: l'`<img>` dell'avatar arriva dal server e il suo
+  // errore può scattare prima dell'idratazione, quando nessuno ascolta.
+  const [googleFailed, setGoogleFailed] = useState(false);
+  useEffect(() => {
+    if (!googleImage) return;
+    const probe = new Image();
+    probe.onerror = () => setGoogleFailed(true);
+    probe.src = googleImage;
+    return () => {
+      probe.onerror = null;
+    };
+  }, [googleImage]);
   const { showToast } = useToast();
   const t = useTranslations("childLinker");
 
@@ -58,7 +72,7 @@ export default function ProfileAvatarEditor({
         shape="circle"
         size={80}
       />
-      {!customImage && googleImage && (
+      {!customImage && googleImage && !googleFailed && (
         <Typography variant="caption" color="text.secondary" sx={{ textAlign: "center" }}>
           {t("googlePhoto")}
         </Typography>

@@ -36,23 +36,25 @@ export default async function AthleteInfoSection({
 
       {hasAthleteData ? (
         <Stack spacing={2}>
-          {sportRole && (
-            <ProfileRow label={tPlayers("baskinRole")}>
-              <RoleBadge role={sportRole} />
-            </ProfileRow>
-          )}
-          {gender && (
-            <ProfileRow label={tPlayers("gender")}>
-              <Typography variant="body2">{genderLabel(gender)}</Typography>
-            </ProfileRow>
-          )}
-          {birthDate && (
-            <ProfileRow label={tPlayers("birthDate")}>
-              <Typography variant="body2">
-                {format(new Date(birthDate), "d MMMM yyyy", { locale: dateLocale })}
-              </Typography>
-            </ProfileRow>
-          )}
+          <Stack component="dl" spacing={2} sx={{ m: 0 }}>
+            {sportRole && (
+              <ProfileRow label={tPlayers("baskinRole")}>
+                <RoleBadge role={sportRole} />
+              </ProfileRow>
+            )}
+            {gender && (
+              <ProfileRow label={tPlayers("gender")}>
+                <Typography variant="body2">{genderLabel(gender)}</Typography>
+              </ProfileRow>
+            )}
+            {birthDate && (
+              <ProfileRow label={tPlayers("birthDate")}>
+                <Typography variant="body2">
+                  {format(new Date(birthDate), "d MMMM yyyy", { locale: dateLocale })}
+                </Typography>
+              </ProfileRow>
+            )}
+          </Stack>
 
           {roleHistory.length > 0 && (
             <>
