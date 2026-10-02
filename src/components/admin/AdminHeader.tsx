@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ShieldIcon from "@mui/icons-material/Shield";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -93,10 +92,11 @@ function barItemSx(active: boolean) {
  * lingua (l'admin è solo in italiano); il tema sta nel menu dell'avatar.
  *
  * Uscire verso il sito costa un tocco a ogni larghezza: il logo porta alla home
- * (da lì, su telefono, c'è la barra in basso), e da `md` c'è anche il bottone
- * "Torna al sito".
+ * (da lì, su telefono, c'è la barra in basso). Nella barra non c'è un bottone
+ * "Torna al sito": basta il logo (scelta del committente); la scritta resta in
+ * fondo al menu.
  *
- * Chi non è dello staff (la pagina di accesso) vede solo logo e "Torna al sito".
+ * Chi non è dello staff (la pagina di accesso) vede solo il logo e "Admin".
  */
 export default function AdminHeader() {
   const pathname = usePathname();
@@ -160,9 +160,8 @@ export default function AdminHeader() {
         )}
 
         {/* Il logo è l'uscita verso il sito, a ogni larghezza e con un tocco
-            solo: come in ogni pagina pubblica, porta alla home. Su telefono è
-            l'unica uscita sempre in vista ("Torna al sito" scritto sta nel
-            menu), e da lì si ritrova la barra in basso. */}
+            solo: come in ogni pagina pubblica, porta alla home. È l'unica
+            uscita nella barra ("Torna al sito" scritto sta in fondo al menu). */}
         <Tooltip title="Torna al sito">
           <MuiLink
             href="/"
@@ -282,22 +281,6 @@ export default function AdminHeader() {
         )}
 
         <Box sx={{ flex: 1 }} />
-
-        <Button
-          href="/"
-          color="inherit"
-          startIcon={<ArrowBackIcon />}
-          sx={{
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            minHeight: { xs: 44, lg: 40 },
-            // Su telefono non c'è posto per la scritta: l'uscita è il logo, e
-            // "Torna al sito" sta anche in fondo al menu.
-            display: { xs: isStaff ? "none" : "inline-flex", md: "inline-flex" },
-          }}
-        >
-          Torna al sito
-        </Button>
 
         {isStaff && user && (
           <>

@@ -1,22 +1,16 @@
 "use client";
-import { Box, Chip, Paper, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { Box, Chip, Paper, Typography } from "@mui/material";
 import { ROLES } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
-export type ConvocazioniSortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
-
-/** Filtro per ruolo + ordinamento della tabella candidati. */
+/** Filtro per ruolo della tabella candidati (l'ordinamento sta nelle intestazioni). */
 export default function ConvocazioniFilters({
   roleFilter,
   onRoleFilterChange,
-  sortKey,
-  onSortKeyChange,
 }: {
   roleFilter: number | null;
   onRoleFilterChange: (role: number | null) => void;
-  sortKey: ConvocazioniSortKey;
-  onSortKeyChange: (key: ConvocazioniSortKey) => void;
 }) {
   return (
     <Paper
@@ -52,37 +46,6 @@ export default function ConvocazioniFilters({
             sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
           />
         ))}
-      </Box>
-
-      <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", flexWrap: "wrap" }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          fontWeight={FONT_WEIGHT.semibold}
-          sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
-        >
-          Ordina:
-        </Typography>
-        <ToggleButtonGroup
-          size="small"
-          value={sortKey}
-          exclusive
-          onChange={(_, v) => v && onSortKeyChange(v as ConvocazioniSortKey)}
-          sx={{
-            "& .MuiToggleButton-root": {
-              fontSize: TYPE_SCALE.xs,
-              textTransform: "none",
-              py: 0.25,
-              px: 1,
-            },
-          }}
-        >
-          <ToggleButton value="role">Ruolo</ToggleButton>
-          <ToggleButton value="presences">Più presenze</ToggleButton>
-          <ToggleButton value="lastCallup">Fermo da più</ToggleButton>
-          <ToggleButton value="seasonCallups">Meno partite</ToggleButton>
-          <ToggleButton value="name">Nome</ToggleButton>
-        </ToggleButtonGroup>
       </Box>
     </Paper>
   );

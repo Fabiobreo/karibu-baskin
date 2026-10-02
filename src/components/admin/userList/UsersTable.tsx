@@ -16,7 +16,9 @@ import {
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import { it } from "date-fns/locale";
 import { GENDER_LABELS_SHORT } from "@/lib/constants";
+import { formatRome } from "@/lib/dateUtils";
 import RoleBadge from "@/components/common/RoleBadge";
 import { PersonNameButton, PersonRowMenu } from "@/components/admin/userList/PersonRowControls";
 import {
@@ -109,10 +111,31 @@ export default function UsersTable({
               </TableSortLabel>
             </TableCell>
             <TableCell align="center">Squadra</TableCell>
-            <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
+            <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>
               Genere
             </TableCell>
-            <TableCell align="center">Azioni</TableCell>
+            {/* Solo da `lg`: sotto, otto colonne non stanno nel pannello. */}
+            <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>
+              <TableSortLabel
+                active={sortBy === "registrations"}
+                direction={sortBy === "registrations" ? sortDir : "desc"}
+                onClick={() => onSort("registrations")}
+              >
+                Allenamenti
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>
+              <TableSortLabel
+                active={sortBy === "createdAt"}
+                direction={sortBy === "createdAt" ? sortDir : "desc"}
+                onClick={() => onSort("createdAt")}
+              >
+                Iscritto il
+              </TableSortLabel>
+            </TableCell>
+            <TableCell align="center" sx={{ px: 1 }}>
+              Azioni
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -236,7 +259,7 @@ export default function UsersTable({
                 </TableCell>
 
                 {/* Genere */}
-                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
+                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>
                   {row.gender ? (
                     <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                   ) : (
@@ -246,8 +269,27 @@ export default function UsersTable({
                   )}
                 </TableCell>
 
+                {/* Allenamenti a cui si è iscritto */}
+                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color={row._count.registrations > 0 ? "text.primary" : "text.secondary"}
+                  >
+                    {row._count.registrations}
+                  </Typography>
+                </TableCell>
+
+                {/* Data di iscrizione */}
+                <TableCell
+                  sx={{ display: { xs: "none", lg: "table-cell" }, px: 1, whiteSpace: "nowrap" }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    {formatRome(row.createdAt, "d MMM yyyy", { locale: it })}
+                  </Typography>
+                </TableCell>
+
                 {/* Azioni */}
-                <TableCell align="center">
+                <TableCell align="center" sx={{ px: 1 }}>
                   <PersonRowMenu
                     name={row.name ?? row.email}
                     canDelete={isAdmin}
@@ -261,7 +303,7 @@ export default function UsersTable({
 
           {rows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
+              <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
                 {activeFilterCount > 0
                   ? "Nessun risultato corrisponde ai filtri selezionati."
                   : "Nessun utente trovato."}

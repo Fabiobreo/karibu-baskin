@@ -13,6 +13,7 @@ import {
   TableHead,
   TableRow,
   TableContainer,
+  TablePagination,
   Paper,
   IconButton,
   Chip,
@@ -34,6 +35,7 @@ import PublishIcon from "@mui/icons-material/Publish";
 import UnpublishedIcon from "@mui/icons-material/Unpublished";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import { useToast } from "@/context/ToastContext";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import dynamic from "next/dynamic";
@@ -86,6 +88,11 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<PostSummary | null>(null);
   const { showToast } = useToast();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useRowsPerPage("news", [10, 25, 50], 10);
+  const lastPage = Math.max(0, Math.ceil(posts.length / rowsPerPage) - 1);
+  const safePage = Math.min(page, lastPage);
+  const paginatedPosts = posts.slice(safePage * rowsPerPage, (safePage + 1) * rowsPerPage);
 
   function openNew() {
     setEditPost(null);
@@ -209,6 +216,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
         showToast({ message: "Post aggiornato", severity: "success" });
       } else {
         setPosts((prev) => [saved, ...prev]);
+        setPage(0);
         showToast({ message: publish ? "Post pubblicato" : "Bozza salvata", severity: "success" });
       }
       setOpen(false);
@@ -290,7 +298,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                 </TableCell>
               </TableRow>
             )}
-            {posts.map((post) => (
+            {paginatedPosts.map((post) => (
               <TableRow key={post.id} hover>
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -369,7 +377,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
             </Typography>
           </Box>
         ) : (
-          posts.map((post) => (
+          paginatedPosts.map((post) => (
             <Box
               key={post.id}
               sx={{
@@ -446,6 +454,23 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
           ))
         )}
       </Paper>
+
+      {posts.length > 0 && (
+        <TablePagination
+          component="div"
+          count={posts.length}
+          page={safePage}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="Righe:"
+          labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+        />
+      )}
 
       {/* Dialog crea/modifica */}
       <ResponsiveDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">

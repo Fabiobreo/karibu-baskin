@@ -9,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   TextField,
   InputAdornment,
   Chip,
@@ -71,12 +72,15 @@ function trendChipColor(label: TrendLabel) {
 
 const TREND_ORDER: TrendLabel[] = ["crescita", "calo", "altalenante", "plateau", "nuovo"];
 
+type SortColumn = "name" | "role" | "trend" | "games";
+
 export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthlete[] }) {
   const [search, setSearch] = useState("");
   const [trendFilter, setTrendFilter] = useState<TrendLabel | null>(null);
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [genderFilter, setGenderFilter] = useState<"MALE" | "FEMALE" | null>(null);
   const [skillFilter, setSkillFilter] = useState<SkillBucket | null>(null);
+  const [sort, setSort] = useState<{ col: SortColumn; dir: "asc" | "desc" } | null>(null);
 
   const rows = useMemo(() => {
     return athletes
@@ -116,7 +120,7 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
     return c;
   }, [rows]);
 
-  const filtered = rows.filter((r) => {
+  const matching = rows.filter((r) => {
     if (trendFilter && r.trend.label !== trendFilter) return false;
     if (roleFilter !== null && r.sportRole !== roleFilter) return false;
     if (genderFilter && r.gender !== genderFilter) return false;
@@ -124,6 +128,50 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
     if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  // Senza colonna scelta resta l'ordine di partenza (`rows`); a parità di
+  // valore pure, perché l'ordinamento è stabile.
+  const filtered = sort
+    ? [...matching].sort((a, b) => {
+        let cmp = 0;
+        switch (sort.col) {
+          case "name":
+            cmp = a.name.localeCompare(b.name, "it");
+            break;
+          case "role":
+            cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
+            break;
+          case "trend":
+            cmp = TREND_ORDER.indexOf(a.trend.label) - TREND_ORDER.indexOf(b.trend.label);
+            break;
+          case "games":
+            cmp = a.games - b.games || a.officialGames - b.officialGames;
+            break;
+        }
+        return sort.dir === "asc" ? cmp : -cmp;
+      })
+    : matching;
+
+  // Tre tocchi sulla stessa intestazione: primo verso, verso opposto, ordine
+  // di partenza (che non ha una colonna a cui tornare).
+  function handleSort(col: SortColumn) {
+    const first = col === "games" ? "desc" : "asc";
+    setSort((prev) => {
+      if (prev?.col !== col) return { col, dir: first };
+      if (prev.dir === first) return { col, dir: first === "asc" ? "desc" : "asc" };
+      return null;
+    });
+  }
+
+  const sortLabel = (col: SortColumn, label: string) => (
+    <TableSortLabel
+      active={sort?.col === col}
+      direction={sort?.col === col ? sort.dir : col === "games" ? "desc" : "asc"}
+      onClick={() => handleSort(col)}
+    >
+      {label}
+    </TableSortLabel>
+  );
 
   return (
     <Box>
@@ -227,14 +275,14 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Giocatore</TableCell>
+              <TableCell>{sortLabel("name", "Giocatore")}</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                Ruolo
+                {sortLabel("role", "Ruolo")}
               </TableCell>
               <TableCell align="center">Andamento</TableCell>
-              <TableCell align="center">Trend</TableCell>
+              <TableCell align="center">{sortLabel("trend", "Trend")}</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                Partitelle (+ ufficiali)
+                {sortLabel("games", "Partitelle (+ ufficiali)")}
               </TableCell>
             </TableRow>
           </TableHead>

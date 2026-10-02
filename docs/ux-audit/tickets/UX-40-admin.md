@@ -79,11 +79,11 @@ Si lavora su `develop`, un commit per passo. A ogni passo: `npx tsc --noEmit`, `
 
 - **`AdminHeader`** (`src/components/admin/`) è l'unica navigazione del pannello. Lo monta il layout radice dentro `OnlyInAdmin`, fuori dal `<main>` (lo skip link deve saltarlo); `SiteHeader`, `Footer` e `BottomNav` stanno in `HideInAdmin`. Non è una variante di `SiteHeader`: in admin non parte più la fetch delle squadre. `AdminNavBar` è eliminato.
 - Lo spazio di 60 px in fondo al `<main>` lo decide `MainContent` (client): in admin non c'è.
-- **`/admin/login`** e chiunque non sia dello staff vedono la barra minima: logo e "Torna al sito".
+- **`/admin/login`** e chiunque non sia dello staff vedono la barra minima: il logo (che porta al sito) e "Admin".
 - **Una barra**, 60 px su desktop e 56 su telefono, sul fondo `adminBand`, senza filo arancio.
-  - Da `lg`: logo, scudo "Admin", sette link con `aria-current`, **"Altro"** con le altre nove sezioni raggruppate (quando si è in una di quelle, il bottone ne prende il nome e lo stato attivo), "Torna al sito", campanella, avatar. Sono link, non `Tabs`: niente frecce. A 1.200 px ci sta senza sforare; sotto c'è il menu.
+  - Da `lg`: logo, scudo "Admin", sette link con `aria-current`, **"Altro"** con le altre nove sezioni raggruppate (quando si è in una di quelle, il bottone ne prende il nome e lo stato attivo), campanella, avatar. Sono link, non `Tabs`: niente frecce. A 1.200 px ci sta senza sforare; sotto c'è il menu.
   - Sotto `lg`: `☰`, logo, "Admin · <sezione>" (sotto `sm` solo lo scudo e la sezione), campanella, avatar.
-  - **Uscire verso il sito costa un tocco a ogni larghezza** (richiesta del committente, 02/10): il logo porta sempre alla home del sito, come nelle pagine pubbliche, e da `md` c'è anche il bottone "Torna al sito". Senza, su telefono l'uscita era dentro il menu: due tocchi dove prima bastava "Home" nella barra in basso.
+  - **Uscire verso il sito costa un tocco a ogni larghezza** (richiesta del committente, 02/10): il logo porta sempre alla home del sito, come nelle pagine pubbliche. Il bottone "Torna al sito" nella barra è stato tolto: basta il logo (scelta del committente, 02/10); la scritta resta in fondo al menu. Senza, su telefono l'uscita era dentro il menu: due tocchi dove prima bastava "Home" nella barra in basso.
   - **Menu** (`AdminNavDrawer`): da sinistra, 280 px, tutte le 16 sezioni con le icone della dashboard e i suoi gruppi, voci da 48 px, "Torna al sito" in fondo. Alla chiusura il focus torna al bottone.
   - Campanella a ogni larghezza (`NotificationBell tone="surface"`). Menu dell'avatar: profilo, tema, esci.
   - Le sezioni stanno in un posto solo, `@/lib/adminNav` (`ADMIN_NAV`, `activeAdminSection`): il test controlla che ogni voce porti a una pagina che esiste.

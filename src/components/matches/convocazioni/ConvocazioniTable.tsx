@@ -9,6 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -22,16 +23,42 @@ import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+export type ConvocazioniSortColumn =
+  | "name"
+  | "presences"
+  | "absences"
+  | "seasonCallups"
+  | "lastCallup";
+
+export interface ConvocazioniSort {
+  col: ConvocazioniSortColumn;
+  dir: "asc" | "desc";
+}
+
+/** Verso del primo tocco: quello che serve a chi convoca (più presenze, fermo da più, meno partite). */
+export const CONVOCAZIONI_FIRST_DIR: Record<ConvocazioniSortColumn, "asc" | "desc"> = {
+  name: "asc",
+  presences: "desc",
+  absences: "desc",
+  seasonCallups: "asc",
+  lastCallup: "desc",
+};
+
 /** Tabella dei candidati disponibili: selezione con click riga + statistiche presenze/convocazioni. */
 export default function ConvocazioniTable({
   rows,
   roleFilter,
+  sort,
+  onSort,
   isSelected,
   selectedElsewhere,
   onToggle,
 }: {
   rows: ConvocazioneStatRow[];
   roleFilter: number | null;
+  /** Colonna scelta; `null` = ordine di partenza, per ruolo. */
+  sort: ConvocazioniSort | null;
+  onSort: (col: ConvocazioniSortColumn) => void;
   isSelected: (row: ConvocazioneStatRow) => boolean;
   /** Amichevole interna: squadra per cui il giocatore è già convocato (selezionarlo lo sposta). */
   selectedElsewhere?: (row: ConvocazioneStatRow) => string | null;
@@ -48,6 +75,18 @@ export default function ConvocazioniTable({
     );
   }
 
+  const sortLabel = (col: ConvocazioniSortColumn, label: string, title?: string) => (
+    <TableSortLabel
+      active={sort?.col === col}
+      direction={sort?.col === col ? sort.dir : CONVOCAZIONI_FIRST_DIR[col]}
+      onClick={() => onSort(col)}
+      title={title}
+      sx={{ "& .MuiTableSortLabel-icon": { fontSize: TYPE_SCALE.xs } }}
+    >
+      {label}
+    </TableSortLabel>
+  );
+
   return (
     <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
       <Box sx={{ overflowX: "auto" }}>
@@ -55,52 +94,67 @@ export default function ConvocazioniTable({
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell sx={{ width: 40 }} />
-              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}>
-                Giocatore
+              <TableCell
+                sortDirection={sort?.col === "name" ? sort.dir : false}
+                sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}
+              >
+                {sortLabel("name", "Giocatore")}
               </TableCell>
               <TableCell
                 align="center"
+                sortDirection={sort?.col === "presences" ? sort.dir : false}
                 sx={{
                   fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   whiteSpace: "nowrap",
                 }}
-                title="Presenze / allenamenti eligibili nelle ultime 2 settimane"
               >
-                Presenze
+                {sortLabel(
+                  "presences",
+                  "Presenze",
+                  "Presenze / allenamenti eligibili nelle ultime 2 settimane"
+                )}
               </TableCell>
               <TableCell
                 align="center"
+                sortDirection={sort?.col === "absences" ? sort.dir : false}
                 sx={{
                   fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   whiteSpace: "nowrap",
                 }}
-                title="Mancate iscrizioni + iscritto-ma-assente, su sessioni eligibili"
               >
-                Assenze
+                {sortLabel(
+                  "absences",
+                  "Assenze",
+                  "Mancate iscrizioni + iscritto-ma-assente, su sessioni eligibili"
+                )}
               </TableCell>
               <TableCell
                 align="center"
+                sortDirection={sort?.col === "seasonCallups" ? sort.dir : false}
                 sx={{
                   fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   whiteSpace: "nowrap",
                 }}
-                title="Convocazioni nella stagione corrente (escluso questo match)"
               >
-                Partite st.
+                {sortLabel(
+                  "seasonCallups",
+                  "Partite st.",
+                  "Convocazioni nella stagione corrente (escluso questo match)"
+                )}
               </TableCell>
               <TableCell
                 align="center"
+                sortDirection={sort?.col === "lastCallup" ? sort.dir : false}
                 sx={{
                   fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   whiteSpace: "nowrap",
                 }}
-                title="Giorni dall'ultima convocazione"
               >
-                Ultima conv.
+                {sortLabel("lastCallup", "Ultima conv.", "Giorni dall'ultima convocazione")}
               </TableCell>
             </TableRow>
           </TableHead>

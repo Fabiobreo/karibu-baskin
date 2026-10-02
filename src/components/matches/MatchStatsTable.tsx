@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import RoleBadge from "@/components/common/RoleBadge";
-import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Box,
   Table,
@@ -10,7 +9,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  TablePagination,
+  TableSortLabel,
   Paper,
   Typography,
   Tooltip,
@@ -51,6 +50,15 @@ export interface MatchStatRow {
   } | null;
 }
 
+type StatKey =
+  | "points"
+  | "freeThrows"
+  | "twoPointers"
+  | "threePointers"
+  | "shotsAttempted"
+  | "fouls"
+  | "illegalFouls";
+
 export default function MatchStatsTable({
   stats,
   teamColor = null,
@@ -60,12 +68,11 @@ export default function MatchStatsTable({
   teamColor?: string | null;
 }) {
   const t = useTranslations("matches");
-  const tCommon = useTranslations("common");
   const { sportRoleLabel } = useEntityLabels();
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useRowsPerPage("match-stats", [10, 25, 50], 10);
+  const [sortBy, setSortBy] = useState<StatKey>("points");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  const COLS: { key: keyof MatchStatRow; label: string; title: string; primary?: boolean }[] = [
+  const COLS: { key: StatKey; label: string; title: string; primary?: boolean }[] = [
     { key: "points", label: t("statPoints"), title: t("statPointsTitle"), primary: true },
     { key: "freeThrows", label: t("statFt"), title: t("statFtTitle") },
     { key: "twoPointers", label: t("stat2pt"), title: t("stat2ptTitle") },
@@ -75,8 +82,20 @@ export default function MatchStatsTable({
     { key: "illegalFouls", label: t("statIllegal"), title: t("statIllegalTitle") },
   ];
 
-  const paginated = stats.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-  const globalOffset = page * rowsPerPage;
+  // Niente paginazione: un tabellino è una squadra, e a dieci righe per pagina
+  // finiva spezzato in due. A parità di valore resta l'ordine del server (punti).
+  const sorted = [...stats].sort((a, b) =>
+    sortDir === "asc" ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy]
+  );
+
+  function handleSort(col: StatKey) {
+    if (sortBy === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir("desc");
+    }
+  }
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
@@ -99,22 +118,31 @@ export default function MatchStatsTable({
               </TableCell>
               {COLS.map((col) => (
                 <TableCell
-                  key={col.key as string}
+                  key={col.key}
                   align="center"
+                  sortDirection={sortBy === col.key ? sortDir : false}
                   sx={{
                     fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     color: col.primary ? "text.primary" : undefined,
+                    whiteSpace: "nowrap",
                   }}
-                  title={col.title}
                 >
-                  {col.label}
+                  <TableSortLabel
+                    active={sortBy === col.key}
+                    direction={sortBy === col.key ? sortDir : "desc"}
+                    onClick={() => handleSort(col.key)}
+                    title={col.title}
+                    sx={{ "& .MuiTableSortLabel-icon": { fontSize: TYPE_SCALE.xs } }}
+                  >
+                    {col.label}
+                  </TableSortLabel>
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.map((stat, i) => {
+            {sorted.map((stat, i) => {
               const athlete = stat.user ?? stat.child;
               const name = athlete?.name ?? "—";
               const role = athlete?.sportRole ?? null;
@@ -132,7 +160,7 @@ export default function MatchStatsTable({
                       fontSize: TYPE_SCALE.xs,
                     }}
                   >
-                    {globalOffset + i + 1}
+                    {i + 1}
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -190,7 +218,7 @@ export default function MatchStatsTable({
                     </Box>
                   </TableCell>
                   {COLS.map((col) => {
-                    const val = stat[col.key] as number;
+                    const val = stat[col.key];
                     const allowedForRole =
                       col.key === "points" || !role
                         ? true
@@ -202,7 +230,7 @@ export default function MatchStatsTable({
                           })();
                     return (
                       <TableCell
-                        key={col.key as string}
+                        key={col.key}
                         align="center"
                         sx={{
                           fontSize: TYPE_SCALE.sm,
@@ -252,21 +280,6 @@ export default function MatchStatsTable({
           </TableBody>
         </Table>
       </Box>
-      <TablePagination
-        component="div"
-        count={stats.length}
-        page={page}
-        onPageChange={(_, p) => setPage(p)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[10, 25, 50]}
-        labelRowsPerPage={tCommon("rowsPerPage")}
-        labelDisplayedRows={({ from, to, count }) => tCommon("paginationRows", { from, to, count })}
-        sx={{ borderTop: "1px solid", borderColor: "divider" }}
-      />
     </Paper>
   );
 }

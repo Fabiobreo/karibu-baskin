@@ -87,7 +87,9 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         ? { sportRole: sortDir }
         : sortBy === "appRole"
           ? { appRole: sortDir }
-          : { createdAt: sortDir };
+          : sortBy === "registrations"
+            ? { registrations: { _count: sortDir } }
+            : { createdAt: sortDir };
 
   // Attivi (athleteStatus null) sempre in cima; "In pausa" prima di "Ex"
   // (ordine enum). Dentro ogni gruppo si applica il sort scelto dall'utente.

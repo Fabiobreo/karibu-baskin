@@ -16,10 +16,12 @@ import {
 } from "@/hooks/useConvocazioniSelection";
 import ConvocazioniTeamTabs from "@/components/matches/convocazioni/ConvocazioniTeamTabs";
 import ConvocazioniToolbar from "@/components/matches/convocazioni/ConvocazioniToolbar";
-import ConvocazioniFilters, {
-  type ConvocazioniSortKey,
-} from "@/components/matches/convocazioni/ConvocazioniFilters";
-import ConvocazioniTable from "@/components/matches/convocazioni/ConvocazioniTable";
+import ConvocazioniFilters from "@/components/matches/convocazioni/ConvocazioniFilters";
+import ConvocazioniTable, {
+  CONVOCAZIONI_FIRST_DIR,
+  type ConvocazioniSort,
+  type ConvocazioniSortColumn,
+} from "@/components/matches/convocazioni/ConvocazioniTable";
 import ConvocazioniUnavailable from "@/components/matches/convocazioni/ConvocazioniUnavailable";
 import ConvocazioniLoanDialog from "@/components/matches/convocazioni/ConvocazioniLoanDialog";
 import { readError } from "@/lib/fetchJson";
@@ -61,7 +63,7 @@ export default function ConvocazioniClient({
   const isMulti = teams.length > 1;
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [sortKey, setSortKey] = useState<ConvocazioniSortKey>("role");
+  const [sort, setSort] = useState<ConvocazioniSort | null>(null);
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [loanDialogOpen, setLoanDialogOpen] = useState(false);
@@ -131,32 +133,51 @@ export default function ConvocazioniClient({
   }, [activeStats, roleFilter]);
 
   const sorted = useMemo(() => {
+    const byName = (a: ConvocazioneStatRow, b: ConvocazioneStatRow) =>
+      a.candidate.name.localeCompare(b.candidate.name);
     const copy: ConvocazioneStatRow[] = [...filteredAvailable];
     copy.sort((a, b) => {
-      switch (sortKey) {
+      // Nessuna colonna scelta: per ruolo, l'ordine di partenza.
+      if (!sort) {
+        return (a.candidate.sportRole ?? 99) - (b.candidate.sportRole ?? 99) || byName(a, b);
+      }
+      let cmp = 0;
+      switch (sort.col) {
+        case "name":
+          cmp = byName(a, b);
+          break;
         case "presences":
-          return b.presences - a.presences || a.candidate.name.localeCompare(b.candidate.name);
+          cmp = a.presences - b.presences;
+          break;
+        case "absences":
+          cmp = a.absences - b.absences;
+          break;
+        case "seasonCallups":
+          cmp = a.seasonCallups - b.seasonCallups;
+          break;
         case "lastCallup": {
+          // Mai convocato = fermo da sempre. Due "mai" danno NaN, cioè pari.
           const av = a.daysSinceLastCallup ?? Number.POSITIVE_INFINITY;
           const bv = b.daysSinceLastCallup ?? Number.POSITIVE_INFINITY;
-          return bv - av || a.candidate.name.localeCompare(b.candidate.name);
+          cmp = av - bv;
+          break;
         }
-        case "seasonCallups":
-          return (
-            a.seasonCallups - b.seasonCallups || a.candidate.name.localeCompare(b.candidate.name)
-          );
-        case "name":
-          return a.candidate.name.localeCompare(b.candidate.name);
-        case "role":
-        default:
-          return (
-            (a.candidate.sportRole ?? 99) - (b.candidate.sportRole ?? 99) ||
-            a.candidate.name.localeCompare(b.candidate.name)
-          );
       }
+      return (sort.dir === "asc" ? cmp : -cmp) || byName(a, b);
     });
     return copy;
-  }, [filteredAvailable, sortKey]);
+  }, [filteredAvailable, sort]);
+
+  // Tre tocchi sulla stessa intestazione: primo verso, verso opposto, di nuovo
+  // per ruolo (che non ha una colonna a cui tornare).
+  function handleSort(col: ConvocazioniSortColumn) {
+    const first = CONVOCAZIONI_FIRST_DIR[col];
+    setSort((prev) => {
+      if (prev?.col !== col) return { col, dir: first };
+      if (prev.dir === first) return { col, dir: first === "asc" ? "desc" : "asc" };
+      return null;
+    });
+  }
 
   const coverage = useMemo(() => {
     const map = new Map<number, number>();
@@ -272,12 +293,7 @@ export default function ConvocazioniClient({
         />
       )}
 
-      <ConvocazioniFilters
-        roleFilter={roleFilter}
-        onRoleFilterChange={setRoleFilter}
-        sortKey={sortKey}
-        onSortKeyChange={setSortKey}
-      />
+      <ConvocazioniFilters roleFilter={roleFilter} onRoleFilterChange={setRoleFilter} />
 
       {loanPool.length > 0 && (
         <Box sx={{ mb: 1.5 }}>
@@ -295,6 +311,8 @@ export default function ConvocazioniClient({
       <ConvocazioniTable
         rows={sorted}
         roleFilter={roleFilter}
+        sort={sort}
+        onSort={handleSort}
         isSelected={isSelected}
         selectedElsewhere={isMulti ? selectedElsewhere : undefined}
         onToggle={toggle}

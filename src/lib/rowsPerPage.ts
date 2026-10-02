@@ -17,7 +17,7 @@ export type RowsPerPageTable =
   | "groups"
   | "matches"
   | "audit"
-  | "match-stats"
+  | "news"
   | "internal-standings";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;

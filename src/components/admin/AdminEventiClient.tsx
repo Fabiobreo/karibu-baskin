@@ -30,7 +30,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PlaceIcon from "@mui/icons-material/Place";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
-import { useState, useTransition, useEffect } from "react";
+import EventIcon from "@mui/icons-material/Event";
+import HistoryIcon from "@mui/icons-material/History";
+import { useState, useTransition, useEffect, useMemo } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatRome } from "@/lib/dateUtils";
@@ -103,6 +105,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useRowsPerPage("events", [10, 25, 50], 10);
+  const [now] = useState(() => Date.now());
 
   const {
     register,
@@ -232,7 +235,22 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     startTransition(() => router.refresh());
   };
 
-  const paginatedEvents = events.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  // Prossimi in ordine cronologico, passati dal più recente: con un elenco
+  // unico per data crescente la prima pagina mostrava gli eventi più vecchi.
+  // Un evento su più giorni resta fra i prossimi fino alla sua fine.
+  const { upcoming, past } = useMemo(() => {
+    const time = (d: string | Date) => new Date(d).getTime();
+    const up: Event[] = [];
+    const pa: Event[] = [];
+    for (const ev of events) (time(ev.endDate ?? ev.date) >= now ? up : pa).push(ev);
+    up.sort((a, b) => time(a.date) - time(b.date));
+    pa.sort((a, b) => time(b.date) - time(a.date));
+    return { upcoming: up, past: pa };
+  }, [events, now]);
+
+  const lastPage = Math.max(0, Math.ceil(past.length / rowsPerPage) - 1);
+  const safePage = Math.min(page, lastPage);
+  const pastPaginated = past.slice(safePage * rowsPerPage, (safePage + 1) * rowsPerPage);
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
@@ -251,192 +269,59 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
         </Button>
       </Box>
 
-      <Paper elevation={2}>
-        {/* Desktop table */}
-        <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Titolo</TableCell>
-                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data inizio</TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: FONT_WEIGHT.semibold,
-                    display: { xs: "none", sm: "table-cell" },
-                  }}
-                >
-                  Data fine
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: FONT_WEIGHT.semibold,
-                    display: { xs: "none", md: "table-cell" },
-                  }}
-                >
-                  Luogo
-                </TableCell>
-                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Risposte</TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedEvents.map((ev) => (
-                <TableRow key={ev.id} hover>
-                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>{ev.title}</TableCell>
-                  <TableCell>{formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}</TableCell>
-                  <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                    {ev.endDate ? formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it }) : "—"}
-                  </TableCell>
-                  <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                    {ev.location ? (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                        <PlaceIcon sx={{ fontSize: 14, color: "text.secondary" }} />
-                        {ev.location}
-                      </Box>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      startIcon={<HowToRegIcon fontSize="small" />}
-                      onClick={() => setResponsesId(ev.id)}
-                      aria-label={`Risposte a ${ev.title}`}
-                    >
-                      {ev._count?.attendances ?? 0}
-                    </Button>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Modifica">
-                      <IconButton
-                        size="medium"
-                        aria-label="Modifica evento"
-                        onClick={() => openEdit(ev)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Elimina">
-                      <IconButton
-                        size="medium"
-                        aria-label="Elimina evento"
-                        color="error"
-                        onClick={() => setDeleteId(ev.id)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {events.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                    Nessun evento ancora creato
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Box>
-
-        {/* Mobile card view */}
-        <Box sx={{ display: { xs: "block", sm: "none" } }}>
-          {events.length === 0 ? (
-            <Box sx={{ py: 4, textAlign: "center" }}>
-              <Typography variant="body2" color="text.secondary">
-                Nessun evento ancora creato
-              </Typography>
-            </Box>
-          ) : (
-            paginatedEvents.map((ev) => (
-              <Box
-                key={ev.id}
-                sx={{
-                  px: 2,
-                  py: 1.5,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  "&:last-child": { borderBottom: 0 },
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: 1,
-                }}
-              >
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    variant="body2"
-                    fontWeight={FONT_WEIGHT.semibold}
-                    sx={{ wordBreak: "break-word" }}
-                  >
-                    {ev.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}
-                    {ev.endDate &&
-                      ` – ${formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it })}`}
-                  </Typography>
-                  {ev.location && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
-                      <PlaceIcon sx={{ fontSize: 13, color: "text.secondary" }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {ev.location}
-                      </Typography>
-                    </Box>
-                  )}
-                  <Button
-                    size="small"
-                    startIcon={<HowToRegIcon fontSize="small" />}
-                    onClick={() => setResponsesId(ev.id)}
-                    sx={{ mt: 0.5, ml: -0.75 }}
-                  >
-                    Risposte · {ev._count?.attendances ?? 0}
-                  </Button>
-                </Box>
-                <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-                  <Tooltip title="Modifica">
-                    <IconButton
-                      size="medium"
-                      aria-label="Modifica evento"
-                      onClick={() => openEdit(ev)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Elimina">
-                    <IconButton
-                      size="medium"
-                      aria-label="Elimina evento"
-                      color="error"
-                      onClick={() => setDeleteId(ev.id)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            ))
+      {events.length === 0 ? (
+        <Paper elevation={2} sx={{ py: 4, textAlign: "center" }}>
+          <Typography variant="body2" color="text.secondary">
+            Nessun evento ancora creato
+          </Typography>
+        </Paper>
+      ) : (
+        <Stack spacing={3}>
+          {upcoming.length > 0 && (
+            <Paper elevation={2}>
+              <EventsSectionHeader
+                icon={<EventIcon fontSize="small" sx={{ color: "text.secondary" }} />}
+                label={`Prossimi (${upcoming.length})`}
+              />
+              <EventsList
+                events={upcoming}
+                onResponses={setResponsesId}
+                onEdit={openEdit}
+                onDelete={setDeleteId}
+              />
+            </Paper>
           )}
-        </Box>
-
-        <TablePagination
-          component="div"
-          count={events.length}
-          page={page}
-          onPageChange={(_, p) => setPage(p)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[10, 25, 50]}
-          labelRowsPerPage="Righe:"
-          labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-          sx={{ borderTop: "1px solid", borderColor: "divider" }}
-        />
-      </Paper>
+          {past.length > 0 && (
+            <Paper elevation={2}>
+              <EventsSectionHeader
+                icon={<HistoryIcon fontSize="small" sx={{ color: "text.secondary" }} />}
+                label={`Passati (${past.length})`}
+              />
+              <EventsList
+                events={pastPaginated}
+                onResponses={setResponsesId}
+                onEdit={openEdit}
+                onDelete={setDeleteId}
+              />
+              <TablePagination
+                component="div"
+                count={past.length}
+                page={safePage}
+                onPageChange={(_, p) => setPage(p)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) => {
+                  setRowsPerPage(parseInt(e.target.value));
+                  setPage(0);
+                }}
+                rowsPerPageOptions={[10, 25, 50]}
+                labelRowsPerPage="Righe:"
+                labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+                sx={{ borderTop: "1px solid", borderColor: "divider" }}
+              />
+            </Paper>
+          )}
+        </Stack>
+      )}
 
       {/* Dialog crea/modifica */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
@@ -650,5 +535,193 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
         </DialogActions>
       </Dialog>
     </Box>
+  );
+}
+
+/** Intestazione di sezione (Prossimi / Passati). */
+function EventsSectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <Box
+      sx={{
+        px: 2,
+        py: 1.25,
+        borderBottom: 1,
+        borderColor: "divider",
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+      }}
+    >
+      {icon}
+      <Typography component="h2" variant="subtitle2">
+        {label}
+      </Typography>
+    </Box>
+  );
+}
+
+/** Tabella (desktop) e card (telefono) di una lista di eventi, senza paginazione. */
+function EventsList({
+  events,
+  onResponses,
+  onEdit,
+  onDelete,
+}: {
+  events: Event[];
+  onResponses: (id: string) => void;
+  onEdit: (ev: Event) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <>
+      {/* Desktop table */}
+      <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Titolo</TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data inizio</TableCell>
+              <TableCell
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  display: { xs: "none", sm: "table-cell" },
+                }}
+              >
+                Data fine
+              </TableCell>
+              <TableCell
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  display: { xs: "none", md: "table-cell" },
+                }}
+              >
+                Luogo
+              </TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Risposte</TableCell>
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {events.map((ev) => (
+              <TableRow key={ev.id} hover>
+                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>{ev.title}</TableCell>
+                <TableCell>{formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}</TableCell>
+                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                  {ev.endDate ? formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it }) : "—"}
+                </TableCell>
+                <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                  {ev.location ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <PlaceIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                      {ev.location}
+                    </Box>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    startIcon={<HowToRegIcon fontSize="small" />}
+                    onClick={() => onResponses(ev.id)}
+                    aria-label={`Risposte a ${ev.title}`}
+                  >
+                    {ev._count?.attendances ?? 0}
+                  </Button>
+                </TableCell>
+                <TableCell align="right">
+                  <Tooltip title="Modifica">
+                    <IconButton
+                      size="medium"
+                      aria-label="Modifica evento"
+                      onClick={() => onEdit(ev)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Elimina">
+                    <IconButton
+                      size="medium"
+                      aria-label="Elimina evento"
+                      color="error"
+                      onClick={() => onDelete(ev.id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+
+      {/* Mobile card view */}
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
+        {events.map((ev) => (
+          <Box
+            key={ev.id}
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              "&:last-child": { borderBottom: 0 },
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 1,
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="body2"
+                fontWeight={FONT_WEIGHT.semibold}
+                sx={{ wordBreak: "break-word" }}
+              >
+                {ev.title}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block">
+                {formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}
+                {ev.endDate && ` – ${formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it })}`}
+              </Typography>
+              {ev.location && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
+                  <PlaceIcon sx={{ fontSize: 13, color: "text.secondary" }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {ev.location}
+                  </Typography>
+                </Box>
+              )}
+              <Button
+                size="small"
+                startIcon={<HowToRegIcon fontSize="small" />}
+                onClick={() => onResponses(ev.id)}
+                sx={{ mt: 0.5, ml: -0.75 }}
+              >
+                Risposte · {ev._count?.attendances ?? 0}
+              </Button>
+            </Box>
+            <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+              <Tooltip title="Modifica">
+                <IconButton size="medium" aria-label="Modifica evento" onClick={() => onEdit(ev)}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Elimina">
+                <IconButton
+                  size="medium"
+                  aria-label="Elimina evento"
+                  color="error"
+                  onClick={() => onDelete(ev.id)}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        ))}
+      </Box>
+    </>
   );
 }

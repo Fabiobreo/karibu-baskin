@@ -313,7 +313,9 @@ export default function AdminUserList({
   );
 
   function handleSort(col: SortColumn) {
-    const newDir = sortBy === col ? (sortDir === "asc" ? "desc" : "asc") : "asc";
+    // Date e conteggi partono dal più recente e dal più alto.
+    const firstDir = col === "createdAt" || col === "registrations" ? "desc" : "asc";
+    const newDir = sortBy === col ? (sortDir === "asc" ? "desc" : "asc") : firstDir;
     setSortBy(col);
     setSortDir(newDir);
     setPage(0);
