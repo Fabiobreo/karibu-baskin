@@ -63,6 +63,7 @@
     "seasonLabel": "Stagione",
     "seasonNav": "Scegli la stagione",
     "seasonNotStarted": "La stagione {active} non è ancora iniziata. Qui sotto vedi la stagione {shown}.",
+    "seasonFallback": "La stagione {active} non è ancora iniziata: vedi la {shown}.",
     "loadFailed": "Non è stato possibile caricare i dati. Controlla la connessione."
   },
   "roles": {
@@ -130,6 +131,17 @@
     "playerPoints": "📊 {points} punti totali · {avg} a partita su {count, plural, one {# partita} other {# partite}}",
     "playerMedals": "🏆 {count, plural, one {# medaglia} other {# medaglie}} top scorer",
     "qrShort": "QR code"
+  },
+  "teamsActions": {
+    "moreActions": "Altre azioni: squadre",
+    "actions": "Azioni: squadre",
+    "edit": "Modifica squadre",
+    "doneEditing": "Fine modifica",
+    "remove": "Rimuovi squadre…",
+    "removing": "Rimozione delle squadre in corso",
+    "removeTitle": "Rimuovere le squadre?",
+    "removeMessage": "Le squadre di questo allenamento verranno cancellate. I risultati delle partitelle già salvati restano.",
+    "removeConfirm": "Rimuovi"
   },
   "calendarSub": {
     "title": "Aggiungi al tuo calendario",
@@ -409,7 +421,18 @@
     "resultLosses": "{count, plural, one {# sconfitta} other {# sconfitte}}",
     "foulsNearLimit": "Vicino al limite di falli",
     "foulsAtLimit": "Limite di falli raggiunto",
-    "countdownIn": "Tra {time}"
+    "countdownIn": "Tra {time}",
+    "phaseLive": "In corso",
+    "phaseAwaitingResult": "Risultato in arrivo",
+    "whereWhen": {
+      "title": "Dove e quando",
+      "locationTbc": "Luogo da confermare",
+      "openInMaps": "{place}, apri in Google Maps (nuova scheda)",
+      "addToCalendar": "Aggiungi al calendario",
+      "subscribe": "Oppure segui tutto il calendario del club",
+      "callupsMembersOnly": "I convocati li vedono i tesserati.",
+      "login": "Accedi"
+    }
   },
   "teams": {
     "heroTitle": "Squadre",
@@ -579,6 +602,7 @@
     "loanDetail": "{count} in prestito",
     "loanLegend": "I numeri comprendono anche le partite giocate in prestito con un'altra squadra.",
     "roleFilterLabel": "Ruolo:",
+    "filters": "Filtri",
     "colFoulsTitle": "Falli commessi",
     "colPlayer": "Giocatore",
     "colMatches": "Giocate",
@@ -852,6 +876,10 @@
     "myAvailabilities": "Le mie disponibilità",
     "availabilitiesDesc": "Tocca 'Sì' o 'No' per ogni partita: la risposta si salva subito. Se non rispondi, il coach ti vede come non disponibile.",
     "noMatchesForTeams": "Nessuna partita trovata per le tue squadre.",
+    "noTeamForAvailabilities": "Non sei ancora in una squadra",
+    "noTeamForAvailabilitiesDesc": "Quando lo staff ti inserisce in una squadra, qui dici se ci sei alle partite.",
+    "noTeamForAvailabilitiesFamily": "Nessuno dei tuoi è ancora in una squadra",
+    "noTeamForAvailabilitiesFamilyDesc": "Quando lo staff inserisce te o i tuoi figli in una squadra, qui dici se ci siete alle partite.",
     "noUpcomingMatches": "Nessuna partita futura programmata.",
     "upcoming": "Prossime",
     "past": "Passate",
@@ -873,7 +901,6 @@
     "tabFamily": "Famiglia",
     "tabNotifications": "Notifiche",
     "tabPrivacy": "Privacy",
-    "guestPending": "Lo staff deve ancora confermare il tuo account.",
     "seasonLabel": "Stagione {season}",
     "gdprExportNote": "Puoi scaricare una copia dei tuoi dati e di quelli dei tuoi figli. È un tuo diritto per legge (art. 20 del GDPR).",
     "gdprDeleteNote": "Puoi chiederci di cancellare il tuo account e i tuoi dati. È un tuo diritto per legge (art. 17 del GDPR).",
@@ -1374,6 +1401,7 @@
     "restrictionInfoOpen": "Aperto ai {roles} di tutte le squadre",
     "roleGuest": "Ospite",
     "roleParent": "Genitore",
+    "unnamedUser": "Utente",
     "roster": "Iscritti",
     "athletes": "{count, plural, one {# atleta} other {# atleti}}",
     "coachCount": "{count, plural, one {# allenatore} other {# allenatori}}",

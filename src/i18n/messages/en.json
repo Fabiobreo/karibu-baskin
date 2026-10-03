@@ -63,6 +63,7 @@
     "seasonLabel": "Season",
     "seasonNav": "Choose the season",
     "seasonNotStarted": "The {active} season has not started yet. Below you can see the {shown} season.",
+    "seasonFallback": "Season {active} has not started yet: showing season {shown}.",
     "loadFailed": "Could not load the data. Check your connection."
   },
   "roles": {
@@ -130,6 +131,17 @@
     "playerPoints": "📊 {points} total points · {avg} per game over {count, plural, one {# game} other {# games}}",
     "playerMedals": "🏆 {count, plural, one {# top scorer medal} other {# top scorer medals}}",
     "qrShort": "QR code"
+  },
+  "teamsActions": {
+    "moreActions": "More actions: teams",
+    "actions": "Actions: teams",
+    "edit": "Edit teams",
+    "doneEditing": "Done editing",
+    "remove": "Remove teams…",
+    "removing": "Removing the teams",
+    "removeTitle": "Remove the teams?",
+    "removeMessage": "The teams of this training session will be deleted. Scrimmage results already saved are kept.",
+    "removeConfirm": "Remove"
   },
   "calendarSub": {
     "title": "Add to your calendar",
@@ -409,7 +421,18 @@
     "resultLosses": "{count, plural, one {# loss} other {# losses}}",
     "foulsNearLimit": "Close to the foul limit",
     "foulsAtLimit": "Foul limit reached",
-    "countdownIn": "In {time}"
+    "countdownIn": "In {time}",
+    "phaseLive": "In progress",
+    "phaseAwaitingResult": "Result coming soon",
+    "whereWhen": {
+      "title": "Where and when",
+      "locationTbc": "Venue to be confirmed",
+      "openInMaps": "{place}, open in Google Maps (new tab)",
+      "addToCalendar": "Add to calendar",
+      "subscribe": "Or follow the whole club calendar",
+      "callupsMembersOnly": "Call-ups are visible to club members.",
+      "login": "Sign in"
+    }
   },
   "teams": {
     "heroTitle": "Teams",
@@ -579,6 +602,7 @@
     "loanDetail": "{count} on loan",
     "loanLegend": "Numbers include games played on loan with another team.",
     "roleFilterLabel": "Role:",
+    "filters": "Filters",
     "colFoulsTitle": "Fouls committed",
     "colPlayer": "Player",
     "colMatches": "Played",
@@ -852,6 +876,10 @@
     "myAvailabilities": "My availabilities",
     "availabilitiesDesc": "Tap 'Yes' or 'No' for each match: your answer is saved right away. If you don't respond, the coach sees you as unavailable.",
     "noMatchesForTeams": "No matches found for your teams.",
+    "noTeamForAvailabilities": "You are not in a team yet",
+    "noTeamForAvailabilitiesDesc": "Once the staff adds you to a team, this is where you say whether you can make the matches.",
+    "noTeamForAvailabilitiesFamily": "None of your family is in a team yet",
+    "noTeamForAvailabilitiesFamilyDesc": "Once the staff adds you or your children to a team, this is where you say whether you can make the matches.",
     "noUpcomingMatches": "No upcoming matches scheduled.",
     "upcoming": "Upcoming",
     "past": "Past",
@@ -873,7 +901,6 @@
     "tabFamily": "Family",
     "tabNotifications": "Notifications",
     "tabPrivacy": "Privacy",
-    "guestPending": "The staff still has to confirm your account.",
     "seasonLabel": "Season {season}",
     "gdprExportNote": "You can download a copy of your data and your children's data. It is your right by law (GDPR art. 20).",
     "gdprDeleteNote": "You can ask us to delete your account and your data. It is your right by law (GDPR art. 17).",
@@ -1374,6 +1401,7 @@
     "restrictionInfoOpen": "Open to {roles} from all teams",
     "roleGuest": "Guest",
     "roleParent": "Parent",
+    "unnamedUser": "User",
     "roster": "Signed up",
     "athletes": "{count, plural, one {# athlete} other {# athletes}}",
     "coachCount": "{count, plural, one {# coach} other {# coaches}}",
