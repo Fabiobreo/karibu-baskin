@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import LinkBehavior from "@/components/common/LinkBehavior";
 import type { AppRole } from "@prisma/client";
 import {
   Avatar,
@@ -265,6 +266,9 @@ export default function AdminHeader() {
                   ...MORE_ITEMS.filter((i) => i.group === group).map((item) => (
                     <MenuItem
                       key={item.href}
+                      // Un MenuItem è un <li>: senza `component` il tema non lo fa
+                      // diventare un link e `href` non porta da nessuna parte.
+                      component={LinkBehavior}
                       href={item.href}
                       selected={section?.href === item.href}
                       aria-current={section?.href === item.href ? "page" : undefined}
@@ -317,7 +321,12 @@ export default function AdminHeader() {
                 </Typography>
               </Box>
               <Divider />
-              <MenuItem href="/profilo" onClick={() => setUserAnchor(null)} sx={{ minHeight: 44 }}>
+              <MenuItem
+                component={LinkBehavior}
+                href="/profilo"
+                onClick={() => setUserAnchor(null)}
+                sx={{ minHeight: 44 }}
+              >
                 <ListItemIcon>
                   <AccountCircleIcon fontSize="small" />
                 </ListItemIcon>

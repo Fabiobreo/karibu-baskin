@@ -32,7 +32,7 @@ Regola di assegnazione: un componente va nella cartella del suo **dominio di uti
 - **Fetch:** usare **TanStack React Query** (`useQuery` per le letture, `useMutation` per le scritture) con `fetch("/api/...")` come fetcher. Mai SWR né altre librerie di fetching. Mai chiamare Prisma direttamente da qui.
 - **Toast/errori:** `useToast()` da `@/context/ToastContext` — sempre `showToast({ message, severity: "success" | "error" | "info" | "warning" })`.
 - **Tabelle paginate:** le righe per pagina passano da `useRowsPerPage(tabella, opzioni, default)` (`@/hooks/useRowsPerPage`), che ricorda la scelta in un cookie per tabella; aggiungere la chiave a `RowsPerPageTable` in `@/lib/rowsPerPage`. Una tabella paginata lato server (es. `/admin/utenti`) legge il cookie nella pagina e lo scrive con `writeRowsPerPageCookie`.
-- **Bottoni-link:** `<Button href="/x">` (idem `IconButton`, `MenuItem`, `MuiLink`): il tema lo rende con `LinkBehavior` (`next/link`, o `<a>` semplice per esterni, `/api/*`, `download`). Mai `<Link><Button>` né `<a><Button>`: bottone dentro link, due fermate di Tab.
+- **Bottoni-link:** `<Button href="/x">` (idem `IconButton`, `MuiLink`; `MenuItem` e `ListItemButton` solo con `component={LinkBehavior}`, altrimenti `href` non naviga): il tema lo rende con `LinkBehavior` (`next/link`, o `<a>` semplice per esterni, `/api/*`, `download`). Mai `<Link><Button>` né `<a><Button>`: bottone dentro link, due fermate di Tab.
 - **Form admin:** pattern controlled inputs + `useState` per ogni campo, validazione client minima + affidamento allo schema Zod server-side per i messaggi d'errore reali.
 
 ## Pattern admin client (es. `AdminPartiteClient`)

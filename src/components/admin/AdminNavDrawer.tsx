@@ -11,6 +11,7 @@ import {
   ListSubheader,
   Typography,
 } from "@mui/material";
+import LinkBehavior from "@/components/common/LinkBehavior";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -78,6 +79,9 @@ export default function AdminNavDrawer({ open, currentHref, onClose }: AdminNavD
     return (
       <ListItemButton
         key={entry.href}
+        // ListItemButton è un <div>: senza `component` il tema non lo fa
+        // diventare un link e `href` non porta da nessuna parte.
+        component={LinkBehavior}
         href={entry.href}
         selected={active}
         aria-current={active ? "page" : undefined}
@@ -159,7 +163,12 @@ export default function AdminNavDrawer({ open, currentHref, onClose }: AdminNavD
       </Box>
 
       <Divider />
-      <ListItemButton href="/" onClick={onClose} sx={{ minHeight: 56, px: 2, flexGrow: 0 }}>
+      <ListItemButton
+        component={LinkBehavior}
+        href="/"
+        onClick={onClose}
+        sx={{ minHeight: 56, px: 2, flexGrow: 0 }}
+      >
         <ListItemIcon sx={{ minWidth: 40 }}>
           <ArrowBackIcon />
         </ListItemIcon>
