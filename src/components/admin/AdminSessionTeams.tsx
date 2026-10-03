@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TeamDisplay, { type TeamsData, type TeamAthlete } from "@/components/training/TeamDisplay";
 import TeamsHeader from "@/components/training/TeamsHeader";
-import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
 
 interface AdminSessionTeamsProps {
@@ -38,7 +37,6 @@ export default function AdminSessionTeams({
   const [removing, setRemoving] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
-  const { openConfirm, ConfirmDialog } = useConfirmDialog();
 
   function handleTeamsChanged(next: TeamsData) {
     setTeams(next);
@@ -73,15 +71,10 @@ export default function AdminSessionTeams({
         sessionDate={sessionDate}
         isStaff
         removingTeams={removing}
-        onRemoveTeams={() =>
-          openConfirm(
-            "Rimuovere le squadre?",
-            "Le squadre di questo allenamento verranno cancellate. I risultati delle partitelle già salvati restano.",
-            removeTeams,
-            { confirmLabel: "Rimuovi" }
-          )
-        }
+        // La conferma la chiede `TeamsHeader` (UX-47), come sulla pagina dell'allenamento.
+        onRemoveTeams={removeTeams}
         onEditTeams={() => setEditMode((v) => !v)}
+        editMode={editMode}
       />
       <TeamDisplay
         sessionId={sessionId}
@@ -97,7 +90,6 @@ export default function AdminSessionTeams({
         athletes={athletes}
         beforeGenerate={beforeGenerate}
       />
-      {ConfirmDialog}
     </>
   );
 }

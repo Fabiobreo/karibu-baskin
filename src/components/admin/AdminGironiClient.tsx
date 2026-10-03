@@ -6,8 +6,6 @@ import {
   Paper,
   Button,
   TextField,
-  Chip,
-  IconButton,
   Select,
   MenuItem,
   FormControl,
@@ -18,18 +16,18 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Tooltip,
   TablePagination,
+  Link as MuiLink,
   Stack,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { visuallyHidden } from "@mui/utils";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useToast } from "@/context/ToastContext";
-import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import RowActions from "@/components/admin/RowActions";
+import { readError } from "@/lib/fetchJson";
+import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import TeamChip from "@/components/teams/TeamChip";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -64,7 +62,8 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useRowsPerPage("groups", [10, 25, 50], 25);
   const { showToast } = useToast();
-  const { openConfirm, ConfirmDialog } = useConfirmDialog();
+  // Dopo un'eliminazione il focus va sull'intestazione della lista: la riga non c'è più.
+  const listHeadingRef = useRef<HTMLHeadingElement>(null);
 
   function handleCreate() {
     startTransition(async () => {
@@ -95,21 +94,14 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
     });
   }
 
-  function handleDelete(g: Group) {
-    openConfirm(
-      "Elimina girone",
-      `Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`,
-      () =>
-        startTransition(async () => {
-          const res = await fetch(`/api/groups/${g.id}`, { method: "DELETE" });
-          if (res.ok) {
-            setGroups((prev) => prev.filter((x) => x.id !== g.id));
-            showToast({ message: "Girone eliminato", severity: "success" });
-          } else {
-            showToast({ message: "Errore nell'eliminazione", severity: "error" });
-          }
-        })
-    );
+  async function handleDelete(g: Group) {
+    const res = await fetch(`/api/groups/${g.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      showToast({ message: await readError(res), severity: "error" });
+      return false;
+    }
+    setGroups((prev) => prev.filter((x) => x.id !== g.id));
+    showToast({ message: "Girone eliminato", severity: "success" });
   }
 
   return (
@@ -124,10 +116,10 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
             size="small"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            sx={{ flex: 2, minWidth: 180 }}
+            sx={{ flex: 2, minWidth: 180, ...TOUCH_FIELD_ON_PHONE }}
             placeholder="es. Girone A Ovest"
           />
-          <FormControl size="small" sx={{ flex: 1, minWidth: 140 }}>
+          <FormControl size="small" sx={{ flex: 1, minWidth: 140, ...TOUCH_FIELD_ON_PHONE }}>
             <InputLabel>Stagione</InputLabel>
             <Select
               value={form.season}
@@ -153,7 +145,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
             size="small"
             value={form.championship}
             onChange={(e) => setForm((f) => ({ ...f, championship: e.target.value }))}
-            sx={{ flex: 1, minWidth: 140 }}
+            sx={{ flex: 1, minWidth: 140, ...TOUCH_FIELD_ON_PHONE }}
             placeholder="es. Gold"
           />
           <Button
@@ -161,6 +153,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
             startIcon={<AddIcon />}
             disabled={!form.name.trim() || !form.season.trim() || isPending}
             onClick={handleCreate}
+            sx={TOUCH_TARGET_ON_PHONE}
           >
             Crea
           </Button>
@@ -176,6 +169,15 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
         </Typography>
       ) : (
         <Paper elevation={0} variant="outlined">
+          <Typography
+            ref={listHeadingRef}
+            tabIndex={-1}
+            component="h2"
+            variant="subtitle2"
+            sx={{ px: 2, py: 1.25, borderBottom: 1, borderColor: "divider", outline: "none" }}
+          >
+            Gironi ({groups.length})
+          </Typography>
           {/* Senza `TableContainer` la tabella e' piu' larga del viewport e
               trascina in orizzontale tutto il documento, header e breadcrumb
               compresi. Cosi' scorre solo lei, e la paginazione resta ferma. */}
@@ -184,44 +186,56 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Girone</TableCell>
-                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Stagione</TableCell>
-                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Campionato</TableCell>
-                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Nostre squadre</TableCell>
-                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
+                  <TableCell sx={SECONDARY_HEAD_SX}>Stagione</TableCell>
+                  <TableCell sx={SECONDARY_HEAD_SX}>Campionato</TableCell>
+                  <TableCell sx={SECONDARY_HEAD_SX}>Nostre squadre</TableCell>
+                  <TableCell sx={SECONDARY_HEAD_SX} align="center">
                     Partite
                   </TableCell>
-                  <TableCell />
+                  <TableCell align="right">
+                    <Box component="span" sx={visuallyHidden}>
+                      Azioni
+                    </Box>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {groups.slice(page * rpp, (page + 1) * rpp).map((g) => (
                   <TableRow key={g.id} hover>
                     <TableCell>
-                      <Link
+                      {/* Il nome apre il girone (squadre, partite, modifica): su
+                          telefono è alto 44 px, come ogni bersaglio. */}
+                      <MuiLink
                         href={`/admin/gironi/${g.slug ?? g.id}`}
-                        style={{ textDecoration: "none", color: "inherit" }}
+                        variant="body2"
+                        underline="hover"
+                        sx={{
+                          fontWeight: FONT_WEIGHT.semibold,
+                          color: "primary.onLight",
+                          display: { xs: "flex", sm: "inline" },
+                          alignItems: "center",
+                          ...TOUCH_TARGET_ON_PHONE,
+                        }}
                       >
-                        <Typography
-                          variant="body2"
-                          fontWeight={FONT_WEIGHT.semibold}
-                          sx={{
-                            color: "primary.onLight",
-                            "&:hover": { textDecoration: "underline" },
-                          }}
-                        >
-                          {g.name}
-                        </Typography>
-                      </Link>
+                        {g.name}
+                      </MuiLink>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: { xs: "block", sm: "none" } }}
+                      >
+                        {[g.season, g.championship].filter(Boolean).join(" · ")}
+                      </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={SECONDARY_CELL_SX}>
                       <Typography variant="body2">{g.season}</Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={SECONDARY_CELL_SX}>
                       <Typography variant="body2" color="text.secondary">
                         {g.championship ?? "—"}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={SECONDARY_CELL_SX}>
                       {g.competitiveTeams.length === 0 ? (
                         <Typography variant="caption" color="text.secondary">
                           nessuna
@@ -239,7 +253,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                         </Stack>
                       )}
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell align="center" sx={SECONDARY_CELL_SX}>
                       <Typography
                         variant="caption"
                         color={g._count.matches > 0 ? "text.primary" : "text.secondary"}
@@ -248,27 +262,17 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Apri girone">
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          aria-label="Apri girone"
-                          component={Link}
-                          href={`/admin/gironi/${g.slug ?? g.id}`}
-                        >
-                          <OpenInNewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Elimina">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          aria-label="Elimina girone"
-                          onClick={() => handleDelete(g)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      {/* Niente bottone in riga: "Apri" ripeterebbe il link del nome. */}
+                      <RowActions
+                        subject={g.name}
+                        onDelete={() => handleDelete(g)}
+                        deleteLabel="Elimina girone…"
+                        deleteConfirm={{
+                          title: "Eliminare il girone?",
+                          message: `Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`,
+                        }}
+                        focusAfterDelete={listHeadingRef}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -292,8 +296,10 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
           />
         </Paper>
       )}
-
-      {ConfirmDialog}
     </Box>
   );
 }
+
+/** Colonne secondarie: a 390 px spariscono, così il "⋯" resta nello schermo. */
+const SECONDARY_CELL_SX = { display: { xs: "none", sm: "table-cell" } } as const;
+const SECONDARY_HEAD_SX = { ...SECONDARY_CELL_SX, fontWeight: FONT_WEIGHT.semibold } as const;

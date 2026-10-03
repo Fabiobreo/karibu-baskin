@@ -86,6 +86,11 @@ interface AdminRosaClientProps {
   users: Athlete[];
   childPlayers: Athlete[];
   otherTeams: OtherTeam[];
+  /**
+   * Aggiungere, togliere e nominare il capitano è dell'admin (l'API members lo
+   * rifiuta all'allenatore): senza, la rosa è in sola lettura.
+   */
+  isAdmin: boolean;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -108,6 +113,7 @@ export default function AdminRosaClient({
   users,
   childPlayers,
   otherTeams,
+  isAdmin,
 }: AdminRosaClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -340,7 +346,9 @@ export default function AdminRosaClient({
           <Box sx={{ textAlign: "center", py: 6 }}>
             <PersonOffIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1 }} />
             <Typography variant="body2" color="text.secondary">
-              Rosa vuota. Aggiungi atleti dal pool a destra.
+              {isAdmin
+                ? "Rosa vuota. Aggiungi atleti dal pool a destra."
+                : "Rosa vuota. La compone l'admin."}
             </Typography>
           </Box>
         ) : (
@@ -357,8 +365,8 @@ export default function AdminRosaClient({
                   members={members}
                   tint={tint}
                   pendingMemberId={pendingMemberId}
-                  onRemove={removeMember}
-                  onToggleCaptain={toggleCaptain}
+                  onRemove={isAdmin ? removeMember : undefined}
+                  onToggleCaptain={isAdmin ? toggleCaptain : undefined}
                 />
               );
             })}
@@ -370,8 +378,8 @@ export default function AdminRosaClient({
                 members={membersByGroup.get("none") ?? []}
                 tint={tint}
                 pendingMemberId={pendingMemberId}
-                onRemove={removeMember}
-                onToggleCaptain={toggleCaptain}
+                onRemove={isAdmin ? removeMember : undefined}
+                onToggleCaptain={isAdmin ? toggleCaptain : undefined}
               />
             )}
           </Stack>
@@ -494,6 +502,23 @@ export default function AdminRosaClient({
 
   // ── Render finale ────────────────────────────────────────────────────────────
 
+  if (!isAdmin) {
+    // Sola lettura: niente pool di chi aggiungere, niente controlli di modifica.
+    return (
+      <Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          La rosa la compone l&apos;admin: qui la puoi consultare.
+        </Typography>
+        <Box sx={{ maxWidth: { md: "50%" } }}>{rosterColumn}</Box>
+        <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+          <Button onClick={() => router.push("/admin/squadre")} variant="outlined">
+            Torna alle squadre
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       {/* Mobile: tabs */}
@@ -540,8 +565,9 @@ function GroupSection({
   members: Membership[];
   tint: string | null;
   pendingMemberId: string | null;
-  onRemove: (m: Membership) => void;
-  onToggleCaptain: (m: Membership) => void;
+  /** Assenti: sola lettura, la riga non mostra i controlli. */
+  onRemove?: (m: Membership) => void;
+  onToggleCaptain?: (m: Membership) => void;
 }) {
   const isShortfall = shortfall > 0;
   const isMet = required > 0 && shortfall === 0;
@@ -590,8 +616,8 @@ function GroupSection({
               membership={m}
               tint={tint}
               loading={pendingMemberId === m.id}
-              onRemove={() => onRemove(m)}
-              onToggleCaptain={() => onToggleCaptain(m)}
+              onRemove={onRemove && (() => onRemove(m))}
+              onToggleCaptain={onToggleCaptain && (() => onToggleCaptain(m))}
             />
           ))}
         </Stack>
@@ -610,8 +636,8 @@ function MemberRow({
   membership: Membership;
   tint: string | null;
   loading: boolean;
-  onRemove: () => void;
-  onToggleCaptain: () => void;
+  onRemove?: () => void;
+  onToggleCaptain?: () => void;
 }) {
   const m = membership;
   const athlete = m.user ?? m.child;
@@ -685,25 +711,29 @@ function MemberRow({
           )}
         </Box>
       </Box>
-      <Tooltip title={m.isCaptain ? "Rimuovi capitano" : "Nomina capitano"}>
-        <span>
-          <IconButton
-            size="small"
-            onClick={onToggleCaptain}
-            disabled={loading}
-            sx={{ color: m.isCaptain ? "medal.gold" : "action.disabled" }}
-          >
-            <EmojiEventsIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip title="Rimuovi dalla rosa">
-        <span>
-          <IconButton size="small" color="error" onClick={onRemove} disabled={loading}>
-            {loading ? <CircularProgress size={14} /> : <DeleteIcon fontSize="small" />}
-          </IconButton>
-        </span>
-      </Tooltip>
+      {onToggleCaptain && (
+        <Tooltip title={m.isCaptain ? "Rimuovi capitano" : "Nomina capitano"}>
+          <span>
+            <IconButton
+              size="small"
+              onClick={onToggleCaptain}
+              disabled={loading}
+              sx={{ color: m.isCaptain ? "medal.gold" : "action.disabled" }}
+            >
+              <EmojiEventsIcon fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
+      )}
+      {onRemove && (
+        <Tooltip title="Rimuovi dalla rosa">
+          <span>
+            <IconButton size="small" color="error" onClick={onRemove} disabled={loading}>
+              {loading ? <CircularProgress size={14} /> : <DeleteIcon fontSize="small" />}
+            </IconButton>
+          </span>
+        </Tooltip>
+      )}
     </Box>
   );
 }

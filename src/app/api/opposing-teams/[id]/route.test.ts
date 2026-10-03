@@ -8,6 +8,8 @@ vi.mock("@/lib/db", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    match: { count: vi.fn().mockResolvedValue(0) },
+    groupMatch: { count: vi.fn().mockResolvedValue(0) },
   },
 }));
 
@@ -26,9 +28,12 @@ vi.mock("@/lib/audit", () => ({
 import { PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { Prisma } from "@prisma/client";
 
 type PrismaMock = {
-  opposingTeam: { update: Mock; delete: Mock };
+  opposingTeam: { findUnique: Mock; update: Mock; delete: Mock };
+  match: { count: Mock };
+  groupMatch: { count: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsStaff = isCoachOrAdmin as Mock;
@@ -112,6 +117,34 @@ describe("DELETE /api/opposing-teams/[id]", () => {
     vi.clearAllMocks();
     mockIsStaff.mockResolvedValue(false);
     p.opposingTeam.delete.mockResolvedValue(baseTeam);
+    p.match.count.mockResolvedValue(0);
+    p.groupMatch.count.mockResolvedValue(0);
+  });
+
+  it("restituisce 409 e non elimina se la squadra compare in partite del club", async () => {
+    // Sul DB la FK delle partite del club è ON DELETE SET NULL: la delete
+    // riuscirebbe lasciando partite senza avversario.
+    mockIsStaff.mockResolvedValue(true);
+    p.opposingTeam.findUnique.mockResolvedValueOnce({ name: "Basket Vicenza", city: null });
+    p.match.count.mockResolvedValueOnce(2);
+    const req = new Request("http://localhost/api/opposing-teams/opp-1", { method: "DELETE" });
+    const res = await DELETE(req, makeParams("opp-1"));
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toContain("Basket Vicenza");
+    expect(p.match.count).toHaveBeenCalledWith({ where: { opponentId: "opp-1" } });
+    expect(p.opposingTeam.delete).not.toHaveBeenCalled();
+  });
+
+  it("restituisce 409 e non elimina se la squadra compare in partite di girone", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    p.groupMatch.count.mockResolvedValueOnce(1);
+    const req = new Request("http://localhost/api/opposing-teams/opp-1", { method: "DELETE" });
+    const res = await DELETE(req, makeParams("opp-1"));
+    expect(res.status).toBe(409);
+    expect(p.groupMatch.count).toHaveBeenCalledWith({
+      where: { OR: [{ homeTeamId: "opp-1" }, { awayTeamId: "opp-1" }] },
+    });
+    expect(p.opposingTeam.delete).not.toHaveBeenCalled();
   });
 
   it("restituisce 403 per utente non staff", async () => {
@@ -130,5 +163,35 @@ describe("DELETE /api/opposing-teams/[id]", () => {
     const res = await DELETE(req, makeParams("opp-1"));
     expect(res.status).toBe(204);
     expect(p.opposingTeam.delete).toHaveBeenCalledWith({ where: { id: "opp-1" } });
+  });
+
+  it("restituisce 409 con un messaggio se la squadra ha partite collegate (P2003)", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    p.opposingTeam.findUnique.mockResolvedValueOnce({ name: "Basket Vicenza", city: null });
+    p.opposingTeam.delete.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("Foreign key constraint failed", {
+        code: "P2003",
+        clientVersion: "test",
+      })
+    );
+    const req = new Request("http://localhost/api/opposing-teams/opp-1", { method: "DELETE" });
+    const res = await DELETE(req, makeParams("opp-1"));
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error).toContain("Basket Vicenza");
+    expect(body.error).toContain("partite");
+  });
+
+  it("restituisce 404 se la squadra non esiste più (P2025)", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    p.opposingTeam.delete.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("Record not found", {
+        code: "P2025",
+        clientVersion: "test",
+      })
+    );
+    const req = new Request("http://localhost/api/opposing-teams/opp-1", { method: "DELETE" });
+    const res = await DELETE(req, makeParams("opp-1"));
+    expect(res.status).toBe(404);
   });
 });

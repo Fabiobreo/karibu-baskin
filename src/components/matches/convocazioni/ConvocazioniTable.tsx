@@ -21,6 +21,7 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import RoleBadge from "@/components/common/RoleBadge";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type ConvocazioniSortColumn =
@@ -81,7 +82,8 @@ export default function ConvocazioniTable({
       direction={sort?.col === col ? sort.dir : CONVOCAZIONI_FIRST_DIR[col]}
       onClick={() => onSort(col)}
       title={title}
-      sx={{ "& .MuiTableSortLabel-icon": { fontSize: TYPE_SCALE.xs } }}
+      // Su telefono 44 px: l'intestazione è un bersaglio come gli altri (UX-47).
+      sx={{ "& .MuiTableSortLabel-icon": { fontSize: TYPE_SCALE.xs }, ...TOUCH_TARGET_ON_PHONE }}
     >
       {label}
     </TableSortLabel>

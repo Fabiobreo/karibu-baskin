@@ -18,7 +18,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Tooltip,
   TablePagination,
   MenuItem,
   Divider,
@@ -27,12 +26,14 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import PlaceIcon from "@mui/icons-material/Place";
-import HowToRegIcon from "@mui/icons-material/HowToReg";
 import EventIcon from "@mui/icons-material/Event";
 import HistoryIcon from "@mui/icons-material/History";
-import { useState, useTransition, useEffect, useMemo } from "react";
+import { useState, useTransition, useEffect, useMemo, useRef, type RefObject } from "react";
+import { visuallyHidden } from "@mui/utils";
+import RowActions from "@/components/admin/RowActions";
+import { eventDeleteMessage } from "@/lib/adminRowActions";
+import { useToast } from "@/context/ToastContext";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatRome } from "@/lib/dateUtils";
@@ -62,6 +63,7 @@ type Event = {
   location?: string | null;
   description?: string | null;
   imageUrl?: string | null;
+  slug?: string | null;
   allowGuests?: boolean;
   maxGuests?: number | null;
   options?: EventOptionRow[];
@@ -95,7 +97,6 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [events, setEvents] = useState(initialEvents);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [responsesId, setResponsesId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>([]);
@@ -106,6 +107,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useRowsPerPage("events", [10, 25, 50], 10);
   const [now] = useState(() => Date.now());
+  const { showToast } = useToast();
+  // Dopo un'eliminazione il focus torna qui: la riga non c'è più.
+  const newButtonRef = useRef<HTMLButtonElement>(null);
 
   const {
     register,
@@ -254,17 +258,19 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-      startTransition(() => router.refresh());
+    if (!res.ok) {
+      showToast({ message: await readError(res), severity: "error" });
+      return false;
     }
-    setDeleteId(null);
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    showToast({ message: "Evento eliminato", severity: "success" });
+    startTransition(() => router.refresh());
   };
 
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button ref={newButtonRef} variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           Aggiungi evento
         </Button>
       </Box>
@@ -287,7 +293,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 events={upcoming}
                 onResponses={setResponsesId}
                 onEdit={openEdit}
-                onDelete={setDeleteId}
+                onDelete={handleDelete}
+                focusAfterDelete={newButtonRef}
               />
             </Paper>
           )}
@@ -301,7 +308,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 events={pastPaginated}
                 onResponses={setResponsesId}
                 onEdit={openEdit}
-                onDelete={setDeleteId}
+                onDelete={handleDelete}
+                focusAfterDelete={newButtonRef}
               />
               <TablePagination
                 component="div"
@@ -516,24 +524,6 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       </Dialog>
 
       <EventResponsesDialog eventId={responsesId} onClose={() => setResponsesId(null)} />
-
-      {/* Dialog conferma eliminazione */}
-      <Dialog open={deleteId !== null} onClose={() => setDeleteId(null)}>
-        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Eliminare questo evento?</DialogTitle>
-        <DialogContent>
-          <Typography>L&apos;azione non è reversibile.</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteId(null)}>Annulla</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => deleteId && handleDelete(deleteId)}
-          >
-            Elimina
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
@@ -560,17 +550,57 @@ function EventsSectionHeader({ icon, label }: { icon: React.ReactNode; label: st
   );
 }
 
-/** Tabella (desktop) e card (telefono) di una lista di eventi, senza paginazione. */
-function EventsList({
-  events,
+/** Azioni di un evento: "Risposte · N" in riga, il resto nel "⋯". */
+function EventRowActions({
+  ev,
   onResponses,
   onEdit,
   onDelete,
+  focusAfterDelete,
+}: {
+  ev: Event;
+  onResponses: (id: string) => void;
+  onEdit: (ev: Event) => void;
+  onDelete: (id: string) => Promise<boolean | void>;
+  focusAfterDelete: RefObject<HTMLButtonElement | null>;
+}) {
+  const responses = ev._count?.attendances ?? 0;
+  return (
+    <RowActions
+      subject={ev.title}
+      primary={{
+        label: `Risposte · ${responses}`,
+        onClick: () => onResponses(ev.id),
+        emphasis: "text",
+      }}
+      items={[
+        { label: "Modifica", onClick: () => onEdit(ev) },
+        { label: "Pagina pubblica", href: `/eventi/${ev.slug ?? ev.id}`, external: true },
+      ]}
+      onDelete={() => onDelete(ev.id)}
+      deleteLabel="Elimina evento…"
+      deleteConfirm={{
+        title: "Eliminare l'evento?",
+        message: eventDeleteMessage(ev.title, responses),
+      }}
+      focusAfterDelete={focusAfterDelete}
+    />
+  );
+}
+
+/**
+ * Tabella (desktop) e righe (telefono) di una lista di eventi, senza
+ * paginazione. Su telefono il testo sta a sinistra e le azioni a destra.
+ */
+function EventsList({
+  events,
+  ...actions
 }: {
   events: Event[];
   onResponses: (id: string) => void;
   onEdit: (ev: Event) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<boolean | void>;
+  focusAfterDelete: RefObject<HTMLButtonElement | null>;
 }) {
   return (
     <>
@@ -581,14 +611,7 @@ function EventsList({
             <TableRow>
               <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Titolo</TableCell>
               <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data inizio</TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: FONT_WEIGHT.semibold,
-                  display: { xs: "none", sm: "table-cell" },
-                }}
-              >
-                Data fine
-              </TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data fine</TableCell>
               <TableCell
                 sx={{
                   fontWeight: FONT_WEIGHT.semibold,
@@ -597,8 +620,11 @@ function EventsList({
               >
                 Luogo
               </TableCell>
-              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Risposte</TableCell>
-              <TableCell />
+              <TableCell align="right">
+                <Box component="span" sx={visuallyHidden}>
+                  Azioni
+                </Box>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -606,49 +632,21 @@ function EventsList({
               <TableRow key={ev.id} hover>
                 <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>{ev.title}</TableCell>
                 <TableCell>{formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}</TableCell>
-                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                <TableCell>
                   {ev.endDate ? formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it }) : "—"}
                 </TableCell>
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                   {ev.location ? (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <PlaceIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                      <PlaceIcon fontSize="small" sx={{ color: "text.secondary" }} />
                       {ev.location}
                     </Box>
                   ) : (
                     "—"
                   )}
                 </TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    startIcon={<HowToRegIcon fontSize="small" />}
-                    onClick={() => onResponses(ev.id)}
-                    aria-label={`Risposte a ${ev.title}`}
-                  >
-                    {ev._count?.attendances ?? 0}
-                  </Button>
-                </TableCell>
                 <TableCell align="right">
-                  <Tooltip title="Modifica">
-                    <IconButton
-                      size="medium"
-                      aria-label="Modifica evento"
-                      onClick={() => onEdit(ev)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Elimina">
-                    <IconButton
-                      size="medium"
-                      aria-label="Elimina evento"
-                      color="error"
-                      onClick={() => onDelete(ev.id)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <EventRowActions ev={ev} {...actions} />
                 </TableCell>
               </TableRow>
             ))}
@@ -656,7 +654,7 @@ function EventsList({
         </Table>
       </Box>
 
-      {/* Mobile card view */}
+      {/* Telefono: righe con il testo sopra e le azioni a destra */}
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
         {events.map((ev) => (
           <Box
@@ -669,7 +667,7 @@ function EventsList({
               "&:last-child": { borderBottom: 0 },
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "flex-start",
+              alignItems: "center",
               gap: 1,
             }}
           >
@@ -686,39 +684,12 @@ function EventsList({
                 {ev.endDate && ` – ${formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it })}`}
               </Typography>
               {ev.location && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
-                  <PlaceIcon sx={{ fontSize: 13, color: "text.secondary" }} />
-                  <Typography variant="caption" color="text.secondary">
-                    {ev.location}
-                  </Typography>
-                </Box>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  {ev.location}
+                </Typography>
               )}
-              <Button
-                size="small"
-                startIcon={<HowToRegIcon fontSize="small" />}
-                onClick={() => onResponses(ev.id)}
-                sx={{ mt: 0.5, ml: -0.75 }}
-              >
-                Risposte · {ev._count?.attendances ?? 0}
-              </Button>
             </Box>
-            <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-              <Tooltip title="Modifica">
-                <IconButton size="medium" aria-label="Modifica evento" onClick={() => onEdit(ev)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Elimina">
-                <IconButton
-                  size="medium"
-                  aria-label="Elimina evento"
-                  color="error"
-                  onClick={() => onDelete(ev.id)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
+            <EventRowActions ev={ev} {...actions} />
           </Box>
         ))}
       </Box>

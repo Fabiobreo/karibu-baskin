@@ -476,7 +476,8 @@ export default function SessionPageClient({
                           isStaff={isStaff}
                           removingTeams={removingTeams}
                           onRemoveTeams={handleRemoveTeams}
-                          onEditTeams={() => setEditingTeams(true)}
+                          onEditTeams={() => setEditingTeams((v) => !v)}
+                          editMode={editingTeams}
                         />
                         <TeamDisplay {...teamDisplayProps} />
                       </Paper>
@@ -586,7 +587,8 @@ export default function SessionPageClient({
                               isStaff={isStaff}
                               removingTeams={removingTeams}
                               onRemoveTeams={handleRemoveTeams}
-                              onEditTeams={() => setEditingTeams(true)}
+                              onEditTeams={() => setEditingTeams((v) => !v)}
+                              editMode={editingTeams}
                             />
                             <TeamDisplay {...teamDisplayProps} />
                           </Paper>

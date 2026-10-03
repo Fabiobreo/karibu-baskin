@@ -4,6 +4,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { ROLES, roleColorSx } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
 /** Toolbar sticky: conteggio convocati, copertura ruoli e azioni Tutti/Nessuno/Salva. */
 export default function ConvocazioniToolbar({
@@ -78,19 +79,24 @@ export default function ConvocazioniToolbar({
         })}
       </Stack>
 
-      <Box sx={{ display: "flex", gap: 0.5, ml: "auto" }}>
+      <Box
+        role="group"
+        aria-label="Selezione dei convocati"
+        sx={{ display: "flex", gap: 0.5, ml: "auto" }}
+      >
         {/* "Tutti" e "Nessuno" sono azioni terziarie, dello stesso peso (UX-30):
             l'arancione e' di "Salva". */}
-        <Button size="small" color="inherit" onClick={onSelectAll}>
+        <Button size="small" color="inherit" onClick={onSelectAll} sx={TOUCH_TARGET_ON_PHONE}>
           Tutti
         </Button>
-        <Button size="small" color="inherit" onClick={onClearAll}>
+        <Button size="small" color="inherit" onClick={onClearAll} sx={TOUCH_TARGET_ON_PHONE}>
           Nessuno
         </Button>
         <Button
           variant="contained"
           size="small"
           onClick={onSave}
+          sx={TOUCH_TARGET_ON_PHONE}
           disabled={saving}
           startIcon={saving ? <CircularProgress size={14} /> : undefined}
         >

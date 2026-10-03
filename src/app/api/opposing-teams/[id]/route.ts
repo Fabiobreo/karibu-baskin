@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { OpposingTeamUpdateSchema } from "@/lib/schemas";
@@ -79,7 +80,32 @@ export async function DELETE(_req: Request, { params }: Params) {
     where: { id },
     select: { name: true, city: true },
   });
-  await prisma.opposingTeam.delete({ where: { id } });
+  const conflict = `"${before?.name ?? "La squadra"}" compare in partite del club o fra i risultati di un girone: finché ci sono, non si può eliminare.`;
+  try {
+    // Le partite del club hanno sul DB `ON DELETE SET NULL`: senza questo
+    // controllo l'eliminazione riuscirebbe e lascerebbe partite senza
+    // avversario. Le partite di girone, invece, la bloccano col vincolo (P2003).
+    const [clubMatches, groupMatches] = await Promise.all([
+      prisma.match.count({ where: { opponentId: id } }),
+      prisma.groupMatch.count({ where: { OR: [{ homeTeamId: id }, { awayTeamId: id }] } }),
+    ]);
+    if (clubMatches + groupMatches > 0) {
+      return NextResponse.json({ error: conflict }, { status: 409 });
+    }
+    await prisma.opposingTeam.delete({ where: { id } });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      // Una partita aggiunta fra il conteggio e la delete: stesso 409.
+      if (err.code === "P2003") {
+        return NextResponse.json({ error: conflict }, { status: 409 });
+      }
+      if (err.code === "P2025") {
+        return NextResponse.json({ error: "Squadra avversaria non trovata" }, { status: 404 });
+      }
+    }
+    console.error("[opposing-teams] delete", err);
+    return NextResponse.json({ error: "Errore nell'eliminazione" }, { status: 500 });
+  }
   if (authSession?.user?.id) {
     logAudit({
       actorId: authSession.user.id,

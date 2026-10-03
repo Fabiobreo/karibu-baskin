@@ -1,8 +1,7 @@
 "use client";
-import { useState, type ReactNode } from "react";
-import { ButtonBase, Divider, IconButton, Link as MuiLink, Menu, MenuItem } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { TOUCH_TARGET } from "@/lib/touchTarget";
+import type { ReactNode } from "react";
+import { ButtonBase, Link as MuiLink } from "@mui/material";
+import RowActions from "@/components/admin/RowActions";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -75,7 +74,8 @@ export function PersonCardButton({
 
 /**
  * Il menu "⋯" della riga: al posto di matita e cestino rosso su ognuna delle
- * cento e passa righe. Eliminare resta dietro al menu e alla sua conferma.
+ * cento e passa righe. Eliminare resta dietro al menu e alla sua conferma, che
+ * chiede il chiamante. Il disegno è quello di `RowActions`.
  */
 export function PersonRowMenu({
   name,
@@ -89,48 +89,12 @@ export function PersonRowMenu({
   onOpen: () => void;
   onDelete: () => void;
 }) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const close = () => setAnchor(null);
   return (
-    <>
-      <IconButton
-        onClick={(e) => setAnchor(e.currentTarget)}
-        aria-label={`Azioni per ${name}`}
-        aria-haspopup="menu"
-        aria-expanded={anchor ? "true" : undefined}
-        sx={{ ...TOUCH_TARGET, flexShrink: 0 }}
-      >
-        <MoreVertIcon fontSize="small" />
-      </IconButton>
-      <Menu
-        anchorEl={anchor}
-        open={!!anchor}
-        onClose={close}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <MenuItem
-          onClick={() => {
-            close();
-            onOpen();
-          }}
-          sx={{ minHeight: 44 }}
-        >
-          Apri scheda
-        </MenuItem>
-        {canDelete && <Divider />}
-        {canDelete && (
-          <MenuItem
-            onClick={() => {
-              close();
-              onDelete();
-            }}
-            sx={{ minHeight: 44, color: "error.main" }}
-          >
-            Elimina…
-          </MenuItem>
-        )}
-      </Menu>
-    </>
+    <RowActions
+      subject={name}
+      items={[{ label: "Apri scheda", onClick: onOpen }]}
+      onDelete={canDelete ? onDelete : undefined}
+      deleteConfirm={false}
+    />
   );
 }

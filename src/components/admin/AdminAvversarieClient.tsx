@@ -6,24 +6,22 @@ import {
   Paper,
   Button,
   TextField,
-  IconButton,
   Table,
   TableContainer,
   TableHead,
   TableBody,
   TableRow,
   TableCell,
-  Tooltip,
   TablePagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { visuallyHidden } from "@mui/utils";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useToast } from "@/context/ToastContext";
-import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import RowActions from "@/components/admin/RowActions";
+import { readError } from "@/lib/fetchJson";
+import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import OpposingTeamEditDialog, {
   type OpposingTeamEditable,
 } from "@/components/teams/OpposingTeamEditDialog";
@@ -43,7 +41,8 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
   const [rpp, setRpp] = useRowsPerPage("opponents", [10, 25, 50], 25);
   const [editTeam, setEditTeam] = useState<OpposingTeam | null>(null);
   const { showToast } = useToast();
-  const { openConfirm, ConfirmDialog } = useConfirmDialog();
+  // Dopo un'eliminazione il focus va sull'intestazione della lista: la riga non c'è più.
+  const listHeadingRef = useRef<HTMLHeadingElement>(null);
 
   async function handleSave() {
     if (!form.name.trim()) return;
@@ -64,18 +63,15 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
     });
   }
 
-  function handleDelete(id: string, name: string) {
-    openConfirm("Elimina squadra avversaria", `Eliminare la squadra avversaria "${name}"?`, () =>
-      startTransition(async () => {
-        const res = await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
-        if (res.ok) {
-          setOpponents((prev) => prev.filter((o) => o.id !== id));
-          showToast({ message: "Squadra eliminata", severity: "success" });
-        } else {
-          showToast({ message: "Errore nell'eliminazione", severity: "error" });
-        }
-      })
-    );
+  async function handleDelete(id: string) {
+    const res = await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      // 409 se la squadra ha partite: il messaggio dell'API spiega perché.
+      showToast({ message: await readError(res), severity: "error" });
+      return false;
+    }
+    setOpponents((prev) => prev.filter((o) => o.id !== id));
+    showToast({ message: "Squadra eliminata", severity: "success" });
   }
 
   return (
@@ -90,7 +86,7 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
             size="small"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            sx={{ flex: 2, minWidth: 160 }}
+            sx={{ flex: 2, minWidth: 160, ...TOUCH_FIELD_ON_PHONE }}
             placeholder="es. Basket Vicenza"
           />
           <TextField
@@ -98,7 +94,7 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
             size="small"
             value={form.city}
             onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-            sx={{ flex: 1, minWidth: 120 }}
+            sx={{ flex: 1, minWidth: 120, ...TOUCH_FIELD_ON_PHONE }}
             placeholder="es. Vicenza"
           />
           <Button
@@ -106,6 +102,7 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
             startIcon={<AddIcon />}
             onClick={handleSave}
             disabled={!form.name.trim() || isPending}
+            sx={TOUCH_TARGET_ON_PHONE}
           >
             Aggiungi
           </Button>
@@ -118,64 +115,81 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
         </Typography>
       ) : (
         <Paper elevation={0} variant="outlined">
+          <Typography
+            ref={listHeadingRef}
+            tabIndex={-1}
+            component="h2"
+            variant="subtitle2"
+            sx={{ px: 2, py: 1.25, borderBottom: 1, borderColor: "divider", outline: "none" }}
+          >
+            Squadre registrate ({opponents.length})
+          </Typography>
           <TableContainer>
             <Table size="small" aria-label="Lista squadre avversarie">
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Nome</TableCell>
-                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Città</TableCell>
-                  <TableCell />
+                  <TableCell
+                    sx={{
+                      fontWeight: FONT_WEIGHT.semibold,
+                      display: { xs: "none", sm: "table-cell" },
+                    }}
+                  >
+                    Città
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box component="span" sx={visuallyHidden}>
+                      Azioni
+                    </Box>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {opponents.slice(page * rpp, (page + 1) * rpp).map((o) => (
                   <TableRow key={o.id} hover>
                     <TableCell>
-                      {o.slug ? (
-                        <Link
-                          href={`/avversarie/${o.slug}`}
-                          target="_blank"
-                          style={{ textDecoration: "none", color: "inherit" }}
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                        {o.name}
+                      </Typography>
+                      {/* Su telefono la città scende sotto il nome: il "⋯" resta nello schermo. */}
+                      {o.city && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: { xs: "block", sm: "none" } }}
                         >
-                          <Typography
-                            variant="body2"
-                            fontWeight={FONT_WEIGHT.semibold}
-                            sx={{ "&:hover": { color: "primary.main" } }}
-                          >
-                            {o.name}
-                          </Typography>
-                        </Link>
-                      ) : (
-                        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-                          {o.name}
+                          {o.city}
                         </Typography>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                       <Typography variant="body2" color="text.secondary">
                         {o.city ?? "—"}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Modifica">
-                        <IconButton
-                          size="small"
-                          aria-label="Modifica squadra avversaria"
-                          onClick={() => setEditTeam(o)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Elimina">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          aria-label="Elimina squadra avversaria"
-                          onClick={() => handleDelete(o.id, o.name)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <RowActions
+                        subject={o.name}
+                        primary={{ label: "Modifica", onClick: () => setEditTeam(o) }}
+                        items={
+                          o.slug
+                            ? [
+                                {
+                                  label: "Pagina pubblica",
+                                  href: `/avversarie/${o.slug}`,
+                                  external: true,
+                                },
+                              ]
+                            : []
+                        }
+                        onDelete={() => handleDelete(o.id)}
+                        deleteLabel="Elimina squadra…"
+                        deleteConfirm={{
+                          title: "Eliminare la squadra avversaria?",
+                          message: `Eliminare "${o.name}" dall'anagrafica? Se compare in una partita del club o di un girone non si può: va prima tolta da lì.`,
+                        }}
+                        focusAfterDelete={listHeadingRef}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -213,8 +227,6 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
           showToast({ message: "Squadra aggiornata", severity: "success" });
         }}
       />
-
-      {ConfirmDialog}
     </Box>
   );
 }

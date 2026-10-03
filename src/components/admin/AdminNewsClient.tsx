@@ -1,12 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
   Typography,
   Button,
-  Dialog,
   Table,
   TableBody,
   TableCell,
@@ -15,7 +13,6 @@ import {
   TableContainer,
   TablePagination,
   Paper,
-  IconButton,
   Chip,
   DialogTitle,
   DialogContent,
@@ -29,10 +26,6 @@ import {
 } from "@mui/material";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PublishIcon from "@mui/icons-material/Publish";
-import UnpublishedIcon from "@mui/icons-material/Unpublished";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import { useToast } from "@/context/ToastContext";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
@@ -44,6 +37,10 @@ import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
 import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { visuallyHidden } from "@mui/utils";
+import RowActions from "@/components/admin/RowActions";
+import { newsMenuEntries } from "@/lib/adminRowActions";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 
 const PostEditor = dynamic(() => import("@/components/news/PostEditor"), { ssr: false });
 
@@ -86,8 +83,10 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
   const [hasPoll, setHasPoll] = useState(false);
   const [poll, setPoll] = useState<PollDraft>(EMPTY_POLL);
   const [saving, setSaving] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<PostSummary | null>(null);
+  // Dopo un'eliminazione il focus torna su "Nuovo post": la riga non c'è più.
+  const newButtonRef = useRef<HTMLButtonElement>(null);
   const { showToast } = useToast();
+  const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useRowsPerPage("news", [10, 25, 50], 10);
   const lastPage = Math.max(0, Math.ceil(posts.length / rowsPerPage) - 1);
@@ -227,6 +226,20 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
     }
   }
 
+  /** Pubblicare manda una notifica a tutti e non si ritira: prima si chiede. */
+  function askTogglePublish(post: PostSummary) {
+    if (post.publishedAt) {
+      void handleTogglePublish(post);
+      return;
+    }
+    openConfirm(
+      "Pubblicare il post?",
+      `"${post.title}" diventa visibile a tutti e parte una notifica a tutti. La notifica non si può ritirare.`,
+      () => void handleTogglePublish(post),
+      { confirmLabel: "Pubblica e avvisa", confirmColor: "primary" }
+    );
+  }
+
   async function handleTogglePublish(post: PostSummary) {
     const willPublish = !post.publishedAt;
     const res = await fetch(`/api/posts/${post.id}`, {
@@ -246,22 +259,42 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
     });
   }
 
-  async function handleDelete() {
-    if (!confirmDelete) return;
-    const res = await fetch(`/api/posts/${confirmDelete.id}`, { method: "DELETE" });
+  async function handleDelete(post: PostSummary) {
+    const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
     if (!res.ok) {
-      showToast({ message: "Errore nell'eliminazione", severity: "error" });
-      return;
+      showToast({ message: await readError(res), severity: "error" });
+      return false;
     }
-    setPosts((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+    setPosts((prev) => prev.filter((p) => p.id !== post.id));
     showToast({ message: "Post eliminato", severity: "success" });
-    setConfirmDelete(null);
+  }
+
+  /** "Modifica" in riga; nel "⋯" pubblica o bozza, pagina pubblica (se uscita), elimina. */
+  function postActions(post: PostSummary) {
+    return (
+      <RowActions
+        subject={post.title}
+        primary={{ label: "Modifica", onClick: () => openEdit(post) }}
+        items={newsMenuEntries(!!post.publishedAt).map((e) =>
+          e.key === "public"
+            ? { label: e.label, href: `/news/${post.slug}`, external: true }
+            : { label: e.label, onClick: () => askTogglePublish(post) }
+        )}
+        onDelete={() => handleDelete(post)}
+        deleteLabel="Elimina post…"
+        deleteConfirm={{
+          title: "Eliminare il post?",
+          message: `Eliminare "${post.title}"${post.poll ? " e il suo sondaggio" : ""}? L'azione non si può annullare.`,
+        }}
+        focusAfterDelete={newButtonRef}
+      />
+    );
   }
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openNew}>
+        <Button ref={newButtonRef} variant="contained" startIcon={<AddIcon />} onClick={openNew}>
           Nuovo post
         </Button>
       </Box>
@@ -287,7 +320,11 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
               >
                 Autore
               </TableCell>
-              <TableCell />
+              <TableCell align="right">
+                <Box component="span" sx={visuallyHidden}>
+                  Azioni
+                </Box>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -302,21 +339,9 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
               <TableRow key={post.id} hover>
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Link
-                      href={`/news/${post.slug}`}
-                      style={{ textDecoration: "none", color: "inherit" }}
-                    >
-                      <Typography
-                        variant="body2"
-                        fontWeight={FONT_WEIGHT.semibold}
-                        sx={{
-                          color: "text.primary",
-                          "&:hover": { color: "primary.main", textDecoration: "underline" },
-                        }}
-                      >
-                        {post.title}
-                      </Typography>
-                    </Link>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                      {post.title}
+                    </Typography>
                     {post.poll && (
                       <Tooltip title="Ha un sondaggio allegato">
                         <HowToVoteIcon fontSize="small" color="primary" />
@@ -341,27 +366,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                   <Typography variant="caption">{post.author.name ?? "—"}</Typography>
                 </TableCell>
-                <TableCell align="right">
-                  <Tooltip title={post.publishedAt ? "Rimetti in bozza" : "Pubblica"}>
-                    <IconButton size="medium" onClick={() => handleTogglePublish(post)}>
-                      {post.publishedAt ? (
-                        <UnpublishedIcon fontSize="small" />
-                      ) : (
-                        <PublishIcon fontSize="small" />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Modifica">
-                    <IconButton size="medium" onClick={() => openEdit(post)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Elimina">
-                    <IconButton size="medium" color="error" onClick={() => setConfirmDelete(post)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
+                <TableCell align="right">{postActions(post)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -388,27 +393,16 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                 "&:last-child": { borderBottom: 0 },
               }}
             >
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
-              >
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Box sx={{ flex: 1, minWidth: 0, mr: 1 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
-                    <Link
-                      href={`/news/${post.slug}`}
-                      style={{ textDecoration: "none", color: "inherit" }}
+                    <Typography
+                      variant="body2"
+                      fontWeight={FONT_WEIGHT.semibold}
+                      sx={{ wordBreak: "break-word" }}
                     >
-                      <Typography
-                        variant="body2"
-                        fontWeight={FONT_WEIGHT.semibold}
-                        sx={{
-                          wordBreak: "break-word",
-                          color: "text.primary",
-                          "&:hover": { color: "primary.main", textDecoration: "underline" },
-                        }}
-                      >
-                        {post.title}
-                      </Typography>
-                    </Link>
+                      {post.title}
+                    </Typography>
                     {post.poll && (
                       <Tooltip title="Ha un sondaggio allegato">
                         <HowToVoteIcon sx={{ fontSize: 14 }} color="primary" />
@@ -428,27 +422,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-                  <Tooltip title={post.publishedAt ? "Rimetti in bozza" : "Pubblica"}>
-                    <IconButton size="medium" onClick={() => handleTogglePublish(post)}>
-                      {post.publishedAt ? (
-                        <UnpublishedIcon fontSize="small" />
-                      ) : (
-                        <PublishIcon fontSize="small" />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Modifica">
-                    <IconButton size="medium" onClick={() => openEdit(post)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Elimina">
-                    <IconButton size="medium" color="error" onClick={() => setConfirmDelete(post)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+                {postActions(post)}
               </Box>
             </Box>
           ))
@@ -552,23 +526,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
           </Button>
         </DialogActions>
       </ResponsiveDialog>
-
-      {/* Dialog conferma eliminazione */}
-      <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
-        <DialogTitle>Elimina post</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Sei sicuro di voler eliminare <strong>&quot;{confirmDelete?.title}&quot;</strong>?
-            L&apos;azione è irreversibile.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDelete(null)}>Annulla</Button>
-          <Button variant="contained" color="error" onClick={handleDelete}>
-            Elimina
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {ConfirmDialog}
     </Box>
   );
 }

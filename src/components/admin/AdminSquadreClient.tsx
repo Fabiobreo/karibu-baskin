@@ -8,7 +8,6 @@ import {
   TextField,
   Stack,
   Chip,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -25,14 +24,11 @@ import {
 } from "@mui/material";
 import { alpha, type Theme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import PeopleIcon from "@mui/icons-material/People";
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useRef, useTransition, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slugUtils";
 import ImageUploader from "@/components/common/ImageUploader";
@@ -53,6 +49,10 @@ import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { TEAM_LABEL } from "@/lib/palette";
+import RowActions, { type RowAction } from "@/components/admin/RowActions";
+import { teamMenuEntries } from "@/lib/adminRowActions";
+import { useToast } from "@/context/ToastContext";
+import { TOUCH_CHIP_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
 // ── Tinte squadra ──────────────────────────────────────────────────────────────
 
@@ -94,15 +94,24 @@ type Team = {
 };
 
 type SeasonRecord = { label: string; isCurrent: boolean };
-type Props = { teams: Team[]; seasons: SeasonRecord[] };
+type Props = {
+  teams: Team[];
+  seasons: SeasonRecord[];
+  /** Creare, modificare ed eliminare una squadra è dell'admin: l'API lo rifiuta all'allenatore. */
+  isAdmin: boolean;
+};
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
 export default function AdminSquadreClient({
   teams: initialTeams,
   seasons: initialSeasons,
+  isAdmin,
 }: Props) {
   const router = useRouter();
+  const { showToast } = useToast();
+  // Dopo un'eliminazione il focus va sul titolo della stagione: la tessera non c'è più.
+  const seasonHeadingRef = useRef<HTMLHeadingElement>(null);
   const [teams, setTeams] = useState(initialTeams);
   const [isPending, startTransition] = useTransition();
 
@@ -182,25 +191,6 @@ export default function AdminSquadreClient({
   // Lo staff ha scelto un colore a mano: da li' il nome non lo ricalcola piu'.
   const [colorTouched, setColorTouched] = useState(false);
   const [teamError, setTeamError] = useState("");
-
-  // Dialog conferma generica
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  }>({
-    open: false,
-    title: "",
-    message: "",
-    onConfirm: () => {},
-  });
-  function openConfirm(title: string, message: string, onConfirm: () => void) {
-    setConfirmDialog({ open: true, title, message, onConfirm });
-  }
-  function closeConfirm() {
-    setConfirmDialog((prev) => ({ ...prev, open: false }));
-  }
 
   // ── Stagioni ─────────────────────────────────────────────────────────────────
 
@@ -302,16 +292,14 @@ export default function AdminSquadreClient({
     setTeamForm((f) => ({ ...f, color: tint }));
   }
 
-  function handleDeleteTeam(teamId: string, teamName: string) {
-    openConfirm(
-      "Elimina squadra",
-      `Eliminare "${teamName}"? Verranno eliminati anche rosa e partite associate.`,
-      () =>
-        startTransition(async () => {
-          await fetch(`/api/competitive-teams/${teamId}`, { method: "DELETE" });
-          setTeams((prev) => prev.filter((t) => t.id !== teamId));
-        })
-    );
+  async function handleDeleteTeam(teamId: string) {
+    const res = await fetch(`/api/competitive-teams/${teamId}`, { method: "DELETE" });
+    if (!res.ok) {
+      showToast({ message: await readError(res), severity: "error" });
+      return false;
+    }
+    setTeams((prev) => prev.filter((t) => t.id !== teamId));
+    showToast({ message: "Squadra eliminata", severity: "success" });
   }
 
   // ── Computed ──────────────────────────────────────────────────────────────────
@@ -332,11 +320,19 @@ export default function AdminSquadreClient({
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
-        <Button variant="outlined" startIcon={<AddIcon />} onClick={openNewSeason}>
-          Nuova stagione
-        </Button>
-      </Box>
+      {/* Una stagione nuova serve solo a crearci squadre, che sono dell'admin. */}
+      {isAdmin && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={openNewSeason}
+            sx={TOUCH_TARGET_ON_PHONE}
+          >
+            Nuova stagione
+          </Button>
+        </Box>
+      )}
 
       {/* Chip stagioni */}
       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4 }}>
@@ -350,7 +346,7 @@ export default function AdminSquadreClient({
               onClick={() => setActiveSeason(season)}
               color={season === activeSeason ? "primary" : "default"}
               variant={season === activeSeason ? "filled" : "outlined"}
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", ...TOUCH_CHIP_ON_PHONE }}
             />
           );
         })}
@@ -369,7 +365,15 @@ export default function AdminSquadreClient({
       >
         <Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="h5">Stagione {activeSeason}</Typography>
+            <Typography
+              ref={seasonHeadingRef}
+              tabIndex={-1}
+              variant="h5"
+              component="h2"
+              sx={{ outline: "none" }}
+            >
+              Stagione {activeSeason}
+            </Typography>
             {activeIsCurrentSeason && (
               <StatusPill label="In corso" variant="outlined" icon={<StarIcon />} />
             )}
@@ -390,26 +394,30 @@ export default function AdminSquadreClient({
               startIcon={settingCurrent ? <CircularProgress size={14} /> : <StarBorderIcon />}
               onClick={handleSetCurrentSeason}
               disabled={settingCurrent}
+              sx={TOUCH_TARGET_ON_PHONE}
             >
               Segna come in corso
             </Button>
           )}
-          <Tooltip
-            title={
-              teamsInSeason.length >= 2 ? "Limite raggiunto: massimo 2 squadre per stagione" : ""
-            }
-          >
-            <span>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={openCreate}
-                disabled={teamsInSeason.length >= 2}
-              >
-                Nuova squadra
-              </Button>
-            </span>
-          </Tooltip>
+          {isAdmin && (
+            <Tooltip
+              title={
+                teamsInSeason.length >= 2 ? "Limite raggiunto: massimo 2 squadre per stagione" : ""
+              }
+            >
+              <span>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openCreate}
+                  disabled={teamsInSeason.length >= 2}
+                  sx={TOUCH_TARGET_ON_PHONE}
+                >
+                  Nuova squadra
+                </Button>
+              </span>
+            </Tooltip>
+          )}
         </Box>
       </Box>
 
@@ -423,20 +431,22 @@ export default function AdminSquadreClient({
             textAlign: "center",
             borderStyle: "dashed",
             borderColor: "divider",
-            cursor: teamsInSeason.length < 2 ? "pointer" : "default",
+            cursor: isAdmin && teamsInSeason.length < 2 ? "pointer" : "default",
             "&:hover":
-              teamsInSeason.length < 2
+              isAdmin && teamsInSeason.length < 2
                 ? {
                     borderColor: "primary.main",
                     bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
                   }
                 : {},
           }}
-          onClick={teamsInSeason.length < 2 ? openCreate : undefined}
+          onClick={isAdmin && teamsInSeason.length < 2 ? openCreate : undefined}
         >
-          <AddIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
+          {isAdmin && <AddIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />}
           <Typography variant="body1" color="text.secondary">
-            Aggiungi la prima squadra della stagione {activeSeason}
+            {isAdmin
+              ? `Aggiungi la prima squadra della stagione ${activeSeason}`
+              : `Nessuna squadra nella stagione ${activeSeason}`}
           </Typography>
         </Paper>
       ) : (
@@ -446,8 +456,10 @@ export default function AdminSquadreClient({
               <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
                 <TeamCard
                   team={team}
+                  isAdmin={isAdmin}
                   onEdit={() => openEdit(team)}
-                  onDelete={() => handleDeleteTeam(team.id, team.name)}
+                  onDelete={() => handleDeleteTeam(team.id)}
+                  focusAfterDelete={seasonHeadingRef}
                 />
               </Grid>
             );
@@ -655,34 +667,6 @@ export default function AdminSquadreClient({
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* ── Dialog conferma eliminazione ── */}
-      <Dialog
-        open={confirmDialog.open}
-        onClose={closeConfirm}
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-description"
-      >
-        <DialogTitle id="confirm-dialog-title">{confirmDialog.title}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="confirm-dialog-description">
-            {confirmDialog.message}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeConfirm}>Annulla</Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              closeConfirm();
-              confirmDialog.onConfirm();
-            }}
-          >
-            Elimina
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
@@ -698,41 +682,43 @@ const ON_FILL_ICON_SX = {
 
 function TeamCard({
   team,
+  isAdmin,
   onEdit,
   onDelete,
+  focusAfterDelete,
 }: {
   team: Team;
+  isAdmin: boolean;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete: () => Promise<boolean | void>;
+  focusAfterDelete: RefObject<HTMLHeadingElement | null>;
 }) {
-  const router = useRouter();
   const publicHref = `/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`;
   const rosaHref = `/admin/squadre/${team.id}/rosa`;
-  const stop = (e: React.MouseEvent) => e.stopPropagation();
   // Tinta della squadra, o null: intestazione neutra, mai l'arancio (UX-29).
   const color = teamColor(team.color);
   const onColor = teamFill(team.color)?.fg ?? null;
+  const menu = teamMenuEntries(isAdmin);
+  const items: RowAction[] = menu.keys.map((key) =>
+    key === "edit"
+      ? { label: "Modifica", onClick: onEdit }
+      : { label: "Pagina pubblica", href: publicHref, external: true }
+  );
 
+  // Niente `onClick` sulla tessera: i clic nel menu "⋯" (in un portal) risalirebbero
+  // fino a lei e aprirebbero la pagina pubblica. La pagina pubblica è nel menu.
   return (
     <Paper
       elevation={0}
       variant="outlined"
-      onClick={() => router.push(publicHref)}
-      sx={{
-        overflow: "hidden",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        cursor: "pointer",
-        transition: "box-shadow 0.15s",
-        "&:hover": { boxShadow: 3 },
-      }}
+      sx={{ overflow: "hidden", height: "100%", display: "flex", flexDirection: "column" }}
     >
       {/* Intestazione: riempita con la tinta della squadra, neutra senza */}
       <Box
         sx={{
-          px: 2.5,
-          py: 2,
+          pl: 2.5,
+          pr: 1,
+          py: 1.5,
           ...(color && onColor
             ? { bgcolor: color, color: onColor }
             : {
@@ -749,6 +735,7 @@ function TeamCard({
         <Box sx={{ minWidth: 0 }}>
           <Typography
             variant="h6"
+            component="h3"
             fontWeight={FONT_WEIGHT.bold}
             sx={{ color: "inherit", lineHeight: 1.2 }}
             noWrap
@@ -766,34 +753,19 @@ function TeamCard({
             </Typography>
           )}
         </Box>
-        <Box sx={{ display: "flex", gap: 0.25, ml: 1, flexShrink: 0 }}>
-          <Tooltip title="Modifica squadra">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stop(e);
-                onEdit();
-              }}
-              aria-label="Modifica squadra"
-              sx={color ? ON_FILL_ICON_SX : { color: "text.secondary" }}
-            >
-              <EditIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Elimina squadra">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                stop(e);
-                onDelete();
-              }}
-              aria-label="Elimina squadra"
-              sx={color ? ON_FILL_ICON_SX : { color: "text.secondary" }}
-            >
-              <DeleteIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <RowActions
+          subject={team.name}
+          primaryElsewhere
+          items={items}
+          onDelete={menu.canDelete ? onDelete : undefined}
+          deleteLabel="Elimina squadra…"
+          deleteConfirm={{
+            title: "Eliminare la squadra?",
+            message: `Eliminare "${team.name}"? Verranno eliminati anche rosa e partite associate.`,
+          }}
+          focusAfterDelete={focusAfterDelete}
+          menuButtonSx={color ? ON_FILL_ICON_SX : { color: "text.secondary" }}
+        />
       </Box>
 
       {/* Body */}
@@ -808,39 +780,46 @@ function TeamCard({
           </Typography>
         )}
 
-        {/* Statistiche */}
-        <Box sx={{ display: "flex", gap: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <GroupsIcon sx={{ fontSize: 17, color: "text.secondary" }} />
-            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-              {team._count.memberships}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              atleti
-            </Typography>
+        {/* Statistiche a sinistra, "Rosa" (l'azione che si usa) a destra */}
+        <Box
+          sx={{
+            mt: "auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box sx={{ display: "flex", gap: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <GroupsIcon sx={{ fontSize: 17, color: "text.secondary" }} />
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                {team._count.memberships}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                atleti
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <SportsSoccerIcon sx={{ fontSize: 17, color: "text.secondary" }} />
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                {team._count.matches}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                partite
+              </Typography>
+            </Box>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <SportsSoccerIcon sx={{ fontSize: 17, color: "text.secondary" }} />
-            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-              {team._count.matches}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              partite
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Bottone gestione rosa */}
-        <Box sx={{ mt: "auto" }}>
           <Button
             href={rosaHref}
             variant="outlined"
             size="small"
-            fullWidth
-            startIcon={<PeopleIcon />}
-            onClick={stop}
+            aria-label={`${isAdmin ? "Rosa" : "Vedi rosa"}: ${team.name}`}
+            sx={TOUCH_TARGET_ON_PHONE}
           >
-            Gestisci rosa
+            {/* L'allenatore la legge soltanto: la rosa la modifica l'admin. */}
+            {isAdmin ? "Rosa" : "Vedi rosa"}
           </Button>
         </Box>
       </Box>
