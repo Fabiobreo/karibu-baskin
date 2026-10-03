@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
+import { loginHref } from "@/lib/loginReturn";
 import { prisma } from "@/lib/db";
 import {
   Container,
@@ -72,9 +73,21 @@ export const revalidate = 0;
 // statistiche, MVP e rose di ogni giocatore) arrivano in streaming dentro
 // `<Suspense>`. Il controllo di sessione resta prima di tutto, così `redirect`
 // è un vero redirect HTTP e non uno lato client a stream già partito.
-export default async function ProfiloPage() {
-  const [t, session] = await Promise.all([getTranslations("profile"), auth()]);
-  if (!session?.user?.id) redirect("/login");
+export default async function ProfiloPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string | string[] }>;
+}) {
+  const [t, session, { tab }] = await Promise.all([
+    getTranslations("profile"),
+    auth(),
+    searchParams,
+  ]);
+  if (!session?.user?.id) {
+    // Dopo l'accesso si torna alla scheda chiesta (es. dalla guida: `?tab=notifiche`).
+    const wanted = typeof tab === "string" && /^[a-z]+$/.test(tab) ? `?tab=${tab}` : "";
+    redirect(loginHref(`/profilo${wanted}`));
+  }
 
   const userQuery = prisma.user.findUnique({
     where: { id: session.user.id },

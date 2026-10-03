@@ -4,6 +4,7 @@ import { Box, Container } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import PageHeader from "@/components/common/PageHeader";
 import { redirect } from "next/navigation";
+import { loginHref } from "@/lib/loginReturn";
 import { loadMyAvailabilityPage } from "@/lib/matches/myAvailabilities";
 import MieDisponibilitaClient from "@/components/matches/MieDisponibilitaClient";
 import type { Metadata } from "next";
@@ -20,7 +21,7 @@ export const revalidate = 0;
 
 export default async function MieDisponibilitaPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(loginHref("/profilo/disponibilita"));
   const userId = session.user.id;
 
   const { matches, hasTeams, hasChildren } = await loadMyAvailabilityPage(

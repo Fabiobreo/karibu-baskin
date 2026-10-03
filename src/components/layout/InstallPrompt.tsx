@@ -13,16 +13,15 @@ import {
   INSTALL_STATE_KEY,
   LEGACY_DISMISS_KEY,
   canShowInstallPrompt,
+  isIosSafari,
   parseInstallState,
   recordDismissed,
   recordShown,
+  runInstallPrompt,
+  type BeforeInstallPromptEvent,
   type InstallPromptState,
+  type InstallPromptWindow,
 } from "@/lib/installPrompt";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 const COOKIE_KEY = "kb-cookie-consent";
 /** Ritardo prima di proporre l'installazione: prima l'utente guarda il sito. */
@@ -65,14 +64,6 @@ function cookieBannerClosed(): boolean {
   }
 }
 
-function isIosSafari(): boolean {
-  const ua = navigator.userAgent;
-  const iOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  if (!iOS) return false;
-  // Esclude i browser in-app (Instagram, Facebook, ecc.) dove l'installazione non esiste
-  return !/CriOS|FxiOS|EdgiOS|OPiOS|FBAN|FBAV|Instagram|Line|Twitter/.test(ua);
-}
-
 export default function InstallPrompt() {
   const t = useTranslations("install");
   const mounted = useHasMounted();
@@ -81,8 +72,7 @@ export default function InstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(() =>
     typeof window === "undefined"
       ? null
-      : ((window as Window & { __kbInstallPrompt?: BeforeInstallPromptEvent }).__kbInstallPrompt ??
-        null)
+      : ((window as InstallPromptWindow).__kbInstallPrompt ?? null)
   );
   const [visible, setVisible] = useState(false);
 
@@ -120,6 +110,8 @@ export default function InstallPrompt() {
   // ricaricamento, un'altra pagina o un'altra scheda non lo ripropongono.
   const show = useCallback(() => {
     if (!mayShow()) return;
+    // La guida ha il suo bottone di installazione: due sarebbero un doppione.
+    if (window.location.pathname === "/guida") return;
     writeState(recordShown(readState(), Date.now()));
     setVisible(true);
   }, []);
@@ -155,9 +147,8 @@ export default function InstallPrompt() {
   const install = useCallback(async () => {
     if (!deferred) return;
     setVisible(false);
-    await deferred.prompt();
-    const { outcome } = await deferred.userChoice;
     setDeferred(null);
+    const outcome = await runInstallPrompt(deferred);
     if (outcome === "dismissed") dismiss();
   }, [deferred, dismiss]);
 

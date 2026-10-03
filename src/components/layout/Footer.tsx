@@ -73,6 +73,7 @@ export default async function Footer() {
     { href: "/il-club", label: tNav("whoWeAre") },
     { href: "/partite", label: tNav("matches") },
     { href: "/faq", label: tNav("faq") },
+    { href: "/guida", label: tNav("guide") },
     { href: "/news", label: tNav("news") },
     { href: "/sponsor", label: tNav("sponsor") },
   ];

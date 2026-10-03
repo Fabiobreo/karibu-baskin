@@ -37,6 +37,15 @@ export default async function FaqPage() {
                 {t("faq.contactUs")}
               </Box>
             </Link>
+            . {t("faq.guideHint")}{" "}
+            <Link href="/guida" style={{ color: "inherit" }}>
+              <Box
+                component="span"
+                sx={{ color: "primary.onLight", fontWeight: FONT_WEIGHT.semibold }}
+              >
+                {t("faq.guideLink")}
+              </Box>
+            </Link>
             .
           </Typography>
 

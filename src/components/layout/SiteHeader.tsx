@@ -85,6 +85,7 @@ const IL_BASKIN_HREFS: { key: string; href: string; disabled?: boolean; badge?: 
 
 const CONTATTI_HREFS = [
   { key: "contacts" as const, href: "/contatti" },
+  { key: "guide" as const, href: "/guida" },
   { key: "faq" as const, href: "/faq" },
   { key: "sponsor" as const, href: "/sponsor" },
 ];
@@ -160,7 +161,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   // "Chi siamo" (`/il-club`) sta nel menu Squadre (UX-36b).
   const squadreActive = (pathname?.startsWith("/squadre") ?? false) || pathname === "/il-club";
   const ilBaskinActive = pathname === "/il-baskin" || pathname === "/gallery";
-  const contattiActive = pathname === "/contatti" || pathname === "/faq" || pathname === "/sponsor";
+  const contattiActive = CONTATTI_HREFS.some((l) => l.href === pathname);
 
   // Squadre della stagione corrente per i link dinamici del dropdown
   const { data: allTeams } = useQuery<{ id: string; name: string; season: string }[]>({

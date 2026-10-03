@@ -65,6 +65,42 @@ export function recordShown(state: InstallPromptState, now: number): InstallProm
   return { ...state, shows: state.shows + 1, lastShownAt: now };
 }
 
+/** Evento con cui Chrome e Android offrono l'installazione (non standard). */
+export interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
+/** Il layout radice salva qui l'evento, che puo' arrivare prima dell'idratazione. */
+export type InstallPromptWindow = Window & { __kbInstallPrompt?: BeforeInstallPromptEvent | null };
+
+/**
+ * Apre la finestra di installazione del browser. Un evento si puo' usare una
+ * volta sola e lo condividono il banner e la guida: chi lo usa lo toglie da
+ * `window`, e un evento gia' usato dall'altro non solleva.
+ */
+export async function runInstallPrompt(
+  event: BeforeInstallPromptEvent
+): Promise<"accepted" | "dismissed" | "unavailable"> {
+  const w = window as InstallPromptWindow;
+  if (w.__kbInstallPrompt === event) w.__kbInstallPrompt = null;
+  try {
+    await event.prompt();
+    return (await event.userChoice).outcome;
+  } catch {
+    return "unavailable";
+  }
+}
+
+/** Safari su iPhone o iPad: l'installazione si fa a mano, dal menu Condividi. */
+export function isIosSafari(): boolean {
+  const ua = navigator.userAgent;
+  const iOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (!iOS) return false;
+  // Esclude i browser in-app (Instagram, Facebook, ecc.) dove l'installazione non esiste
+  return !/CriOS|FxiOS|EdgiOS|OPiOS|FBAN|FBAV|Instagram|Line|Twitter/.test(ua);
+}
+
 export function recordDismissed(state: InstallPromptState, now: number): InstallPromptState {
   return { ...state, dismissedAt: now };
 }

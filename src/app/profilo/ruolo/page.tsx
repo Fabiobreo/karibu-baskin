@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Box, Container } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import { redirect } from "next/navigation";
+import { loginHref } from "@/lib/loginReturn";
 import type { Metadata } from "next";
 import PageHeader from "@/components/common/PageHeader";
 import RoleQuizClient from "@/components/profile/RoleQuizClient";
@@ -22,7 +23,7 @@ export const revalidate = 0;
 
 export default async function RuoloPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(loginHref("/profilo/ruolo"));
   const userId = session.user.id;
 
   const [user, onboarding, locale, t, tProfile] = await Promise.all([
