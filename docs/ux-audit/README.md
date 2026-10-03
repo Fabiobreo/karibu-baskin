@@ -107,15 +107,15 @@ Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono mi
 
 Nasce dal [riaudit del 02/10](RIAUDIT-2026-10-02.md): il sistema regge (intestazioni, raggi, pesi, palette), restano una ricaduta di UX-39 sui target da telefono, un difetto nel profilo dell'ospite, le liste admin non toccate da UX-40 e alcune rifiniture. Ticket piccoli, in ordine di utilità.
 
-| Ticket                                           | Titolo                                                               | Stima | Dipende da | In attesa di                  |
-| ------------------------------------------------ | -------------------------------------------------------------------- | ----- | ---------- | ----------------------------- |
-| [UX-45](tickets/UX-45-target-su-telefono.md)     | Target da 44 px su telefono: footer, disponibilità, filtri marcatori | S     |            |                               |
-| [UX-46](tickets/UX-46-profilo-ospite.md)         | Profilo dell'ospite senza card contraddittorie                       | S     |            |                               |
-| [UX-47](tickets/UX-47-liste-admin-rimaste.md)    | Liste admin rimaste: un'azione con l'etichetta più "⋯"               | M     | UX-40      |                               |
-| [UX-48](tickets/UX-48-marcatori-su-telefono.md)  | `/marcatori` su telefono: prima i nomi, poi i filtri                 | S     | UX-45      |                               |
-| [UX-49](tickets/UX-49-tinta-squadra-e-azioni.md) | Tinta squadra dove convive con azioni ed esiti                       | S     |            | committente (solo la parte B) |
-| [UX-50](tickets/UX-50-partita-futura-anonimo.md) | Partita futura per chi non è tesserato                               | S     |            |                               |
-| [UX-51](tickets/UX-51-rifiniture.md)             | Rifiniture dal secondo riaudit                                       | S     |            |                               |
+| Ticket                                           | Titolo                                                               | Stima | Dipende da | In attesa di |
+| ------------------------------------------------ | -------------------------------------------------------------------- | ----- | ---------- | ------------ |
+| [UX-45](tickets/UX-45-target-su-telefono.md)     | Target da 44 px su telefono: footer, disponibilità, filtri marcatori | S     |            |              |
+| [UX-46](tickets/UX-46-profilo-ospite.md)         | Profilo dell'ospite senza card contraddittorie                       | S     |            |              |
+| [UX-47](tickets/UX-47-liste-admin-rimaste.md)    | Liste admin rimaste: un'azione con l'etichetta più "⋯"               | M     | UX-40      |              |
+| [UX-48](tickets/UX-48-marcatori-su-telefono.md)  | `/marcatori` su telefono: prima i nomi, poi i filtri                 | S     | UX-45      |              |
+| [UX-49](tickets/UX-49-tinta-squadra-e-azioni.md) | Tinta squadra dove convive con azioni ed esiti                       | S     |            |              |
+| [UX-50](tickets/UX-50-partita-futura-anonimo.md) | Partita futura per chi non è tesserato                               | S     |            |              |
+| [UX-51](tickets/UX-51-rifiniture.md)             | Rifiniture dal secondo riaudit                                       | S     |            |              |
 
 #### Ordine di lavoro
 
@@ -127,7 +127,7 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti, tranne UX-49 B (tinta squadra come filo nelle pagine con filtri e bottoni), in attesa della decisione del committente. UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste. Non c'è un prossimo ticket: il passo successivo è un nuovo riaudit.
+Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti, (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Non c'è un prossimo ticket: il passo successivo è un nuovo riaudit.
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

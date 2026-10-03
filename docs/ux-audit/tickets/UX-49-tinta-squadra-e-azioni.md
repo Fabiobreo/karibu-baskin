@@ -1,6 +1,6 @@
 # UX-49 · Tinta squadra dove convive con azioni ed esiti
 
-**Ondata:** 5 · **Stima:** S · **Dipende da:** decisione del committente · **Stato:** A e C fatti il 03/10/2026; B in attesa del committente
+**Ondata:** 5 · **Stima:** S · **Dipende da:** decisione del committente · **Stato:** fatto (03/10/2026): A e C fatti, B scartata dal committente
 
 Nato dal [riaudit del 02/10/2026](../RIAUDIT-2026-10-02.md), problema 3.
 
@@ -32,7 +32,7 @@ Presa da chi implementa su delega del committente per le parti che non toccano l
 
 - **A: sì**, per qualunque colonna ordinata, non solo i punti: la colonna ordinata è uno stato attivo, che porta già `TableSortLabel active`; colorare tutte le celle della colonna era un doppione. Celle in inchiostro (`text.primary`), freccia dell'intestazione invariata.
 - **C: sì**, ma non con più spazio (12 px non staccano due verdi): in `/risultati` sotto la fascia squadra vengono prima i chip dei conteggi (testo), poi la barra degli esiti, su un binario neutro (`action.hover`). Resta il caso Kapuleti sotto il chip arancio della stagione (stato attivo contro identità): è dentro B.
-- **B: no, resta al committente**: restringerebbe la regola "tinta squadra come superficie" scelta il 01/10.
+- **B: no** (committente, 03/10/2026): il chip squadra resta pieno anche in `/marcatori` e `/admin/partite`; vale la regola "tinta squadra come superficie" del 01/10, e il nome accanto al colore è il secondo segnale.
 
 ## Criteri di accettazione
 
