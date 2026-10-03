@@ -8,6 +8,7 @@ import {
   createAppNotification,
   createTargetedAppNotifications,
 } from "@/lib/notifications/appNotifications";
+import { inBackground } from "@/lib/background";
 
 // Only relative same-origin paths are allowed — prevents open-redirect phishing via push.
 const relativeUrlRegex = /^\/[\w\-/?=&%.#]*$/;
@@ -60,14 +61,16 @@ export async function POST(req: NextRequest) {
     const userIds = targetAll ? null : await resolveFilterUserIds({ teamId, sportRole });
     if (userIds === null) {
       result = await sendPushToAll(payload);
-      createAppNotification({ type: "SYSTEM", title, body, url: target }).catch((err) =>
-        console.error("[notify] app notification", err)
+      inBackground(
+        createAppNotification({ type: "SYSTEM", title, body, url: target }),
+        "notify app notification"
       );
     } else {
       recipients = userIds.length;
       result = await sendPushToUsers(userIds, payload);
-      createTargetedAppNotifications(userIds, { type: "SYSTEM", title, body, url: target }).catch(
-        (err) => console.error("[notify] app notification", err)
+      inBackground(
+        createTargetedAppNotifications(userIds, { type: "SYSTEM", title, body, url: target }),
+        "notify app notification"
       );
     }
   } catch (err) {
@@ -79,22 +82,25 @@ export async function POST(req: NextRequest) {
   // si usa l'invio manuale.
   const session = await auth();
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "SEND_NOTIFICATION",
-      targetType: "Notification",
-      targetId: targetAll
-        ? "all"
-        : [teamId, sportRole != null ? `role-${sportRole}` : null].filter(Boolean).join("+"),
-      after: {
-        title,
-        body,
-        url: target,
-        audience: targetAll ? "all" : { teamId: teamId ?? null, sportRole: sportRole ?? null },
-        recipients,
-        devices: result.sent,
-      },
-    }).catch((err) => console.error("[audit] send notification", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "SEND_NOTIFICATION",
+        targetType: "Notification",
+        targetId: targetAll
+          ? "all"
+          : [teamId, sportRole != null ? `role-${sportRole}` : null].filter(Boolean).join("+"),
+        after: {
+          title,
+          body,
+          url: target,
+          audience: targetAll ? "all" : { teamId: teamId ?? null, sportRole: sportRole ?? null },
+          recipients,
+          devices: result.sent,
+        },
+      }),
+      "audit send notification"
+    );
   }
 
   return NextResponse.json({ sent: result.sent, removed: result.removed });

@@ -6,6 +6,7 @@ import { logAudit } from "@/lib/audit";
 import { ROLE_LABELS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import type { AppRole, Gender } from "@prisma/client";
 import { csvResponse, csvRow } from "@/lib/csv";
+import { inBackground } from "@/lib/background";
 
 const APP_ROLE_IT: Record<AppRole, string> = {
   GUEST: "Ospite",
@@ -33,13 +34,16 @@ export async function GET(req: NextRequest) {
 
   // Audit: ogni export di dati personali viene registrato (GDPR).
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "EXPORT_PII",
-      targetType: "Export",
-      targetId: type,
-      after: { season: season ?? null, teamId: teamId ?? null },
-    }).catch(() => {});
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "EXPORT_PII",
+        targetType: "Export",
+        targetId: type,
+        after: { season: season ?? null, teamId: teamId ?? null },
+      }),
+      "audit export"
+    );
   }
 
   if (season && !/^\d{4}-\d{2}$/.test(season)) {

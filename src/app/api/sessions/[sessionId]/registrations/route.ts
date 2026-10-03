@@ -5,6 +5,7 @@ import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { StaffRegistrationCreateSchema } from "@/lib/schemas";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ sessionId: string }> };
 
@@ -98,13 +99,16 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { id: true, name: true, role: true, attended: true, userId: true, childId: true },
     });
 
-    logAudit({
-      actorId: session.user.id,
-      action: "ADD_REGISTRATION",
-      targetType: "Registration",
-      targetId: registration.id,
-      after: { sessionId, userId, childId, name, role: effectiveRole, attended },
-    }).catch((err) => console.error("[audit] add registration", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "ADD_REGISTRATION",
+        targetType: "Registration",
+        targetId: registration.id,
+        after: { sessionId, userId, childId, name, role: effectiveRole, attended },
+      }),
+      "audit add registration"
+    );
 
     return NextResponse.json(registration, { status: 201 });
   } catch (err) {

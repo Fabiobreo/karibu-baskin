@@ -6,6 +6,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateGroupSlug } from "@/lib/slugUtils";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-groups", 30, 60_000);
@@ -69,17 +70,20 @@ export async function POST(req: NextRequest) {
   });
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "CREATE_GROUP",
-      targetType: "Group",
-      targetId: group.id,
-      after: {
-        name: group.name,
-        season: group.season,
-        championship: group.championship,
-      },
-    }).catch((err) => console.error("[audit] create group", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "CREATE_GROUP",
+        targetType: "Group",
+        targetId: group.id,
+        after: {
+          name: group.name,
+          season: group.season,
+          championship: group.championship,
+        },
+      }),
+      "audit create group"
+    );
   }
 
   return NextResponse.json(group, { status: 201 });

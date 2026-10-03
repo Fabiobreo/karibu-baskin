@@ -10,6 +10,7 @@ import { auth } from "@/lib/authjs";
 import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
+import { inBackground } from "@/lib/background";
 
 // GET — lista post pubblicati (pubblica)
 export async function GET(req: NextRequest) {
@@ -117,18 +118,24 @@ export async function POST(req: NextRequest) {
     const notifTitle = poll ? "Nuovo sondaggio" : "Nuova news";
     const notifBody = title;
 
-    sendPushToAll(
-      { title: notifTitle, body: notifBody, url: `/news/${slug}`, type: notifType },
-      false,
-      "NEW_POST"
-    ).catch(console.error);
+    inBackground(
+      sendPushToAll(
+        { title: notifTitle, body: notifBody, url: `/news/${slug}`, type: notifType },
+        false,
+        "NEW_POST"
+      ),
+      "push new post"
+    );
 
-    createAppNotification({
-      type: notifType,
-      title: notifTitle,
-      body: notifBody,
-      url: `/news/${slug}`,
-    }).catch(console.error);
+    inBackground(
+      createAppNotification({
+        type: notifType,
+        title: notifTitle,
+        body: notifBody,
+        url: `/news/${slug}`,
+      }),
+      "notification new post"
+    );
   }
 
   return NextResponse.json(post, { status: 201 });

@@ -10,6 +10,7 @@ import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { inBackground } from "@/lib/background";
 
 // GET — ritorna le squadre salvate in DB
 export async function GET(
@@ -102,7 +103,7 @@ export async function POST(
     data: { teams: { ...withoutRatings(teams), coaches, generated: true } as object },
   });
 
-  // Notifica push solo agli iscritti all'allenamento (fire-and-forget)
+  // Notifica push solo agli iscritti all'allenamento (dopo la risposta)
   // Solo se l'allenamento non è finito: squadre ricostruite dopo (pagina "da
   // completare") non sono una novità per nessuno.
   const trainingSession = await prisma.trainingSession.findUnique({
@@ -123,29 +124,36 @@ export async function POST(
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
       type: "TEAMS_READY",
     };
-    sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch((err) =>
-      console.error("[push] teams ready", err)
+    inBackground(
+      sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY"),
+      "push teams ready"
     );
-    createTargetedAppNotifications(registeredUserIds, {
-      type: "TEAMS_READY",
-      title: "Squadre pronte!",
-      body: `Le squadre per "${trainingSession.title}" sono state create.`,
-      url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
-    }).catch((err) => console.error("[notification] teams ready", err));
+    inBackground(
+      createTargetedAppNotifications(registeredUserIds, {
+        type: "TEAMS_READY",
+        title: "Squadre pronte!",
+        body: `Le squadre per "${trainingSession.title}" sono state create.`,
+        url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
+      }),
+      "notification teams ready"
+    );
   }
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "GENERATE_TEAMS",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      after: {
-        numTeams,
-        athleteCount: athletes.length,
-        coachCount: coaches.length,
-      },
-    }).catch((err) => console.error("[audit] generate teams", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "GENERATE_TEAMS",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        after: {
+          numTeams,
+          athleteCount: athletes.length,
+          coachCount: coaches.length,
+        },
+      }),
+      "audit generate teams"
+    );
   }
 
   return NextResponse.json({ ...withoutRatings(teams), coaches, generated: true });
@@ -179,14 +187,17 @@ export async function PUT(
   });
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "UPDATE_TEAMS",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      before: (beforeSession?.teams as Record<string, unknown> | null) ?? null,
-      after: { ...body, generated: true },
-    }).catch((err) => console.error("[audit] update teams", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_TEAMS",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        before: (beforeSession?.teams as Record<string, unknown> | null) ?? null,
+        after: { ...body, generated: true },
+      }),
+      "audit update teams"
+    );
   }
 
   return NextResponse.json({ ...body, generated: true });
@@ -217,12 +228,15 @@ export async function DELETE(
   }
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "DELETE_TEAMS",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-    }).catch((err) => console.error("[audit] delete teams", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "DELETE_TEAMS",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+      }),
+      "audit delete teams"
+    );
   }
 
   return NextResponse.json({ ok: true });

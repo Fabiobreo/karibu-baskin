@@ -5,6 +5,7 @@ import { TeamMemberSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -75,22 +76,28 @@ export async function POST(req: Request, { params }: Params) {
     },
   });
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "ADD_MEMBER",
-      targetType: "TeamMembership",
-      targetId: membership.id,
-      after: { teamId, userId: body.userId, childId: body.childId },
-    }).catch((err) => console.error("[audit] add member", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "ADD_MEMBER",
+        targetType: "TeamMembership",
+        targetId: membership.id,
+        after: { teamId, userId: body.userId, childId: body.childId },
+      }),
+      "audit add member"
+    );
   }
   if (body.userId) {
-    createAppNotification({
-      type: "SYSTEM",
-      title: "Aggiunto a una squadra",
-      body: `Sei stato aggiunto alla squadra "${membership.team.name}".`,
-      url: "/profilo",
-      targetUserId: body.userId,
-    }).catch((err) => console.error("[notification] add member", err));
+    inBackground(
+      createAppNotification({
+        type: "SYSTEM",
+        title: "Aggiunto a una squadra",
+        body: `Sei stato aggiunto alla squadra "${membership.team.name}".`,
+        url: "/profilo",
+        targetUserId: body.userId,
+      }),
+      "notification add member"
+    );
   }
 
   return NextResponse.json(membership, { status: 201 });

@@ -4,6 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { guardianOf, isGuardian } from "@/lib/guardians";
+import { inBackground } from "@/lib/background";
 
 export async function DELETE(
   _req: NextRequest,
@@ -47,18 +48,21 @@ export async function DELETE(
 
   // Log audit solo se l'azione è eseguita dallo staff (non da auto-cancellazione utente)
   if (isStaff && !isOwner && currentUserId) {
-    logAudit({
-      actorId: currentUserId,
-      action: "DELETE_REGISTRATION",
-      targetType: "Registration",
-      targetId: regId,
-      before: {
-        sessionId: registration.sessionId,
-        userId: registration.userId,
-        childId: registration.childId,
-        name: registration.name,
-      },
-    }).catch((err) => console.error("[audit] delete registration", err));
+    inBackground(
+      logAudit({
+        actorId: currentUserId,
+        action: "DELETE_REGISTRATION",
+        targetType: "Registration",
+        targetId: regId,
+        before: {
+          sessionId: registration.sessionId,
+          userId: registration.userId,
+          childId: registration.childId,
+          name: registration.name,
+        },
+      }),
+      "audit delete registration"
+    );
   }
 
   return new NextResponse(null, { status: 204 });

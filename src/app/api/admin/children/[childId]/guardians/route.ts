@@ -5,6 +5,7 @@ import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { GuardianLinkSchema } from "@/lib/schemas";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ childId: string }> };
 
@@ -69,18 +70,21 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Errore durante il collegamento" }, { status: 500 });
   }
 
-  logAudit({
-    actorId,
-    action: "LINK_GUARDIAN",
-    targetType: "Child",
-    targetId: childId,
-    after: {
-      childName: child.name,
-      userId: user.id,
-      userName: user.name,
-      ...(promote && { parentPromotedFrom: "GUEST" }),
-    },
-  }).catch((err) => console.error("[audit] link guardian", err));
+  inBackground(
+    logAudit({
+      actorId,
+      action: "LINK_GUARDIAN",
+      targetType: "Child",
+      targetId: childId,
+      after: {
+        childName: child.name,
+        userId: user.id,
+        userName: user.name,
+        ...(promote && { parentPromotedFrom: "GUEST" }),
+      },
+    }),
+    "audit link guardian"
+  );
 
   return NextResponse.json(
     { childId, name: child.name, parentName: user.name, parentPromoted: promote },
@@ -114,13 +118,16 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
   await prisma.childGuardian.delete({ where: { childId_userId: { childId, userId } } });
 
-  logAudit({
-    actorId,
-    action: "UNLINK_GUARDIAN",
-    targetType: "Child",
-    targetId: childId,
-    before: { userId },
-  }).catch((err) => console.error("[audit] unlink guardian", err));
+  inBackground(
+    logAudit({
+      actorId,
+      action: "UNLINK_GUARDIAN",
+      targetType: "Child",
+      targetId: childId,
+      before: { userId },
+    }),
+    "audit unlink guardian"
+  );
 
   return new NextResponse(null, { status: 204 });
 }

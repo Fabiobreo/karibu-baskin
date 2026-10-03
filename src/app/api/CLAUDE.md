@@ -10,7 +10,7 @@ Ogni `route.ts` deve seguire questo ordine:
 2. **Auth** sulle mutation: `if (!(await isCoachOrAdmin())) return 401`. Per route admin-only: `isAdminUser()`. Per route user-scoped: `auth()` e poi check su `session.user.id`.
 3. **Parsing input** con Zod: `const parsed = XxxSchema.safeParse(raw)` → return 400 con `parsed.error.issues[0]?.message`.
 4. **Operazione Prisma** in `try/catch` per intercettare `PrismaClientKnownRequestError` (P2002 = unique violation → 409).
-5. **Side effects** (push, notifiche in-app, audit) **fire-and-forget** con `.catch(console.error)` — mai bloccare la risposta.
+5. **Side effects** (push, notifiche in-app, audit, badge, rating) dopo la risposta con `inBackground(promessa, "etichetta")` da `@/lib/background`, che li registra con `after()` e ne logga gli errori. Mai una promessa lasciata a sé (`qualcosa().catch(...)` non attesa): su Vercel la funzione si congela appena parte la risposta e la promessa resta a metà (push in ritardo di ore o perse). Nei cron (`api/cron/`) invece `await`, con un catch che logga per ogni invio.
 6. **Response** `NextResponse.json(...)` con status corretto (201 su create, 200 su update/get, 204 o body vuoto su delete).
 
 ## Helper obbligatori da `@/lib/`
@@ -49,6 +49,6 @@ Ogni rotta con una GET è classificata in `src/app/api/routeAccess.test.ts` (pub
 - **Mai** controlli di ruolo ad-hoc (`if (session.user.appRole === "ADMIN")`) → usare `hasRole()` o gli helper di `apiAuth.ts`.
 - **Mai** chiamare le proprie API da un Server Component — andare a Prisma direttamente.
 - **Mai** restituire entità Prisma intere se contengono dati sensibili — fare `select` esplicito.
-- **Mai** push/notifiche bloccanti (await) — sempre fire-and-forget.
+- **Mai** una promessa di side effect lasciata a sé (fire-and-forget con `.catch`): nelle rotte `inBackground(promessa, "etichetta")` da `@/lib/background`, nei cron `await`.
 - **Mai** mutare `Json` con `null` JS → usare `Prisma.DbNull`.
 - **Mai** dimenticare il rate-limit sulle GET pubbliche (l'app è esposta in chiaro su Vercel).

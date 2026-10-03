@@ -8,6 +8,7 @@ import type { MatchResult } from "@prisma/client";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { mixedMatchError } from "@/lib/matches/mixedTeam";
+import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-matches", 30, 60_000);
@@ -134,18 +135,21 @@ export async function POST(req: Request) {
     },
   });
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "CREATE_MATCH",
-      targetType: "Match",
-      targetId: match.id,
-      after: {
-        teamId: body.teamId,
-        opponentId: body.opponentId,
-        opponentTeamId: body.opponentTeamId,
-        date: body.date,
-      },
-    }).catch((err) => console.error("[audit] create match", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "CREATE_MATCH",
+        targetType: "Match",
+        targetId: match.id,
+        after: {
+          teamId: body.teamId,
+          opponentId: body.opponentId,
+          opponentTeamId: body.opponentTeamId,
+          date: body.date,
+        },
+      }),
+      "audit create match"
+    );
   }
 
   return NextResponse.json(match, { status: 201 });

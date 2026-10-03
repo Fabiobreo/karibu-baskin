@@ -103,16 +103,20 @@ export async function GET(req: NextRequest) {
 
     const ids = [...targetUserIds];
 
-    sendPushToUsers(ids, { title, body, url, type: "SYSTEM" }).catch((err) =>
-      console.error("[push] availability reminder", err)
-    );
-
-    createTargetedAppNotifications(ids, {
-      type: "SYSTEM",
-      title: "Disponibilità partita",
-      body,
-      url,
-    }).catch((err) => console.error("[notification] availability reminder", err));
+    // Nei cron si aspetta tutto prima di rispondere: dopo la risposta Vercel
+    // congela la funzione. Ognuno ha il suo catch, così una push fallita non
+    // ferma la notifica in-app né il resto del giro.
+    await Promise.all([
+      sendPushToUsers(ids, { title, body, url, type: "SYSTEM" }).catch((err) =>
+        console.error("[push] availability reminder", err)
+      ),
+      createTargetedAppNotifications(ids, {
+        type: "SYSTEM",
+        title: "Disponibilità partita",
+        body,
+        url,
+      }).catch((err) => console.error("[notification] availability reminder", err)),
+    ]);
 
     totalReminded += ids.length;
     matchesNotified += 1;

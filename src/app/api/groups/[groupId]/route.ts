@@ -8,6 +8,7 @@ import { GroupUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateGroupSlug } from "@/lib/slugUtils";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ groupId: string }> };
 
@@ -102,14 +103,17 @@ export async function PUT(req: NextRequest, { params }: Params) {
       },
     });
     if (authSession?.user?.id) {
-      logAudit({
-        actorId: authSession.user.id,
-        action: "UPDATE_GROUP",
-        targetType: "Group",
-        targetId: groupId,
-        before,
-        after: { name: group.name, championship: group.championship },
-      }).catch((err) => console.error("[audit] update group", err));
+      inBackground(
+        logAudit({
+          actorId: authSession.user.id,
+          action: "UPDATE_GROUP",
+          targetType: "Group",
+          targetId: groupId,
+          before,
+          after: { name: group.name, championship: group.championship },
+        }),
+        "audit update group"
+      );
     }
     return NextResponse.json(group);
   } catch (err) {
@@ -141,13 +145,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     throw err;
   }
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "DELETE_GROUP",
-      targetType: "Group",
-      targetId: groupId,
-      before,
-    }).catch((err) => console.error("[audit] delete group", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "DELETE_GROUP",
+        targetType: "Group",
+        targetId: groupId,
+        before,
+      }),
+      "audit delete group"
+    );
   }
   return new NextResponse(null, { status: 204 });
 }

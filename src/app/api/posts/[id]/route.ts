@@ -9,6 +9,7 @@ import { auth } from "@/lib/authjs";
 import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -180,23 +181,29 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const notifType = hasPoll ? "NEW_POLL" : "NEW_POST";
     const notifTitle = hasPoll ? "Nuovo sondaggio" : "Nuova news";
 
-    sendPushToAll(
-      {
+    inBackground(
+      sendPushToAll(
+        {
+          title: notifTitle,
+          body: updatedPost.title,
+          url: `/news/${updatedPost.slug}`,
+          type: notifType,
+        },
+        false,
+        "NEW_POST"
+      ),
+      "push new post"
+    );
+
+    inBackground(
+      createAppNotification({
+        type: notifType,
         title: notifTitle,
         body: updatedPost.title,
         url: `/news/${updatedPost.slug}`,
-        type: notifType,
-      },
-      false,
-      "NEW_POST"
-    ).catch(console.error);
-
-    createAppNotification({
-      type: notifType,
-      title: notifTitle,
-      body: updatedPost.title,
-      url: `/news/${updatedPost.slug}`,
-    }).catch(console.error);
+      }),
+      "notification new post"
+    );
   }
 
   return NextResponse.json(updatedPost);

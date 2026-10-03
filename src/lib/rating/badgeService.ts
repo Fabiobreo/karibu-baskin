@@ -131,7 +131,7 @@ export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
  * Ricalcola i badge del giocatore, persiste quelli nuovi in `EarnedBadge` e
  * (se `notify`) avvisa il giocatore — o il genitore, per i figli senza account.
  * Idempotente: i badge già registrati non rigenerano notifiche.
- * Pensata per uso fire-and-forget; ritorna gli id dei badge appena sbloccati.
+ * Pensata per girare dopo la risposta (`inBackground`); ritorna gli id dei badge appena sbloccati.
  */
 export async function reconcilePlayerBadges(
   ref: PlayerRef,

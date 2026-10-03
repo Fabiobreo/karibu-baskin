@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { inBackground } from "@/lib/background";
 
 export async function POST(
   _req: NextRequest,
@@ -29,12 +30,15 @@ export async function POST(
   });
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "CONCLUDE_SESSION",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-    }).catch((err) => console.error("[audit] conclude session", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "CONCLUDE_SESSION",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+      }),
+      "audit conclude session"
+    );
   }
 
   return new NextResponse(null, { status: 204 });

@@ -9,6 +9,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -105,16 +106,19 @@ export async function PUT(req: Request, { params }: Params) {
   const saved = results.filter(Boolean);
 
   if (authSession?.user?.id && saved.length > 0) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "UPDATE_MATCH_STATS",
-      targetType: "Match",
-      targetId: matchId,
-      after: { rowCount: saved.length },
-    }).catch((err) => console.error("[audit] update match stats", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_MATCH_STATS",
+        targetType: "Match",
+        targetId: matchId,
+        after: { rowCount: saved.length },
+      }),
+      "audit update match stats"
+    );
   }
 
-  // Sblocco badge fire-and-forget per ogni giocatore con stats aggiornate
+  // Sblocco badge dopo la risposta per ogni giocatore con stats aggiornate
   if (saved.length > 0) {
     for (const s of body) {
       const ref = s.userId
@@ -122,37 +126,45 @@ export async function PUT(req: Request, { params }: Params) {
         : s.childId
           ? ({ childId: s.childId } as const)
           : null;
-      if (ref) reconcilePlayerBadges(ref, { notify: true }).catch(console.error);
+      if (ref) inBackground(reconcilePlayerBadges(ref, { notify: true }), "badges match stats");
     }
   }
 
-  // Notifica push + in-app fire-and-forget agli atleti con stats
+  // Notifica push + in-app dopo la risposta agli atleti con stats
   if (saved.length > 0) {
-    prisma.match
-      .findUnique({
-        where: { id: matchId },
-        select: {
-          team: { select: { name: true } },
-          opponent: { select: { name: true } },
-          opponentTeam: { select: { name: true } },
-          slug: true,
-        },
-      })
-      .then((match) => {
-        if (!match) return;
-        const title = "Statistiche disponibili";
-        const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
-        const body = `Le tue statistiche per ${match.team.name} vs ${opponentName} sono online.`;
-        const url = `/partite/${match.slug ?? matchId}`;
-        sendPushToAll({ title, body, url, type: "MATCH_RESULT" }, false).catch(console.error);
-        createAppNotification({
-          title,
-          body,
-          url,
-          type: "MATCH_RESULT",
-        }).catch(console.error);
-      })
-      .catch(console.error);
+    // Push e in-app partono insieme; la catena finisce quando sono finiti
+    // entrambi, così `after()` tiene viva la funzione per tutti e due.
+    inBackground(
+      prisma.match
+        .findUnique({
+          where: { id: matchId },
+          select: {
+            team: { select: { name: true } },
+            opponent: { select: { name: true } },
+            opponentTeam: { select: { name: true } },
+            slug: true,
+          },
+        })
+        .then(async (match) => {
+          if (!match) return;
+          const title = "Statistiche disponibili";
+          const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
+          const body = `Le tue statistiche per ${match.team.name} vs ${opponentName} sono online.`;
+          const url = `/partite/${match.slug ?? matchId}`;
+          await Promise.all([
+            sendPushToAll({ title, body, url, type: "MATCH_RESULT" }, false).catch((err) =>
+              console.error("[push match stats]", err)
+            ),
+            createAppNotification({
+              title,
+              body,
+              url,
+              type: "MATCH_RESULT",
+            }).catch((err) => console.error("[notification match stats]", err)),
+          ]);
+        }),
+      "notification match stats"
+    );
   }
 
   return NextResponse.json(saved);

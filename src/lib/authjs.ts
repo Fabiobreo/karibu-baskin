@@ -4,6 +4,7 @@ import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { sendMagicLinkEmail, AUTH_EMAIL_FROM, MAGIC_LINK_MAX_AGE_SECONDS } from "@/lib/authEmail";
 import { prisma } from "@/lib/db";
+import { inBackground } from "@/lib/background";
 import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
 import { sendPushToAll } from "@/lib/notifications/webpush";
@@ -51,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // lo genera ora. Fire-and-forget: non blocca mai il login se fallisce.
       if (account?.provider === "google" && profile && user.email) {
         const picture = (profile as { picture?: string }).picture;
-        (async () => {
+        const update = (async () => {
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email! },
             select: { id: true, slug: true, name: true },
@@ -70,14 +71,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               ...(slugToSet ? { slug: slugToSet } : {}),
             },
           });
-        })().catch((err) => console.error("[authjs] signIn profile update failed:", err));
+        })();
+        inBackground(update, "authjs signIn profile update failed");
       }
 
       // Accesso via magic link: non c'è un profilo OAuth da cui leggere nome e
       // foto, ma un utente pre-creato dall'admin non ha ancora lo slug (la POST
       // /api/users non lo genera). Senza slug il profilo pubblico non è raggiungibile.
       if (account?.provider === "resend" && user.email) {
-        (async () => {
+        const update = (async () => {
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email! },
             select: { id: true, slug: true, name: true },
@@ -87,7 +89,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (slug) {
             await prisma.user.update({ where: { id: dbUser.id }, data: { slug } });
           }
-        })().catch((err) => console.error("[authjs] signIn slug (magic link) failed:", err));
+        })();
+        inBackground(update, "authjs signIn slug (magic link) failed");
       }
 
       return true;
@@ -113,22 +116,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async createUser({ user }) {
       // Genera slug per il nuovo utente
       if (user.name && user.id) {
-        generateUserSlug(user.name)
-          .then((slug) => {
+        inBackground(
+          generateUserSlug(user.name).then((slug) => {
             if (slug) {
               return prisma.user.update({ where: { id: user.id! }, data: { slug } });
             }
-          })
-          .catch((err) => console.error("[authjs] createUser slug generation failed:", err));
+          }),
+          "authjs createUser slug generation failed"
+        );
       }
       // Notifica lo staff del nuovo account. Col magic link il nome non c'è
       // ancora (solo l'email): la notifica parte quando l'utente lo inserisce,
       // da setOwnName, così lo staff legge un nome e non un indirizzo.
       if (user.name?.trim()) {
-        sendPushToAll(
-          { title: "👤 Nuovo utente", body: newUserPushBody(user.name), url: "/admin/utenti" },
-          true // solo admin
-        ).catch(() => {});
+        inBackground(
+          sendPushToAll(
+            { title: "👤 Nuovo utente", body: newUserPushBody(user.name), url: "/admin/utenti" },
+            true // solo admin
+          ),
+          "push new user (createUser)"
+        );
       }
     },
   },

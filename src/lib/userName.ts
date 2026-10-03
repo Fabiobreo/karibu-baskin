@@ -1,3 +1,4 @@
+import { inBackground } from "@/lib/background";
 import { prisma } from "@/lib/db";
 import { generateUserSlug } from "@/lib/slugUtils";
 import { sendPushToAll } from "@/lib/notifications/webpush";
@@ -42,10 +43,13 @@ export async function setOwnName(userId: string, name: string): Promise<SetOwnNa
   });
 
   if (!hadName && user.appRole === "GUEST") {
-    sendPushToAll(
-      { title: "👤 Nuovo utente", body: newUserPushBody(name), url: "/admin/utenti" },
-      true // solo admin
-    ).catch((err) => console.error("[push] new user", err));
+    inBackground(
+      sendPushToAll(
+        { title: "👤 Nuovo utente", body: newUserPushBody(name), url: "/admin/utenti" },
+        true // solo admin
+      ),
+      "push new user"
+    );
   }
 
   return { ok: true, name };

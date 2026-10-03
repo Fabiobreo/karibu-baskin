@@ -6,6 +6,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 import { sessionEndDate } from "@/lib/dateUtils";
+import { inBackground } from "@/lib/background";
 
 export async function POST(
   _req: NextRequest,
@@ -43,13 +44,16 @@ export async function POST(
   }
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "CLOSE_REGISTRATIONS",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      after: { date: session.date.toISOString(), title: session.title },
-    }).catch((err) => console.error("[audit] close registrations", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "CLOSE_REGISTRATIONS",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        after: { date: session.date.toISOString(), title: session.title },
+      }),
+      "audit close registrations"
+    );
   }
 
   return NextResponse.json(session);

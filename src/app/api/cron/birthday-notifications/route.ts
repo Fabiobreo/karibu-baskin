@@ -45,11 +45,17 @@ export async function GET(req: NextRequest) {
   });
   const memberIds = members.map((m) => m.id);
 
-  sendPushToUsers(memberIds, { title, body, url: "/" }).catch(console.error);
-
-  createTargetedAppNotifications(memberIds, { type: "BIRTHDAY", title, body, url: "/" }).catch(
-    console.error
-  );
+  // Nei cron si aspetta tutto prima di rispondere: dopo la risposta Vercel
+  // congela la funzione. Ognuno ha il suo catch, così una push fallita non
+  // ferma la notifica in-app.
+  await Promise.all([
+    sendPushToUsers(memberIds, { title, body, url: "/" }).catch((err) =>
+      console.error("[push] birthday", err)
+    ),
+    createTargetedAppNotifications(memberIds, { type: "BIRTHDAY", title, body, url: "/" }).catch(
+      (err) => console.error("[notification] birthday", err)
+    ),
+  ]);
 
   return NextResponse.json({ sent: celebrants.length, names });
 }

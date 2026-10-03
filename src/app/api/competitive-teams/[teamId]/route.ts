@@ -8,6 +8,7 @@ import { CompetitiveTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -97,7 +98,7 @@ export async function PUT(req: Request, { params }: Params) {
 
   // Gestione immagine: elimina la vecchia se viene sostituita o rimossa
   if (body.imageUrl !== undefined && current?.imageUrl && current.imageUrl !== body.imageUrl) {
-    deleteImage(current.imageUrl).catch((e) => console.error("[blob] delete team image", e));
+    inBackground(deleteImage(current.imageUrl), "blob delete team image");
   }
 
   try {
@@ -113,13 +114,16 @@ export async function PUT(req: Request, { params }: Params) {
       },
     });
     if (session?.user?.id) {
-      logAudit({
-        actorId: session.user.id,
-        action: "UPDATE_TEAM",
-        targetType: "CompetitiveTeam",
-        targetId: teamId,
-        after: body as Record<string, unknown>,
-      }).catch((err) => console.error("[audit] update team", err));
+      inBackground(
+        logAudit({
+          actorId: session.user.id,
+          action: "UPDATE_TEAM",
+          targetType: "CompetitiveTeam",
+          targetId: teamId,
+          after: body as Record<string, unknown>,
+        }),
+        "audit update team"
+      );
     }
     return NextResponse.json(team);
   } catch (err) {
@@ -157,15 +161,18 @@ export async function DELETE(_req: Request, { params }: Params) {
     throw err;
   }
 
-  deleteImage(team?.imageUrl).catch((e) => console.error("[blob] delete team image on delete", e));
+  inBackground(deleteImage(team?.imageUrl), "blob delete team image on delete");
 
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "DELETE_TEAM",
-      targetType: "CompetitiveTeam",
-      targetId: teamId,
-    }).catch((err) => console.error("[audit] delete team", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "DELETE_TEAM",
+        targetType: "CompetitiveTeam",
+        targetId: teamId,
+      }),
+      "audit delete team"
+    );
   }
   return new NextResponse(null, { status: 204 });
 }

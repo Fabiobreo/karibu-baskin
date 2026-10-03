@@ -8,6 +8,7 @@ import { logAudit } from "@/lib/audit";
 import { generateEventSlug } from "@/lib/slugUtils";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-events", 30, 60_000);
@@ -52,26 +53,33 @@ export async function POST(req: Request) {
   });
 
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "CREATE_EVENT",
-      targetType: "Event",
-      targetId: event.id,
-      after: { title: event.title, date: event.date },
-    }).catch((err) => console.error("[audit] create event", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "CREATE_EVENT",
+        targetType: "Event",
+        targetId: event.id,
+        after: { title: event.title, date: event.date },
+      }),
+      "audit create event"
+    );
   }
 
-  // Notifica push + in-app fire-and-forget a tutti
+  // Notifica push + in-app dopo la risposta a tutti
   const url = `/eventi/${event.slug ?? event.id}`;
-  sendPushToAll({ title: "Nuovo evento", body: event.title, url, type: "SYSTEM" }, false).catch(
-    console.error
+  inBackground(
+    sendPushToAll({ title: "Nuovo evento", body: event.title, url, type: "SYSTEM" }, false),
+    "push new event"
   );
-  createAppNotification({
-    type: "NEW_EVENT",
-    title: "Nuovo evento",
-    body: event.title,
-    url,
-  }).catch(console.error);
+  inBackground(
+    createAppNotification({
+      type: "NEW_EVENT",
+      title: "Nuovo evento",
+      body: event.title,
+      url,
+    }),
+    "notification new event"
+  );
 
   return NextResponse.json(event, { status: 201 });
 }

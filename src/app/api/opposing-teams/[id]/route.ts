@@ -7,6 +7,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateOpposingTeamSlug } from "@/lib/slugUtils";
 import { deleteImage } from "@/lib/blob";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -52,19 +53,20 @@ export async function PUT(req: Request, { params }: Params) {
   });
   // Se l'immagine è stata sostituita o rimossa, elimina il vecchio blob.
   if (body.imageUrl !== undefined && before?.imageUrl && before.imageUrl !== team.imageUrl) {
-    deleteImage(before.imageUrl).catch((err) =>
-      console.error("[blob] delete old opposing team image", err)
-    );
+    inBackground(deleteImage(before.imageUrl), "blob delete old opposing team image");
   }
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "UPDATE_OPPOSING_TEAM",
-      targetType: "OpposingTeam",
-      targetId: id,
-      before,
-      after: { name: team.name, city: team.city, notes: team.notes },
-    }).catch((err) => console.error("[audit] update opposing team", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_OPPOSING_TEAM",
+        targetType: "OpposingTeam",
+        targetId: id,
+        before,
+        after: { name: team.name, city: team.city, notes: team.notes },
+      }),
+      "audit update opposing team"
+    );
   }
   return NextResponse.json(team);
 }
@@ -107,13 +109,16 @@ export async function DELETE(_req: Request, { params }: Params) {
     return NextResponse.json({ error: "Errore nell'eliminazione" }, { status: 500 });
   }
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "DELETE_OPPOSING_TEAM",
-      targetType: "OpposingTeam",
-      targetId: id,
-      before,
-    }).catch((err) => console.error("[audit] delete opposing team", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "DELETE_OPPOSING_TEAM",
+        targetType: "OpposingTeam",
+        targetId: id,
+        before,
+      }),
+      "audit delete opposing team"
+    );
   }
   return new NextResponse(null, { status: 204 });
 }

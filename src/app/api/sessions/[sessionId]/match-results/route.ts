@@ -11,6 +11,7 @@ import {
   recomputeRatings,
   type RegistrationRefMap,
 } from "@/lib/rating/ratingEngine";
+import { inBackground } from "@/lib/background";
 
 const MatchResultSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),
@@ -97,18 +98,21 @@ export async function POST(
   });
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "CREATE_TRAINING_MATCH_RESULT",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      after: {
-        matchup: result.matchup,
-        scoreA: result.scoreA,
-        scoreB: result.scoreB,
-        scoreC: result.scoreC,
-      },
-    }).catch((err) => console.error("[audit] training match result", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "CREATE_TRAINING_MATCH_RESULT",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        after: {
+          matchup: result.matchup,
+          scoreA: result.scoreA,
+          scoreB: result.scoreB,
+          scoreC: result.scoreC,
+        },
+      }),
+      "audit training match result"
+    );
   }
 
   return NextResponse.json(result, { status: 201 });

@@ -51,18 +51,22 @@ export async function GET(req: NextRequest) {
     const title = "⏰ Iscrizioni da aprire";
     const body = `"${s.title}" è ${dateLabel} alle ${timeLabel} e le iscrizioni non sono ancora state aperte.`;
 
-    sendPushToAll({ title, body, url, type: "SYSTEM" }, true).catch((err) =>
-      console.error("[push] open reminder", err)
-    );
-
-    if (staffIds.length > 0) {
-      createTargetedAppNotifications(staffIds, {
-        type: "SYSTEM",
-        title: "Iscrizioni da aprire",
-        body,
-        url,
-      }).catch((err) => console.error("[notification] open reminder", err));
-    }
+    // Nei cron si aspetta tutto prima di rispondere: dopo la risposta Vercel
+    // congela la funzione. Ognuno ha il suo catch, così una push fallita non
+    // ferma la notifica in-app né il resto del giro.
+    await Promise.all([
+      sendPushToAll({ title, body, url, type: "SYSTEM" }, true).catch((err) =>
+        console.error("[push] open reminder", err)
+      ),
+      staffIds.length > 0
+        ? createTargetedAppNotifications(staffIds, {
+            type: "SYSTEM",
+            title: "Iscrizioni da aprire",
+            body,
+            url,
+          }).catch((err) => console.error("[notification] open reminder", err))
+        : undefined,
+    ]);
 
     await prisma.trainingSession.update({
       where: { id: s.id },

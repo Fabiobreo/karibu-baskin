@@ -13,6 +13,7 @@ import { logAudit } from "@/lib/audit";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { isGuardian } from "@/lib/guardians";
 import { guardianOf } from "@/lib/guardians";
+import { inBackground } from "@/lib/background";
 
 /**
  * Elenco degli iscritti a un allenamento.
@@ -487,13 +488,16 @@ export async function DELETE(req: NextRequest) {
   });
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "DELETE_ANONYMOUS_REGS",
-      targetType: "Registration",
-      targetId: name.trim(),
-      after: { deletedIds: regs.map((r) => r.id), sessionIds },
-    }).catch(() => {});
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "DELETE_ANONYMOUS_REGS",
+        targetType: "Registration",
+        targetId: name.trim(),
+        after: { deletedIds: regs.map((r) => r.id), sessionIds },
+      }),
+      "audit delete registrations by name"
+    );
   }
 
   return new NextResponse(null, { status: 204 });

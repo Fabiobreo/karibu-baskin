@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getLocale } from "next-intl/server";
 import ContactNotificationEmail from "@/emails/ContactNotificationEmail";
 import ContactConfirmationEmail from "@/emails/ContactConfirmationEmail";
+import { inBackground } from "@/lib/background";
 
 // In-memory rate limit: max 3 submissions per IP per 10 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -117,18 +118,19 @@ export async function submitContactForm(
     return { error: err.sendError };
   }
 
-  // 2. Conferma automatica al mittente nella sua lingua (fire-and-forget)
+  // 2. Conferma automatica al mittente nella sua lingua (dopo la risposta)
   const confirmSubject =
     locale === "en" ? "We received your message" : "Abbiamo ricevuto il tuo messaggio";
 
-  resend.emails
-    .send({
+  inBackground(
+    resend.emails.send({
       from: fromAddress,
       to: [email],
       subject: confirmSubject,
       react: ContactConfirmationEmail({ senderName: name, message, locale }),
-    })
-    .catch(() => {});
+    }),
+    "ContactForm confirmation email"
+  );
 
   return { success: true };
 }

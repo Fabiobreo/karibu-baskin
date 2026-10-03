@@ -7,6 +7,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 import { generateEventSlug } from "@/lib/slugUtils";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -30,7 +31,7 @@ export async function PUT(req: Request, { params }: Params) {
   const before = await prisma.event.findUnique({ where: { id: eventId } });
 
   if (body.imageUrl !== undefined && before?.imageUrl && before.imageUrl !== body.imageUrl) {
-    deleteImage(before.imageUrl).catch((e) => console.error("[blob] delete event image", e));
+    inBackground(deleteImage(before.imageUrl), "blob delete event image");
   }
 
   // Genera lo slug se manca (eventi creati prima dell'introduzione del campo).
@@ -56,28 +57,31 @@ export async function PUT(req: Request, { params }: Params) {
       },
     });
     if (session?.user?.id) {
-      logAudit({
-        actorId: session.user.id,
-        action: "UPDATE_EVENT",
-        targetType: "Event",
-        targetId: eventId,
-        before: before
-          ? {
-              title: before.title,
-              date: before.date.toISOString(),
-              endDate: before.endDate?.toISOString() ?? null,
-              location: before.location,
-              description: before.description,
-            }
-          : null,
-        after: {
-          title: event.title,
-          date: event.date.toISOString(),
-          endDate: event.endDate?.toISOString() ?? null,
-          location: event.location,
-          description: event.description,
-        },
-      }).catch((err) => console.error("[audit] update event", err));
+      inBackground(
+        logAudit({
+          actorId: session.user.id,
+          action: "UPDATE_EVENT",
+          targetType: "Event",
+          targetId: eventId,
+          before: before
+            ? {
+                title: before.title,
+                date: before.date.toISOString(),
+                endDate: before.endDate?.toISOString() ?? null,
+                location: before.location,
+                description: before.description,
+              }
+            : null,
+          after: {
+            title: event.title,
+            date: event.date.toISOString(),
+            endDate: event.endDate?.toISOString() ?? null,
+            location: event.location,
+            description: event.description,
+          },
+        }),
+        "audit update event"
+      );
     }
     return NextResponse.json(event);
   } catch (err) {
@@ -110,17 +114,18 @@ export async function DELETE(_req: Request, { params }: Params) {
     throw err;
   }
 
-  deleteImage(eventToDelete?.imageUrl).catch((e) =>
-    console.error("[blob] delete event image on delete", e)
-  );
+  inBackground(deleteImage(eventToDelete?.imageUrl), "blob delete event image on delete");
 
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "DELETE_EVENT",
-      targetType: "Event",
-      targetId: eventId,
-    }).catch((err) => console.error("[audit] delete event", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "DELETE_EVENT",
+        targetType: "Event",
+        targetId: eventId,
+      }),
+      "audit delete event"
+    );
   }
   return new NextResponse(null, { status: 204 });
 }

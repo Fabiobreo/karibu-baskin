@@ -5,6 +5,7 @@ import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { AccountChildLinkSchema } from "@/lib/schemas";
+import { inBackground } from "@/lib/background";
 
 // POST /api/admin/children/link-account — lo staff collega a un genitore un
 // figlio che ha già un proprio account (es. un atleta figlio di un tesserato).
@@ -88,19 +89,22 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    logAudit({
-      actorId: session.user.id,
-      action: "LINK_GUARDIAN",
-      targetType: "Child",
-      targetId: child.id,
-      after: {
-        childName: child.name,
-        accountUserId: account.id,
-        userId: parent.id,
-        userName: parent.name,
-        ...(promote && { parentPromotedFrom: "GUEST" }),
-      },
-    }).catch((err) => console.error("[audit] link account child", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "LINK_GUARDIAN",
+        targetType: "Child",
+        targetId: child.id,
+        after: {
+          childName: child.name,
+          accountUserId: account.id,
+          userId: parent.id,
+          userName: parent.name,
+          ...(promote && { parentPromotedFrom: "GUEST" }),
+        },
+      }),
+      "audit link account child"
+    );
 
     return NextResponse.json(
       { ...child, parentName: parent.name, parentPromoted: promote },

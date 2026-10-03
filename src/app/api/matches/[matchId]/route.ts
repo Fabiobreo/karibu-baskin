@@ -14,6 +14,7 @@ import { deleteImage } from "@/lib/blob";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
 import { mixedMatchError } from "@/lib/matches/mixedTeam";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -106,7 +107,7 @@ export async function PUT(req: Request, { params }: Params) {
 
   // Gestione immagine: elimina la vecchia se viene sostituita o rimossa
   if (body.imageUrl !== undefined && previous.imageUrl && previous.imageUrl !== body.imageUrl) {
-    deleteImage(previous.imageUrl).catch((e) => console.error("[blob] delete match image", e));
+    inBackground(deleteImage(previous.imageUrl), "blob delete match image");
   }
 
   // Cambio della nostra squadra: la nuova deve esistere, e da lì in poi i
@@ -324,9 +325,7 @@ export async function PUT(req: Request, { params }: Params) {
   // (segnale secondario W/L campionato). Fire-and-forget: non blocca la risposta.
   const resultChanged = resolvedResult !== previous?.result;
   if (resultChanged) {
-    recomputeRatings(prisma).catch((err) =>
-      console.error("[rating] recompute after match result", err)
-    );
+    inBackground(recomputeRatings(prisma), "rating recompute after match result");
   }
 
   // Invia notifica solo quando il risultato viene impostato per la prima volta
@@ -342,17 +341,23 @@ export async function PUT(req: Request, { params }: Params) {
     const msgTitle = `🏀 ${label}! ${match.team.name} vs ${opponentName}`;
     const msgBody = `Risultato finale: ${score}`;
     const matchUrl = `/partite/${match.slug ?? matchId}`;
-    sendPushToAll(
-      { title: msgTitle, body: msgBody, url: matchUrl, type: "MATCH_RESULT" },
-      false,
-      "MATCH_RESULT"
-    ).catch((err) => console.error("[push] match result", err));
-    createAppNotification({
-      type: "MATCH_RESULT",
-      title: msgTitle,
-      body: msgBody,
-      url: matchUrl,
-    }).catch((err) => console.error("[notification] match result", err));
+    inBackground(
+      sendPushToAll(
+        { title: msgTitle, body: msgBody, url: matchUrl, type: "MATCH_RESULT" },
+        false,
+        "MATCH_RESULT"
+      ),
+      "push match result"
+    );
+    inBackground(
+      createAppNotification({
+        type: "MATCH_RESULT",
+        title: msgTitle,
+        body: msgBody,
+        url: matchUrl,
+      }),
+      "notification match result"
+    );
   }
 
   return NextResponse.json(match);
@@ -380,24 +385,23 @@ export async function DELETE(_req: Request, { params }: Params) {
     throw err;
   }
 
-  deleteImage(matchToDelete?.imageUrl).catch((e) =>
-    console.error("[blob] delete match image on delete", e)
-  );
+  inBackground(deleteImage(matchToDelete?.imageUrl), "blob delete match image on delete");
 
   // Se la partita aveva un risultato, rimuovere quel segnale TrueSkill
   if (matchToDelete?.result) {
-    recomputeRatings(prisma).catch((err) =>
-      console.error("[rating] recompute after match delete", err)
-    );
+    inBackground(recomputeRatings(prisma), "rating recompute after match delete");
   }
 
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "DELETE_MATCH",
-      targetType: "Match",
-      targetId: matchId,
-    }).catch((err) => console.error("[audit] delete match", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "DELETE_MATCH",
+        targetType: "Match",
+        targetId: matchId,
+      }),
+      "audit delete match"
+    );
   }
   return new NextResponse(null, { status: 204 });
 }

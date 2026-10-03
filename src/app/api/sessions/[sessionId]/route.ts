@@ -8,6 +8,7 @@ import { SessionUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
+import { inBackground } from "@/lib/background";
 
 export async function GET(
   req: NextRequest,
@@ -91,30 +92,33 @@ export async function PATCH(
   }
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "UPDATE_SESSION",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      before: before
-        ? {
-            title: before.title,
-            date: before.date.toISOString(),
-            endTime: before.endTime?.toISOString() ?? null,
-            allowedRoles: before.allowedRoles,
-            restrictTeamId: before.restrictTeamId,
-            openRoles: before.openRoles,
-          }
-        : null,
-      after: {
-        title: session.title,
-        date: session.date.toISOString(),
-        endTime: session.endTime?.toISOString() ?? null,
-        allowedRoles: session.allowedRoles,
-        restrictTeamId: session.restrictTeamId,
-        openRoles: session.openRoles,
-      },
-    }).catch((err) => console.error("[audit] update session", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_SESSION",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        before: before
+          ? {
+              title: before.title,
+              date: before.date.toISOString(),
+              endTime: before.endTime?.toISOString() ?? null,
+              allowedRoles: before.allowedRoles,
+              restrictTeamId: before.restrictTeamId,
+              openRoles: before.openRoles,
+            }
+          : null,
+        after: {
+          title: session.title,
+          date: session.date.toISOString(),
+          endTime: session.endTime?.toISOString() ?? null,
+          allowedRoles: session.allowedRoles,
+          restrictTeamId: session.restrictTeamId,
+          openRoles: session.openRoles,
+        },
+      }),
+      "audit update session"
+    );
   }
 
   return NextResponse.json(session);
@@ -141,18 +145,21 @@ export async function DELETE(
   }
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "DELETE_SESSION",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      before: before
-        ? {
-            title: before.title,
-            date: before.date.toISOString(),
-          }
-        : null,
-    }).catch((err) => console.error("[audit] delete session", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "DELETE_SESSION",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        before: before
+          ? {
+              title: before.title,
+              date: before.date.toISOString(),
+            }
+          : null,
+      }),
+      "audit delete session"
+    );
   }
 
   return new NextResponse(null, { status: 204 });

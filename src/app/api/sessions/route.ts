@@ -8,6 +8,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 import { Prisma } from "@prisma/client";
+import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-sessions", 60, 60_000);
@@ -121,21 +122,24 @@ export async function POST(req: NextRequest) {
   }
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "CREATE_SESSION",
-      targetType: "TrainingSession",
-      targetId: session.id,
-      after: {
-        title: session.title,
-        date: session.date.toISOString(),
-        endTime: session.endTime?.toISOString() ?? null,
-        allowedRoles: session.allowedRoles,
-        restrictTeamId: session.restrictTeamId,
-        openRoles: session.openRoles,
-        registrationOpen: session.registrationOpen,
-      },
-    }).catch((err) => console.error("[audit] create session", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "CREATE_SESSION",
+        targetType: "TrainingSession",
+        targetId: session.id,
+        after: {
+          title: session.title,
+          date: session.date.toISOString(),
+          endTime: session.endTime?.toISOString() ?? null,
+          allowedRoles: session.allowedRoles,
+          restrictTeamId: session.restrictTeamId,
+          openRoles: session.openRoles,
+          registrationOpen: session.registrationOpen,
+        },
+      }),
+      "audit create session"
+    );
   }
 
   return NextResponse.json(session, { status: 201 });

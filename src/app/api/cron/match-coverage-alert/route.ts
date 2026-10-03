@@ -72,15 +72,20 @@ export async function GET(req: NextRequest) {
     const body = `${m.team.name} vs ${opponentName} ${dateLabel}: ${shortfallDetail}`;
     const url = "/admin/partite";
 
-    sendPushToUsers(staffIds, { title, body, url, type: "SYSTEM" }).catch((err) =>
-      console.error("[push] coverage alert", err)
-    );
-    createTargetedAppNotifications(staffIds, {
-      type: "SYSTEM",
-      title: "Copertura ruoli insufficiente",
-      body,
-      url,
-    }).catch((err) => console.error("[notification] coverage alert", err));
+    // Nei cron si aspetta tutto prima di rispondere: dopo la risposta Vercel
+    // congela la funzione. Ognuno ha il suo catch, così una push fallita non
+    // ferma la notifica in-app né il resto del giro.
+    await Promise.all([
+      sendPushToUsers(staffIds, { title, body, url, type: "SYSTEM" }).catch((err) =>
+        console.error("[push] coverage alert", err)
+      ),
+      createTargetedAppNotifications(staffIds, {
+        type: "SYSTEM",
+        title: "Copertura ruoli insufficiente",
+        body,
+        url,
+      }).catch((err) => console.error("[notification] coverage alert", err)),
+    ]);
 
     totalAlerted += staffIds.length;
   }

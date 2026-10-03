@@ -9,6 +9,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { generateChildSlug } from "@/lib/slugUtils";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
 import { isGuardian } from "@/lib/guardians";
+import { inBackground } from "@/lib/background";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(
@@ -181,8 +182,8 @@ export async function PATCH(
     });
     // Notifica l'utente scollegato
     if (childBefore?.userId) {
-      prisma.appNotification
-        .create({
+      inBackground(
+        prisma.appNotification.create({
           data: {
             type: "SYSTEM",
             title: "Collegamento rimosso",
@@ -190,8 +191,9 @@ export async function PATCH(
             url: "/profilo",
             targetUserId: childBefore.userId,
           },
-        })
-        .catch(() => {});
+        }),
+        "notification child unlink"
+      );
     }
     return NextResponse.json(updated);
   }
@@ -233,9 +235,7 @@ export async function PATCH(
     await prisma.sportRoleHistory.create({ data: { childId, sportRole: sportRole! } });
     // Cambio categoria (non prima assegnazione) → rigonfia σ del rating TrueSkill.
     if (isCategoryChange) {
-      recomputeRatings(prisma).catch((err) =>
-        console.error("[rating] child role change recompute", err)
-      );
+      inBackground(recomputeRatings(prisma), "rating child role change recompute");
     }
   }
 

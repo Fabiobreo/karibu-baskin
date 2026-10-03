@@ -6,6 +6,7 @@ import { CallupsSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -180,18 +181,21 @@ export async function PUT(req: Request, { params }: Params) {
   ]);
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "UPDATE_CALLUPS",
-      targetType: "Match",
-      targetId: matchId,
-      before: {
-        teamId: effectiveTeamId,
-        userIds: before.map((c) => c.userId).filter(Boolean),
-        childIds: before.map((c) => c.childId).filter(Boolean),
-      },
-      after: { teamId: effectiveTeamId, userIds, childIds },
-    }).catch((err) => console.error("[audit] update callups", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_CALLUPS",
+        targetType: "Match",
+        targetId: matchId,
+        before: {
+          teamId: effectiveTeamId,
+          userIds: before.map((c) => c.userId).filter(Boolean),
+          childIds: before.map((c) => c.childId).filter(Boolean),
+        },
+        after: { teamId: effectiveTeamId, userIds, childIds },
+      }),
+      "audit update callups"
+    );
   }
 
   return NextResponse.json({ ok: true, total: userIds.length + childIds.length });

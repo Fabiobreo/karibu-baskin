@@ -6,6 +6,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateOpposingTeamSlug } from "@/lib/slugUtils";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-opposing-teams", 30, 60_000);
@@ -47,13 +48,16 @@ export async function POST(req: Request) {
     },
   });
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "CREATE_OPPOSING_TEAM",
-      targetType: "OpposingTeam",
-      targetId: team.id,
-      after: { name: team.name, city: team.city },
-    }).catch((err) => console.error("[audit] create opposing team", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "CREATE_OPPOSING_TEAM",
+        targetType: "OpposingTeam",
+        targetId: team.id,
+        after: { name: team.name, city: team.city },
+      }),
+      "audit create opposing team"
+    );
   }
 
   return NextResponse.json(team, { status: 201 });

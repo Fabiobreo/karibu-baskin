@@ -6,6 +6,7 @@ import { MvpsSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
+import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -109,25 +110,28 @@ export async function PUT(req: Request, { params }: Params) {
   ]);
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "UPDATE_MVPS",
-      targetType: "Match",
-      targetId: matchId,
-      before: {
-        userIds: before.map((c) => c.userId).filter(Boolean),
-        childIds: before.map((c) => c.childId).filter(Boolean),
-      },
-      after: { userIds, childIds },
-    }).catch((err) => console.error("[audit] update mvps", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_MVPS",
+        targetType: "Match",
+        targetId: matchId,
+        before: {
+          userIds: before.map((c) => c.userId).filter(Boolean),
+          childIds: before.map((c) => c.childId).filter(Boolean),
+        },
+        after: { userIds, childIds },
+      }),
+      "audit update mvps"
+    );
   }
 
-  // Sblocco badge "MVP" fire-and-forget per i nuovi premiati
+  // Sblocco badge "MVP" dopo la risposta per i nuovi premiati
   for (const userId of userIds) {
-    reconcilePlayerBadges({ userId }, { notify: true }).catch(console.error);
+    inBackground(reconcilePlayerBadges({ userId }, { notify: true }), "badges mvp");
   }
   for (const childId of childIds) {
-    reconcilePlayerBadges({ childId }, { notify: true }).catch(console.error);
+    inBackground(reconcilePlayerBadges({ childId }, { notify: true }), "badges mvp");
   }
 
   return NextResponse.json({ ok: true, total: userIds.length + childIds.length });

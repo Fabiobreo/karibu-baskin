@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { deleteImage } from "@/lib/blob";
 import { MeUpdateSchema } from "@/lib/schemas/me";
 import { setOwnName } from "@/lib/userName";
+import { inBackground } from "@/lib/background";
 
 // GET /api/users/me — profilo dell'utente loggato
 export async function GET() {
@@ -88,7 +89,7 @@ export async function PUT(req: Request) {
       });
       // Se si sta rimuovendo (null) o sostituendo, elimina il vecchio file
       if (current?.customImage && current.customImage !== customImage) {
-        deleteImage(current.customImage).catch((e) => console.error("[blob] delete old avatar", e));
+        inBackground(deleteImage(current.customImage), "blob delete old avatar");
       }
     }
 

@@ -5,6 +5,7 @@ import { CompetitiveTeamCreateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-competitive-teams", 30, 60_000);
@@ -56,13 +57,16 @@ export async function POST(req: Request) {
   });
 
   if (session?.user?.id) {
-    logAudit({
-      actorId: session.user.id,
-      action: "CREATE_TEAM",
-      targetType: "CompetitiveTeam",
-      targetId: team.id,
-      after: { name: team.name, season: team.season },
-    }).catch((err) => console.error("[audit] create team", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "CREATE_TEAM",
+        targetType: "CompetitiveTeam",
+        targetId: team.id,
+        after: { name: team.name, season: team.season },
+      }),
+      "audit create team"
+    );
   }
 
   return NextResponse.json(team, { status: 201 });

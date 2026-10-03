@@ -5,6 +5,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
+import { inBackground } from "@/lib/background";
 
 export async function POST(
   _req: NextRequest,
@@ -45,13 +46,16 @@ export async function POST(
   notifySessionOpen(session, "new");
 
   if (authSession?.user?.id) {
-    logAudit({
-      actorId: authSession.user.id,
-      action: "OPEN_REGISTRATIONS",
-      targetType: "TrainingSession",
-      targetId: sessionId,
-      after: { date: session.date.toISOString(), title: session.title },
-    }).catch((err) => console.error("[audit] open registrations", err));
+    inBackground(
+      logAudit({
+        actorId: authSession.user.id,
+        action: "OPEN_REGISTRATIONS",
+        targetType: "TrainingSession",
+        targetId: sessionId,
+        after: { date: session.date.toISOString(), title: session.title },
+      }),
+      "audit open registrations"
+    );
   }
 
   return NextResponse.json(session);

@@ -6,6 +6,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { AdminChildCreateSchema } from "@/lib/schemas";
 import { generateChildSlug } from "@/lib/slugUtils";
+import { inBackground } from "@/lib/background";
 
 // POST /api/admin/children — lo staff crea un figlio e lo collega a un genitore.
 // Serve a preparare i dati (backfill) senza chiedere al genitore di farlo dal
@@ -59,19 +60,22 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    logAudit({
-      actorId: session.user.id,
-      action: "CREATE_CHILD",
-      targetType: "Child",
-      targetId: child.id,
-      after: {
-        name: child.name,
-        parentId: parent.id,
-        parentName: parent.name,
-        parentalConsent: !!parentalConsent,
-        ...(promote && { parentPromotedFrom: "GUEST" }),
-      },
-    }).catch((err) => console.error("[audit] create child", err));
+    inBackground(
+      logAudit({
+        actorId: session.user.id,
+        action: "CREATE_CHILD",
+        targetType: "Child",
+        targetId: child.id,
+        after: {
+          name: child.name,
+          parentId: parent.id,
+          parentName: parent.name,
+          parentalConsent: !!parentalConsent,
+          ...(promote && { parentPromotedFrom: "GUEST" }),
+        },
+      }),
+      "audit create child"
+    );
 
     return NextResponse.json(
       { ...child, parentPromoted: promote, parentName: parent.name },

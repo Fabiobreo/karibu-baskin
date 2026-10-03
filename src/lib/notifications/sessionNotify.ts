@@ -1,3 +1,4 @@
+import { inBackground } from "@/lib/background";
 import { sendPushToAll, sendPushToUsers } from "@/lib/notifications/webpush";
 import { loadSessionAudience } from "@/lib/notifications/sessionAudience";
 import { hasRestrictions } from "@/lib/registrationRestrictions";
@@ -55,25 +56,26 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
   };
 
   if (!hasRestrictions(restrictions)) {
-    sendPushToAll(pushPayload, false, "NEW_TRAINING").catch((err) =>
-      console.error("[push] session open", err)
-    );
-    createAppNotification(appNotification).catch((err) =>
-      console.error("[notification] session open", err)
-    );
+    inBackground(sendPushToAll(pushPayload, false, "NEW_TRAINING"), "push session open");
+    inBackground(createAppNotification(appNotification), "notification session open");
     return;
   }
 
   // Allenamento riservato: l'avviso (push e in-app, alle stesse persone) va a
   // chi può davvero iscriversi, con le regole di checkRegistrationAllowed:
   // ruoli ammessi, squadra, ruoli sempre aperti (openRoles).
-  loadSessionAudience(restrictions)
-    .then((userIds) => {
+  // Push e in-app partono insieme; la catena finisce solo quando sono finiti
+  // entrambi, così `after()` tiene viva la funzione per tutti e due.
+  inBackground(
+    loadSessionAudience(restrictions).then(async (userIds) => {
       const ids = userIds ?? [];
-      sendPushToUsers(ids, pushPayload, "NEW_TRAINING").catch((err) =>
-        console.error("[push] session open (filtered)", err)
-      );
-      return createTargetedAppNotifications(ids, appNotification);
-    })
-    .catch((err) => console.error("[notification] session open (filtered)", err));
+      await Promise.all([
+        sendPushToUsers(ids, pushPayload, "NEW_TRAINING").catch((err) =>
+          console.error("[push session open (filtered)]", err)
+        ),
+        createTargetedAppNotifications(ids, appNotification),
+      ]);
+    }),
+    "notification session open (filtered)"
+  );
 }
