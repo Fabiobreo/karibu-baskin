@@ -595,17 +595,20 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                     </ListItemIcon>
                     {t("myProfile")}
                   </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      setMenuAnchor(null);
-                      router.push("/profilo/disponibilita");
-                    }}
-                  >
-                    <ListItemIcon>
-                      <EventAvailableIcon fontSize="small" />
-                    </ListItemIcon>
-                    {t("myAvailabilities")}
-                  </MenuItem>
+                  {/* Solo a chi può avere partite a cui rispondere (UX-46). */}
+                  {user.showsAvailabilities && (
+                    <MenuItem
+                      onClick={() => {
+                        setMenuAnchor(null);
+                        router.push("/profilo/disponibilita");
+                      }}
+                    >
+                      <ListItemIcon>
+                        <EventAvailableIcon fontSize="small" />
+                      </ListItemIcon>
+                      {t("myAvailabilities")}
+                    </MenuItem>
+                  )}
                   {isStaff && (
                     <MenuItem
                       onClick={() => {

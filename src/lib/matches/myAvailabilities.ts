@@ -63,7 +63,32 @@ export async function loadMyAvailabilityMatches(
   userName: string,
   options: { from?: Date } = {}
 ): Promise<AvailabilityMatch[]> {
-  const { userTeamIds, children, allTeamIds } = await loadEligibility(userId);
+  return matchesFor(await loadEligibility(userId), userId, userName, options);
+}
+
+/**
+ * Per la pagina `/profilo/disponibilita`: le partite e se l'utente (o un figlio)
+ * è in almeno una squadra, così la pagina vuota sa dire perché è vuota (UX-46),
+ * e se ha figli collegati, per scegliere il testo ("non sei" / "nessuno dei tuoi").
+ */
+export async function loadMyAvailabilityPage(
+  userId: string,
+  userName: string
+): Promise<{ matches: AvailabilityMatch[]; hasTeams: boolean; hasChildren: boolean }> {
+  const eligibility = await loadEligibility(userId);
+  return {
+    matches: await matchesFor(eligibility, userId, userName, {}),
+    hasTeams: eligibility.allTeamIds.length > 0,
+    hasChildren: eligibility.children.length > 0,
+  };
+}
+
+async function matchesFor(
+  { userTeamIds, children, allTeamIds }: Awaited<ReturnType<typeof loadEligibility>>,
+  userId: string,
+  userName: string,
+  options: { from?: Date }
+): Promise<AvailabilityMatch[]> {
   if (allTeamIds.length === 0) return [];
 
   const matches = await prisma.match.findMany({

@@ -10,6 +10,7 @@ import { sendPushToAll } from "@/lib/notifications/webpush";
 import { generateUserSlug } from "@/lib/slugUtils";
 import { newUserPushBody } from "@/lib/userName";
 import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS } from "@/lib/sessionPolicy";
+import { showsAvailabilities } from "@/lib/matches/availabilityAudience";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -96,9 +97,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.appRole = (user as typeof user & { appRole: AppRole }).appRole;
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
-        select: { customImage: true },
+        select: { customImage: true, sportRole: true, _count: { select: { guardianOf: true } } },
       });
       session.user.customImage = dbUser?.customImage ?? null;
+      // Per il menu dell'header, che conosce solo la sessione (UX-46).
+      session.user.showsAvailabilities = showsAvailabilities(
+        session.user.appRole,
+        dbUser?.sportRole,
+        dbUser?._count.guardianOf ?? 0
+      );
       return session;
     },
   },

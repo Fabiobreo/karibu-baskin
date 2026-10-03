@@ -4,7 +4,7 @@ import { Box, Container } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import PageHeader from "@/components/common/PageHeader";
 import { redirect } from "next/navigation";
-import { loadMyAvailabilityMatches } from "@/lib/matches/myAvailabilities";
+import { loadMyAvailabilityPage } from "@/lib/matches/myAvailabilities";
 import MieDisponibilitaClient from "@/components/matches/MieDisponibilitaClient";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
@@ -23,7 +23,10 @@ export default async function MieDisponibilitaPage() {
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const items = await loadMyAvailabilityMatches(userId, session.user.name ?? "Tu");
+  const { matches, hasTeams, hasChildren } = await loadMyAvailabilityPage(
+    userId,
+    session.user.name ?? "Tu"
+  );
 
   const t = await getTranslations("profile");
 
@@ -39,7 +42,11 @@ export default async function MieDisponibilitaPage() {
               { label: t("availabilitiesTitle") },
             ]}
           />
-          <MieDisponibilitaClient initialMatches={items} />
+          <MieDisponibilitaClient
+            initialMatches={matches}
+            hasTeams={hasTeams}
+            hasChildren={hasChildren}
+          />
         </Box>
       </Container>
     </>

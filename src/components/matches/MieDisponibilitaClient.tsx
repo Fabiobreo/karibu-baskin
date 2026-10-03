@@ -56,6 +56,10 @@ export interface AvailabilityMatch {
 
 interface Props {
   initialMatches: AvailabilityMatch[];
+  /** L'utente (o un figlio) è in almeno una squadra: senza, la pagina vuota lo dice (UX-46). */
+  hasTeams?: boolean;
+  /** Ha figli collegati: il vuoto senza squadra parla di "nessuno dei tuoi". */
+  hasChildren?: boolean;
 }
 
 interface SaveFailure {
@@ -79,7 +83,11 @@ function formatShortDate(
   return format(d, "EEEE d MMMM · HH:mm", { locale: dateLocale });
 }
 
-export default function MieDisponibilitaClient({ initialMatches }: Props) {
+export default function MieDisponibilitaClient({
+  initialMatches,
+  hasTeams = true,
+  hasChildren = false,
+}: Props) {
   // initialMatches è stabile (props dal Server Component) → calcolo una volta sola.
   const [{ futureMatches, pastMatches }] = useState(() => {
     const now = Date.now();
@@ -183,8 +191,20 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
       {initialMatches.length === 0 ? (
         <EmptyState
           icon={<EventBusyIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-          title={t("noMatchesForTeams")}
-          message={t("noMatchesForTeamsDesc")}
+          title={
+            hasTeams
+              ? t("noMatchesForTeams")
+              : hasChildren
+                ? t("noTeamForAvailabilitiesFamily")
+                : t("noTeamForAvailabilities")
+          }
+          message={
+            hasTeams
+              ? t("noMatchesForTeamsDesc")
+              : hasChildren
+                ? t("noTeamForAvailabilitiesFamilyDesc")
+                : t("noTeamForAvailabilitiesDesc")
+          }
         />
       ) : (
         <>

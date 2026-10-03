@@ -7,6 +7,8 @@ declare module "next-auth" {
       id: string;
       appRole: AppRole;
       customImage?: string | null;
+      /** Vede "Le mie disponibilità" (`showsAvailabilities`, UX-46). */
+      showsAvailabilities?: boolean;
     } & DefaultSession["user"];
   }
 

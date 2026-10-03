@@ -43,6 +43,7 @@ import AthleteInfoSection from "@/components/profile/AthleteInfoSection";
 import AttendanceSection from "@/components/profile/AttendanceSection";
 import GdprSection from "@/components/profile/GdprSection";
 import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
+import { showsAvailabilities } from "@/lib/matches/availabilityAudience";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
@@ -155,7 +156,8 @@ export default async function ProfiloPage() {
 
   const [user, pendingAvailabilities, currentSeason] = await Promise.all([
     userQuery,
-    countPendingAvailabilities(session.user.id),
+    // Chi non può avere partite a cui rispondere non ha il bottone (UX-46).
+    session.user.showsAvailabilities ? countPendingAvailabilities(session.user.id) : 0,
     getCurrentSeasonLabel(),
   ]);
 
@@ -169,34 +171,37 @@ export default async function ProfiloPage() {
   // È il motivo principale per cui un atleta apre il sito, e nel profilo non
   // c'era. Per un genitore le righe sono quelle dei figli collegati.
   const childIds = children.map((c) => c.id);
-  // Chi vede la card "prossima cosa da fare" non usa questa query (UX-24).
+  // Chi vede la card "prossima cosa da fare" non usa questa query (UX-24), e
+  // nemmeno l'ospite: l'allenamento sta nei suoi primi passi (UX-46).
   const showNextAction = showsNextAction(user.appRole, user.sportRole);
-  const nextSessionQuery = showNextAction
-    ? null
-    : prisma.trainingSession.findFirst({
-        where: { date: { gte: new Date() } },
-        orderBy: { date: "asc" },
-        select: {
-          id: true,
-          title: true,
-          date: true,
-          dateSlug: true,
-          registrationOpen: true,
-          allowedRoles: true,
-          restrictTeamId: true,
-          openRoles: true,
-          team: { select: { name: true } },
-          registrations: {
-            where: {
-              OR: [
-                { userId: user.id },
-                ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
-              ],
+  const isGuest = user.appRole === "GUEST";
+  const nextSessionQuery =
+    showNextAction || isGuest
+      ? null
+      : prisma.trainingSession.findFirst({
+          where: { date: { gte: new Date() } },
+          orderBy: { date: "asc" },
+          select: {
+            id: true,
+            title: true,
+            date: true,
+            dateSlug: true,
+            registrationOpen: true,
+            allowedRoles: true,
+            restrictTeamId: true,
+            openRoles: true,
+            team: { select: { name: true } },
+            registrations: {
+              where: {
+                OR: [
+                  { userId: user.id },
+                  ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
+                ],
+              },
+              select: { id: true, userId: true, childId: true },
             },
-            select: { id: true, userId: true, childId: true },
           },
-        },
-      });
+        });
 
   // Iscrizioni anonime con stesso nome (per proposta di collegamento)
   const anonymousMatchesQuery = user.name
@@ -285,17 +290,17 @@ export default async function ProfiloPage() {
       });
     }
 
-    if (subjects.length > 0) {
-      nextTraining = {
-        id: nextSession.id,
-        title: nextSession.title,
-        date: nextSession.date.toISOString(),
-        href: `/allenamento/${nextSession.dateSlug ?? nextSession.id}`,
-        registrationOpen: nextSession.registrationOpen,
-        teamName: nextSession.team?.name ?? null,
-      };
-      trainingSubjects = subjects;
-    }
+    // L'allenamento c'è anche se non c'è nessuno da iscrivere: "nessun
+    // allenamento in programma" vale solo quando manca davvero (UX-46).
+    nextTraining = {
+      id: nextSession.id,
+      title: nextSession.title,
+      date: nextSession.date.toISOString(),
+      href: `/allenamento/${nextSession.dateSlug ?? nextSession.id}`,
+      registrationOpen: nextSession.registrationOpen,
+      teamName: nextSession.team?.name ?? null,
+    };
+    trainingSubjects = subjects;
   }
 
   // Segnaposto dei badge: stesso Paper outlined di BadgeShowcase.
@@ -368,30 +373,29 @@ export default async function ProfiloPage() {
                 {t("publicProfile")}
               </Button>
             )}
-          {/* Contatore su un elemento che si tocca: arancio (UX-29). */}
-          <Badge badgeContent={pendingAvailabilities} color="primary" max={99}>
-            <Button
-              href="/profilo/disponibilita"
-              size="small"
-              variant="outlined"
-              startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
-              sx={{ fontSize: TYPE_SCALE.xs }}
-            >
-              {t("myAvailabilities")}
-            </Button>
-          </Badge>
+          {/* Solo a chi può avere partite a cui rispondere: per gli altri la
+              pagina sarebbe sempre vuota (UX-46). Contatore su un elemento che
+              si tocca: arancio (UX-29). */}
+          {showsAvailabilities(user.appRole, user.sportRole, children.length) && (
+            <Badge badgeContent={pendingAvailabilities} color="primary" max={99}>
+              <Button
+                href="/profilo/disponibilita"
+                size="small"
+                variant="outlined"
+                startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
+                sx={{ fontSize: TYPE_SCALE.xs }}
+              >
+                {t("myAvailabilities")}
+              </Button>
+            </Badge>
+          )}
         </Stack>
-
-        {user.appRole === "GUEST" && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
-            {t("guestPending")}
-          </Typography>
-        )}
       </Paper>
       {/* Identita' in cima, poi la prossima cosa da fare (UX-16), poi "Ti
           riconosco!". Atleti, genitori e staff che gioca: la stessa card della
-          home; lo staff che non gioca tiene la card del prossimo allenamento. */}
-      {showNextAction ? (
+          home; lo staff che non gioca tiene la card del prossimo allenamento.
+          L'ospite ha l'allenamento nei primi passi, in cima alla pagina (UX-46). */}
+      {isGuest ? null : showNextAction ? (
         <Box sx={{ mb: 3 }}>
           <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
             <NextActionSection userId={user.id} appRole={user.appRole} />
