@@ -216,6 +216,9 @@ export default function AdminUserList({
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
   const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  // Dopo un'eliminazione la riga e il suo "⋯" non ci sono più: il focus va sulla
+  // scheda attiva (Atleti, Account, Figli), punto fisso sopra la lista.
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   const { showToast } = useToast();
 
@@ -466,6 +469,10 @@ export default function AdminUserList({
             : `Figlio "${deleteRow.name}" eliminato`;
         showToast({ message: label, severity: "success" });
         setDeleteRow(null);
+        // Dopo il ripristino del focus del dialog, che punterebbe al "⋯" sparito.
+        requestAnimationFrame(() =>
+          tabsRef.current?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus()
+        );
       } else {
         const data = await res.json().catch(() => ({}));
         showToast({ message: data.error ?? "Errore durante l'eliminazione", severity: "error" });
@@ -496,6 +503,7 @@ export default function AdminUserList({
     <Box>
       {/* ── Tabs ── */}
       <Tabs
+        ref={tabsRef}
         value={activeTab === "children" && childCount === 0 ? "athletes" : activeTab}
         onChange={(_, v: TabKey) => setActiveTab(v)}
         variant="scrollable"

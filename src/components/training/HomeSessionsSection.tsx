@@ -2,7 +2,6 @@
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
 import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
-import StatusPill from "@/components/common/StatusPill";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
@@ -44,10 +43,7 @@ export default function HomeSessionsSection({
     <Box sx={{ py: { xs: 3, md: 5 } }}>
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          {/* In corso: pastiglia invertita con pallino pulsante, niente verde (UX-29). */}
-          <Box sx={{ mb: 1.5 }}>
-            <StatusPill label={t("live")} pulse />
-          </Box>
+          {/* "In corso" sta solo nel chip della testata della card (UX-51). */}
           <Grid container spacing={2}>
             {inCorso.map((s) => (
               <Grid key={s.id} size={{ xs: 12, sm: inCorso.length > 1 ? 6 : 12 }}>

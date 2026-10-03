@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
 import AdminTrainingsView, { type TrainingsSection } from "@/components/admin/AdminTrainingsView";
-import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Allenamenti | Admin" };
@@ -131,20 +130,21 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
     (toComplete.length > 0 ? "da-completare" : "prossimi");
 
   return (
-    <>
-      <PageHeader
-        title="Allenamenti"
-        subtitle="Crea gli allenamenti, apri le iscrizioni, fai le squadre e, a fine allenamento, segna presenze e risultati."
-        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }]}
-      />
-      <AdminTrainingsView
-        upcoming={upcoming}
-        toComplete={toComplete}
-        concluded={concluded}
-        initialSection={initialSection}
-        openId={sp.apri ?? null}
-        editId={sp.modifica ?? null}
-      />
-    </>
+    // L'intestazione la disegna la vista: il bottone "Nuovo allenamento" apre
+    // un dialog suo e sta nello slot azione di PageHeader (UX-51).
+    <AdminTrainingsView
+      header={{
+        title: "Allenamenti",
+        subtitle:
+          "Crea gli allenamenti, apri le iscrizioni, fai le squadre e, a fine allenamento, segna presenze e risultati.",
+        breadcrumb: [{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }],
+      }}
+      upcoming={upcoming}
+      toComplete={toComplete}
+      concluded={concluded}
+      initialSection={initialSection}
+      openId={sp.apri ?? null}
+      editId={sp.modifica ?? null}
+    />
   );
 }

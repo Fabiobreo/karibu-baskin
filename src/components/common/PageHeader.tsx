@@ -1,6 +1,7 @@
 import { Box, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
 /**
  * Intestazione senza fascia (UX-32): breadcrumb, titolo h1 nel contenitore e
@@ -15,12 +16,27 @@ export interface BreadcrumbItem {
 interface PageHeaderProps {
   title: string;
   subtitle?: ReactNode;
-  icon?: ReactNode;
+  /**
+   * Azione principale della pagina (UX-51): sulla riga del titolo, al bordo
+   * destro. Su telefono va sempre sulla riga sotto il titolo, sempre a destra,
+   * cosi' sta alla stessa altezza in tutte le pagine admin.
+   */
   action?: ReactNode;
   breadcrumb?: BreadcrumbItem[];
+  /**
+   * Solo dai Client Component: rende l'h1 un punto fisso per il focus (dopo
+   * un'eliminazione la riga, e il suo "⋯", non ci sono più).
+   */
+  titleRef?: Ref<HTMLHeadingElement>;
 }
 
-export default function PageHeader({ title, subtitle, icon, action, breadcrumb }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  subtitle,
+  action,
+  breadcrumb,
+  titleRef,
+}: PageHeaderProps) {
   return (
     <Box sx={{ mb: 3 }}>
       {breadcrumb && breadcrumb.length > 0 && (
@@ -47,45 +63,62 @@ export default function PageHeader({ title, subtitle, icon, action, breadcrumb }
           </Typography>
         </Breadcrumbs>
       )}
+      {/* Niente icona davanti al titolo: il titolo parte sempre al filo del
+          breadcrumb (UX-51). */}
       <Box
         sx={{
           display: "flex",
-          alignItems: icon && !subtitle ? "center" : "flex-start",
-          justifyContent: action ? "space-between" : "flex-start",
+          alignItems: "flex-start",
           flexWrap: "wrap",
-          gap: 2,
+          columnGap: 2,
+          rowGap: 1.5,
         }}
       >
-        <Box
+        {/* Su mobile un gradino sotto: i titoli lunghi (una partita con
+            l'avversaria per esteso) andavano su quattro righe. */}
+        <Typography
+          ref={titleRef}
+          tabIndex={titleRef ? -1 : undefined}
+          variant="h4"
+          component="h1"
           sx={{
-            display: "flex",
-            alignItems: icon ? "center" : "flex-start",
-            gap: icon ? 1.5 : 0,
+            fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4 },
+            overflowWrap: "anywhere",
+            minWidth: 0,
+            ...(titleRef && { outline: "none" }),
           }}
         >
-          {icon}
-          <Box>
-            {/* Su mobile un gradino sotto: i titoli lunghi (una partita con
-                l'avversaria per esteso) andavano su quattro righe. */}
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4 },
-                overflowWrap: "anywhere",
-              }}
-            >
-              {title}
-            </Typography>
-            {subtitle && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {subtitle}
-              </Typography>
-            )}
+          {title}
+        </Typography>
+        {action && (
+          <Box
+            sx={{
+              ml: "auto",
+              flexBasis: { xs: "100%", sm: "auto" },
+              display: "flex",
+              justifyContent: "flex-end",
+              // Una taglia sola: 40 px dal tema, 44 su telefono. Non con
+              // TOUCH_TARGET_ON_PHONE, che da `sm` azzera il minimo e il bottone
+              // scenderebbe a 37 px. Media query per esteso: lo `sx` arriva anche
+              // da Server Component.
+              "& .MuiButton-root": {
+                "@media (max-width:599.95px)": { minHeight: TOUCH_TARGET_SIZE },
+              },
+            }}
+          >
+            {action}
           </Box>
-        </Box>
-        {action}
+        )}
       </Box>
+      {subtitle && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: { xs: action ? 1.5 : 0.5, sm: 0.5 } }}
+        >
+          {subtitle}
+        </Typography>
+      )}
     </Box>
   );
 }

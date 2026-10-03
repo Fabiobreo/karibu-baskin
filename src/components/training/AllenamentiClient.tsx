@@ -6,7 +6,6 @@ import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { isSameDay } from "date-fns";
 import { useTranslations } from "next-intl";
 import EmptyState from "@/components/common/EmptyState";
-import StatusPill from "@/components/common/StatusPill";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import UpcomingTrainingsList from "@/components/training/UpcomingTrainingsList";
@@ -73,10 +72,7 @@ export default function AllenamentiClient({
       {/* ── In corso ── */}
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          {/* In corso: pastiglia invertita con pallino pulsante, niente verde (UX-29). */}
-          <Box sx={{ mb: 1.5 }}>
-            <StatusPill label={t("live")} pulse />
-          </Box>
+          {/* "In corso" sta solo nel chip della testata della card (UX-51). */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {inCorso.map((s) => (
               <SessionCard

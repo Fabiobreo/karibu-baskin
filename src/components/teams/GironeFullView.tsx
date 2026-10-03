@@ -74,7 +74,10 @@ interface Props {
 
 // Token del tema: i valori vivono in `palette.match` (vedi src/theme.ts).
 // Cifre a larghezza fissa: senza, le colonne numeriche non si incolonnano.
-const NUMERIC_CELL = { fontVariantNumeric: "tabular-nums" } as const;
+// Su telefono le colonne numeriche stringono il padding orizzontale: lo spazio
+// va al nome della squadra, che non deve andare a capo (UX-51).
+const NUMERIC_PAD = { px: { xs: 0.75, sm: 2 } } as const;
+const NUMERIC_CELL = { fontVariantNumeric: "tabular-nums", ...NUMERIC_PAD } as const;
 
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
@@ -207,7 +210,7 @@ export default function GironeFullView({
                 <TableCell sx={{ pl: 2, width: 28 }}>#</TableCell>
                 <TableCell>{t("colTeam")}</TableCell>
                 {(["colPlayed", "colWins", "colDraws", "colLosses"] as const).map((key) => (
-                  <TableCell key={key} align="center">
+                  <TableCell key={key} align="center" sx={NUMERIC_PAD}>
                     <StatAbbr short={t(key)} full={t(`${key}Full`)} />
                   </TableCell>
                 ))}
@@ -215,7 +218,7 @@ export default function GironeFullView({
                   <TableCell
                     key={key}
                     align="center"
-                    sx={{ display: { xs: "none", sm: "table-cell" } }}
+                    sx={{ ...NUMERIC_PAD, display: { xs: "none", sm: "table-cell" } }}
                   >
                     <StatAbbr short={t(key)} full={t(`${key}Full`)} />
                   </TableCell>
@@ -224,7 +227,10 @@ export default function GironeFullView({
                   align="center"
                   // Il token va risolto qui: `sx` non lo risolve piu' quando la
                   // stringa porta anche `!important`, e la regola veniva scartata.
-                  sx={(theme) => ({ color: `${theme.palette.text.primary} !important` })}
+                  sx={(theme) => ({
+                    color: `${theme.palette.text.primary} !important`,
+                    px: { xs: 0.75, sm: 2 },
+                  })}
                 >
                   <StatAbbr short={t("colPoints")} full={t("colPointsFull")} />
                 </TableCell>
@@ -266,17 +272,27 @@ export default function GironeFullView({
                           href={`/squadre/${seasonParam}/${teamSlug}`}
                           style={{ textDecoration: "none", color: "inherit" }}
                         >
+                          {/* Pallino e nome sulla stessa riga, senza a capo (UX-51). */}
                           <Typography
                             variant="body2"
                             fontWeight={FONT_WEIGHT.semibold}
-                            sx={{ "&:hover": { textDecoration: "underline" } }}
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              whiteSpace: "nowrap",
+                              "&:hover": { textDecoration: "underline" },
+                            }}
                           >
                             <TeamColorDot color={teamById.get(s.id)?.color} size={8} />
                             {s.name}
                           </Typography>
                         </Link>
                       ) : (
-                        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={FONT_WEIGHT.semibold}
+                          sx={{ whiteSpace: "nowrap" }}
+                        >
                           {s.name}
                         </Typography>
                       )}

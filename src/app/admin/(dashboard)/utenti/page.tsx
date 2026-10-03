@@ -5,7 +5,6 @@ import { Paper, Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import PageHeader from "@/components/common/PageHeader";
-import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
@@ -196,23 +195,20 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         title="Utenti"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
         action={
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            sx={{ flexWrap: "wrap", justifyContent: "flex-end" }}
+          >
             <Button
               href="/admin/utenti/nuovo-figlio"
               variant="outlined"
               startIcon={<ChildCareIcon />}
-              size="small"
-              sx={TOUCH_TARGET_ON_PHONE}
             >
               Nuovo figlio
             </Button>
-            <Button
-              href="/admin/utenti/nuovo"
-              variant="contained"
-              startIcon={<PersonAddIcon />}
-              size="small"
-              sx={TOUCH_TARGET_ON_PHONE}
-            >
+            <Button href="/admin/utenti/nuovo" variant="contained" startIcon={<PersonAddIcon />}>
               Nuovo utente
             </Button>
           </Stack>

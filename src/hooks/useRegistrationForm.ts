@@ -19,6 +19,9 @@ export interface TeamMembershipInfo {
 export interface CurrentUser {
   id: string;
   name: string | null;
+  /** Foto di Google e foto caricata: il form mostra la stessa dell'header (UX-51). */
+  image?: string | null;
+  customImage?: string | null;
   appRole: string;
   sportRole: number | null;
   sportRoleVariant: string | null;

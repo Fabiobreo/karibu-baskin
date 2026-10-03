@@ -1,5 +1,5 @@
 import { Container, Paper, Typography, Box, Divider } from "@mui/material";
-import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import GoogleSignInButton from "@/components/common/GoogleSignInButton";
 import MagicLinkForm from "@/components/common/MagicLinkForm";
@@ -28,7 +28,15 @@ export default async function LoginPage({
   return (
     <Container maxWidth="xs" sx={{ pt: 10 }}>
       <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
-        <SportsBasketballIcon color="primary" sx={{ fontSize: 48, mb: 1 }} />
+        {/* Stemma del club, non un pallone generico (UX-51). */}
+        <Image
+          src="/logo.png"
+          alt="Karibu Baskin"
+          width={72}
+          height={72}
+          priority
+          style={{ objectFit: "contain", display: "block", margin: "0 auto 8px" }}
+        />
         <Typography variant="h5" component="h1" gutterBottom>
           {t("login.title")}
         </Typography>

@@ -54,7 +54,7 @@ export function coverBackdropIndex(seed: string): number {
 
 /**
  * Copertina di ripiego per le card senza immagine (UX-19, UX-38): fondo grafite
- * degli hero con un pezzo di campo disegnato e il titolo in grande. Il titolo
+ * delle fasce (UX-51) con un pezzo di campo disegnato e il titolo in grande. Il titolo
  * e il disegno cambiano da una card all'altra, cosi' una griglia di card senza
  * foto non sembra un caricamento rimasto a meta'. Niente data: sta gia' nel
  * chip della card.
@@ -75,7 +75,9 @@ export default function CoverFallback({
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        background: heroGradient.dark,
+        // Grafite delle fasce, senza bagliore: l'arancio di `dark` sul grafite
+        // diventava bruno negli angoli (UX-51).
+        background: heroGradient.band,
         color: heroText.primary,
         display: "flex",
         alignItems: "flex-end",

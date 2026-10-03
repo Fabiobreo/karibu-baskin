@@ -366,12 +366,17 @@ export default function RegistrationForm({
             {/* Intestazione soggetto */}
             {currentUser && !hasChildren && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                <Avatar sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}>
+                {/* Stessa foto dell'header: quella caricata, altrimenti quella di Google. */}
+                <Avatar
+                  src={currentUser.customImage ?? currentUser.image ?? undefined}
+                  alt=""
+                  sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}
+                >
                   {(currentUser.name ?? "?")[0].toUpperCase()}
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-                    {currentUser.name ?? "Utente"}
+                    {currentUser.name ?? t("unnamedUser")}
                   </Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
                     <Typography variant="caption" color="text.secondary">

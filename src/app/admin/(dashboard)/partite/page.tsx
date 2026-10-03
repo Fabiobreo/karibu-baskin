@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
 import AdminPartiteClient from "@/components/admin/AdminPartiteClient";
-import PageHeader from "@/components/common/PageHeader";
 import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matches/matchCoverage";
 import { ensureClubTeam } from "@/lib/matches/mixedTeam";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -84,21 +83,21 @@ export default async function AdminPartitePage() {
   for (const [id, cov] of coverageMap) coverages[id] = cov;
 
   return (
-    <>
-      <PageHeader
-        title="Partite"
-        subtitle="Calendario delle partite ufficiali, convocazioni e statistiche."
-        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Partite" }]}
-      />
-      <AdminPartiteClient
-        teams={teams}
-        opposingTeams={opposingTeams}
-        matches={matches}
-        groups={groupsForForm}
-        groupMatches={groupMatches}
-        coverages={coverages}
-        isAdmin={session?.user?.appRole === "ADMIN"}
-      />
-    </>
+    // L'intestazione la disegna il client: "Nuova partita" apre un suo dialog
+    // e sta nello slot azione di PageHeader (UX-51).
+    <AdminPartiteClient
+      header={{
+        title: "Partite",
+        subtitle: "Calendario delle partite ufficiali, convocazioni e statistiche.",
+        breadcrumb: [{ label: "Dashboard", href: "/admin" }, { label: "Partite" }],
+      }}
+      teams={teams}
+      opposingTeams={opposingTeams}
+      matches={matches}
+      groups={groupsForForm}
+      groupMatches={groupMatches}
+      coverages={coverages}
+      isAdmin={session?.user?.appRole === "ADMIN"}
+    />
   );
 }

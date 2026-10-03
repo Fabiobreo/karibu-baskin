@@ -29,7 +29,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type { MatchCoverage } from "@/lib/matches/matchCoverage";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { alpha } from "@mui/material/styles";
@@ -55,6 +55,7 @@ import MatchRowActions from "@/components/admin/MatchRowActions";
 import type { MatchRowActionKey } from "@/lib/matches/adminRowAction";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import PageHeader, { type BreadcrumbItem } from "@/components/common/PageHeader";
 
 type Team = MatchFormTeam;
 type OpposingTeam = MatchFormOpposingTeam & { ratingMu?: number | null };
@@ -110,6 +111,8 @@ type Props = {
    * mostrano.
    */
   isAdmin: boolean;
+  /** Intestazione della pagina: "Nuova partita" sta nel suo slot azione (UX-51). */
+  header: { title: string; subtitle?: string; breadcrumb: BreadcrumbItem[] };
 };
 
 const RESULT_LABELS: Record<MatchResult, string> = {
@@ -400,9 +403,12 @@ export default function AdminPartiteClient({
   groupMatches: initialGroupMatches,
   coverages,
   isAdmin,
+  header,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Dopo un'eliminazione il focus va sul titolo: la riga e il suo "⋯" non ci sono più.
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const [matches, setMatches] = useState(initialMatches);
   const [groupMatches, setGroupMatches] = useState(initialGroupMatches);
   const [opponents, setOpponents] = useState(initialOpponents);
@@ -455,6 +461,7 @@ export default function AdminPartiteClient({
         if (res.ok) {
           setMatches((prev) => prev.filter((m) => m.id !== id));
           showToast({ message: "Partita eliminata", severity: "success" });
+          requestAnimationFrame(() => titleRef.current?.focus());
         } else {
           showToast({ message: "Errore nell'eliminazione della partita", severity: "error" });
         }
@@ -536,6 +543,23 @@ export default function AdminPartiteClient({
 
   return (
     <Box>
+      <PageHeader
+        {...header}
+        titleRef={titleRef}
+        action={
+          // Creare una partita e' dell'admin; senza squadre il bottone resta spento.
+          isAdmin ? (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreate}
+              disabled={teams.length === 0}
+            >
+              Nuova partita
+            </Button>
+          ) : undefined
+        }
+      />
       {matchesWithShortfall.length > 0 && (
         <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
           <AlertTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
@@ -563,19 +587,6 @@ export default function AdminPartiteClient({
             )}
           </Stack>
         </Alert>
-      )}
-
-      {isAdmin && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={openCreate}
-            disabled={teams.length === 0}
-          >
-            Nuova partita
-          </Button>
-        </Box>
       )}
 
       <Tabs
@@ -699,7 +710,8 @@ function EmptyState({
           Crea prima una squadra nella sezione Squadre.
         </Typography>
       ) : (
-        <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate} sx={{ mt: 2 }}>
+        // Secondario: il bottone pieno della pagina e' "Nuova partita" (UX-51).
+        <Button variant="outlined" startIcon={<AddIcon />} onClick={onCreate} sx={{ mt: 2 }}>
           Aggiungi partita
         </Button>
       )}

@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Box, Button, Dialog, DialogContent, DialogTitle, Tab, Tabs } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AdminSessionForm from "@/components/admin/AdminSessionForm";
+import PageHeader, { type BreadcrumbItem } from "@/components/common/PageHeader";
 import AdminUpcomingList, { type AdminUpcomingRow } from "@/components/admin/AdminUpcomingList";
 import AdminAllenamentiClient, {
   type AdminSessionRow,
@@ -21,6 +22,8 @@ interface AdminTrainingsViewProps {
   openId: string | null;
   /** Allenamento da aprire in modifica (`?modifica=<id>`). */
   editId: string | null;
+  /** Intestazione della pagina: il bottone "Nuovo allenamento" sta nel suo slot (UX-51). */
+  header: { title: string; subtitle?: string; breadcrumb: BreadcrumbItem[] };
 }
 
 /**
@@ -36,6 +39,7 @@ export default function AdminTrainingsView({
   initialSection,
   openId,
   editId,
+  header,
 }: AdminTrainingsViewProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -57,17 +61,15 @@ export default function AdminTrainingsView({
 
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          flexWrap: "wrap",
-          mb: 2,
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
-      >
+      <PageHeader
+        {...header}
+        action={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreating(true)}>
+            Nuovo allenamento
+          </Button>
+        }
+      />
+      <Box sx={{ mb: 2, borderBottom: "1px solid", borderColor: "divider" }}>
         <Tabs
           value={section}
           onChange={(_, v: TrainingsSection) => changeSection(v)}
@@ -75,20 +77,12 @@ export default function AdminTrainingsView({
           // Niente frecce: tre schede, e su telefono si scorre col dito (UX-40).
           scrollButtons={false}
           aria-label="Sezioni degli allenamenti"
-          sx={{ flex: 1, minWidth: 0, "& .MuiTab-root": { minHeight: 48 } }}
+          sx={{ "& .MuiTab-root": { minHeight: 48 } }}
         >
           {tabs.map((t) => (
             <Tab key={t.value} value={t.value} label={t.label} />
           ))}
         </Tabs>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setCreating(true)}
-          sx={{ minHeight: 44, mb: 1 }}
-        >
-          Nuovo allenamento
-        </Button>
       </Box>
 
       {section === "prossimi" && (
