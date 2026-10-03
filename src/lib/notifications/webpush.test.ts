@@ -22,7 +22,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { sendPushToAll, sendPushToUsers, sendPushToUser } from "./webpush";
+import { PUSH_OPTIONS, sendPushToAll, sendPushToUsers, sendPushToUser } from "./webpush";
 import { prisma } from "@/lib/db";
 import webpush from "web-push";
 
@@ -47,6 +47,14 @@ function sub(
         : null,
   };
 }
+
+describe("PUSH_OPTIONS", () => {
+  // Senza urgency "high" Android (Doze) tiene la push per ore; il TTL di
+  // default di web-push è 4 settimane.
+  it("priorità alta e validità di un giorno", () => {
+    expect(PUSH_OPTIONS).toEqual({ TTL: 86400, urgency: "high" });
+  });
+});
 
 describe("sendPushToAll()", () => {
   beforeEach(() => {
@@ -78,7 +86,8 @@ describe("sendPushToAll()", () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ endpoint: "ep2" }),
-      expect.any(String)
+      expect.any(String),
+      PUSH_OPTIONS
     );
   });
 
@@ -101,7 +110,8 @@ describe("sendPushToAll()", () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ endpoint: "ep2" }),
-      expect.any(String)
+      expect.any(String),
+      PUSH_OPTIONS
     );
   });
 
@@ -233,7 +243,8 @@ describe("sendPushToUsers()", () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ endpoint: "ep2" }),
-      expect.any(String)
+      expect.any(String),
+      PUSH_OPTIONS
     );
   });
 

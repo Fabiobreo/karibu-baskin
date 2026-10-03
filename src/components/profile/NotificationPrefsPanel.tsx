@@ -23,13 +23,11 @@ import {
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const raw = atob(base64);
-  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
-}
+import {
+  createPushSubscription,
+  rememberPushChoice,
+  savePushSubscription,
+} from "@/lib/pushSubscription";
 
 interface Props {
   initialPrefs: NotifPrefs;
@@ -69,24 +67,17 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
     setPushSaving(true);
     setPushError("");
     try {
-      const keyRes = await fetch("/api/push/vapid-public-key");
-      if (!keyRes.ok) throw new Error(t("vapidError"));
-      const { key } = await keyRes.json();
-
       const permission = await Notification.requestPermission();
       setPushStatus(permission as "granted" | "denied" | "default");
       if (permission !== "granted") return;
 
       const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(key),
+      const sub = await createPushSubscription(reg).catch((e: Error) => {
+        throw new Error(e.message === "vapid" ? t("vapidError") : e.message);
       });
-      await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sub.toJSON()),
-      });
+      // Prima il "sì" risultava attivo anche se il server non l'aveva salvato.
+      if (!(await savePushSubscription(sub))) throw new Error(t("activationError"));
+      rememberPushChoice(true);
       setSubscribed(true);
     } catch (e) {
       setPushError((e as Error).message ?? t("activationError"));
@@ -108,6 +99,8 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
         });
         await sub.unsubscribe();
       }
+      // Spente da qui: all'apertura dell'app non si ricreano da sole.
+      rememberPushChoice(false);
       setSubscribed(false);
     } finally {
       setPushSaving(false);

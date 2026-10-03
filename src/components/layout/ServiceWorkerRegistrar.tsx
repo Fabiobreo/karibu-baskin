@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { syncPushSubscription } from "@/lib/pushSubscription";
 
 /**
  * Registrazione del service worker.
@@ -27,9 +28,14 @@ export default function ServiceWorkerRegistrar() {
       return;
     }
 
-    navigator.serviceWorker.register("/sw.js").catch(() => {
-      // registrazione fallita silenziosamente (es. in dev su HTTP)
-    });
+    navigator.serviceWorker
+      .register("/sw.js")
+      // L'iscrizione push si ripresenta al server a ogni apertura: se il
+      // browser l'ha rinnovata, il server non resta con un indirizzo morto.
+      .then(() => syncPushSubscription())
+      .catch(() => {
+        // registrazione o sincronizzazione fallita silenziosamente (es. in dev su HTTP)
+      });
   }, []);
 
   return null;

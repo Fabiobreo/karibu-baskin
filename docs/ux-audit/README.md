@@ -127,7 +127,7 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti, (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Non c'è un prossimo ticket: il passo successivo è un nuovo riaudit.
+Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Non c'è un prossimo ticket: il passo successivo è un nuovo riaudit.
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

@@ -29,6 +29,20 @@ export interface PushPayload {
   type?: string;
 }
 
+/**
+ * Opzioni di consegna di ogni push.
+ *
+ * - `urgency: "high"`: senza, la priorità è "normale" e Android, a telefono
+ *   fermo (Doze), tiene il messaggio fino alla finestra di manutenzione
+ *   successiva, anche ore. Sono tutte notifiche che servono adesso (squadre
+ *   pronte, allenamento aperto, risultato) e ognuna mostra un avviso: è l'uso
+ *   per cui i servizi push ammettono l'alta priorità.
+ * - `TTL` di un giorno: il default di `web-push` è 4 settimane, e un telefono
+ *   spento riceveva "squadre pronte" a cose fatte. Oltre un giorno la notifica
+ *   in-app resta, la push no.
+ */
+export const PUSH_OPTIONS = { TTL: 24 * 60 * 60, urgency: "high" } as const;
+
 function buildData(payload: PushPayload): string {
   return JSON.stringify({
     title: payload.title,
@@ -59,18 +73,29 @@ async function dispatchToSubs(
     subs.map((sub) =>
       webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        data
+        data,
+        PUSH_OPTIONS
       )
     )
   );
 
   const expired: string[] = [];
+  const failures: Record<string, number> = {};
   results.forEach((r, i) => {
     if (r.status === "rejected") {
       const err = r.reason as { statusCode?: number };
       if (err?.statusCode === 410 || err?.statusCode === 404) expired.push(subs[i].endpoint);
+      else {
+        const key = String(err?.statusCode ?? "rete");
+        failures[key] = (failures[key] ?? 0) + 1;
+      }
     }
   });
+  // Nei log di Vercel: un 403 vuol dire chiavi VAPID diverse da quelle con
+  // cui il dispositivo si è iscritto (quel dispositivo non riceverà mai nulla).
+  if (Object.keys(failures).length > 0) {
+    console.warn("[webpush] invii non riusciti per stato", failures, "su", subs.length);
+  }
 
   await cleanupExpired(expired);
   const sent = results.filter((r) => r.status === "fulfilled").length;
