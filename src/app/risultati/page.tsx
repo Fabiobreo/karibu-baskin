@@ -143,40 +143,19 @@ export default async function RisultatiPage({ searchParams }: Props) {
               return (
                 <Box key={team.id}>
                   {/* Intestazione nella tinta della squadra; sotto, il bilancio:
-                    una barra in proporzione e i conteggi per esteso (il colore
-                    non e' mai l'unico segnale, WCAG 1.4.1). */}
+                    prima i conteggi per esteso (il colore non e' mai l'unico
+                    segnale, WCAG 1.4.1), poi la barra in proporzione su un
+                    binario neutro. I conteggi stanno in mezzo perché la tinta
+                    squadra (Verde, Arancio) non tocchi i colori degli esiti
+                    (UX-49 C). */}
                   <TeamSectionHeader
                     name={team.name}
                     color={team.color}
                     championship={team.championship}
                     aside={t("matchCount", { count: team.matches.length })}
                   />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      flexWrap: "wrap",
-                      mt: 1.5,
-                      mb: 2,
-                    }}
-                  >
-                    <Box
-                      aria-hidden
-                      sx={{
-                        display: "flex",
-                        gap: "2px",
-                        flex: "1 1 160px",
-                        height: 8,
-                        borderRadius: RADIUS.pill,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {tw > 0 && <Box sx={{ flexGrow: tw, flexBasis: 0, bgcolor: "match.win" }} />}
-                      {td > 0 && <Box sx={{ flexGrow: td, flexBasis: 0, bgcolor: "match.draw" }} />}
-                      {tl > 0 && <Box sx={{ flexGrow: tl, flexBasis: 0, bgcolor: "match.loss" }} />}
-                    </Box>
-                    <Box sx={{ display: "flex", gap: 0.75 }}>
+                  <Box sx={{ mt: 1.5, mb: 2 }}>
+                    <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                       <Chip
                         label={wins(tw)}
                         size="small"
@@ -212,6 +191,35 @@ export default async function RisultatiPage({ searchParams }: Props) {
                           height: 20,
                         }}
                       />
+                    </Box>
+                    <Box
+                      aria-hidden
+                      sx={{
+                        mt: 1,
+                        p: "2px",
+                        bgcolor: "action.hover",
+                        borderRadius: RADIUS.pill,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: "2px",
+                          height: 8,
+                          borderRadius: RADIUS.pill,
+                          overflow: "hidden",
+                        }}
+                      >
+                        {tw > 0 && (
+                          <Box sx={{ flexGrow: tw, flexBasis: 0, bgcolor: "match.win" }} />
+                        )}
+                        {td > 0 && (
+                          <Box sx={{ flexGrow: td, flexBasis: 0, bgcolor: "match.draw" }} />
+                        )}
+                        {tl > 0 && (
+                          <Box sx={{ flexGrow: tl, flexBasis: 0, bgcolor: "match.loss" }} />
+                        )}
+                      </Box>
                     </Box>
                   </Box>
 

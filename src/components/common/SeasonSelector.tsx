@@ -72,9 +72,11 @@ export default function SeasonSelector({
         )}
       </Box>
 
+      {/* Una riga sola anche a 360 px (UX-48): la stagione mostrata la dicono
+          già i chip, qui basta il perché. */}
       {notice && (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
-          {t("seasonNotStarted", notice)}
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {t("seasonFallback", notice)}
         </Typography>
       )}
     </Box>

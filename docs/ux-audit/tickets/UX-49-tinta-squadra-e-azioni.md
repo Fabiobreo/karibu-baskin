@@ -1,6 +1,6 @@
 # UX-49 · Tinta squadra dove convive con azioni ed esiti
 
-**Ondata:** 5 · **Stima:** S · **Dipende da:** decisione del committente · **Stato:** da fare, in attesa di decisione
+**Ondata:** 5 · **Stima:** S · **Dipende da:** decisione del committente · **Stato:** A e C fatti il 03/10/2026; B in attesa del committente
 
 Nato dal [riaudit del 02/10/2026](../RIAUDIT-2026-10-02.md), problema 3.
 
@@ -26,6 +26,24 @@ La regola in CLAUDE.md è "tinta squadra come superficie, non come puntino", sce
 
 Si può anche decidere di non fare nulla: la coppia è dichiarata e il secondo segnale (nome, lettera, forma) c'è sempre.
 
+## Decisione (03/10/2026)
+
+Presa da chi implementa su delega del committente per le parti che non toccano la regola della tinta squadra, rivista da un designer:
+
+- **A: sì**, per qualunque colonna ordinata, non solo i punti: la colonna ordinata è uno stato attivo, che porta già `TableSortLabel active`; colorare tutte le celle della colonna era un doppione. Celle in inchiostro (`text.primary`), freccia dell'intestazione invariata.
+- **C: sì**, ma non con più spazio (12 px non staccano due verdi): in `/risultati` sotto la fascia squadra vengono prima i chip dei conteggi (testo), poi la barra degli esiti, su un binario neutro (`action.hover`). Resta il caso Kapuleti sotto il chip arancio della stagione (stato attivo contro identità): è dentro B.
+- **B: no, resta al committente**: restringerebbe la regola "tinta squadra come superficie" scelta il 01/10.
+
 ## Criteri di accettazione
 
-Da scrivere dopo la decisione. In ogni caso: `palette.test.ts` e `teamColors.test.ts` verdi, nessun colore nuovo, `npm run a11y` verde in chiaro e in scuro, e la regola in CLAUDE.md aggiornata se cambia.
+- In `/marcatori` nessuna cella in arancio (desktop e telefono); la freccia della colonna ordinata resta.
+- In `/risultati` tra la fascia squadra e la barra degli esiti c'è la riga dei conteggi; la barra ha un binario neutro.
+- Il resto come sotto.
+
+## Esito (03/10/2026)
+
+- **A:** in `/marcatori` le celle della colonna ordinata restano in grassetto ma in `text.primary`; la freccia di `TableSortLabel` non cambia. A 1.440 px tutte le celle numeriche della prima riga misurano `rgb(26, 26, 26)` (prima i punti erano `rgb(191, 54, 12)`); sulle card del telefono i punti erano già in inchiostro.
+- **C:** in `/risultati` sotto la fascia squadra vengono i chip dei conteggi, poi la barra degli esiti dentro un binario `action.hover` (2 px attorno, raggio `pill`).
+- Nessun colore nuovo; `palette.test.ts` e `teamColors.test.ts` verdi. Regola in CLAUDE.md invariata (A e C non la toccano). `npm run a11y` non rieseguito in questo passaggio.
+
+Criteri generali: In ogni caso: `palette.test.ts` e `teamColors.test.ts` verdi, nessun colore nuovo, `npm run a11y` verde in chiaro e in scuro, e la regola in CLAUDE.md aggiornata se cambia.

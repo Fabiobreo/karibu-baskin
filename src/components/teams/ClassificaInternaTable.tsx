@@ -5,6 +5,7 @@ import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Paper,
   Box,
+  Button,
   Typography,
   Table,
   TableHead,
@@ -20,75 +21,49 @@ import {
   Switch,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import Link from "next/link";
 import RoleBadge from "@/components/common/RoleBadge";
 import TeamChip from "@/components/teams/TeamChip";
 import TeamAvatar from "@/components/teams/TeamAvatar";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
-import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
-import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { formatAccuracy } from "@/lib/matches/accuracy";
+import {
+  attemptedTotal,
+  averagePoints,
+  columnTotal,
+  filterScorers,
+  filtersButtonLabel,
+  madeTotal,
+  matchesLoanNote,
+  sortScorers,
+  type PlayerStatRow,
+  type ScorerSortKey,
+} from "@/lib/matches/scorersTable";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-import { TOUCH_CHIP_ON_PHONE } from "@/lib/touchTarget";
+import {
+  TOUCH_CHIP_ON_PHONE,
+  TOUCH_FIELD_ON_PHONE,
+  TOUCH_TARGET_ON_PHONE,
+} from "@/lib/touchTarget";
 
-export interface PlayerStatRow {
-  /** Id del giocatore (User o Child). */
-  id: string;
-  kind: "user" | "child";
-  name: string | null;
-  image: string | null;
-  slug: string | null;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-  matches: number;
-  points: number;
-  twoPointers: number;
-  threePointers: number;
-  freeThrows: number;
-  fouls: number;
-  illegalFouls: number;
-  shotsAttempted: number;
-  /** Premi MVP ricevuti nella stagione (non splittato prestito/principale). */
-  mvpCount: number;
-  teams: { id: string; name: string; color: string | null }[];
-  // Quote "in prestito": partite/punti/tiri fatti giocando per una squadra
-  // diversa dalla propria. Sommate al valore principale danno il totale.
-  loanMatches: number;
-  loanPoints: number;
-  loanTwoPointers: number;
-  loanThreePointers: number;
-  loanFreeThrows: number;
-  loanFouls: number;
-  loanIllegalFouls: number;
-  loanShotsAttempted: number;
-}
-
-type SortKey =
-  | "matches"
-  | "points"
-  | "twoPointers"
-  | "threePointers"
-  | "freeThrows"
-  | "fouls"
-  | "illegalFouls"
-  | "shotsAttempted"
-  | "avgPoints"
-  | "accuracy"
-  | "mvp";
+// Il tipo vive con la logica pura; qui si riesporta per chi lo importava dal componente.
+export type { PlayerStatRow };
 
 const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
+const FILTERS_PANEL_ID = "scorers-filters";
 
 export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[] }) {
   const t = useTranslations("scorers");
   const tCommon = useTranslations("common");
   const tRoles = useTranslations("roles");
   const locale = useLocale();
-  const { sportRoleLabel } = useEntityLabels();
   // `advanced: true` = colonna secondaria, nascosta finché non si accende
   // l'interruttore. Le dodici colonne tutte insieme non stavano nella pagina:
   // restano sempre visibili posizione, giocatore, giocate, punti e media.
-  const ALL_COLS: { key: SortKey; label: string; title?: string; advanced?: boolean }[] = [
+  const ALL_COLS: { key: ScorerSortKey; label: string; title?: string; advanced?: boolean }[] = [
     { key: "matches", label: t("colMatches"), title: t("titleMatches") },
     { key: "points", label: t("colPoints"), title: t("titlePoints") },
     { key: "avgPoints", label: t("colAvg"), title: t("titleAvg") },
@@ -100,13 +75,16 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     { key: "fouls", label: t("colFouls"), title: t("colFoulsTitle") },
     { key: "illegalFouls", label: t("colIllegal"), title: t("titleIllegal"), advanced: true },
   ];
-  const [sortBy, setSortBy] = useState<SortKey>("points");
+  const [sortBy, setSortBy] = useState<ScorerSortKey>("points");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [nameSearch, setNameSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useRowsPerPage("internal-standings", [10, 25, 50, 100], 25);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  // Pannello dei filtri su telefono (UX-48): chiuso all'apertura, la ricerca
+  // resta sempre fuori. Da `sm` in su il pannello non esiste: è la riga di sempre.
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const COLS = ALL_COLS.filter((c) => showAdvanced || !c.advanced);
 
   // Se si spengono le avanzate mentre si ordina per una di quelle, l'ordinamento
@@ -119,7 +97,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     }
   }
 
-  function handleSort(col: SortKey) {
+  function handleSort(col: ScorerSortKey) {
     if (sortBy === col) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -139,95 +117,23 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     setPage(0);
   }
 
-  // Canestri e tiri di tutta la stagione, prestiti inclusi.
-  function madeTotal(row: PlayerStatRow): number {
-    return (
-      row.freeThrows +
-      row.twoPointers +
-      row.threePointers +
-      row.loanFreeThrows +
-      row.loanTwoPointers +
-      row.loanThreePointers
-    );
-  }
-
-  function attemptedTotal(row: PlayerStatRow): number {
-    return row.shotsAttempted + row.loanShotsAttempted;
-  }
-
-  // Mappa colonna ordinabile → coppia (primario, prestito) della riga.
-  // Il totale si ottiene come primary + loan. Sort sempre sul totale.
-  function getParts(row: PlayerStatRow, col: SortKey): { primary: number; loan: number } {
-    switch (col) {
-      case "matches":
-        return { primary: row.matches, loan: row.loanMatches };
-      case "points":
-        return { primary: row.points, loan: row.loanPoints };
-      case "twoPointers":
-        return { primary: row.twoPointers, loan: row.loanTwoPointers };
-      case "threePointers":
-        return { primary: row.threePointers, loan: row.loanThreePointers };
-      case "freeThrows":
-        return { primary: row.freeThrows, loan: row.loanFreeThrows };
-      case "fouls":
-        return { primary: row.fouls, loan: row.loanFouls };
-      case "illegalFouls":
-        return { primary: row.illegalFouls, loan: row.loanIllegalFouls };
-      case "shotsAttempted":
-        return { primary: row.shotsAttempted, loan: row.loanShotsAttempted };
-      case "avgPoints": {
-        const totMatches = row.matches + row.loanMatches;
-        const avg = totMatches > 0 ? (row.points + row.loanPoints) / totMatches : 0;
-        // La media non ha senso splittata: la modelliamo come "tutta primaria"
-        // così la cella non mostra (+X) per la media.
-        return { primary: avg, loan: 0 };
-      }
-      case "accuracy": {
-        // % realizzazione = canestri totali (1+2+3) / tiri tentati totali.
-        // `shootingAccuracy` scarta i casi in cui i tentativi sono meno dei
-        // canestri: lì il dato è incompleto e non c'è percentuale da ordinare.
-        const pct = shootingAccuracy(madeTotal(row), attemptedTotal(row));
-        return { primary: pct ?? 0, loan: 0 };
-      }
-      case "mvp":
-        // MVP non è tracciato come prestito: sempre primario.
-        return { primary: row.mvpCount, loan: 0 };
-    }
-  }
-
-  function getTotal(row: PlayerStatRow, col: SortKey): number {
-    const { primary, loan } = getParts(row, col);
-    return primary + loan;
-  }
-
-  const sorted = [...rows].sort((a, b) => {
-    const aVal = getTotal(a, sortBy);
-    const bVal = getTotal(b, sortBy);
-    return sortDir === "asc" ? aVal - bVal : bVal - aVal;
-  });
-
-  const filtered = sorted
-    .filter((r) => roleFilter === null || r.sportRole === roleFilter)
-    .filter(
-      (r) =>
-        nameSearch.trim() === "" ||
-        (r.name ?? "").toLowerCase().includes(nameSearch.trim().toLowerCase())
-    );
-
+  const filtered = filterScorers(sortScorers(rows, sortBy, sortDir), roleFilter, nameSearch);
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   if (rows.length === 0) return null;
 
-  // Qualche numero comprende un prestito? Allora serve la legenda sopra la
-  // tabella: il vecchio `title` non si vedeva sui dispositivi touch.
-  const hasLoans = rows.some((r) => COLS.some((c) => getParts(r, c.key).loan > 0));
+  const loanNote = (row: PlayerStatRow) =>
+    matchesLoanNote(row, (count) => t("loanDetail", { count }));
 
   // Determine which roles actually appear in the data
   const rolesInData = new Set(rows.map((r) => r.sportRole).filter(Boolean));
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
-      {/* Search + role filter */}
+      {/* Ricerca + filtri. Su telefono una riga sola (ricerca e bottone
+          "Filtri"), con ruolo e "Più colonne" nel pannello sotto; da `sm` il
+          pannello diventa `display: contents` e i suoi pezzi tornano nella
+          riga, come prima (UX-48). */}
       <Box
         sx={{
           px: 2,
@@ -253,77 +159,109 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 </InputAdornment>
               ),
             },
+            htmlInput: { "aria-label": t("searchPlayer") },
           }}
-          sx={{ width: 200, "& .MuiOutlinedInput-root": { fontSize: TYPE_SCALE.sm } }}
+          sx={{
+            width: { xs: "auto", sm: 200 },
+            flex: { xs: "1 1 0", sm: "0 0 auto" },
+            minWidth: 0,
+            "& .MuiOutlinedInput-root": { fontSize: TYPE_SCALE.sm },
+            ...TOUCH_FIELD_ON_PHONE,
+          }}
         />
-        <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
+        <Button
+          variant="outlined"
+          startIcon={<FilterListIcon />}
+          aria-expanded={filtersOpen}
+          aria-controls={FILTERS_PANEL_ID}
+          onClick={() => setFiltersOpen((o) => !o)}
+          sx={{
+            display: { xs: "inline-flex", sm: "none" },
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+            ...TOUCH_TARGET_ON_PHONE,
+          }}
+        >
+          {filtersButtonLabel(
+            t("filters"),
+            roleFilter === null ? null : tRoles("role", { n: roleFilter })
+          )}
+        </Button>
+        <Box
+          id={FILTERS_PANEL_ID}
+          sx={{
+            display: { xs: filtersOpen ? "flex" : "none", sm: "contents" },
+            width: "100%",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight={FONT_WEIGHT.semibold}
+              sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
+            >
+              {t("roleFilterLabel")}
+            </Typography>
+            <Chip
+              label={t("all")}
+              size="small"
+              variant={roleFilter === null ? "filled" : "outlined"}
+              color={roleFilter === null ? "primary" : "default"}
+              onClick={() => handleRoleFilter(null)}
+              sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs, ...TOUCH_CHIP_ON_PHONE }}
+            />
+            {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
+              <Chip
+                key={r}
+                // "Ruolo 1", non "R1": la sigla era gergo (UX-17).
+                label={tRoles("role", { n: r })}
+                size="small"
+                onClick={() => handleRoleFilter(r)}
+                // Selezionato = stato attivo standard, come "Tutti" (UX-29).
+                variant={roleFilter === r ? "filled" : "outlined"}
+                color={roleFilter === r ? "primary" : "default"}
+                sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs, ...TOUCH_CHIP_ON_PHONE }}
+              />
+            ))}
+          </Box>
+          {/* Colonne secondarie a richiesta: con tutte e dodici la tabella
+              sbordava dal contenitore e l'ultima colonna restava tagliata. */}
+          <FormControlLabel
+            sx={{ ml: { xs: 0, sm: "auto" }, mr: 0, order: { sm: 2 } }}
+            control={
+              <Switch
+                size="small"
+                checked={showAdvanced}
+                onChange={(e) => handleToggleAdvanced(e.target.checked)}
+              />
+            }
+            label={
+              <Typography
+                variant="caption"
+                fontWeight={FONT_WEIGHT.semibold}
+                title={t("advancedStatsHint")}
+              >
+                {t("advancedStats")}
+              </Typography>
+            }
+          />
+        </Box>
+        {/* Il conteggio resta fuori dal pannello: a pannello chiuso dice
+            perché la lista è più corta. Da `sm` sta prima dell'interruttore. */}
+        {filtered.length !== rows.length && (
           <Typography
             variant="caption"
             color="text.secondary"
-            fontWeight={FONT_WEIGHT.semibold}
-            sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
+            sx={{ width: { xs: "100%", sm: "auto" }, order: { sm: 1 } }}
           >
-            {t("roleFilterLabel")}
+            {t("playerCount", { count: filtered.length })}
           </Typography>
-          <Chip
-            label={t("all")}
-            size="small"
-            variant={roleFilter === null ? "filled" : "outlined"}
-            color={roleFilter === null ? "primary" : "default"}
-            onClick={() => handleRoleFilter(null)}
-            sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs, ...TOUCH_CHIP_ON_PHONE }}
-          />
-          {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
-            <Chip
-              key={r}
-              // "Ruolo 1", non "R1": la sigla era gergo (UX-17).
-              label={tRoles("role", { n: r })}
-              size="small"
-              onClick={() => handleRoleFilter(r)}
-              // Selezionato = stato attivo standard, come "Tutti" (UX-29).
-              variant={roleFilter === r ? "filled" : "outlined"}
-              color={roleFilter === r ? "primary" : "default"}
-              sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs, ...TOUCH_CHIP_ON_PHONE }}
-            />
-          ))}
-          {filtered.length !== rows.length && (
-            <Typography variant="caption" color="text.secondary">
-              {t("playerCount", { count: filtered.length })}
-            </Typography>
-          )}
-        </Box>
-        {/* Colonne secondarie a richiesta: con tutte e dodici la tabella
-            sbordava dal contenitore e l'ultima colonna restava tagliata. */}
-        <FormControlLabel
-          sx={{ ml: { xs: 0, sm: "auto" }, mr: 0 }}
-          control={
-            <Switch
-              size="small"
-              checked={showAdvanced}
-              onChange={(e) => handleToggleAdvanced(e.target.checked)}
-            />
-          }
-          label={
-            <Typography
-              variant="caption"
-              fontWeight={FONT_WEIGHT.semibold}
-              title={t("advancedStatsHint")}
-            >
-              {t("advancedStats")}
-            </Typography>
-          }
-        />
+        )}
       </Box>
-
-      {hasLoans && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ px: 2, py: 1.25, borderBottom: "1px solid", borderColor: "divider" }}
-        >
-          {t("loanLegend")}
-        </Typography>
-      )}
 
       {/* Desktop table */}
       <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
@@ -402,31 +340,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         sx={{ fontSize: TYPE_SCALE.xs }}
                       />
                       <Box>
-                        {(row.slug ?? row.id) ? (
-                          <Link
-                            href={`/giocatori/${row.slug ?? row.id}`}
-                            style={{ textDecoration: "none", color: "inherit" }}
-                          >
-                            <Typography
-                              variant="body2"
-                              fontWeight={FONT_WEIGHT.semibold}
-                              sx={{
-                                "&:hover": { textDecoration: "underline" },
-                                fontSize: TYPE_SCALE.sm,
-                              }}
-                            >
-                              {row.name}
-                            </Typography>
-                          </Link>
-                        ) : (
-                          <Typography
-                            variant="body2"
-                            fontWeight={FONT_WEIGHT.semibold}
-                            sx={{ fontSize: TYPE_SCALE.sm }}
-                          >
-                            {row.name}
-                          </Typography>
-                        )}
+                        <PlayerName row={row} />
                         <Box
                           sx={{
                             display: "flex",
@@ -450,24 +364,28 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                     </Box>
                   </TableCell>
                   {COLS.map((col) => {
-                    const { primary, loan } = getParts(row, col.key);
                     const isActive = sortBy === col.key;
-                    // In grande il totale, cioe' il numero su cui si ordina:
-                    // prima si vedeva solo la parte propria e "74 (+13)" finiva
-                    // sopra "76" (UX-06).
+                    const total = columnTotal(row, col.key);
+                    // In grande il totale, cioe' il numero su cui si ordina
+                    // (UX-06). Il prestito si dice una volta sola, nella
+                    // colonna Giocate (UX-48).
                     const totalLabel =
                       col.key === "avgPoints"
-                        ? formatDecimal(primary, locale)
+                        ? formatDecimal(total, locale)
                         : col.key === "accuracy"
                           ? formatAccuracy(madeTotal(row), attemptedTotal(row))
-                          : String(primary + loan);
+                          : String(total);
+                    const note = col.key === "matches" ? loanNote(row) : null;
                     return (
                       <TableCell
                         key={col.key}
                         align="center"
                         sx={{
+                          // Colonna ordinata: in grassetto, in inchiostro. Lo
+                          // stato attivo lo dice la freccia dell'intestazione
+                          // (UX-49 A): niente arancio sulle celle.
                           fontWeight: isActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                          color: isActive ? "primary.onLight" : "text.primary",
+                          color: "text.primary",
                           fontSize: TYPE_SCALE.sm,
                           whiteSpace: "nowrap",
                           px: 1,
@@ -477,18 +395,18 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         }}
                       >
                         {totalLabel}
-                        {loan > 0 && (
-                          <Typography
+                        {note && (
+                          <Box
                             component="span"
-                            display="block"
                             sx={{
                               fontSize: TYPE_SCALE.xs,
                               color: "text.secondary",
-                              fontWeight: FONT_WEIGHT.semibold,
+                              fontWeight: FONT_WEIGHT.regular,
                             }}
                           >
-                            {t("loanDetail", { count: loan })}
-                          </Typography>
+                            {" · "}
+                            {note}
+                          </Box>
                         )}
                       </TableCell>
                     );
@@ -509,153 +427,15 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             </Typography>
           </Box>
         ) : (
-          paginated.map((row, i) => {
-            const totMatches = row.matches + row.loanMatches;
-            const totPoints = row.points + row.loanPoints;
-            const avg = totMatches > 0 ? totPoints / totMatches : 0;
-            const accuracyLabel = formatAccuracy(madeTotal(row), attemptedTotal(row));
-            const rank = page * rowsPerPage + i + 1;
-            return (
-              <Box
-                key={row.id}
-                sx={{
-                  px: 2,
-                  py: 1.5,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  "&:last-child": { borderBottom: 0 },
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Typography
-                    variant="body2"
-                    fontWeight={FONT_WEIGHT.semibold}
-                    color="text.secondary"
-                    sx={{ minWidth: 24, textAlign: "right", flexShrink: 0 }}
-                  >
-                    {rank}
-                  </Typography>
-                  <TeamAvatar
-                    name={row.name}
-                    image={row.image}
-                    color={row.teams[0]?.color}
-                    size={32}
-                    sx={{ fontSize: TYPE_SCALE.sm }}
-                  />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {(row.slug ?? row.id) ? (
-                      <Link
-                        href={`/giocatori/${row.slug ?? row.id}`}
-                        style={{ textDecoration: "none", color: "inherit" }}
-                      >
-                        <Typography
-                          variant="body2"
-                          fontWeight={FONT_WEIGHT.semibold}
-                          noWrap
-                          sx={{ "&:hover": { textDecoration: "underline" } }}
-                        >
-                          {row.name}
-                        </Typography>
-                      </Link>
-                    ) : (
-                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-                        {row.name}
-                      </Typography>
-                    )}
-                    <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.25 }}>
-                      {row.sportRole && (
-                        <RoleBadge role={row.sportRole} variant={row.sportRoleVariant ?? null} />
-                      )}
-                      {row.teams.map((t) => (
-                        <TeamChip key={t.id} name={t.name} color={t.color} compact />
-                      ))}
-                    </Box>
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(4, 1fr)",
-                    gap: 0.5,
-                    mt: 1,
-                    pl: "56px",
-                  }}
-                >
-                  {[
-                    {
-                      label: t("colPoints"),
-                      value: totPoints,
-                      primary: true,
-                      // Come nella tabella desktop: la legenda annuncia i punti in prestito (UX-24).
-                      detail:
-                        row.loanPoints > 0 ? t("loanDetail", { count: row.loanPoints }) : null,
-                    },
-                    { label: t("colAvg"), value: formatDecimal(avg, locale) },
-                    { label: t("colAccuracy"), value: accuracyLabel },
-                    { label: t("colMatches"), value: totMatches },
-                    { label: t("col2pt"), value: row.twoPointers + row.loanTwoPointers },
-                    { label: t("col3pt"), value: row.threePointers + row.loanThreePointers },
-                    { label: t("colFouls"), value: row.fouls + row.loanFouls },
-                    // Le stesse tre colonne secondarie della tabella desktop.
-                    ...(showAdvanced
-                      ? [
-                          { label: t("col1pt"), value: row.freeThrows + row.loanFreeThrows },
-                          { label: t("colMvp"), value: row.mvpCount },
-                          {
-                            label: t("colIllegal"),
-                            value: row.illegalFouls + row.loanIllegalFouls,
-                          },
-                        ]
-                      : []),
-                  ].map(
-                    ({
-                      label,
-                      value,
-                      primary,
-                      detail,
-                    }: {
-                      label: string;
-                      value: string | number;
-                      primary?: boolean;
-                      detail?: string | null;
-                    }) => (
-                      <Box key={label} sx={{ textAlign: "center" }}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                          sx={{ fontSize: TYPE_SCALE.xs, lineHeight: 1.2 }}
-                        >
-                          {label}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight={primary ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
-                          color="text.primary"
-                          sx={{ fontSize: TYPE_SCALE.sm, fontVariantNumeric: "tabular-nums" }}
-                        >
-                          {value}
-                        </Typography>
-                        {detail && (
-                          <Typography
-                            variant="caption"
-                            display="block"
-                            sx={{
-                              color: "text.secondary",
-                              fontWeight: FONT_WEIGHT.semibold,
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            {detail}
-                          </Typography>
-                        )}
-                      </Box>
-                    )
-                  )}
-                </Box>
-              </Box>
-            );
-          })
+          paginated.map((row, i) => (
+            <MobileScorerCard
+              key={row.id}
+              row={row}
+              rank={page * rowsPerPage + i + 1}
+              showAdvanced={showAdvanced}
+              loanNote={loanNote(row)}
+            />
+          ))
         )}
       </Box>
 
@@ -676,5 +456,148 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         sx={{ borderTop: "1px solid", borderColor: "divider" }}
       />
     </Paper>
+  );
+}
+
+/** Nome del giocatore, con il link al profilo se ce l'ha. */
+function PlayerName({ row, noWrap }: { row: PlayerStatRow; noWrap?: boolean }) {
+  const name = (
+    <Typography
+      variant="body2"
+      fontWeight={FONT_WEIGHT.semibold}
+      noWrap={noWrap}
+      sx={{ "&:hover": { textDecoration: "underline" }, fontSize: TYPE_SCALE.sm }}
+    >
+      {row.name}
+    </Typography>
+  );
+  if (!(row.slug ?? row.id)) return name;
+  return (
+    <Link
+      href={`/giocatori/${row.slug ?? row.id}`}
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
+      {name}
+    </Link>
+  );
+}
+
+interface MobileScorerCardProps {
+  row: PlayerStatRow;
+  rank: number;
+  showAdvanced: boolean;
+  /** "2 in prestito", solo sotto Giocate (UX-48); null senza prestiti. */
+  loanNote: string | null;
+}
+
+function MobileScorerCard({ row, rank, showAdvanced, loanNote }: MobileScorerCardProps) {
+  const t = useTranslations("scorers");
+  const locale = useLocale();
+  const stats: { label: string; value: string | number; primary?: boolean; detail?: string }[] = [
+    { label: t("colPoints"), value: columnTotal(row, "points"), primary: true },
+    { label: t("colAvg"), value: formatDecimal(averagePoints(row), locale) },
+    { label: t("colAccuracy"), value: formatAccuracy(madeTotal(row), attemptedTotal(row)) },
+    {
+      label: t("colMatches"),
+      value: columnTotal(row, "matches"),
+      detail: loanNote ?? undefined,
+    },
+    { label: t("col2pt"), value: columnTotal(row, "twoPointers") },
+    { label: t("col3pt"), value: columnTotal(row, "threePointers") },
+    { label: t("colFouls"), value: columnTotal(row, "fouls") },
+    // Le stesse tre colonne secondarie della tabella desktop.
+    ...(showAdvanced
+      ? [
+          { label: t("col1pt"), value: columnTotal(row, "freeThrows") },
+          { label: t("colMvp"), value: row.mvpCount },
+          { label: t("colIllegal"), value: columnTotal(row, "illegalFouls") },
+        ]
+      : []),
+  ];
+
+  return (
+    <Box
+      sx={{
+        px: 2,
+        py: 1.5,
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        "&:last-child": { borderBottom: 0 },
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography
+          variant="body2"
+          fontWeight={FONT_WEIGHT.semibold}
+          color="text.secondary"
+          sx={{ minWidth: 24, textAlign: "right", flexShrink: 0 }}
+        >
+          {rank}
+        </Typography>
+        <TeamAvatar
+          name={row.name}
+          image={row.image}
+          color={row.teams[0]?.color}
+          size={32}
+          sx={{ fontSize: TYPE_SCALE.sm }}
+        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <PlayerName row={row} noWrap />
+          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.25 }}>
+            {row.sportRole && (
+              <RoleBadge role={row.sportRole} variant={row.sportRoleVariant ?? null} />
+            )}
+            {row.teams.map((team) => (
+              <TeamChip key={team.id} name={team.name} color={team.color} compact />
+            ))}
+          </Box>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 0.5,
+          mt: 1,
+          pl: "56px",
+        }}
+      >
+        {stats.map(({ label, value, primary, detail }) => (
+          <Box
+            key={label}
+            // La nota di prestito va a capo nella colonna stretta: la cella
+            // occupa anche la riga sotto (che in quarta colonna è vuota), così
+            // la card non si allunga.
+            sx={{ textAlign: "center", gridRow: detail ? "span 2" : undefined }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
+              sx={{ fontSize: TYPE_SCALE.xs, lineHeight: 1.2 }}
+            >
+              {label}
+            </Typography>
+            <Typography
+              variant="body2"
+              fontWeight={primary ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
+              color="text.primary"
+              sx={{ fontSize: TYPE_SCALE.sm, fontVariantNumeric: "tabular-nums" }}
+            >
+              {value}
+            </Typography>
+            {detail && (
+              <Typography
+                variant="caption"
+                display="block"
+                sx={{ color: "text.secondary", lineHeight: 1.2 }}
+              >
+                {detail}
+              </Typography>
+            )}
+          </Box>
+        ))}
+      </Box>
+    </Box>
   );
 }

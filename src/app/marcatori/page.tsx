@@ -3,7 +3,7 @@ import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { isMinor, isMinorChild } from "@/lib/minors";
 import { getTranslations } from "next-intl/server";
-import { Container, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
 import SeasonSelector from "@/components/common/SeasonSelector";
@@ -11,7 +11,7 @@ import MatchesSectionNav from "@/components/matches/MatchesSectionNav";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import type { Metadata } from "next";
 import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
-import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
+import { hasAnyLoan, type PlayerStatRow } from "@/lib/matches/scorersTable";
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { parseSeasonParam } from "@/lib/season/seasonUtils";
 import { buildMetadata } from "@/lib/seo";
@@ -258,6 +258,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     ? chipSeasons
     : [...chipSeasons, activeSeason].sort((a, b) => b.localeCompare(a));
   const hasStats = statRows.length > 0;
+  const hasLoans = hasAnyLoan(statRows);
 
   return (
     <>
@@ -279,18 +280,31 @@ export default async function MarcatoriPage({ searchParams }: Props) {
 
         {hasStats ? (
           <>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {/* Su telefono le card non hanno intestazioni da toccare: l'istruzione
+                serve solo con la tabella (UX-48). */}
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2, display: { xs: "none", sm: "block" } }}
+            >
               {t("helpText")}
             </Typography>
             <ClassificaInternaTable rows={statRows} />
-            {hiddenMinors > 0 && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: "block", mt: 1.5 }}
-              >
-                {t("minorsHidden")}
-              </Typography>
+            {/* Note in fondo, insieme: prima della lista c'è solo ciò che serve
+                per trovare un giocatore (UX-48). */}
+            {(hasLoans || hiddenMinors > 0) && (
+              <Box sx={{ mt: 1.5, display: "flex", flexDirection: "column", gap: 0.5 }}>
+                {hasLoans && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t("loanLegend")}
+                  </Typography>
+                )}
+                {hiddenMinors > 0 && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t("minorsHidden")}
+                  </Typography>
+                )}
+              </Box>
             )}
           </>
         ) : hasAnyData ? (
