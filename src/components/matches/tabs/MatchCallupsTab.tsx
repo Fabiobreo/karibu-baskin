@@ -24,6 +24,8 @@ interface MatchCallupsTabProps {
   opponentName: string;
   matchId: string;
   isStaff: boolean;
+  /** Titoli di precedenti e classifica, quando la scheda ha un h2 sopra (scheda unica). */
+  headingComponent?: "h3";
 }
 
 /** Tab "Convocati": top marcatori, lista per ruolo e sezione contesto (scontri diretti + classifica). */
@@ -40,6 +42,7 @@ export default function MatchCallupsTab({
   opponentName,
   matchId,
   isStaff,
+  headingComponent,
 }: MatchCallupsTabProps) {
   const t = useTranslations("matches");
   // Top 3 marcatori (già ordinati per punti desc dalla query)
@@ -74,12 +77,17 @@ export default function MatchCallupsTab({
       {hasContext && (
         <Box sx={{ mt: 5 }}>
           <Divider sx={{ mb: 4 }} />
-          <HeadToHeadSection prevMatches={prevMatches} opponentName={opponentName} />
+          <HeadToHeadSection
+            prevMatches={prevMatches}
+            opponentName={opponentName}
+            headingComponent={headingComponent}
+          />
           {groupStandings && (
             <StandingsSection
               standings={groupStandings}
               groupName={groupName}
               ourTeamColor={ourTeamColor}
+              headingComponent={headingComponent}
             />
           )}
         </Box>

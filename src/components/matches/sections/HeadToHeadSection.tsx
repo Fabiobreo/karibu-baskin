@@ -17,9 +17,15 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 export default function HeadToHeadSection({
   prevMatches,
   opponentName,
+  headingComponent,
 }: {
   prevMatches: PrevMatchPreview[];
   opponentName: string;
+  /**
+   * Livello del titolo per i lettori di schermo, stesso aspetto. Fuori dalle
+   * tab (anteprima pubblica, scheda unica) è un titolo di sezione: "h2".
+   */
+  headingComponent?: "h2" | "h3";
 }) {
   const t = useTranslations("matches");
   const dateLocale = useActiveDateLocale();
@@ -35,6 +41,7 @@ export default function HeadToHeadSection({
     <Box sx={{ mb: 4 }}>
       <Typography
         variant="caption"
+        component={headingComponent ?? "span"}
         color="text.secondary"
         fontWeight={FONT_WEIGHT.semibold}
         sx={{

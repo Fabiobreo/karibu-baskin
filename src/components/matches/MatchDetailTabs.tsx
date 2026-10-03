@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Box, Tabs, Tab } from "@mui/material";
+import { Box, Tabs, Tab, Typography } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
@@ -55,6 +55,8 @@ export default function MatchDetailTabs({
 }: Props) {
   const t = useTranslations("matches");
   const hasStats = stats.length > 0;
+  // Partita non giocata: niente tab "Statistiche", per nessuno (UX-50).
+  const showStatsTab = hasScore || hasStats;
   // Chi non vede i convocati non deve atterrare su un lucchetto: se ci sono
   // statistiche, la pagina parte da quelle (UX-06).
   const [tab, setTab] = useState(!canSeeCallups && hasStats ? 1 : 0);
@@ -67,6 +69,45 @@ export default function MatchDetailTabs({
         (s) => (c.userId && s.user?.id === c.userId) || (c.childId && s.child?.id === c.childId)
       ) ?? null,
   }));
+
+  const callupsLabel = `${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`;
+  const callupsContent = (headingComponent?: "h3") => (
+    <MatchCallupsTab
+      callups={callupsWithStats}
+      canSeeCallups={canSeeCallups}
+      hasScore={hasScore}
+      stats={stats}
+      prevMatches={prevMatches}
+      groupStandings={groupStandings}
+      ourTeamColor={ourTeamColor}
+      playersTeamColor={playersTeamColor}
+      groupName={groupName}
+      opponentName={opponentName}
+      matchId={matchId}
+      isStaff={isStaff}
+      headingComponent={headingComponent}
+    />
+  );
+
+  // Una scheda sola (partita non giocata): niente tablist con una tab, che al
+  // lettore di schermo annuncia "scheda 1 di 1" e a vista è un'intestazione
+  // finta. Solo il contenuto, sotto un titolo vero.
+  if (!showStatsTab) {
+    return (
+      <Box component="section" aria-labelledby="match-callups-title">
+        <Typography
+          id="match-callups-title"
+          component="h2"
+          variant="h6"
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
+          <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} aria-hidden="true" />
+          {callupsLabel}
+        </Typography>
+        {callupsContent("h3")}
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -91,7 +132,7 @@ export default function MatchDetailTabs({
           <Tab
             icon={<GroupsIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
-            label={`${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`}
+            label={callupsLabel}
             sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm }}
           />
           <Tab
@@ -103,22 +144,7 @@ export default function MatchDetailTabs({
         </Tabs>
       </Box>
 
-      {tab === 0 && (
-        <MatchCallupsTab
-          callups={callupsWithStats}
-          canSeeCallups={canSeeCallups}
-          hasScore={hasScore}
-          stats={stats}
-          prevMatches={prevMatches}
-          groupStandings={groupStandings}
-          ourTeamColor={ourTeamColor}
-          playersTeamColor={playersTeamColor}
-          groupName={groupName}
-          opponentName={opponentName}
-          matchId={matchId}
-          isStaff={isStaff}
-        />
-      )}
+      {tab === 0 && callupsContent()}
 
       {tab === 1 && (
         <MatchStatsTab

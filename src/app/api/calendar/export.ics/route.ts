@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { foldLine, icsDate, icsEscape, sequenceFor } from "@/lib/calendar/ics";
+import { foldLine, icsEscape, ICS_PRODID, matchVevent, vevent } from "@/lib/calendar/ics";
+import { matchLocation, trainingLocation } from "@/lib/clubVenue";
 
-const LOCATION_DEFAULT =
-  "Polisportivo Gino Cosaro, Via del Vigo 11, 36075 Montecchio Maggiore (VI)";
-const PRODID = "-//ASD Karibu Baskin//Karibu Baskin App//IT";
 const CALDESC = "Allenamenti, partite e eventi Karibu Baskin Montecchio Maggiore";
 
 /**
@@ -20,34 +18,6 @@ const PAST_WINDOW_MONTHS = 6;
 
 /** Ogni quanto chiedere ai client di ricontrollare il feed. */
 const REFRESH = "PT6H";
-
-function vevent(
-  uid: string,
-  summary: string,
-  dtstart: Date,
-  dtend: Date,
-  options: {
-    description?: string;
-    location?: string;
-    updatedAt?: Date | null;
-  } = {}
-): string {
-  const { description, location, updatedAt } = options;
-  const lines = [
-    "BEGIN:VEVENT",
-    `UID:${uid}@karibubaskin.it`,
-    `DTSTAMP:${icsDate(new Date())}`,
-    `DTSTART:${icsDate(dtstart)}`,
-    `DTEND:${icsDate(dtend)}`,
-    `SEQUENCE:${sequenceFor(dtstart, updatedAt)}`,
-    foldLine(`SUMMARY:${icsEscape(summary)}`),
-  ];
-  if (updatedAt) lines.push(`LAST-MODIFIED:${icsDate(updatedAt)}`);
-  if (description) lines.push(foldLine(`DESCRIPTION:${icsEscape(description)}`));
-  if (location) lines.push(foldLine(`LOCATION:${icsEscape(location)}`));
-  lines.push("END:VEVENT");
-  return lines.join("\r\n");
-}
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "export-ics", 30, 60_000);
@@ -65,7 +35,7 @@ export async function GET(req: NextRequest) {
   const [trainings, matches, events] = await Promise.all([
     prisma.trainingSession.findMany({
       where: { date: { gte: from } },
-      select: { id: true, title: true, date: true, endTime: true },
+      select: { id: true, title: true, date: true, endTime: true, location: true },
       orderBy: { date: "asc" },
     }),
     prisma.match.findMany({
@@ -75,8 +45,9 @@ export async function GET(req: NextRequest) {
         date: true,
         isHome: true,
         venue: true,
+        opponentTeamId: true,
         team: { select: { name: true } },
-        opponent: { select: { name: true } },
+        opponent: { select: { name: true, address: true, city: true } },
         opponentTeam: { select: { name: true } },
       },
       orderBy: { date: "asc" },
@@ -102,18 +73,30 @@ export async function GET(req: NextRequest) {
   for (const t of trainings) {
     const start = t.date;
     const end = t.endTime ?? new Date(t.date.getTime() + 90 * 60 * 1000);
-    vevents.push(vevent(`training-${t.id}`, t.title, start, end, { location: LOCATION_DEFAULT }));
+    vevents.push(
+      vevent(`training-${t.id}`, t.title, start, end, { location: trainingLocation(t.location) })
+    );
   }
 
   for (const m of matches) {
-    const start = m.date;
-    const end = new Date(m.date.getTime() + 90 * 60 * 1000);
-    const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
-    const summary = m.isHome
-      ? `${m.team.name} vs ${opponentName}`
-      : `${m.team.name} @ ${opponentName}`;
-    const location = m.isHome ? LOCATION_DEFAULT : (m.venue ?? undefined);
-    vevents.push(vevent(`match-${m.id}`, summary, start, end, { location }));
+    // Luogo dalla stessa regola della pagina partita (UX-50): in trasferta
+    // senza `venue` vale l'indirizzo dell'avversaria.
+    const { label } = matchLocation({
+      isHome: m.isHome,
+      venue: m.venue,
+      opponent: m.opponent,
+      internal: !!m.opponentTeamId,
+    });
+    vevents.push(
+      matchVevent({
+        id: m.id,
+        date: m.date,
+        isHome: m.isHome,
+        teamName: m.team.name,
+        opponentName: m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario",
+        location: label,
+      })
+    );
   }
 
   for (const e of events) {
@@ -131,7 +114,7 @@ export async function GET(req: NextRequest) {
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    `PRODID:${PRODID}`,
+    `PRODID:${ICS_PRODID}`,
     "CALSCALE:GREGORIAN",
     // Niente METHOD: con METHOD:PUBLISH i client leggono il file come un
     // messaggio iCalendar da importare una volta sola, non come feed da

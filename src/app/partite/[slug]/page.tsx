@@ -27,6 +27,12 @@ import { slugify } from "@/lib/slugUtils";
 import { computeStandings } from "@/lib/season/standings";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import MatchTabellinoButton from "@/components/matches/MatchTabellinoButton";
+import MatchWhereWhen from "@/components/matches/MatchWhereWhen";
+import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
+import StandingsSection from "@/components/matches/sections/StandingsSection";
+import { matchLocation, matchPlaceShort } from "@/lib/clubVenue";
+import { matchPhase, showWhereWhen } from "@/lib/matches/matchPhase";
+import { loginHref } from "@/lib/loginReturn";
 import HomeIcon from "@mui/icons-material/Home";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -92,7 +98,7 @@ async function getMatch(slug: string) {
           isMixed: true,
         },
       },
-      opponent: { select: { id: true, name: true, city: true, slug: true } },
+      opponent: { select: { id: true, name: true, city: true, address: true, slug: true } },
       opponentTeam: { select: { id: true, name: true, color: true, season: true, isMixed: true } },
       group: { select: { id: true, name: true, championship: true } },
       playerStats: {
@@ -248,8 +254,18 @@ export default async function MatchDetailPage({ params }: Props) {
   const hasScore = match.ourScore !== null && match.theirScore !== null;
   // eslint-disable-next-line react-hooks/purity -- Server Component, renders once
   const now = Date.now();
-  const isUpcoming = !hasScore && new Date(match.date).getTime() > now;
+  // Fase (UX-50): futura, in corso (3 ore), risultato in arrivo, giocata.
+  const phase = matchPhase(match.date, hasScore, now);
+  const isUpcoming = phase === "upcoming";
   const isImminent = isUpcoming && new Date(match.date).getTime() - now <= 48 * 60 * 60 * 1000;
+  // Luogo da una fonte sola (UX-50): hero, "Dove e quando", JSON-LD ed .ics.
+  const location = matchLocation({
+    isHome: match.isHome,
+    venue: match.venue,
+    opponent: match.opponent,
+    internal: !!match.opponentTeamId,
+  });
+  const showWhereWhenBlock = showWhereWhen(match.date, phase, now);
 
   // Disponibilità self-service: per partite future, mostra i toggle a chi è
   // membro di una delle squadre della partita (o genitore di un figlio membro).
@@ -384,14 +400,30 @@ export default async function MatchDetailPage({ params }: Props) {
     isHome: m.isHome,
   }));
 
-  // I convocati sono visibili solo agli utenti loggati con un ruolo
-  // diverso da GUEST. Gli ospiti e gli anonimi vedono un invito al login.
-  const canSeeCallups = !!session?.user && session.user.appRole !== "GUEST";
+  // I convocati li vedono i tesserati (UX-50: ospite = anonimo).
+  const canSeeCallups = viewerIsMember;
+  // Chi non è tesserato, su una partita non giocata, non vede le tab: niente
+  // lucchetto, e i dati delle tab non finiscono nel payload (UX-50). Una
+  // partita con le statistiche ma senza punteggio è giocata: come in
+  // MatchDetailTabs (`showStatsTab = hasScore || hasStats`), resta uguale per tutti.
+  const publicPreview = !viewerIsMember && !hasScore && match.playerStats.length === 0;
+  // Con il blocco "Dove e quando" sotto, la riga dell'hero non ripete data e
+  // indirizzo (UX-50): restano casa/trasferta e il luogo in breve.
+  const placeShort = matchPlaceShort(match, location);
 
   const heroBg = match.result ? RESULT_GRADIENT[match.result] : heroGradient.band;
 
-  // Senza punteggi c'è una riga sola: nomi centrati rispetto all'orario.
-  const upcomingNameSx = isUpcoming ? { alignSelf: "center" } : {};
+  // Senza punteggi c'è una riga sola: nomi centrati rispetto all'orario (o
+  // allo stato "In corso" / "Risultato in arrivo").
+  const upcomingNameSx = !hasScore ? { alignSelf: "center" } : {};
+  const middleLabel =
+    phase === "upcoming"
+      ? formatRome(new Date(match.date), "HH:mm")
+      : phase === "live"
+        ? t("phaseLive")
+        : phase === "awaitingResult"
+          ? t("phaseAwaitingResult")
+          : "–";
   // Nomi lunghi ("Polisportiva Dilettantistica …"): su telefono tutti e due
   // un gradino più piccoli, così le parole lunghe stanno nella colonna e i
   // due lati restano identici.
@@ -417,7 +449,7 @@ export default async function MatchDetailPage({ params }: Props) {
           ourTeam: match.team.name,
           opponent: opponentName,
           isHome: match.isHome,
-          venue: match.venue,
+          location,
         })}
       />
       <EntityHero
@@ -483,9 +515,9 @@ export default async function MatchDetailPage({ params }: Props) {
                   >
                     {name}
                   </Typography>
-                  {!isUpcoming && (
+                  {hasScore && (
                     <Typography component="p" sx={{ ...scoreSx, gridColumn: column, gridRow: 2 }}>
-                      {hasScore ? score : "–"}
+                      {score}
                     </Typography>
                   )}
                 </Fragment>
@@ -506,19 +538,30 @@ export default async function MatchDetailPage({ params }: Props) {
                 <Typography
                   key="middle"
                   component="p"
-                  aria-hidden={!isUpcoming}
+                  aria-hidden={hasScore}
                   sx={{
                     gridColumn: 2,
-                    gridRow: isUpcoming ? 1 : 2,
+                    gridRow: hasScore ? 2 : 1,
                     color: heroText.muted,
-                    fontWeight: FONT_WEIGHT.bold,
                     lineHeight: 1,
-                    fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
                     fontVariantNumeric: "tabular-nums",
+                    // Senza punteggio (UX-50) al centro c'è un orario o uno
+                    // stato: peso da orario, non da punteggio.
+                    ...(hasScore
+                      ? {
+                          fontWeight: FONT_WEIGHT.bold,
+                          fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
+                        }
+                      : {
+                          fontWeight: FONT_WEIGHT.semibold,
+                          fontSize: isUpcoming
+                            ? { xs: TYPE_SCALE.lg, md: TYPE_SCALE.xl2 }
+                            : { xs: TYPE_SCALE.sm, md: TYPE_SCALE.lg },
+                          ...(isUpcoming ? {} : { color: heroText.primary, lineHeight: 1.2 }),
+                        }),
                   }}
                 >
-                  {/* Partita futura: l'orario al posto dei punteggi. */}
-                  {isUpcoming ? formatRome(new Date(match.date), "HH:mm") : "–"}
+                  {middleLabel}
                 </Typography>
               );
               return match.isHome
@@ -589,7 +632,10 @@ export default async function MatchDetailPage({ params }: Props) {
             </Box>
           )}
 
-          {/* Riga meta unica: data e ora, casa/trasferta, luogo */}
+          {/* Riga meta unica: data e ora, casa/trasferta, luogo. Quando sotto
+              c'è "Dove e quando" (UX-50) la data e l'indirizzo stanno lì, con
+              ora, Maps e calendario: qui solo casa/trasferta e la città. Per
+              orientarsi bastano il countdown e l'ora al centro del tabellino. */}
           <Box
             sx={{
               display: "flex",
@@ -602,17 +648,19 @@ export default async function MatchDetailPage({ params }: Props) {
               color: heroText.muted,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <CalendarTodayIcon sx={{ fontSize: 14 }} />
-              <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
-                {/* Partita futura: l'orario sta già al centro del tabellino. */}
-                {formatRome(
-                  new Date(match.date),
-                  isUpcoming ? "EEEE d MMMM yyyy" : "EEEE d MMMM yyyy · HH:mm",
-                  { locale: dateLocale }
-                )}
-              </Typography>
-            </Box>
+            {!showWhereWhenBlock && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <CalendarTodayIcon sx={{ fontSize: 14 }} />
+                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
+                  {/* Partita futura: l'orario sta già al centro del tabellino. */}
+                  {formatRome(
+                    new Date(match.date),
+                    isUpcoming ? "EEEE d MMMM yyyy" : "EEEE d MMMM yyyy · HH:mm",
+                    { locale: dateLocale }
+                  )}
+                </Typography>
+              </Box>
+            )}
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               {match.isHome ? (
                 <HomeIcon sx={{ fontSize: 14 }} />
@@ -623,14 +671,14 @@ export default async function MatchDetailPage({ params }: Props) {
                 {match.isHome ? t("home") : t("away")}
               </Typography>
             </Box>
-            {match.venue && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <PlaceIcon sx={{ fontSize: 14 }} />
-                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
-                  {match.venue}
-                </Typography>
-              </Box>
-            )}
+            {/* Mai "Casa" da solo (UX-50): il luogo c'è sempre, anche
+                quando è da confermare. */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <PlaceIcon sx={{ fontSize: 14 }} />
+              <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
+                {(showWhereWhenBlock ? placeShort : location.label) ?? t("whereWhen.locationTbc")}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </EntityHero>
@@ -737,22 +785,56 @@ export default async function MatchDetailPage({ params }: Props) {
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
-          <MatchDetailTabs
-            ourTeamColor={match.team.color}
-            playersTeamColor={match.opponentTeamId ? null : match.team.color}
-            notes={match.notes}
-            stats={match.playerStats}
-            callups={callups}
-            canSeeCallups={canSeeCallups}
-            hasScore={hasScore}
-            prevMatches={prevMatches}
-            groupStandings={groupStandings}
-            ourTeamId={match.team.id}
-            groupName={match.group?.name ?? null}
-            opponentName={opponentName}
-            matchId={match.id}
-            isStaff={isStaff}
-          />
+          {showWhereWhenBlock && (
+            <Box sx={{ mb: publicPreview ? 2 : { xs: 3, md: 4 } }}>
+              <MatchWhereWhen matchId={match.id} date={match.date} location={location} />
+            </Box>
+          )}
+          {publicPreview ? (
+            <>
+              {/* Una riga sola sui convocati, non un lucchetto (UX-50). */}
+              <Typography variant="body2" color="text.secondary">
+                {t("whereWhen.callupsMembersOnly")}{" "}
+                <MuiLink href={loginHref(`/partite/${match.slug ?? match.id}`)} variant="body2">
+                  {t("whereWhen.login")}
+                </MuiLink>
+              </Typography>
+              {(prevMatches.length > 0 || (groupStandings && groupStandings.length > 0)) && (
+                <Box sx={{ mt: { xs: 4, md: 5 } }}>
+                  <HeadToHeadSection
+                    prevMatches={prevMatches}
+                    opponentName={opponentName}
+                    headingComponent="h2"
+                  />
+                  {groupStandings && (
+                    <StandingsSection
+                      standings={groupStandings}
+                      groupName={match.group?.name ?? null}
+                      ourTeamColor={match.team.color}
+                      headingComponent="h2"
+                    />
+                  )}
+                </Box>
+              )}
+            </>
+          ) : (
+            <MatchDetailTabs
+              ourTeamColor={match.team.color}
+              playersTeamColor={match.opponentTeamId ? null : match.team.color}
+              notes={match.notes}
+              stats={match.playerStats}
+              callups={callups}
+              canSeeCallups={canSeeCallups}
+              hasScore={hasScore}
+              prevMatches={prevMatches}
+              groupStandings={groupStandings}
+              ourTeamId={match.team.id}
+              groupName={match.group?.name ?? null}
+              opponentName={opponentName}
+              matchId={match.id}
+              isStaff={isStaff}
+            />
+          )}
         </Box>
       </Container>
     </>

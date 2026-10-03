@@ -32,6 +32,20 @@ describe("structuredData", () => {
     expect(away.homeTeam.name).toBe("Orsi Bassano");
     // In trasferta senza campo gara la sede non è nota: meglio nessuna che una sbagliata.
     expect(away).not.toHaveProperty("location");
+
+    // Con il luogo da matchLocation(): in trasferta vale l'indirizzo dell'avversaria.
+    const awayKnown = sportsEventJsonLd({
+      ...base,
+      isHome: false,
+      location: { kind: "opponent", label: "Via Roma 1, Bassano" },
+    });
+    expect(awayKnown.location).toMatchObject({ name: "Via Roma 1, Bassano" });
+    const unknown = sportsEventJsonLd({
+      ...base,
+      isHome: true,
+      location: { kind: "unknown", label: null },
+    });
+    expect(unknown).not.toHaveProperty("location");
   });
 
   it("non contiene nomi di giocatori", () => {

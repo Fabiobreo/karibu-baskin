@@ -189,6 +189,22 @@ describe("GET /api/calendar/export.ics", () => {
     expect(ics).toContain("LOCATION:Palazzetto Avversario");
   });
 
+  it("in trasferta senza campo usa l'indirizzo dell'avversaria (UX-50)", async () => {
+    p.match.findMany.mockResolvedValue([
+      {
+        id: "m-4",
+        date: baseDate,
+        isHome: false,
+        venue: null,
+        opponentTeamId: null,
+        team: { name: "Karibu Baskin" },
+        opponent: { name: "Team E", address: "Via Roma 1", city: "Bassano" },
+      },
+    ]);
+    const ics = await (await GET(mockReq())).text();
+    expect(ics).toContain("LOCATION:Via Roma 1\\, Bassano");
+  });
+
   it("usa location di default per partita in casa", async () => {
     p.match.findMany.mockResolvedValue([
       {

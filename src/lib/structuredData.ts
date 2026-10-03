@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/siteUrl";
 import { CLUB_EMAIL, CLUB_LEGAL_NAME, CLUB_SOCIAL, CLUB_TAX_ID } from "@/lib/clubContacts";
+import { CLUB_VENUE, type MatchLocation } from "@/lib/clubVenue";
 
 /**
  * Dati strutturati schema.org (JSON-LD) per le pagine pubbliche (KB-12).
@@ -19,13 +20,13 @@ const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 
 const HOME_VENUE = {
   "@type": "Place",
-  name: "Polisportivo Gino Cosaro",
+  name: CLUB_VENUE.name,
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Via del Vigo, 11",
-    postalCode: "36075",
-    addressLocality: "Montecchio Maggiore",
-    addressRegion: "VI",
+    streetAddress: CLUB_VENUE.street,
+    postalCode: CLUB_VENUE.postalCode,
+    addressLocality: CLUB_VENUE.city,
+    addressRegion: CLUB_VENUE.province,
     addressCountry: "IT",
   },
 } as const;
@@ -115,19 +116,22 @@ export interface MatchInput {
   ourTeam: string;
   opponent: string;
   isHome: boolean;
-  venue?: string | null;
+  /** Luogo da `matchLocation()` (@/lib/clubVenue); senza, sede di casa solo se in casa. */
+  location?: MatchLocation;
 }
 
 export function sportsEventJsonLd(m: MatchInput) {
   const us = { "@type": "SportsTeam", name: m.ourTeam, sport: "Baskin" };
   const them = { "@type": "SportsTeam", name: m.opponent, sport: "Baskin" };
   const [home, away] = m.isHome ? [us, them] : [them, us];
-  // Senza un campo gara, la sede nota è solo quella di casa.
-  const location = m.venue
-    ? { "@type": "Place", name: m.venue, address: m.venue }
-    : m.isHome
+  const place = m.location ?? (m.isHome ? { kind: "club" as const } : { kind: "unknown" as const });
+  // Luogo sconosciuto: meglio nessuno che uno sbagliato.
+  const location =
+    place.kind === "club"
       ? HOME_VENUE
-      : undefined;
+      : place.kind === "unknown"
+        ? undefined
+        : { "@type": "Place", name: place.label, address: place.label };
   return {
     "@context": CONTEXT,
     "@type": "SportsEvent",

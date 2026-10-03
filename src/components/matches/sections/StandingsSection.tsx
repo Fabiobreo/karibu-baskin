@@ -23,11 +23,14 @@ export default function StandingsSection({
   standings,
   groupName,
   ourTeamColor = null,
+  headingComponent,
 }: {
   standings: StandingEntry[];
   groupName: string | null;
   /** Colore salvato della nostra squadra: pallino accanto al nome (niente se manca). */
   ourTeamColor?: string | null;
+  /** Livello del titolo per i lettori di schermo, stesso aspetto (vedi HeadToHeadSection). */
+  headingComponent?: "h2" | "h3";
 }) {
   const t = useTranslations("matches");
   const tStandings = useTranslations("standings");
@@ -40,6 +43,7 @@ export default function StandingsSection({
       >
         <Typography
           variant="caption"
+          component={headingComponent ?? "span"}
           color="text.secondary"
           fontWeight={FONT_WEIGHT.semibold}
           sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: TYPE_SCALE.xs }}

@@ -71,3 +71,78 @@ export function foldLine(line: string): string {
 export function sequenceFor(start: Date, updatedAt?: Date | null): number {
   return Math.floor((updatedAt ?? start).getTime() / 60_000);
 }
+
+export const ICS_PRODID = "-//ASD Karibu Baskin//Karibu Baskin App//IT";
+
+/**
+ * Un VEVENT. Gli orari sono sempre in UTC (`Z`): nessun VTIMEZONE da
+ * dichiarare, e ogni client li porta nel suo fuso.
+ */
+export function vevent(
+  uid: string,
+  summary: string,
+  dtstart: Date,
+  dtend: Date,
+  options: {
+    description?: string;
+    location?: string;
+    updatedAt?: Date | null;
+  } = {}
+): string {
+  const { description, location, updatedAt } = options;
+  const lines = [
+    "BEGIN:VEVENT",
+    `UID:${uid}@karibubaskin.it`,
+    `DTSTAMP:${icsDate(new Date())}`,
+    `DTSTART:${icsDate(dtstart)}`,
+    `DTEND:${icsDate(dtend)}`,
+    `SEQUENCE:${sequenceFor(dtstart, updatedAt)}`,
+    foldLine(`SUMMARY:${icsEscape(summary)}`),
+  ];
+  if (updatedAt) lines.push(`LAST-MODIFIED:${icsDate(updatedAt)}`);
+  if (description) lines.push(foldLine(`DESCRIPTION:${icsEscape(description)}`));
+  if (location) lines.push(foldLine(`LOCATION:${icsEscape(location)}`));
+  lines.push("END:VEVENT");
+  return lines.join("\r\n");
+}
+
+/** Durata convenzionale di una partita nel calendario. */
+const MATCH_DURATION_MS = 90 * 60 * 1000;
+
+export interface MatchIcsInput {
+  id: string;
+  date: Date;
+  isHome: boolean;
+  teamName: string;
+  opponentName: string;
+  /** Testo del luogo, da `matchLocation()`; null se da confermare. */
+  location: string | null;
+}
+
+/**
+ * VEVENT di una partita: lo stesso nel feed (`/api/calendar/export.ics`) e nel
+ * file della singola partita (`/api/matches/[matchId]/event.ics`). Stesso UID,
+ * cosi' chi e' abbonato al feed e importa anche la partita non la vede doppia.
+ * Solo squadre, orario e luogo: niente nomi di persone, niente note.
+ */
+export function matchVevent(m: MatchIcsInput): string {
+  const summary = m.isHome
+    ? `${m.teamName} vs ${m.opponentName}`
+    : `${m.teamName} @ ${m.opponentName}`;
+  return vevent(`match-${m.id}`, summary, m.date, new Date(m.date.getTime() + MATCH_DURATION_MS), {
+    location: m.location ?? undefined,
+  });
+}
+
+/** Calendario con un solo impegno, da importare (non e' un feed da seguire). */
+export function singleEventCalendar(veventText: string): string {
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    `PRODID:${ICS_PRODID}`,
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    veventText,
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
