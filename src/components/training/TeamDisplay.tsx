@@ -399,7 +399,8 @@ function TeamEditor({
   const t = useTranslations("trainings");
   const { teamColorLabel } = useEntityLabels();
   const [localTeams, setLocalTeams] = useState<TeamsData>(initialTeams);
-  const [selected, setSelected] = useState<{ id: string; fromKey: SlotKey } | null>(null);
+  // Selezione multipla: gli id scelti, anche da gruppi diversi.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
 
@@ -411,23 +412,39 @@ function TeamEditor({
   const pool = athletes?.filter((a) => !assignedIds.has(a.id)) ?? [];
   const listOf = (key: SlotKey) => (key === "pool" ? pool : (localTeams[key] ?? []));
 
-  async function moveTo(toKey: SlotKey) {
-    if (!selected || saving) return;
-    const { id, fromKey } = selected;
-    if (fromKey === toKey) return;
+  const slotKeys: SlotKey[] = ["pool", ...teamKeys];
+  const hasSelection = selected.size > 0;
+  /** C'è almeno un selezionato fuori da questo gruppo: lì si può spostare. */
+  const canMoveInto = (key: SlotKey) =>
+    slotKeys.some((k) => k !== key && listOf(k).some((a) => selected.has(a.id)));
 
-    const fromList = listOf(fromKey);
-    const athlete = fromList.find((a) => a.id === id);
-    if (!athlete) return;
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
+
+  async function moveTo(toKey: SlotKey) {
+    if (saving) return;
+    // Chi è già nel gruppo di destinazione resta dov'è.
+    const moving = slotKeys
+      .filter((k) => k !== toKey)
+      .flatMap((k) => listOf(k).filter((a) => selected.has(a.id)));
+    if (moving.length === 0) return;
+    const movingIds = new Set(moving.map((a) => a.id));
 
     // "Da assegnare" non si salva: è chi manca dalle squadre.
     const prevTeams = localTeams;
     const newTeams: TeamsData = { ...localTeams };
-    if (fromKey !== "pool") newTeams[fromKey] = fromList.filter((a) => a.id !== id);
-    if (toKey !== "pool") newTeams[toKey] = [...(localTeams[toKey] ?? []), athlete];
+    for (const k of teamKeys) {
+      const kept = (localTeams[k] ?? []).filter((a) => !movingIds.has(a.id));
+      newTeams[k] = k === toKey ? [...kept, ...moving] : kept;
+    }
 
     setLocalTeams(newTeams);
-    setSelected(null);
+    setSelected(new Set());
     setSaving(true);
 
     try {
@@ -454,9 +471,22 @@ function TeamEditor({
 
   return (
     <Box>
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: "block" }}>
-        {selected ? t("editorMoveTarget") : t("editorMoveHint")}
-      </Typography>
+      <Box sx={{ mb: 1.5, minHeight: 30, display: "flex", alignItems: "center", gap: 1 }}>
+        <Typography variant="caption" color="text.secondary" aria-live="polite">
+          {hasSelection ? t("editorMoveTarget", { count: selected.size }) : t("editorMoveHint")}
+        </Typography>
+        {hasSelection && (
+          <Button
+            size="small"
+            variant="text"
+            disabled={saving}
+            onClick={() => setSelected(new Set())}
+            sx={{ typography: "caption", py: 0.25 }}
+          >
+            {t("editorClearSelection")}
+          </Button>
+        )}
+      </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
         {athletes && (
@@ -482,7 +512,7 @@ function TeamEditor({
                   sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
                 />
               </Box>
-              {!!selected && selected.fromKey !== "pool" && (
+              {canMoveInto("pool") && (
                 <Button
                   size="small"
                   variant="outlined"
@@ -499,16 +529,15 @@ function TeamEditor({
                 pool
                   .filter((a) => a.role === role)
                   .map((a) => {
-                    const isSelected = selected?.id === a.id;
+                    const isSelected = selected.has(a.id);
                     return (
                       <Chip
                         key={a.id}
                         label={a.name}
                         size="small"
                         disabled={saving}
-                        onClick={() =>
-                          setSelected(isSelected ? null : { id: a.id, fromKey: "pool" })
-                        }
+                        aria-pressed={isSelected}
+                        onClick={() => toggle(a.id)}
                         sx={{
                           fontSize: TYPE_SCALE.xs,
                           // Selezionato = arancio (UX-29); il ruolo non ha tinta.
@@ -537,8 +566,7 @@ function TeamEditor({
         {teamKeys.map((key, i) => {
           const teamList = localTeams[key] ?? [];
           const m = meta[i];
-          const isSource = selected?.fromKey === key;
-          const canMoveTo = !!selected && !isSource;
+          const canMoveTo = canMoveInto(key);
 
           return (
             <Paper key={key} variant="outlined" sx={{ overflow: "hidden" }}>
@@ -595,16 +623,15 @@ function TeamEditor({
                   teamList
                     .filter((a) => a.role === role)
                     .map((a) => {
-                      const isSelected = selected?.id === a.id;
+                      const isSelected = selected.has(a.id);
                       return (
                         <Chip
                           key={a.id}
                           label={a.name}
                           size="small"
                           disabled={saving}
-                          onClick={() =>
-                            setSelected(isSelected ? null : { id: a.id, fromKey: key })
-                          }
+                          aria-pressed={isSelected}
+                          onClick={() => toggle(a.id)}
                           sx={{
                             fontSize: TYPE_SCALE.xs,
                             // Selezionato = arancio (UX-29), come nel gruppo
