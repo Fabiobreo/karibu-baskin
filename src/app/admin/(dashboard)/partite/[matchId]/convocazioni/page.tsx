@@ -11,6 +11,7 @@ import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
 import MatchQualitySection from "@/components/matches/MatchQualitySection";
 import { computeMatchQuality } from "@/lib/matches/matchQuality";
+import { hasStarted } from "@/lib/matches/matchPhase";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Convocazioni | Admin" };
@@ -110,7 +111,7 @@ export default async function ConvocazioniPage({ params }: Params) {
       <ConvocazioniClient
         matchId={matchId}
         matchLabel={`${match.team.name} vs ${opponentLabel}`}
-        matchDateISO={match.date.toISOString()}
+        matchStarted={hasStarted(match.date, now.getTime())}
         windowEligibleSessions={windowEligibleSessions}
         teams={awayContext ? [homeContext, awayContext] : [homeContext]}
         opponentMu={match.opponent?.ratingMu ?? null}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchPhase, showWhereWhen } from "./matchPhase";
+import { hasStarted, isHistoricMatch, matchPhase, showWhereWhen } from "./matchPhase";
 
 // Sabato 4 ottobre 2026, 15:00 a Roma = 13:00 UTC
 const start = new Date("2026-10-04T13:00:00Z");
@@ -19,6 +19,29 @@ describe("matchPhase", () => {
   it("dopo 3 ore senza punteggio il risultato è in arrivo", () => {
     expect(matchPhase(start, false, at("2026-10-04T16:00:00Z"))).toBe("awaitingResult");
     expect(matchPhase(start, false, at("2026-10-09T10:00:00Z"))).toBe("awaitingResult");
+  });
+});
+
+describe("hasStarted", () => {
+  it("è falsa prima dell'inizio, vera dall'inizio in poi", () => {
+    expect(hasStarted(start, at("2026-10-04T12:59:00Z"))).toBe(false);
+    expect(hasStarted(start, at("2026-10-04T13:00:00Z"))).toBe(true);
+    expect(hasStarted(start, at("2027-03-01T10:00:00Z"))).toBe(true);
+  });
+  it("con una data non valida la partita non è iniziata", () => {
+    expect(hasStarted("boh", at("2026-10-04T13:00:00Z"))).toBe(false);
+  });
+});
+
+describe("isHistoricMatch", () => {
+  it("è storico solo oltre un mese dalla partita", () => {
+    expect(isHistoricMatch(start, at("2026-09-20T10:00:00Z"))).toBe(false);
+    expect(isHistoricMatch(start, at("2026-10-05T10:00:00Z"))).toBe(false);
+    expect(isHistoricMatch(start, at("2026-11-03T13:00:00Z"))).toBe(false);
+    expect(isHistoricMatch(start, at("2026-11-03T13:00:01Z"))).toBe(true);
+  });
+  it("con una data non valida non è storico", () => {
+    expect(isHistoricMatch("boh", at("2026-10-04T13:00:00Z"))).toBe(false);
   });
 });
 

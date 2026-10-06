@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 
 export type LoanLookup = {
-  match: { teamId: string; teamSeason: string };
+  match: { teamId: string; teamSeason: string; date: Date };
   memberUserIds: Set<string>;
   memberChildIds: Set<string>;
 };
@@ -30,6 +30,7 @@ export async function buildLoanLookup(
     select: {
       teamId: true,
       opponentTeamId: true,
+      date: true,
       team: { select: { id: true, season: true, isMixed: true } },
       opponentTeam: { select: { id: true, season: true, isMixed: true } },
     },
@@ -54,7 +55,7 @@ export async function buildLoanLookup(
   });
 
   return {
-    match: { teamId: effectiveTeamId, teamSeason: effectiveSeason },
+    match: { teamId: effectiveTeamId, teamSeason: effectiveSeason, date: match.date },
     memberUserIds: new Set(memberships.map((m) => m.userId).filter((x): x is string => !!x)),
     memberChildIds: new Set(memberships.map((m) => m.childId).filter((x): x is string => !!x)),
   };

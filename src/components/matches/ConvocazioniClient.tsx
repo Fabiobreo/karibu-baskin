@@ -29,7 +29,11 @@ import { readError } from "@/lib/fetchJson";
 interface Props {
   matchId: string;
   matchLabel: string;
-  matchDateISO: string;
+  /**
+   * Partita già iniziata: si registra chi ha giocato. Le disponibilità non
+   * contano più, e chi aveva detto "non disponibile" torna selezionabile.
+   */
+  matchStarted: boolean;
   windowEligibleSessions: number;
   teams: TeamCallupContext[];
   opponentMu?: number | null;
@@ -53,6 +57,7 @@ function loanToRow(lc: LoanCandidate): ConvocazioneStatRow {
 export default function ConvocazioniClient({
   matchId,
   matchLabel,
+  matchStarted,
   windowEligibleSessions,
   teams,
   opponentMu = null,
@@ -82,7 +87,7 @@ export default function ConvocazioniClient({
     clearAll,
     totalSelectedActive,
     totalSelectedAll,
-  } = useConvocazioniSelection(teams, activeTeam);
+  } = useConvocazioniSelection(teams, activeTeam, matchStarted);
 
   // Rosa + prestiti aggiunti per la squadra attiva. Dedup: se un prestito è
   // già stato persistito (presente in activeTeam.stats dopo un refresh), la
@@ -119,18 +124,19 @@ export default function ConvocazioniClient({
   const filteredAvailable = useMemo(() => {
     return activeStats.filter(
       (s) =>
-        s.availability !== false &&
+        (matchStarted || s.availability !== false) &&
         (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
-  }, [activeStats, roleFilter]);
+  }, [activeStats, roleFilter, matchStarted]);
 
   const filteredUnavailable = useMemo(() => {
+    if (matchStarted) return [];
     return activeStats.filter(
       (s) =>
         s.availability === false &&
         (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
-  }, [activeStats, roleFilter]);
+  }, [activeStats, roleFilter, matchStarted]);
 
   const sorted = useMemo(() => {
     const byName = (a: ConvocazioneStatRow, b: ConvocazioneStatRow) =>
@@ -254,6 +260,8 @@ export default function ConvocazioniClient({
             {isMulti
               ? "Amichevole interna: convoca i giocatori per ciascuna squadra"
               : `Stagione ${activeTeam.season}`}
+            {matchStarted &&
+              ". Partita già iniziata: segna chi ha giocato, le disponibilità non servono"}
             {teams.some((t) => t.isMixed) && ". Karibu gioca con tutti i giocatori della stagione"}
             {windowEligibleSessions > 0
               ? `. Presenze contate sugli allenamenti delle ultime 2 settimane (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento" : "allenamenti"})`

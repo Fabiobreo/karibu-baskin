@@ -7,6 +7,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 import { inBackground } from "@/lib/background";
+import { isHistoricMatch } from "@/lib/matches/matchPhase";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -61,7 +62,7 @@ export async function PUT(req: Request, { params }: Params) {
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
-    select: { id: true },
+    select: { id: true, date: true },
   });
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
 
@@ -126,12 +127,14 @@ export async function PUT(req: Request, { params }: Params) {
     );
   }
 
-  // Sblocco badge "MVP" dopo la risposta per i nuovi premiati
+  // Sblocco badge "MVP" dopo la risposta per i nuovi premiati. Partita di oltre
+  // un mese fa: si sta inserendo lo storico, il badge si salva senza avvisare.
+  const notify = !isHistoricMatch(match.date, Date.now());
   for (const userId of userIds) {
-    inBackground(reconcilePlayerBadges({ userId }, { notify: true }), "badges mvp");
+    inBackground(reconcilePlayerBadges({ userId }, { notify }), "badges mvp");
   }
   for (const childId of childIds) {
-    inBackground(reconcilePlayerBadges({ childId }, { notify: true }), "badges mvp");
+    inBackground(reconcilePlayerBadges({ childId }, { notify }), "badges mvp");
   }
 
   return NextResponse.json({ ok: true, total: userIds.length + childIds.length });

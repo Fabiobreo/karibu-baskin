@@ -186,6 +186,53 @@ describe("PUT /api/matches/[matchId]/callups", () => {
     });
   });
 
+  // Le disponibilità valgono finché la partita non è iniziata. Dopo, lo staff
+  // registra chi ha giocato: è il caso delle partite vecchie inserite a mano.
+  describe("disponibilità", () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    const putCallups = () =>
+      PUT(
+        new Request("http://localhost/api/matches/match-1/callups", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userIds: ["user-1"], childIds: ["child-1"] }),
+        }),
+        makeParams("match-1")
+      );
+    const matchOn = (date: Date) =>
+      p.match.findUnique.mockResolvedValue({
+        teamId: "team-1",
+        date,
+        team: { id: "team-1", season: "2025-26", isMixed: false },
+      });
+
+    beforeEach(() => {
+      mockIsCoach.mockResolvedValue(true);
+      // I due giocatori sono in rosa (non prestiti) e nessuno ha risposto.
+      (prisma as unknown as { teamMembership: { findMany: Mock } }).teamMembership.findMany //
+        .mockResolvedValue([
+          { userId: "user-1", childId: null },
+          { userId: null, childId: "child-1" },
+        ]);
+      p.matchAvailability.findMany.mockResolvedValue([]);
+    });
+
+    it("partita futura: 400 se un giocatore non ha dato la disponibilità", async () => {
+      matchOn(new Date(Date.now() + 7 * DAY));
+      const res = await putCallups();
+      expect(res.status).toBe(400);
+      expect(p.$transaction).not.toHaveBeenCalled();
+    });
+
+    it("partita già giocata: salva senza guardare le disponibilità", async () => {
+      matchOn(new Date(Date.now() - 200 * DAY));
+      const res = await putCallups();
+      expect(res.status).toBe(200);
+      expect(p.matchAvailability.findMany).not.toHaveBeenCalled();
+      expect(p.$transaction).toHaveBeenCalledOnce();
+    });
+  });
+
   it("accetta lista vuota (rimuove tutti i convocati)", async () => {
     mockIsCoach.mockResolvedValue(true);
     const req = new Request("http://localhost/api/matches/match-1/callups", {

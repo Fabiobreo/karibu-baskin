@@ -21,6 +21,26 @@ export function matchPhase(date: Date | string, hasScore: boolean, now: number):
 }
 
 /**
+ * La partita è già iniziata. Da qui in poi le disponibilità non contano più:
+ * lo staff non sta convocando, registra chi ha giocato (anche mesi dopo, quando
+ * si inseriscono le partite vecchie). Una data non valida vale "non iniziata".
+ */
+export function hasStarted(date: Date | string, now: number): boolean {
+  return new Date(date).getTime() <= now;
+}
+
+/** Oltre un mese dalla partita, quello che si inserisce è storico. */
+export const HISTORY_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * Partita di oltre un mese fa: convocati, statistiche e MVP inseriti adesso sono
+ * storico, e non avvisano nessuno (né "Statistiche disponibili" né i badge).
+ */
+export function isHistoricMatch(date: Date | string, now: number): boolean {
+  return now - new Date(date).getTime() > HISTORY_AFTER_MS;
+}
+
+/**
  * Il blocco "Dove e quando" resta finche' la partita non e' giocata: prima
  * dell'inizio e per tutto il giorno della partita (ora di Roma).
  */

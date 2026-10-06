@@ -23,6 +23,10 @@ vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/rating/badgeService", () => ({
+  reconcilePlayerBadges: vi.fn().mockResolvedValue([]),
+}));
+
 vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
   isMember: vi.fn().mockResolvedValue(true),
@@ -39,6 +43,9 @@ vi.mock("@/lib/audit", () => ({
 import { GET, PUT } from "./route";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { sendPushToAll } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 
 type PrismaMock = {
   playerMatchStats: { findMany: Mock; upsert: Mock };
@@ -219,6 +226,56 @@ describe("PUT /api/matches/[matchId]/stats", () => {
     const json = await res.json();
     expect(json).toEqual([]);
     expect(p.playerMatchStats.upsert).not.toHaveBeenCalled();
+  });
+});
+
+// Le statistiche di una partita di oltre un mese fa sono storico inserito a
+// posteriori: si salvano, ma "Statistiche disponibili" non parte.
+describe("PUT /api/matches/[matchId]/stats · notifiche", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const matchMock = (prisma as unknown as { match: { findUnique: Mock } }).match.findUnique;
+  const matchOn = (date: Date) =>
+    matchMock.mockResolvedValue({
+      teamId: "team-1",
+      date,
+      slug: null,
+      team: { id: "team-1", season: "2025-26", name: "Karibu A" },
+      opponent: { name: "Avversari FC" },
+      opponentTeam: null,
+    });
+  const putStats = () =>
+    PUT(
+      new Request("http://localhost/api/matches/match-1/stats", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify([{ userId: "user-1", twoPointers: 3 }]),
+      }),
+      makeParams("match-1")
+    );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsAdmin.mockResolvedValue(true);
+    p.playerMatchStats.upsert.mockResolvedValue(stat1);
+  });
+
+  it("partita recente: avvisa", async () => {
+    matchOn(new Date(Date.now() - 2 * DAY));
+    expect((await putStats()).status).toBe(200);
+    await vi.waitFor(() => expect(sendPushToAll).toHaveBeenCalledOnce());
+    expect(createAppNotification).toHaveBeenCalledOnce();
+    expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify: true });
+  });
+
+  it("partita di oltre un mese fa: salva senza avvisare", async () => {
+    matchOn(new Date(Date.now() - 200 * DAY));
+    expect((await putStats()).status).toBe(200);
+    expect(p.playerMatchStats.upsert).toHaveBeenCalledOnce();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(sendPushToAll).not.toHaveBeenCalled();
+    expect(createAppNotification).not.toHaveBeenCalled();
+    // I badge si salvano comunque, ma in silenzio.
+    expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify: false });
   });
 });
 
