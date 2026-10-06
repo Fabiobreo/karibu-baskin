@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { isPublicTeam } from "@/lib/matches/mixedTeam";
 import JsonLd from "@/components/common/JsonLd";
 import { sportsEventJsonLd } from "@/lib/structuredData";
 import { isMemberRole } from "@/lib/authRoles";
@@ -21,6 +22,7 @@ import MatchAvailabilityCard, {
 } from "@/components/matches/MatchAvailabilityCard";
 import MatchCountdown from "@/components/matches/MatchCountdown";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
@@ -73,6 +75,8 @@ const sideNameSx = {
   hyphens: "auto",
 } as const;
 
+const CLUB_CREST = "/logo.png";
+
 /**
  * Stemma sopra il nome: un cerchio uguale ai due lati. Bianco sotto, perché i
  * loghi delle avversarie sono quasi sempre disegnati per un fondo chiaro.
@@ -83,7 +87,6 @@ const crestSx = {
   width: { xs: 56, sm: 72, md: 88 },
   height: { xs: 56, sm: 72, md: 88 },
   borderRadius: "50%",
-  bgcolor: "common.white",
   objectFit: "contain",
   display: "block",
   mb: { xs: 0.5, md: 1 },
@@ -112,6 +115,7 @@ async function getMatch(slug: string) {
           season: true,
           championship: true,
           isMixed: true,
+          playsLeague: true,
         },
       },
       opponent: {
@@ -527,15 +531,29 @@ export default async function MatchDetailPage({ params }: Props) {
                 crest: string | null
               ) => (
                 <Fragment key={key}>
-                  {crest && (
-                    // Decorativo: il nome della squadra è subito sotto.
+                  {/* Decorativi: il nome della squadra è subito sotto. */}
+                  {crest === CLUB_CREST ? (
+                    // Il nostro logo ha già il suo disco, niente bianco sotto. Il
+                    // file pesa mezzo mega: `next/image` lo serve ridimensionato.
+                    <Box
+                      component={Image}
+                      src={CLUB_CREST}
+                      alt=""
+                      width={176}
+                      height={176}
+                      sizes="88px"
+                      sx={{ ...crestSx, gridColumn: column }}
+                    />
+                  ) : crest ? (
+                    // Avversaria: `<img>` semplice (l'URL lo scrive lo staff, e un
+                    // host non previsto farebbe cadere `next/image`), su fondo bianco.
                     <Box
                       component="img"
                       src={crest}
                       alt=""
-                      sx={{ ...crestSx, gridColumn: column }}
+                      sx={{ ...crestSx, gridColumn: column, bgcolor: "common.white" }}
                     />
-                  )}
+                  ) : null}
                   <Typography
                     component="p"
                     sx={{
@@ -558,8 +576,8 @@ export default async function MatchDetailPage({ params }: Props) {
                   )}
                 </Fragment>
               );
-              const ourName = match.team.isMixed ? (
-                // La Karibu di stagione non ha una pagina pubblica: solo il nome.
+              const ourName = !isPublicTeam(match.team) ? (
+                // La Karibu di stagione nascosta non ha una pagina pubblica: solo il nome.
                 match.team.name
               ) : (
                 <MuiLink
@@ -583,7 +601,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 opponentName
               );
               // Il nostro stemma è quello del club, per tutte le nostre squadre.
-              const ourCrest = opponentCrest ? "/logo.png" : null;
+              const ourCrest = opponentCrest ? CLUB_CREST : null;
               const middle = (
                 <Typography
                   key="middle"

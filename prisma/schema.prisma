@@ -365,6 +365,12 @@ model CompetitiveTeam {
   // solo amichevoli e tornei. Nascosta ovunque tranne che nel form partita dello
   // staff. Il nome del campo è storico. Vedi src/lib/matches/mixedTeam.ts.
   isMixed      Boolean  @default(false)
+  // Solo per la Karibu di stagione (`isMixed`): true = in questa stagione il
+  // club gioca il campionato come un'unica squadra. La Karibu diventa una
+  // squadra pubblica (pagina, girone, partite di campionato) e le altre squadre
+  // della stagione restano come gruppi interni. Lo decide lo staff, stagione per
+  // stagione, da /admin/squadre.
+  playsLeague  Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   memberships        TeamMembership[]

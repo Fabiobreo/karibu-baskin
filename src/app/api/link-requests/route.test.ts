@@ -187,3 +187,28 @@ describe("POST /api/link-requests", () => {
     expect((await POST(makeReq(body))).status).toBe(429);
   });
 });
+
+describe("POST /api/link-requests, richieste scadute", () => {
+  it("una richiesta in attesa ma scaduta non blocca un nuovo invio", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "user-parent", appRole: "PARENT" } });
+    p.user.findUnique.mockResolvedValue({ id: "user-child", name: "Giulia", childAccount: null });
+    p.linkRequest.findFirst.mockResolvedValue(null);
+    p.linkRequest.count.mockResolvedValue(0);
+    p.linkRequest.create.mockResolvedValue({ id: "req-new" });
+    p.appNotification.create.mockResolvedValue({});
+    p.$transaction.mockImplementation((fn: (tx: PrismaMock) => Promise<unknown>) => fn(p));
+
+    await POST(
+      new NextRequest("http://localhost/api/link-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: "user-child", parentalConsent: true }),
+      })
+    );
+    // Sia la ricerca del doppione sia il tetto delle richieste guardano solo
+    // quelle non scadute.
+    const notExpired = { OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }] };
+    expect(p.linkRequest.findFirst.mock.calls[0][0].where).toMatchObject(notExpired);
+    expect(p.linkRequest.count.mock.calls[0][0].where).toMatchObject(notExpired);
+  });
+});

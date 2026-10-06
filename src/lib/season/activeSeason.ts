@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db";
 import { isTransientDbError, withDbRetry } from "@/lib/dbRetry";
@@ -74,8 +75,8 @@ async function seasonsWithData(source: SeasonDataSource): Promise<string[]> {
       ? { matches: { some: { playerStats: { some: {} } } } }
       : source === "results"
         ? { matches: { some: { result: { not: null } } } }
-        : // La sola Karibu di stagione non rende "popolata" una stagione su /squadre.
-          { isMixed: false };
+        : // La sola Karibu nascosta non rende "popolata" una stagione su /squadre.
+          PUBLIC_TEAM_WHERE;
 
   const rows = await prisma.competitiveTeam.findMany({
     where,

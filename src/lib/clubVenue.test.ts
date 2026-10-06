@@ -53,11 +53,18 @@ describe("matchLocation", () => {
   it("amichevole interna: la sede del club", () => {
     expect(matchLocation({ isHome: false, internal: true }).kind).toBe("club");
   });
+  it("trasferta con la sola città dell'avversaria: la città, senza indirizzo", () => {
+    expect(matchLocation({ isHome: false, venue: "", opponent: { city: " Bassano " } })).toEqual({
+      kind: "city",
+      label: "Bassano",
+    });
+  });
   it("senza dati: luogo da confermare (label null)", () => {
-    expect(matchLocation({ isHome: false, venue: "", opponent: { city: "Bassano" } })).toEqual({
+    expect(matchLocation({ isHome: false, venue: "", opponent: { city: " " } })).toEqual({
       kind: "unknown",
       label: null,
     });
+    expect(matchLocation({ isHome: false })).toEqual({ kind: "unknown", label: null });
   });
 });
 
@@ -74,6 +81,9 @@ describe("matchPlaceShort", () => {
     expect(short({ isHome: false, venue: "PalaBassano, Via Ca' Baroncello 5" })).toBe(
       "PalaBassano"
     );
+  });
+  it("solo la città dell'avversaria: la città", () => {
+    expect(short({ isHome: false, opponent: { city: "Nove" } })).toBe("Nove");
   });
   it("da confermare: null", () => {
     expect(short({ isHome: false })).toBeNull();

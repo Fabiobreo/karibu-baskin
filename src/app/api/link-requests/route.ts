@@ -8,6 +8,9 @@ import { sendPushToUser } from "@/lib/notifications/webpush";
 import { inBackground } from "@/lib/background";
 import { LinkRequestCreateSchema } from "@/lib/schemas";
 
+/** Filtro Prisma: richieste senza scadenza o non ancora scadute. */
+const NOT_EXPIRED = () => ({ OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] });
+
 // GET /api/link-requests — richieste di collegamento in attesa per l'utente loggato
 export async function GET() {
   const session = await auth();
@@ -98,11 +101,14 @@ export async function POST(req: NextRequest) {
         },
       }),
       prisma.user.findUnique({ where: { id: parentId }, select: { name: true } }),
+      // Solo le richieste ancora valide: una scaduta resta PENDING nel database
+      // finché il cron non la toglie, ma il figlio non la vede più. Trattarla
+      // come "già inviata" impedirebbe al genitore di riprovare per mesi.
       prisma.linkRequest.findFirst({
-        where: { parentId, targetUserId, status: "PENDING" },
+        where: { parentId, targetUserId, status: "PENDING", ...NOT_EXPIRED() },
         select: { id: true },
       }),
-      prisma.linkRequest.count({ where: { parentId, status: "PENDING" } }),
+      prisma.linkRequest.count({ where: { parentId, status: "PENDING", ...NOT_EXPIRED() } }),
     ]);
     if (!target) {
       return NextResponse.json({ error: "Profilo non trovato" }, { status: 404 });

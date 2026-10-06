@@ -9,11 +9,9 @@ export const metadata: Metadata = { title: "Gestione Squadre | Admin" };
 export const revalidate = 60;
 
 export default async function AdminSquadrePage() {
-  const [session, teams, seasons] = await Promise.all([
+  const [session, allTeams, seasons] = await Promise.all([
     auth(),
     prisma.competitiveTeam.findMany({
-      // La Karibu di stagione è nascosta: nasce da sola e non si gestisce qui.
-      where: { isMixed: false },
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
         _count: { select: { memberships: true, matches: true } },
@@ -21,6 +19,10 @@ export default async function AdminSquadrePage() {
     }),
     prisma.season.findMany(),
   ]);
+  // La Karibu di stagione nasce da sola e non è una tessera come le altre: qui
+  // lo staff decide solo se in quella stagione gioca il campionato.
+  const teams = allTeams.filter((t) => !t.isMixed);
+  const clubTeams = allTeams.filter((t) => t.isMixed);
 
   return (
     <>
@@ -31,6 +33,7 @@ export default async function AdminSquadrePage() {
       />
       <AdminSquadreClient
         teams={teams}
+        clubTeams={clubTeams}
         seasons={seasons}
         isAdmin={!!session?.user && hasRole(session.user.appRole, "ADMIN")}
       />

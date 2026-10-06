@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -34,8 +35,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [teams, players, sessions, matches, opposingTeams, posts, events] = await Promise.all([
     prisma.competitiveTeam.findMany({
-      // La Karibu di stagione non ha una pagina pubblica.
-      where: { isMixed: false },
+      // La Karibu di stagione ha una pagina solo quando gioca il campionato.
+      where: PUBLIC_TEAM_WHERE,
       select: { name: true, season: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { Container } from "@mui/material";
 import PageHero from "@/components/common/PageHero";
 import CalendarClient from "@/components/calendar/CalendarClient";
@@ -22,10 +23,10 @@ export default async function CalendarioPage() {
   const [session, teams] = await Promise.all([
     auth(),
     prisma.competitiveTeam.findMany({
-      // La Karibu di stagione non e' una squadra come le altre e resta nascosta
-      // su tutte le superfici pubbliche: in legenda comparirebbe come filtro di
-      // qualcosa che l'utente non puo' vedere altrove.
-      where: { isMixed: false },
+      // La Karibu di stagione nascosta non e' una squadra come le altre: in
+      // legenda comparirebbe come filtro di qualcosa che l'utente non puo'
+      // vedere altrove. Quando gioca il campionato e' pubblica, e c'e'.
+      where: PUBLIC_TEAM_WHERE,
       select: { id: true, name: true, season: true, color: true },
       orderBy: [{ season: "desc" }, { name: "asc" }],
     }),

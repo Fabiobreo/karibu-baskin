@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
@@ -73,7 +74,8 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
     }),
     prisma.competitiveTeam.findMany({
       // La Karibu di stagione non entra nei gironi.
-      where: { isMixed: false },
+      // Anche la Karibu, nelle stagioni in cui gioca il campionato.
+      where: PUBLIC_TEAM_WHERE,
       orderBy: [{ season: "desc" }, { name: "asc" }],
       select: { id: true, name: true, season: true, color: true },
     }),

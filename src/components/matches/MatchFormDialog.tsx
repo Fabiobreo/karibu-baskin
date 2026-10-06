@@ -44,7 +44,13 @@ export type MatchFormTeam = {
   color: string | null;
   /** Karibu di stagione (tutti i giocatori): solo amichevoli e tornei, niente girone. */
   isMixed?: boolean;
+  /** Karibu iscritta al campionato in questa stagione: nessun limite sul tipo di partita. */
+  playsLeague?: boolean;
 };
+
+/** Karibu "di sempre": niente campionato, niente girone (come `isRestrictedClubTeam`). */
+const restricted = (t?: Pick<MatchFormTeam, "isMixed" | "playsLeague"> | null) =>
+  !!t?.isMixed && !t.playsLeague;
 export type MatchFormOpposingTeam = { id: string; name: string; city: string | null };
 export type MatchFormGroup = {
   id: string;
@@ -116,6 +122,7 @@ type OpponentOpt =
       name: string;
       season: string;
       isMixed: boolean;
+      restricted: boolean;
       groupKey: "internal";
     }
   | { kind: "new"; name: string; groupKey: "new" };
@@ -158,17 +165,17 @@ export default function MatchFormDialog({
   const watchMatchType = watch("matchType");
   const karibuAllowed = watchMatchType !== "LEAGUE";
   const teamsForForm = teams.filter(
-    (t) => t.season === seasonForDate(watchDate ?? "") && (karibuAllowed || !t.isMixed)
+    (t) => t.season === seasonForDate(watchDate ?? "") && (karibuAllowed || !restricted(t))
   );
   const seasonOrAllTeams =
-    teamsForForm.length > 0 ? teamsForForm : teams.filter((t) => karibuAllowed || !t.isMixed);
+    teamsForForm.length > 0 ? teamsForForm : teams.filter((t) => karibuAllowed || !restricted(t));
   // La squadra selezionata resta sempre tra le scelte, anche se la data cade in
   // un'altra stagione (es. un torneo di fine agosto, prima di settembre): senza,
   // la Select di una partita in modifica si apriva vuota.
   const selectedTeam = teams.find((t) => t.id === watchTeamId);
   const displayTeams =
     selectedTeam &&
-    (karibuAllowed || !selectedTeam.isMixed) &&
+    (karibuAllowed || !restricted(selectedTeam)) &&
     !seasonOrAllTeams.some((t) => t.id === selectedTeam.id)
       ? [selectedTeam, ...seasonOrAllTeams]
       : seasonOrAllTeams;
@@ -203,6 +210,7 @@ export default function MatchFormDialog({
           name: t.name,
           season: t.season,
           isMixed: !!t.isMixed,
+          restricted: restricted(t),
           groupKey: "internal",
         })
       ),
@@ -211,8 +219,8 @@ export default function MatchFormDialog({
   const isInternal = opponentValue?.kind === "internal";
   // Karibu su uno dei due lati: niente campionato, niente girone.
   const involvesMixed =
-    !!teams.find((t) => t.id === watchTeamId)?.isMixed ||
-    (opponentValue?.kind === "internal" && opponentValue.isMixed);
+    restricted(teams.find((t) => t.id === watchTeamId)) ||
+    (opponentValue?.kind === "internal" && opponentValue.restricted);
 
   // Un'amichevole interna è sempre un'amichevole: il tipo si allinea, così la
   // Karibu resta disponibile anche come avversaria interna.
@@ -224,7 +232,7 @@ export default function MatchFormDialog({
   // torna alla prima squadra della stagione.
   useEffect(() => {
     if (karibuAllowed) return;
-    if (teams.find((t) => t.id === watchTeamId)?.isMixed) {
+    if (restricted(teams.find((t) => t.id === watchTeamId))) {
       setValue("teamId", displayTeams[0]?.id ?? "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -284,6 +292,7 @@ export default function MatchFormDialog({
             name: t.name,
             season: t.season,
             isMixed: !!t.isMixed,
+            restricted: restricted(t),
             groupKey: "internal",
           }
         : o
@@ -399,12 +408,16 @@ export default function MatchFormDialog({
                   field.onChange(newDate);
                   const newSeason = seasonForDate(newDate);
                   const validTeams = teams.filter(
-                    (t) => t.season === newSeason && (karibuAllowed || !t.isMixed)
+                    (t) => t.season === newSeason && (karibuAllowed || !restricted(t))
                   );
                   // eslint-disable-next-line react-hooks/incompatible-library
                   const currentTeamId = watch("teamId");
-                  // Di default una squadra con la sua rosa, non la Karibu.
-                  const firstTeam = validTeams.find((t) => !t.isMixed) ?? validTeams[0];
+                  // Di default la Karibu se in quella stagione gioca il campionato,
+                  // altrimenti una squadra con la sua rosa (mai la Karibu nascosta).
+                  const firstTeam =
+                    validTeams.find((t) => t.playsLeague) ??
+                    validTeams.find((t) => !t.isMixed) ??
+                    validTeams[0];
                   if (!validTeams.some((t) => t.id === currentTeamId) && firstTeam) {
                     setValue("teamId", firstTeam.id);
                   }
@@ -470,7 +483,7 @@ export default function MatchFormDialog({
                 )}
               />
             </Box>
-            {!karibuAllowed && teams.some((t) => t.isMixed) && (
+            {!karibuAllowed && teams.some(restricted) && (
               <Typography
                 variant="caption"
                 color="text.secondary"

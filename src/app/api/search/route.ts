@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { slugify } from "@/lib/slugUtils";
@@ -39,8 +40,8 @@ export async function GET(req: NextRequest) {
       take: 5,
     }),
     prisma.competitiveTeam.findMany({
-      // La Karibu di stagione non ha una pagina pubblica da linkare.
-      where: { name: { contains: q, mode: "insensitive" }, isMixed: false },
+      // La Karibu di stagione ha una pagina da linkare solo quando gioca il campionato.
+      where: { AND: [{ name: { contains: q, mode: "insensitive" } }, PUBLIC_TEAM_WHERE] },
       select: { id: true, name: true, season: true },
       orderBy: { season: "desc" },
       take: 5,

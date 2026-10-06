@@ -18,7 +18,7 @@ export default async function AdminPartitePage() {
     auth(),
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
-      select: { id: true, name: true, season: true, color: true, isMixed: true },
+      select: { id: true, name: true, season: true, color: true, isMixed: true, playsLeague: true },
     }),
     prisma.opposingTeam.findMany({
       orderBy: { name: "asc" },

@@ -44,7 +44,10 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
   useEffect(() => {
     fetch("/api/competitive-teams")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: Team[]) => setTeams(data.filter((t) => t.season === currentSeason)))
+      // Niente Karibu: non ha tesserati suoi, una notifica "alla squadra" non arriverebbe a nessuno.
+      .then((data: (Team & { isMixed?: boolean })[]) =>
+        setTeams(data.filter((t) => t.season === currentSeason && !t.isMixed))
+      )
       .catch(() => {});
   }, [currentSeason]);
 

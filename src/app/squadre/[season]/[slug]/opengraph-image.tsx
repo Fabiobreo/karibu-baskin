@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
@@ -22,7 +23,7 @@ export default async function OgImage({ params }: Props) {
   const season = parseSeasonParam(seasonParam);
 
   const teams = await prisma.competitiveTeam.findMany({
-    where: { season, isMixed: false },
+    where: { AND: [{ season }, PUBLIC_TEAM_WHERE] },
     select: { name: true, color: true, championship: true, memberships: { select: { id: true } } },
   });
   const team = teams.find((t) => slugify(t.name) === slug);

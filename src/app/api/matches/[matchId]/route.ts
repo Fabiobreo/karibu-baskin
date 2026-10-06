@@ -12,7 +12,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
-import { mixedMatchError } from "@/lib/matches/mixedTeam";
+import { isRestrictedClubTeam, mixedMatchError } from "@/lib/matches/mixedTeam";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 import { inBackground } from "@/lib/background";
 
@@ -98,7 +98,7 @@ export async function PUT(req: Request, { params }: Params) {
       groupId: true,
       date: true,
       imageUrl: true,
-      team: { select: { isMixed: true } },
+      team: { select: { isMixed: true, playsLeague: true } },
     },
   });
   if (!previous) {
@@ -114,16 +114,16 @@ export async function PUT(req: Request, { params }: Params) {
   // controlli (Karibu, partita contro se stessa) guardano quella.
   const finalTeamId = body.teamId ?? previous.teamId;
   const teamChanged = finalTeamId !== previous.teamId;
-  let finalTeamIsMixed = !!previous.team?.isMixed;
+  let finalTeamIsMixed = isRestrictedClubTeam(previous.team);
   if (teamChanged) {
     const newTeam = await prisma.competitiveTeam.findUnique({
       where: { id: finalTeamId },
-      select: { isMixed: true },
+      select: { isMixed: true, playsLeague: true },
     });
     if (!newTeam) {
       return NextResponse.json({ error: "Squadra non trovata" }, { status: 400 });
     }
-    finalTeamIsMixed = newTeam.isMixed;
+    finalTeamIsMixed = isRestrictedClubTeam(newTeam);
   }
 
   // Validazione XOR opponentId / opponentTeamId
@@ -156,12 +156,12 @@ export async function PUT(req: Request, { params }: Params) {
   }
   // Karibu di stagione su uno dei due lati: niente campionato, niente gironi.
   const opponentTeamIsMixed = finalOpponentTeamId
-    ? ((
+    ? isRestrictedClubTeam(
         await prisma.competitiveTeam.findUnique({
           where: { id: finalOpponentTeamId },
-          select: { isMixed: true },
+          select: { isMixed: true, playsLeague: true },
         })
-      )?.isMixed ?? false)
+      )
     : false;
   const mixedError = mixedMatchError({
     involvesMixed: finalTeamIsMixed || opponentTeamIsMixed,

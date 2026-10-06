@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isRestrictedClubTeam } from "@/lib/matches/mixedTeam";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
@@ -36,11 +37,16 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const team = await prisma.competitiveTeam.findUnique({
     where: { id: parsed.data.competitiveTeamId },
-    select: { isMixed: true },
+    select: { isMixed: true, playsLeague: true },
   });
-  if (team?.isMixed) {
+  // La Karibu si iscrive a un girone solo nelle stagioni in cui gioca il
+  // campionato (scelta dello staff in /admin/squadre).
+  if (isRestrictedClubTeam(team)) {
     return NextResponse.json(
-      { error: "Karibu (tutta la squadra) non si iscrive ai gironi" },
+      {
+        error:
+          "Karibu (tutta la squadra) non si iscrive ai gironi: prima segna in Squadre che in questa stagione gioca il campionato",
+      },
       { status: 400 }
     );
   }

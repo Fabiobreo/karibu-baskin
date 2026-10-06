@@ -20,6 +20,8 @@ import {
   Tooltip,
   CircularProgress,
   Alert,
+  Switch,
+  FormControlLabel,
   Grid2 as Grid,
 } from "@mui/material";
 import { alpha, type Theme } from "@mui/material/styles";
@@ -90,12 +92,18 @@ type Team = {
   color: string | null;
   description: string | null;
   imageUrl: string | null;
+  /** Karibu di stagione (tutti i giocatori): vedi @/lib/matches/mixedTeam. */
+  isMixed?: boolean;
+  /** Solo per la Karibu: in questa stagione gioca il campionato. */
+  playsLeague?: boolean;
   _count: { memberships: number; matches: number };
 };
 
 type SeasonRecord = { label: string; isCurrent: boolean };
 type Props = {
   teams: Team[];
+  /** Le Karibu di stagione gia' create (una per stagione, al massimo). */
+  clubTeams: Team[];
   seasons: SeasonRecord[];
   /** Creare, modificare ed eliminare una squadra è dell'admin: l'API lo rifiuta all'allenatore. */
   isAdmin: boolean;
@@ -105,6 +113,7 @@ type Props = {
 
 export default function AdminSquadreClient({
   teams: initialTeams,
+  clubTeams: initialClubTeams,
   seasons: initialSeasons,
   isAdmin,
 }: Props) {
@@ -113,6 +122,8 @@ export default function AdminSquadreClient({
   // Dopo un'eliminazione il focus va sul titolo della stagione: la tessera non c'è più.
   const seasonHeadingRef = useRef<HTMLHeadingElement>(null);
   const [teams, setTeams] = useState(initialTeams);
+  const [clubTeams, setClubTeams] = useState(initialClubTeams);
+  const [savingClub, setSavingClub] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Stagioni
@@ -132,6 +143,11 @@ export default function AdminSquadreClient({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTeams(initialTeams);
   }, [initialTeams]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setClubTeams(initialClubTeams);
+  }, [initialClubTeams]);
 
   // Calcola stagione corrente lato client (evita hydration mismatch con new Date())
   useEffect(() => {
@@ -251,6 +267,53 @@ export default function AdminSquadreClient({
     setTeamDialog(true);
   }
 
+  /** In questa stagione il club gioca il campionato come Karibu, o no. */
+  async function handleClubLeague(playsLeague: boolean) {
+    setSavingClub(true);
+    try {
+      const res = await fetch("/api/competitive-teams/seasons/club-team", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ season: activeSeason, playsLeague }),
+      });
+      if (!res.ok) {
+        showToast({ message: await readError(res), severity: "error" });
+        return;
+      }
+      const saved = (await res.json()) as { id: string; name: string; playsLeague: boolean };
+      setClubTeams((prev) =>
+        prev.some((t) => t.id === saved.id)
+          ? prev.map((t) => (t.id === saved.id ? { ...t, playsLeague: saved.playsLeague } : t))
+          : [
+              ...prev,
+              {
+                id: saved.id,
+                name: saved.name,
+                season: activeSeason,
+                championship: null,
+                color: null,
+                description: null,
+                imageUrl: null,
+                isMixed: true,
+                playsLeague: saved.playsLeague,
+                _count: { memberships: 0, matches: 0 },
+              },
+            ]
+      );
+      showToast({
+        message: playsLeague
+          ? "Karibu gioca il campionato in questa stagione"
+          : "Karibu torna solo per amichevoli e tornei",
+        severity: "success",
+      });
+      router.refresh();
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setSavingClub(false);
+    }
+  }
+
   async function handleSaveTeam() {
     setTeamError("");
     if (!teamForm.name.trim()) {
@@ -263,7 +326,16 @@ export default function AdminSquadreClient({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...teamForm, season: editTeam ? editTeam.season : activeSeason }),
+        body: JSON.stringify(
+          editTeam?.isMixed
+            ? // Della Karibu si scrivono solo questi tre: il resto è dell'app.
+              {
+                championship: teamForm.championship,
+                description: teamForm.description,
+                imageUrl: teamForm.imageUrl,
+              }
+            : { ...teamForm, season: editTeam ? editTeam.season : activeSeason }
+        ),
       });
       if (!res.ok) {
         setTeamError(await readError(res));
@@ -305,6 +377,8 @@ export default function AdminSquadreClient({
   // ── Computed ──────────────────────────────────────────────────────────────────
 
   const teamsInSeason = teams.filter((t) => t.season === activeSeason);
+  const clubTeam = clubTeams.find((t) => t.season === activeSeason) ?? null;
+  const clubPlaysLeague = !!clubTeam?.playsLeague;
 
   // Un'altra squadra della stessa stagione ha gia' la tinta scelta: avviso, non blocco.
   const formSeason = editTeam ? editTeam.season : activeSeason;
@@ -421,6 +495,54 @@ export default function AdminSquadreClient({
         </Box>
       </Box>
 
+      {/* Stagione a squadra unica: il club gioca il campionato come Karibu */}
+      {activeSeason && (
+        <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 3 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={clubPlaysLeague}
+                onChange={(e) => handleClubLeague(e.target.checked)}
+                disabled={savingClub}
+              />
+            }
+            label={
+              <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
+                In questa stagione giochiamo il campionato come Karibu
+              </Typography>
+            }
+          />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {clubPlaysLeague
+              ? "Karibu è una squadra sola con tutti i giocatori della stagione: ha la sua pagina pubblica, si iscrive ai gironi e gioca le partite di campionato. Le squadre qui sotto restano visibili come gruppi."
+              : "Attivalo se il club si iscrive al campionato con una squadra sola. Spento, Karibu resta nascosta e gioca solo amichevoli e tornei."}
+          </Typography>
+          {clubPlaysLeague && clubTeam && (
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1.5 }}>
+              {isAdmin && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => openEdit(clubTeam)}
+                  sx={TOUCH_TARGET_ON_PHONE}
+                >
+                  Campionato, descrizione e foto
+                </Button>
+              )}
+              <Button
+                size="small"
+                href={`/squadre/${activeSeason.replace("-", "")}/${slugify(clubTeam.name)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={TOUCH_TARGET_ON_PHONE}
+              >
+                Pagina pubblica
+              </Button>
+            </Box>
+          )}
+        </Paper>
+      )}
+
       {/* Griglia squadre */}
       {teamsInSeason.length === 0 ? (
         <Paper
@@ -526,9 +648,11 @@ export default function AdminSquadreClient({
               value={teamForm.name}
               onChange={(e) => handleNameChange(e.target.value)}
               fullWidth
-              autoFocus
+              autoFocus={!editTeam?.isMixed}
               required
               placeholder="es. Montekki"
+              // Nome e tinta della Karibu li decide l'app.
+              disabled={!!editTeam?.isMixed}
             />
             <TextField
               label="Campionato"
@@ -538,7 +662,7 @@ export default function AdminSquadreClient({
               placeholder="es. Campionato Veneto Gold Ovest"
               helperText="Facoltativo: viene mostrato sotto il nome nelle pagine pubbliche"
             />
-            <Box>
+            <Box sx={editTeam?.isMixed ? { display: "none" } : undefined}>
               <Typography
                 id="team-color-label"
                 variant="body2"

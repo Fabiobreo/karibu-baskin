@@ -49,7 +49,10 @@ export default async function MatchWhereWhen({ matchId, date, location }: MatchW
         </Box>
         <Box sx={rowSx}>
           <PlaceIcon fontSize="small" sx={iconSx} aria-hidden="true" />
-          {location.label ? (
+          {location.kind === "city" ? (
+            // Solo la città: niente link a Maps, porterebbe al centro del paese.
+            <Typography variant="body1">{t("cityOnly", { city: location.label })}</Typography>
+          ) : location.label ? (
             <MuiLink
               href={mapsSearchUrl(location.label)}
               target="_blank"

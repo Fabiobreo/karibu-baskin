@@ -151,11 +151,9 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   }
   const seasons = Array.from(seasonsMap.values()).sort((a, b) => b.season.localeCompare(a.season));
 
-  // Indirizzo per Maps: con la città, se l'indirizzo non la dice già.
-  const venueAddress =
-    team.address && team.city && !team.address.toLowerCase().includes(team.city.toLowerCase())
-      ? `${team.address}, ${team.city}`
-      : (team.address ?? "");
+  // Indirizzo per Maps: quello di una trasferta da loro (con la città, se
+  // l'indirizzo non la dice già), calcolato come per le partite.
+  const venueAddress = matchLocation({ isHome: false, opponent: team }).label ?? "";
 
   const seasonsPlayed = seasons.map((s) => s.season);
   const lastSeason = seasonsPlayed[0]; // seasons sono ordinate desc
@@ -337,7 +335,11 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             sx={{ color: "text.secondary", mt: 0.25 }}
                             aria-hidden="true"
                           />
-                          {location.label ? (
+                          {location.kind === "city" ? (
+                            <Typography variant="body2">
+                              {tMatches("whereWhen.cityOnly", { city: location.label })}
+                            </Typography>
+                          ) : location.label ? (
                             <MuiLink
                               href={mapsSearchUrl(location.label)}
                               target="_blank"

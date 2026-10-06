@@ -36,10 +36,12 @@ export interface MatchLocationInput {
  * - `club`: la sede del club (`label` = CLUB_VENUE_LABEL);
  * - `venue`: il campo scritto dallo staff sulla partita;
  * - `opponent`: indirizzo e citta' dell'avversaria (trasferta senza `venue`);
+ * - `city`: trasferta di cui si sa solo la citta' dell'avversaria (`label` = la
+ *   citta'): si mostra "Nove, indirizzo da confermare", senza link a Maps;
  * - `unknown`: nessun dato, `label` null ("Luogo da confermare", niente Maps).
  */
 export type MatchLocation =
-  | { kind: "club" | "venue" | "opponent"; label: string }
+  | { kind: "club" | "venue" | "opponent" | "city"; label: string }
   | { kind: "unknown"; label: null };
 
 /**
@@ -56,6 +58,10 @@ export function matchLocation(m: MatchLocationInput): MatchLocation {
     const label = city && !endsWithCity(address, city) ? `${address}, ${city}` : address;
     return { kind: "opponent", label };
   }
+  // Senza indirizzo ma con la citta': a chi deve andarci basta per sapere
+  // quanto e' lontano, meglio di "Luogo da confermare".
+  const cityOnly = m.opponent?.city?.trim();
+  if (cityOnly) return { kind: "city", label: cityOnly };
   return { kind: "unknown", label: null };
 }
 
@@ -75,6 +81,8 @@ export function matchPlaceShort(
       return m.opponent?.city?.trim() || firstSegment(location.label);
     case "venue":
       return firstSegment(location.label);
+    case "city":
+      return location.label;
     default:
       return null;
   }

@@ -15,8 +15,15 @@
 //
 // Il nome interno del campo (`isMixed`) è storico; nei testi per lo staff si
 // parla di "Karibu, tutti i giocatori della stagione".
+//
+// Stagione a squadra unica (`playsLeague`): lo staff può decidere, stagione per
+// stagione, che il club gioca il campionato come Karibu. Allora la Karibu è una
+// squadra pubblica a tutti gli effetti (pagina, girone, partite di campionato)
+// e le altre squadre della stagione restano visibili come gruppi interni. La
+// rosa resta l'unione delle loro rose: quella parte non cambia. Per la
+// visibilità usare `isPublicTeam` / `PUBLIC_TEAM_WHERE`, mai `isMixed` da solo.
 
-import type { MatchType } from "@prisma/client";
+import type { MatchType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { CLUB_TEAM_TINT } from "@/lib/teamColors";
 
@@ -48,7 +55,31 @@ export async function ensureClubTeam(season: string): Promise<string> {
   return id;
 }
 
-/** La Karibu gioca amichevoli e tornei, mai il campionato. */
+/** Flag che dicono se una squadra è la Karibu e se gioca il campionato. */
+export interface ClubTeamFlags {
+  isMixed: boolean;
+  playsLeague: boolean;
+}
+
+/** Ha una presenza pubblica: ogni squadra normale, e la Karibu iscritta al campionato. */
+export function isPublicTeam(team: ClubTeamFlags): boolean {
+  return !team.isMixed || team.playsLeague;
+}
+
+/**
+ * Karibu "di sempre": nascosta, solo amichevoli e tornei, niente girone. Le
+ * regole di `mixedMatchError` valgono solo per lei.
+ */
+export function isRestrictedClubTeam(team: ClubTeamFlags | null | undefined): boolean {
+  return !!team && team.isMixed && !team.playsLeague;
+}
+
+/** Filtro Prisma di `isPublicTeam`. Con altri `OR` nello stesso where, metterlo in `AND`. */
+export const PUBLIC_TEAM_WHERE = {
+  OR: [{ isMixed: false }, { playsLeague: true }],
+} satisfies Prisma.CompetitiveTeamWhereInput;
+
+/** La Karibu nascosta gioca amichevoli e tornei, mai il campionato. */
 export const MIXED_TEAM_MATCH_TYPES: readonly MatchType[] = ["FRIENDLY", "TOURNAMENT"];
 
 export function isMatchTypeAllowedForMixed(matchType: MatchType): boolean {
@@ -56,7 +87,9 @@ export function isMatchTypeAllowedForMixed(matchType: MatchType): boolean {
 }
 
 /**
- * Regole di una partita in cui gioca la Karibu (su uno dei due lati).
+ * Regole di una partita in cui gioca la Karibu nascosta (su uno dei due lati):
+ * `involvesMixed` va calcolato con `isRestrictedClubTeam`, perché la Karibu
+ * iscritta al campionato non ha limiti.
  * Restituisce il messaggio d'errore per l'API, o null se la partita è valida.
  */
 export function mixedMatchError(args: {
