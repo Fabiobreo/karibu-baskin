@@ -23,6 +23,7 @@ import { teamFill } from "@/lib/teamColors";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import {
   DEFAULT_ATHLETE_FILTERS,
+  compareAthletes,
   countAthleteFilters,
   matchesAthleteFilters,
   type AthleteAccountFilter,
@@ -107,17 +108,7 @@ export default function AthletesTab({
 
   const filtered = useMemo(() => {
     const result = rows.filter((r) => matchesAthleteFilters(r, filters, currentSeason));
-    return result.sort((a, b) => {
-      let cmp = 0;
-      if (sortBy === "sportRole") cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
-      else if (sortBy === "registrations") cmp = a._count.registrations - b._count.registrations;
-      // A parita' (e per la colonna Atleta) decide il nome.
-      if (cmp === 0) {
-        const byName = (a.name ?? "").localeCompare(b.name ?? "", "it");
-        return sortBy === "name" && sortDir === "desc" ? -byName : byName;
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+    return result.sort((a, b) => compareAthletes(a, b, sortBy, sortDir, currentSeason));
   }, [rows, filters, currentSeason, sortBy, sortDir]);
 
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);

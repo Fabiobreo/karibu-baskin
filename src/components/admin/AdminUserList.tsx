@@ -24,7 +24,7 @@ import UsersTable from "@/components/admin/userList/UsersTable";
 import UsersMobileCards from "@/components/admin/userList/UsersMobileCards";
 import ChildrenTab from "@/components/admin/userList/ChildrenTab";
 import AthletesTab from "@/components/admin/userList/AthletesTab";
-import { isAthleteAccount } from "@/lib/athletes";
+import { compareAthletes, isAthleteAccount } from "@/lib/athletes";
 import UserEditDialog from "@/components/admin/userList/UserEditDialog";
 import type {
   AdminRow,
@@ -270,6 +270,10 @@ export default function AdminUserList({
     }
 
     return [...result].sort((a, b) => {
+      // Squadra e genere: stessa regola delle altre tab.
+      if (sortBy === "team" || sortBy === "gender") {
+        return compareAthletes(a, b, sortBy, sortDir, currentSeason);
+      }
       let cmp = 0;
       switch (sortBy) {
         case "name":

@@ -33,11 +33,12 @@ import {
   type UserEntry,
 } from "@/components/admin/userList/userListShared";
 import { childOfLabel, joinNames } from "@/lib/guardianNames";
+import type { AthleteSortColumn } from "@/lib/athletes";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
-export type AthleteSortColumn = "name" | "sportRole" | "registrations";
+export type { AthleteSortColumn } from "@/lib/athletes";
 
 interface AthletesTableProps {
   rows: AdminRow[];
@@ -209,9 +210,9 @@ export default function AthletesTable({
             <TableRow>
               <TableCell>{sortLabel("name", "Atleta")}</TableCell>
               <TableCell align="center">{sortLabel("sportRole", "Baskin")}</TableCell>
-              <TableCell align="center">Squadra</TableCell>
+              <TableCell align="center">{sortLabel("team", "Squadra")}</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
-                Genere
+                {sortLabel("gender", "Genere")}
               </TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
                 {sortLabel("registrations", "Allenamenti")}

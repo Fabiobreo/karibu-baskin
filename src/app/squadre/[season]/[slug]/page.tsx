@@ -1,4 +1,5 @@
 import { PUBLIC_TEAM_WHERE, rosterTeamIds } from "@/lib/matches/mixedTeam";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatDecimal } from "@/lib/numberFormat";
@@ -101,7 +102,7 @@ async function getTeam(season: string, slug: string) {
       matches: {
         orderBy: { date: "asc" },
         include: {
-          opponent: { select: { id: true, name: true, city: true } },
+          opponent: { select: { id: true, name: true, city: true, imageUrl: true } },
           opponentTeam: { select: { id: true, name: true, color: true, season: true } },
           playerStats: {
             select: {
@@ -124,7 +125,7 @@ async function getTeam(season: string, slug: string) {
         orderBy: { date: "asc" },
         include: {
           team: { select: { id: true, name: true, color: true, season: true } },
-          opponent: { select: { id: true, name: true, city: true } },
+          opponent: { select: { id: true, name: true, city: true, imageUrl: true } },
           opponentTeam: { select: { id: true, name: true, color: true, season: true } },
           playerStats: {
             select: {
@@ -402,6 +403,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
     .filter((r) => r.freeThrows > 0)
     .sort((a, b) => b.freeThrows - a.freeThrows)[0];
 
+  const hasMatchContent = !!nextMatch || playedMatches.length > 0 || leadersByPoints.length > 0;
+
   return (
     <>
       <EntityHero
@@ -421,32 +424,53 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           )
         }
         leading={
-          <Box
-            sx={{
-              width: { xs: 72, sm: 96 },
-              height: { xs: 72, sm: 96 },
-              borderRadius: "50%",
-              bgcolor: teamHue ?? heroText.surface,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
-              border: `3px solid ${brandColor.darkSoft}`,
-            }}
-          >
-            <Typography
+          team.isMixed ? (
+            // La Karibu è il club: il suo segno è lo stemma, non un'iniziale.
+            <Box
               sx={{
-                fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
-                fontWeight: FONT_WEIGHT.bold,
-                color: "common.white",
-                lineHeight: 1,
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                position: "relative",
+                width: { xs: 72, sm: 96 },
+                height: { xs: 72, sm: 96 },
+                flexShrink: 0,
               }}
             >
-              {team.name[0].toUpperCase()}
-            </Typography>
-          </Box>
+              <Image
+                src="/logo.png"
+                alt=""
+                fill
+                sizes="96px"
+                priority
+                style={{ objectFit: "contain" }}
+              />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                width: { xs: 72, sm: 96 },
+                height: { xs: 72, sm: 96 },
+                borderRadius: "50%",
+                bgcolor: teamHue ?? heroText.surface,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
+                border: `3px solid ${brandColor.darkSoft}`,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
+                  fontWeight: FONT_WEIGHT.bold,
+                  color: "common.white",
+                  lineHeight: 1,
+                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                }}
+              >
+                {team.name[0].toUpperCase()}
+              </Typography>
+            </Box>
+          )
         }
         subtitle={team.championship}
         badges={
@@ -602,8 +626,34 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               );
             })()}
 
+          {/* Il resto del calendario sta subito sotto la prossima partita: è la
+              prima cosa che si cerca, e la rosa sotto può essere lunga. */}
+          {upcomingMatches.length > 1 && (
+            <Box sx={{ mt: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                <Typography variant="overline" color="text.secondary">
+                  {t("upcomingSection")}
+                </Typography>
+              </Box>
+              <Typography variant="h4" sx={{ mb: 2.5 }}>
+                {t("upcomingMatches")}
+              </Typography>
+              <Stack spacing={1}>
+                {upcomingMatches.slice(1).map((m) => (
+                  <UpcomingMatchRow
+                    key={m.id}
+                    match={m}
+                    teamName={team.name}
+                    teamColor={team.color}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
           {playedMatches.length > 0 && (
-            <Box sx={{ mb: 6, mt: nextMatch ? 4 : 0 }}>
+            <Box sx={{ mb: 6, mt: nextMatch ? 6 : 0 }}>
               <Box
                 sx={{
                   display: "flex",
@@ -912,7 +962,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
 
           {team.memberships.length > 0 && (
             <>
-              <Divider sx={{ mb: 5 }} />
+              {/* Il divisore separa la rosa da quello che c'è sopra: senza partite
+                  resterebbe una riga da sola sotto l'intestazione. */}
+              {hasMatchContent && <Divider sx={{ mb: 5, mt: playedMatches.length > 0 ? 0 : 6 }} />}
               <Box sx={{ mb: 6 }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                   <GroupsIcon sx={{ color: teamHue ?? "text.secondary" }} />
@@ -991,6 +1043,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                                 roleVariant={athlete.sportRoleVariant}
                                 isCaptain={m.isCaptain}
                                 teamColor={teamHue}
+                                linked={!!userSlug}
                               />
                             );
                             return (
@@ -1017,6 +1070,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                                       roleVariant={athlete.sportRoleVariant}
                                       isCaptain={m.isCaptain}
                                       teamColor={teamHue}
+                                      linked
                                     />
                                   </Link>
                                 )}
@@ -1052,33 +1106,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       match={m}
                       teamName={team.name}
                       teamColor={teamHue}
-                    />
-                  ))}
-                </Stack>
-              </Box>
-            </>
-          )}
-
-          {upcomingMatches.length > 1 && (
-            <>
-              <Divider sx={{ mb: 5 }} />
-              <Box sx={{ mb: 6 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                  <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
-                  <Typography variant="overline" color="text.secondary">
-                    {t("upcomingSection")}
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ mb: 2.5 }}>
-                  {t("upcomingMatches")}
-                </Typography>
-                <Stack spacing={1}>
-                  {upcomingMatches.slice(1).map((m) => (
-                    <UpcomingMatchRow
-                      key={m.id}
-                      match={m}
-                      teamName={team.name}
-                      teamColor={team.color}
                     />
                   ))}
                 </Stack>

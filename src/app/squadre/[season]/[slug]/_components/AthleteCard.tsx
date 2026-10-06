@@ -1,6 +1,8 @@
 import { Avatar, Box, Paper, Tooltip, Typography } from "@mui/material";
 import RoleBadge from "@/components/common/RoleBadge";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { onHover } from "@/lib/hoverStyles";
 
 import { getEntityLabels } from "@/lib/entityLabels";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -14,6 +16,7 @@ export default async function AthleteCard({
   roleVariant,
   isCaptain,
   teamColor,
+  linked = false,
 }: {
   name: string;
   image?: string;
@@ -22,6 +25,8 @@ export default async function AthleteCard({
   isCaptain: boolean;
   /** Hex della tinta squadra (da `teamColor()`), o null: nessun segno di colore. */
   teamColor: string | null;
+  /** La card è dentro un link al profilo: freccia, e bordo arancio al passaggio. */
+  linked?: boolean;
 }) {
   const { sportRoleLabel } = await getEntityLabels();
   return (
@@ -36,6 +41,10 @@ export default async function AthleteCard({
         alignItems: "center",
         gap: 1.5,
         height: "100%",
+        transition: "border-color 0.15s",
+        ...(linked
+          ? onHover({ borderColor: "primary.main", "& [data-arrow]": { color: "primary.main" } })
+          : {}),
       }}
     >
       <Avatar
@@ -66,6 +75,13 @@ export default async function AthleteCard({
         </Box>
         {roleNum && <RoleBadge role={roleNum} variant={roleVariant ?? null} sx={{ mt: 0.4 }} />}
       </Box>
+      {linked && (
+        <ChevronRightIcon
+          data-arrow
+          aria-hidden
+          sx={{ fontSize: 18, color: "text.secondary", flexShrink: 0, transition: "color 0.15s" }}
+        />
+      )}
     </Paper>
   );
 }

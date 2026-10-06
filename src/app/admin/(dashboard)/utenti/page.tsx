@@ -12,7 +12,7 @@ import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 import { cookies } from "next/headers";
 import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
 import { joinFilter, parseAppRoles, parseSportRoles, sportRoleWhere } from "@/lib/userFilters";
-import { ATHLETE_ACCOUNT_WHERE } from "@/lib/athletes";
+import { ATHLETE_ACCOUNT_WHERE, compareAthletes } from "@/lib/athletes";
 
 export const revalidate = 60;
 
@@ -79,22 +79,28 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   else if (athleteStatus && VALID_ATHLETE_STATUSES.includes(athleteStatus as AthleteStatus))
     where.athleteStatus = athleteStatus as AthleteStatus;
 
+  // Genere: femmine, maschi, poi chi non l'ha indicato, come nelle altre tab.
+  // Nel database l'enum è MALE, FEMALE: per avere le femmine prima il verso si
+  // inverte. A parità decide il nome (vedi `orderBy` sotto).
   const chosenOrderBy: Prisma.UserOrderByWithRelationInput =
-    sortBy === "name"
-      ? { name: sortDir }
-      : sortBy === "sportRole"
-        ? { sportRole: sortDir }
-        : sortBy === "appRole"
-          ? { appRole: sortDir }
-          : sortBy === "registrations"
-            ? { registrations: { _count: sortDir } }
-            : { createdAt: sortDir };
+    sortBy === "gender"
+      ? { gender: { sort: sortDir === "asc" ? "desc" : "asc", nulls: "last" } }
+      : sortBy === "name"
+        ? { name: sortDir }
+        : sortBy === "sportRole"
+          ? { sportRole: sortDir }
+          : sortBy === "appRole"
+            ? { appRole: sortDir }
+            : sortBy === "registrations"
+              ? { registrations: { _count: sortDir } }
+              : { createdAt: sortDir };
 
   // Attivi (athleteStatus null) sempre in cima; "In pausa" prima di "Ex"
   // (ordine enum). Dentro ogni gruppo si applica il sort scelto dall'utente.
   const orderBy: Prisma.UserOrderByWithRelationInput[] = [
     { athleteStatus: { sort: "asc", nulls: "first" } },
     chosenOrderBy,
+    ...(sortBy === "gender" ? [{ name: "asc" as const }] : []),
   ];
 
   const select = {
@@ -145,8 +151,47 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const isAdmin = session?.user?.appRole === "ADMIN";
   const currentSeason = await getCurrentSeasonLabel();
 
+  // Ordinare per squadra non si può chiedere al database: la squadra è quella
+  // della stagione in corso fra le tante di una persona. Si leggono gli id con
+  // il minimo che serve, si ordinano qui con la regola della tab Atleti e si
+  // carica solo la pagina. Sono poche centinaia di righe al massimo.
+  let teamPageIds: string[] | null = null;
+  if (sortBy === "team") {
+    const light = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        sportRole: true,
+        gender: true,
+        athleteStatus: true,
+        teamMemberships: { select: { team: { select: { season: true, name: true } } } },
+        _count: { select: { registrations: true } },
+      },
+    });
+    // Attivi in cima, poi "in pausa", poi "ex": come per le altre colonne.
+    const statusRank = (s: AthleteStatus | null) =>
+      s === null ? 0 : s === "INACTIVE_SEASON" ? 1 : 2;
+    teamPageIds = light
+      .sort(
+        (a, b) =>
+          statusRank(a.athleteStatus) - statusRank(b.athleteStatus) ||
+          compareAthletes(a, b, "team", sortDir, currentSeason)
+      )
+      .slice((page - 1) * limit, page * limit)
+      .map((u) => u.id);
+  }
+  const pageIds = teamPageIds;
+
   const [users, total, athleteUsers, childEntries, teams, pendingGuests] = await Promise.all([
-    prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
+    pageIds
+      ? prisma.user.findMany({ where: { id: { in: pageIds } }, select }).then((rows) =>
+          pageIds.flatMap((id) => {
+            const row = rows.find((r) => r.id === id);
+            return row ? [row] : [];
+          })
+        )
+      : prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
     prisma.user.count({ where }),
     // Tab Atleti: tutti gli account che giocano, senza filtri ne' paginazione
     // (poche decine di righe: ricerca e filtri avvengono nel browser).

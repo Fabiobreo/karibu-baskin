@@ -132,3 +132,56 @@ export function countAthleteFilters(filters: AthleteFilters): number {
     (filters.account ? 1 : 0)
   );
 }
+
+/** Colonne ordinabili della tab Atleti. */
+export type AthleteSortColumn = "name" | "sportRole" | "team" | "gender" | "registrations";
+
+/** Il minimo che serve per ordinare una riga, utente o figlio. */
+export interface AthleteSortRow {
+  name: string | null;
+  sportRole: number | null;
+  gender: Gender | null;
+  teamMemberships: { team: { season: string; name: string } }[];
+  _count: { registrations: number };
+}
+
+const GENDER_ORDER: Record<Gender, number> = { FEMALE: 0, MALE: 1 };
+
+/**
+ * Ordine della tab Atleti. A parità decide sempre il nome, dalla A alla Z, così
+ * dentro una squadra o un genere le persone si trovano. Per squadra e genere
+ * chi non ha il dato sta in fondo in entrambi i versi: invertendo l'ordine si
+ * vuole vedere l'altra squadra, non una pagina di righe vuote.
+ */
+export function compareAthletes(
+  a: AthleteSortRow,
+  b: AthleteSortRow,
+  sortBy: AthleteSortColumn,
+  sortDir: "asc" | "desc",
+  currentSeason: string
+): number {
+  const dir = sortDir === "asc" ? 1 : -1;
+  const byName = (a.name ?? "").localeCompare(b.name ?? "", "it");
+  if (sortBy === "name") return dir * byName;
+
+  let cmp = 0;
+  if (sortBy === "sportRole") {
+    cmp = dir * ((a.sportRole ?? 99) - (b.sportRole ?? 99));
+  } else if (sortBy === "registrations") {
+    cmp = dir * (a._count.registrations - b._count.registrations);
+  } else {
+    const teamOf = (r: AthleteSortRow) =>
+      r.teamMemberships.find((m) => m.team.season === currentSeason)?.team.name ?? null;
+    const va = sortBy === "team" ? teamOf(a) : a.gender;
+    const vb = sortBy === "team" ? teamOf(b) : b.gender;
+    if (va === null || vb === null) {
+      // Senza dato: in fondo, qualunque sia il verso.
+      cmp = va === vb ? 0 : va === null ? 1 : -1;
+    } else if (sortBy === "team") {
+      cmp = dir * (va as string).localeCompare(vb as string, "it");
+    } else {
+      cmp = dir * (GENDER_ORDER[va as Gender] - GENDER_ORDER[vb as Gender]);
+    }
+  }
+  return cmp !== 0 ? cmp : byName;
+}

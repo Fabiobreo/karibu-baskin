@@ -19,7 +19,14 @@ import TeamChip from "@/components/teams/TeamChip";
 
 export const ALL_APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 
-export type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRole";
+export type SortColumn =
+  | "name"
+  | "createdAt"
+  | "sportRole"
+  | "registrations"
+  | "appRole"
+  | "team"
+  | "gender";
 
 export interface RoleHistoryEntry {
   sportRole: number;

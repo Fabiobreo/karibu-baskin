@@ -4,6 +4,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import BoltIcon from "@mui/icons-material/Bolt";
 import PlaceIcon from "@mui/icons-material/Place";
+import Image from "next/image";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -16,7 +17,17 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-import { teamFill } from "@/lib/teamColors";
+
+const CLUB_CREST = "/logo.png";
+
+/** Stemma sopra il nome: un cerchio uguale ai due lati, un po' più grande delle iniziali. */
+const crestSx = {
+  width: { xs: 52, md: 64 },
+  height: { xs: 52, md: 64 },
+  borderRadius: "50%",
+  objectFit: "contain",
+  display: "block",
+} as const;
 
 export default async function NextMatchCard({
   match,
@@ -55,6 +66,9 @@ export default async function NextMatchCard({
   const isHomeMatch = match.isHome;
   const usName = teamName;
   const themName = match.opponent.name;
+  // Dal nostro lato c'è sempre lo stemma del club; l'avversaria ha il suo se
+  // lo staff l'ha caricato, altrimenti l'iniziale.
+  const opponentCrest = match.opponent.imageUrl ?? null;
 
   const prev = previousMeeting;
   const prevOurScore = prev?.ourScore ?? null;
@@ -271,23 +285,10 @@ export default async function NextMatchCard({
               bgcolor: isHomeMatch ? "action.hover" : "background.paper",
             }}
           >
-            <Box
-              sx={{
-                width: { xs: 44, md: 54 },
-                height: { xs: 44, md: 54 },
-                borderRadius: "50%",
-                bgcolor: teamColor ?? "action.selected",
-                color: teamFill(teamColor)?.fg ?? "text.primary",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: FONT_WEIGHT.bold,
-                fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                boxShadow: 2,
-              }}
-            >
-              {usName[0]?.toUpperCase()}
-            </Box>
+            {/* Il nostro logo ha già il suo disco, niente bianco sotto. */}
+            <Box sx={{ ...crestSx, position: "relative", flexShrink: 0 }}>
+              <Image src={CLUB_CREST} alt="" fill sizes="64px" style={{ objectFit: "contain" }} />
+            </Box>{" "}
             <Typography
               variant="caption"
               sx={{
@@ -360,23 +361,39 @@ export default async function NextMatchCard({
               bgcolor: !isHomeMatch ? "action.hover" : "background.paper",
             }}
           >
-            <Box
-              sx={{
-                width: { xs: 44, md: 54 },
-                height: { xs: 44, md: 54 },
-                borderRadius: "50%",
-                bgcolor: "grey.800",
-                color: "common.white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: FONT_WEIGHT.bold,
-                fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                boxShadow: `0 3px 10px ${alpha(brandColor.black, 0.2)}`,
-              }}
-            >
-              {themName[0]?.toUpperCase()}
-            </Box>
+            {opponentCrest ? (
+              // `<img>` semplice: l'URL lo scrive lo staff, e un host non previsto
+              // farebbe cadere `next/image`. Bianco sotto, i loghi nascono per il chiaro.
+              <Box
+                component="img"
+                src={opponentCrest}
+                alt=""
+                sx={{
+                  ...crestSx,
+                  bgcolor: "common.white",
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: { xs: 44, md: 54 },
+                  height: { xs: 44, md: 54 },
+                  borderRadius: "50%",
+                  bgcolor: "grey.800",
+                  color: "common.white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: FONT_WEIGHT.bold,
+                  fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
+                  boxShadow: `0 3px 10px ${alpha(brandColor.black, 0.2)}`,
+                }}
+              >
+                {themName[0]?.toUpperCase()}
+              </Box>
+            )}
             <Typography
               variant="caption"
               sx={{

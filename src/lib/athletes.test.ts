@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  compareAthletes,
+  type AthleteSortColumn,
+  type AthleteSortRow,
   ATHLETE_ACCOUNT_WHERE,
   TRAINING_REGISTRABLE_WHERE,
   canBeRegisteredToTraining,
@@ -134,5 +137,57 @@ describe("filtri della tab Atleti", () => {
     expect(
       countAthleteFilters({ ...DEFAULT_ATHLETE_FILTERS, status: "all", sportRoles: ["1"] })
     ).toBe(2);
+  });
+});
+
+describe("ordinamento della tab Atleti", () => {
+  const sortRow = (
+    name: string,
+    partial: Partial<AthleteSortRow> & { team?: string; oldTeam?: string } = {}
+  ): AthleteSortRow => ({
+    name,
+    sportRole: 3,
+    gender: null,
+    teamMemberships: [
+      ...(partial.team ? [{ team: { season: SEASON, name: partial.team } }] : []),
+      ...(partial.oldTeam ? [{ team: { season: "2000-01", name: partial.oldTeam } }] : []),
+    ],
+    _count: { registrations: 0 },
+    ...partial,
+  });
+  const order = (rows: AthleteSortRow[], col: AthleteSortColumn, dir: "asc" | "desc") =>
+    [...rows].sort((a, b) => compareAthletes(a, b, col, dir, SEASON)).map((r) => r.name);
+
+  const rows = [
+    sortRow("Zeno", { team: "KariGin", gender: "MALE" }),
+    sortRow("Bea", { team: "KariTonic", gender: "FEMALE" }),
+    sortRow("Aldo", { team: "KariTonic", gender: "MALE" }),
+    sortRow("Carla", { gender: "FEMALE", oldTeam: "Aaa" }),
+    sortRow("Dino", { team: "KariGin" }),
+  ];
+
+  it("per squadra: quella della stagione in corso, poi il nome; chi non ne ha in fondo", () => {
+    expect(order(rows, "team", "asc")).toEqual(["Dino", "Zeno", "Aldo", "Bea", "Carla"]);
+  });
+
+  it("per squadra al contrario: cambia l'ordine delle squadre, non chi sta in fondo", () => {
+    expect(order(rows, "team", "desc")).toEqual(["Aldo", "Bea", "Dino", "Zeno", "Carla"]);
+  });
+
+  it("per genere: femmine, maschi, poi chi non l'ha indicato; al contrario i maschi prima", () => {
+    expect(order(rows, "gender", "asc")).toEqual(["Bea", "Carla", "Aldo", "Zeno", "Dino"]);
+    expect(order(rows, "gender", "desc")).toEqual(["Aldo", "Zeno", "Bea", "Carla", "Dino"]);
+  });
+
+  it("per nome nei due versi, e le colonne di prima restano uguali", () => {
+    expect(order(rows, "name", "desc")[0]).toBe("Zeno");
+    const byRole = [sortRow("B", { sportRole: null }), sortRow("A", { sportRole: 5 })];
+    expect(order(byRole, "sportRole", "asc")).toEqual(["A", "B"]);
+    expect(order(byRole, "sportRole", "desc")).toEqual(["B", "A"]);
+    const byRegs = [
+      sortRow("B", { _count: { registrations: 1 } }),
+      sortRow("A", { _count: { registrations: 9 } }),
+    ];
+    expect(order(byRegs, "registrations", "desc")).toEqual(["A", "B"]);
   });
 });

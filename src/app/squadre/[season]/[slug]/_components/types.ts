@@ -10,7 +10,7 @@ export type AnyMatch = {
   theirScore: number | null;
   result: MatchResult | null;
   venue: string | null;
-  opponent: { id: string; name: string; city: string | null };
+  opponent: { id: string; name: string; city: string | null; imageUrl?: string | null };
   /** true se la partita era originariamente memorizzata con questa squadra come
    * opponentTeam (amichevole interna vista da prospettiva avversaria, specchiata) */
   isMirrored?: boolean;
