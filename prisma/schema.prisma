@@ -235,16 +235,18 @@ model ChildGuardian {
 
 model LinkRequest {
   id           String            @id @default(cuid())
-  childId      String
+  // null = richiesta a un figlio che ha già un account: la scheda figlio nasce
+  // solo quando accetta. Valorizzato = scheda già esistente da legare all'account.
+  childId      String?
   parentId     String
   targetUserId String
   status       LinkRequestStatus @default(PENDING)
   createdAt    DateTime          @default(now())
   expiresAt    DateTime? // null = non scade; PENDING scadute vengono ignorate
 
-  child      Child @relation(fields: [childId], references: [id], onDelete: Cascade)
-  parent     User  @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
-  targetUser User  @relation("ReceivedLinkRequests", fields: [targetUserId], references: [id], onDelete: Cascade)
+  child      Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent     User   @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
+  targetUser User   @relation("ReceivedLinkRequests", fields: [targetUserId], references: [id], onDelete: Cascade)
 
   @@index([targetUserId, status])
   @@index([parentId])

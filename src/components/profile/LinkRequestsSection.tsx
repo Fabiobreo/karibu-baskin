@@ -27,6 +27,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface LinkRequest {
   id: string;
+  /** null: nessuna scheda figlio ancora, nasce accettando. */
   child: {
     id: string;
     name: string;
@@ -34,7 +35,7 @@ interface LinkRequest {
     sportRoleVariant: string | null;
     gender: Gender | null;
     birthDate: string | null;
-  };
+  } | null;
   parent: {
     id: string;
     name: string | null;
@@ -144,16 +145,22 @@ export default function LinkRequestsSection() {
                   display="block"
                   sx={{ mt: 0.5 }}
                 >
-                  {t("wantsToLink")} <strong>{req.child.name}</strong>
-                  {req.child.sportRole
-                    ? ` · ${sportRoleLabel(req.child.sportRole, req.child.sportRoleVariant)}`
-                    : ""}
-                  {req.child.gender ? ` · ${genderLabel(req.child.gender)}` : ""}
-                  {req.child.birthDate
-                    ? ` · ${t("bornOn", { date: formatBirthDate(req.child.birthDate, dateLocale) })}`
-                    : ""}
+                  {req.child ? (
+                    <>
+                      {t("wantsToLink")} <strong>{req.child.name}</strong>
+                      {req.child.sportRole
+                        ? ` · ${sportRoleLabel(req.child.sportRole, req.child.sportRoleVariant)}`
+                        : ""}
+                      {req.child.gender ? ` · ${genderLabel(req.child.gender)}` : ""}
+                      {req.child.birthDate
+                        ? ` · ${t("bornOn", { date: formatBirthDate(req.child.birthDate, dateLocale) })}`
+                        : ""}
+                    </>
+                  ) : (
+                    t("wantsToAddYou")
+                  )}
                 </Typography>
-                {req.child.sportRole && (
+                {req.child?.sportRole && (
                   <RoleBadge
                     role={req.child.sportRole}
                     variant={req.child.sportRoleVariant}

@@ -45,22 +45,28 @@ Un figlio può:
 
 ## Aggiunta figli (in `/profilo`)
 
-Il genitore usa il componente `ParentChildLinker`:
+Il genitore usa `ParentChildLinker` → `ChildAddDialog` (`useAddChildFlow`). Due strade, e **una scheda `Child` nasce solo quando serve**:
 
-1. Inserisce nome, ruolo, genere, data nascita del figlio
-2. `POST /api/users/me/children` → crea riga `Child` e il collegamento `ChildGuardian`
+- **Il figlio non ha un account** ("Crea manualmente"): nome, genere, data di nascita → `POST /api/users/me/children` crea `Child` + `ChildGuardian`. Prima di creare, il dialog cerca un account con lo stesso nome e, se c'è, lo propone ("C'è già un profilo con questo nome"): il genitore può comunque proseguire (omonimi).
+- **Il figlio ha già un account** (ricerca per email o nome): `POST /api/link-requests { targetUserId }` crea **solo** la `LinkRequest`, con `childId` null. Nessuna scheda figlio finché il figlio non accetta.
 
-Nella lista, un figlio condiviso mostra "Gestito anche da …" (`otherGuardians`, solo nomi: l'email dell'altro genitore non viene esposta).
+Nella lista, un figlio condiviso mostra "Gestito anche da …" (`otherGuardians`, solo nomi: l'email dell'altro genitore non viene esposta). Le richieste senza risposta compaiono come righe "In attesa di conferma" con "Annulla richiesta" (`DELETE /api/link-requests/[id]`); la pagina le carica dal server (`pendingLinks`), così restano dopo un ricaricamento.
+
+> **Perché così:** fino a ottobre 2026 "Sì, è il profilo giusto" creava subito una scheda `Child` vuota e poi, con una seconda chiamata, la richiesta. La scheda restava come doppione "senza account" (in profilo e nelle liste dello staff) finché il figlio non accettava, e per sempre se rifiutava o se la seconda chiamata falliva.
 
 ## Collegamento figlio → account (`LinkRequest`)
 
-Quando un figlio crea un account Google in futuro, si può collegare al `Child` esistente:
+`LinkRequest.childId` è facoltativo e distingue due casi:
 
-1. Il genitore trova l'utente del figlio e invia una `LinkRequest` (`POST /api/link-requests`)
-2. Il figlio riceve una notifica `LINK_REQUEST` (push + in-app)
-3. Il figlio accetta o rifiuta → `PATCH /api/link-requests/[id]`
-4. Se accettato: `Child.userId` = id del figlio, `User.appRole` rimane invariato
-5. Notifica `LINK_RESPONSE` inviata al genitore
+- **`childId` null**: il genitore aggiunge un figlio che ha già un account (`POST /api/link-requests`). All'accettazione nasce la scheda `Child` legata all'account: dati dal profilo, genitore come primo tutore, **senza slug**, `parentalConsentAt` = data della richiesta. È lo stesso stato di `link-account` dello staff.
+- **`childId` valorizzato**: una scheda creata a mano esiste già e il figlio si è fatto un account dopo (dialog "Collega account", `PATCH /api/children/[id]` con `linkEmail`/`linkUserId`). All'accettazione `Child.userId` = id del figlio.
+
+In entrambi i casi:
+
+1. Il figlio riceve una notifica `LINK_REQUEST` (push + in-app) e risponde da `/profilo#richieste` → `POST /api/link-requests/[id]/respond`
+2. Se accetta e il suo account è GUEST diventa ATHLETE; il ruolo Baskin non viene copiato
+3. Notifica `LINK_RESPONSE` al genitore
+4. Se l'account ha già una scheda figlio (un altro genitore): 409, il secondo genitore lo collega lo staff
 
 Dopo il collegamento, le iscrizioni future tramite `childId` saranno riconosciute anche quando il figlio usa il proprio account (controllo incrociato in `RosterByRole` e `RegistrationForm`).
 

@@ -24,6 +24,7 @@ export default async function AdminAvversariePage() {
       address: true,
       website: true,
       colors: true,
+      imageUrl: true,
     },
   });
   return (

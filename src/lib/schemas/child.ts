@@ -68,3 +68,16 @@ export const AccountChildLinkSchema = z.object({
   userId: z.string().min(1, "Scegli il figlio"),
   promoteParent: z.boolean().optional(),
 });
+
+/**
+ * Un genitore chiede a un figlio che ha già un account di confermare il
+ * legame (`POST /api/link-requests`). Nessuna scheda figlio nasce qui: la crea
+ * l'accettazione. Il consenso è lo stesso della creazione di un figlio.
+ */
+export const LinkRequestCreateSchema = z.object({
+  targetUserId: z.string().min(1, "Scegli il profilo"),
+  parentalConsent: z.literal(true, {
+    message:
+      "Devi confermare di essere il genitore/tutore legale e prestare il consenso al trattamento dei dati",
+  }),
+});

@@ -19,6 +19,16 @@ export interface ChildData {
   otherGuardians?: string[];
 }
 
+/**
+ * Richiesta inviata a un figlio che ha già un account, in attesa di risposta.
+ * Non c'è ancora una scheda figlio: nasce quando accetta.
+ */
+export interface PendingLink {
+  requestId: string;
+  name: string | null;
+  image: string | null;
+}
+
 export interface FoundUser {
   id: string;
   name: string | null;

@@ -166,6 +166,94 @@ describe("POST /api/link-requests/[requestId]/respond", () => {
     );
   });
 
+  it("senza scheda figlio: accettando nasce la scheda legata all'account, con il genitore", async () => {
+    const createdAt = new Date("2026-10-01T10:00:00Z");
+    p.linkRequest.findUnique.mockResolvedValue({
+      ...baseLinkRequest,
+      childId: null,
+      child: null,
+      createdAt,
+    });
+    const childCreate = vi.fn().mockResolvedValue(undefined);
+    const childUpdate = vi.fn();
+    p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>
+      fn({
+        linkRequest: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        child: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          update: childUpdate,
+          create: childCreate,
+        },
+        user: {
+          findUnique: vi.fn().mockResolvedValue({
+            name: "Giulia Rossi",
+            email: "giulia@example.com",
+            appRole: "ATHLETE",
+            sportRole: 3,
+            sportRoleVariant: null,
+            gender: "FEMALE",
+            birthDate: null,
+          }),
+          update: vi.fn(),
+        },
+        appNotification: { create: vi.fn().mockResolvedValue(undefined) },
+      })
+    );
+    const [req, ctx] = makePOST("req-1", { accept: true });
+    const res = await POST(req, ctx);
+    expect(res.status).toBe(200);
+    expect(childUpdate).not.toHaveBeenCalled();
+    const data = childCreate.mock.calls[0][0].data;
+    expect(data).toMatchObject({
+      name: "Giulia Rossi",
+      userId: "target-1",
+      sportRole: 3,
+      gender: "FEMALE",
+      parentalConsentAt: createdAt,
+      guardians: { create: { userId: "parent-1" } },
+    });
+    // Senza slug: il profilo pubblico resta quello dell'account.
+    expect(data.slug).toBeUndefined();
+  });
+
+  it("senza scheda figlio: rifiutando non nasce nulla", async () => {
+    p.linkRequest.findUnique.mockResolvedValue({ ...baseLinkRequest, childId: null, child: null });
+    const childCreate = vi.fn();
+    p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>
+      fn({
+        linkRequest: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        child: { findUnique: vi.fn(), update: vi.fn(), create: childCreate },
+        user: { findUnique: vi.fn(), update: vi.fn() },
+        appNotification: { create: vi.fn().mockResolvedValue(undefined) },
+      })
+    );
+    const [req, ctx] = makePOST("req-1", { accept: false });
+    const res = await POST(req, ctx);
+    expect((await res.json()).status).toBe("REJECTED");
+    expect(childCreate).not.toHaveBeenCalled();
+  });
+
+  it("senza scheda figlio: 409 se l'account ha già una scheda", async () => {
+    p.linkRequest.findUnique.mockResolvedValue({ ...baseLinkRequest, childId: null, child: null });
+    const childCreate = vi.fn();
+    p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>
+      fn({
+        linkRequest: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        child: {
+          findUnique: vi.fn().mockResolvedValue({ id: "child-other" }),
+          update: vi.fn(),
+          create: childCreate,
+        },
+        user: { findUnique: vi.fn(), update: vi.fn() },
+        appNotification: { create: vi.fn() },
+      })
+    );
+    const [req, ctx] = makePOST("req-1", { accept: true });
+    const res = await POST(req, ctx);
+    expect(res.status).toBe(409);
+    expect(childCreate).not.toHaveBeenCalled();
+  });
+
   it("esegue le operazioni dentro una transaction", async () => {
     const [req, ctx] = makePOST("req-1", { accept: true });
     await POST(req, ctx);

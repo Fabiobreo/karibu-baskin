@@ -167,8 +167,23 @@ export default async function ProfiloPage({
     },
   });
 
-  const [user, pendingAvailabilities, currentSeason] = await Promise.all([
+  const [user, sentLinkRequests, pendingAvailabilities, currentSeason] = await Promise.all([
     userQuery,
+    // Richieste di collegamento inviate e ancora senza risposta: senza, dopo
+    // un ricaricamento il figlio "in attesa" sembrava non collegato.
+    prisma.linkRequest.findMany({
+      where: {
+        parentId: session.user.id,
+        status: "PENDING",
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        childId: true,
+        targetUser: { select: { name: true, image: true, customImage: true } },
+      },
+    }),
     // Chi non può avere partite a cui rispondere non ha il bottone (UX-46).
     session.user.showsAvailabilities ? countPendingAvailabilities(session.user.id) : 0,
     getCurrentSeasonLabel(),
@@ -178,7 +193,16 @@ export default async function ProfiloPage({
   const children = user.guardianOf.map(({ child: { guardians, ...child } }) => ({
     ...child,
     otherGuardians: guardians.map((g) => g.user.name ?? "?"),
+    pendingRequestId: sentLinkRequests.find((r) => r.childId === child.id)?.id ?? null,
   }));
+  // Figli con account che non hanno ancora accettato: non hanno una scheda.
+  const pendingLinks = sentLinkRequests
+    .filter((r) => r.childId === null)
+    .map((r) => ({
+      requestId: r.id,
+      name: r.targetUser.name,
+      image: r.targetUser.customImage ?? r.targetUser.image,
+    }));
 
   // ── Prossimo allenamento ──────────────────────────────────────────────────
   // È il motivo principale per cui un atleta apre il sito, e nel profilo non
@@ -487,7 +511,11 @@ export default async function ProfiloPage({
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t("linkChildDesc")}
       </Typography>
-      <ParentChildLinker initialChildren={children as ChildData[]} currentSeason={currentSeason} />
+      <ParentChildLinker
+        initialChildren={children as ChildData[]}
+        initialPendingLinks={pendingLinks}
+        currentSeason={currentSeason}
+      />
     </Paper>
   ) : null;
 
