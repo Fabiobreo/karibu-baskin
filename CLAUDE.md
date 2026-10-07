@@ -76,6 +76,7 @@ src/
 │   │   ├── posts/                         # CRUD news/post (+ admin/) — bacheca
 │   │   ├── polls/[id]/vote/              # Voto sondaggi (poll abbinati ai post)
 │   │   ├── gallery/                       # Moderazione Gallery: sync/ (trigger), [id]/ (hide/delete)
+│   │   ├── albums/                        # Album foto da cartelle Drive: preview/, [id]/ (+ sync/, photos/)
 │   │   ├── upload/                        # Upload immagini su Vercel Blob (+ sharp)
 │   │   ├── calendar/                      # GET calendario + export.ics/
 │   │   ├── link-requests/                 # Richieste collegamento genitore-figlio + respond/
@@ -84,7 +85,7 @@ src/
 │   │   ├── cron/                          # Cron Vercel (CRON_SECRET): cleanup-notifications,
 │   │   │                                  #   birthday-notifications, training-open-reminder,
 │   │   │                                  #   match-availability-reminder, match-callup-reminder,
-│   │   │                                  #   match-coverage-alert, instagram-sync
+│   │   │                                  #   match-coverage-alert, gallery-sync
 │   │   └── test-login/                    # Login fittizio per test (solo ENABLE_TEST_LOGIN=true)
 │   ├── actions/
 │   │   └── contact.ts                     # Server action form contatti (Resend)
@@ -119,7 +120,7 @@ src/
 │   ├── squadre/[season]/[slug]/           # Profilo squadra
 │   ├── squadre/archivio/                  # Archivio squadre stagioni passate
 │   ├── news/                              # Bacheca news (+ [slug] dettaglio)
-│   ├── gallery/                           # Gallery: feed Instagram mirrorato + video YouTube
+│   ├── gallery/                           # Gallery: album da Drive (+ [slug]), feed Instagram mirrorato, video YouTube
 │   ├── faq/                               # FAQ
 │   ├── guida/                             # Guida all'app per genitori e atleti
 │   ├── notifiche/                         # Centro notifiche utente
@@ -203,7 +204,8 @@ src/
 │   │   ├── seasonUtils.ts                 #   Calcolo stagione corrente (YYYY-YY)
 │   │   ├── standings.ts                   #   Calcolo classifiche gironi
 │   │   └── teamGenerator.ts               #   Mulberry32 PRNG seeded shuffle
-│   ├── gallery/                           # Gallery: instagram.ts (Graph API + mirror Blob) + youtube.ts (RSS)
+│   ├── gallery/                           # Gallery: instagram.ts (Graph API + mirror Blob), youtube.ts (RSS),
+│   │                                      #   drive.ts + albums.ts + albumRules.ts (album da cartelle Drive)
 │   ├── content/                           # Contenuti statici: faqs.ts, baskinInfo.ts, loSapevi.ts
 │   └── schemas/                           # Schemi Zod per validazione input API
 │       ├── child.ts, competitiveTeam.ts, event.ts, group.ts, post.ts
@@ -289,6 +291,8 @@ sentry.edge.config.ts                      # Sentry edge runtime
 | `TrainingMatchResult`  | `TrainingMatchResult`  | Risultati partitelle a fine allenamento                 |
 | `AuditEvent`           | `AuditEvent`           | Log azioni admin (audit trail)                          |
 | `InstagramPost`        | `InstagramPost`        | Post Instagram mirrorati per la Gallery                 |
+| `PhotoAlbum`           | `PhotoAlbum`           | Album foto da una cartella Google Drive                 |
+| `AlbumPhoto`           | `AlbumPhoto`           | Indice delle foto di un album (i file restano su Drive) |
 | `VerificationToken`    | `VerificationToken`    | Token verifica Auth.js                                  |
 
 > **Genitori dei figli:** un `Child` ha uno o più genitori in `ChildGuardian`, tutti paritari. Ogni controllo "è suo genitore?" passa da `@/lib/guardians` (`guardianOf`, `isGuardian`); dettagli in [`docs/workflows/06-genitore-figlio.md`](docs/workflows/06-genitore-figlio.md).
@@ -363,7 +367,8 @@ Comportamento `checkRegistrationAllowed()`:
   - `match-availability-reminder` — promemoria conferma disponibilità partita
   - `match-callup-reminder` — promemoria convocazioni
   - `match-coverage-alert` — alert copertura ruoli insufficiente
-  - `instagram-sync` — sincronizza il feed Instagram nella Gallery (giornaliero, 06:00 — il piano Vercel Hobby consente cron al massimo 1 volta/giorno)
+  - `gallery-sync` — aggiorna la Gallery: prima gli album da Drive degli ultimi 30 giorni, poi il feed Instagram (giornaliero, 06:00 — il piano Vercel Hobby consente cron al massimo 1 volta/giorno)
+  - **I cron sono 7 ed è il massimo del piano Hobby:** un lavoro periodico nuovo va dentro un cron esistente (come gli album in `gallery-sync`), non in un ottavo, altrimenti il deploy fallisce
 
 ## Sottosistemi recenti
 
@@ -393,7 +398,8 @@ Comportamento `checkRegistrationAllowed()`:
 - **Metriche d'uso (`/admin/metriche`):** calcolate dai dati già nel database, senza tracciamento aggiuntivo: il piano Vercel Hobby non registra eventi personalizzati (`track()`), quindi non aggiungerne. Calcoli puri e testati in `@/lib/metrics/adminMetrics`, query in `loadAdminMetrics.ts`. "Utenti attivi" si ricava dalla scadenza a scorrimento delle sessioni: la durata sta in `@/lib/sessionPolicy`, condivisa con `authjs.ts`, e se cambia lì la metrica resta coerente. I rapporti senza dati sono `null` ("n.d."), mai 0%
 - **Dati strutturati (JSON-LD):** `@/lib/structuredData` + componente `JsonLd`, che serializza neutralizzando `</script>`. `SportsOrganization` in home, `NewsArticle` sulle news, `Event` sugli eventi, `SportsEvent` sulle partite, con i dati ufficiali della pagina Contatti. Mai markup `Person` per i giocatori
 - **Confronto giocatori + trend:** `/giocatori/confronta?a=&b=` mette a confronto due giocatori (partite, punti, media, %, MVP, badge) con selettore `ComparePicker` (autocomplete via `/api/search`). Il profilo pubblico mostra l'andamento punti con `PointsTrendChart` (SVG puro, niente librerie) e un pulsante "Confronta".
-- **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (giornaliero alle 06:00, `vercel.json` — su piano Hobby i cron Vercel possono girare al massimo 1 volta/giorno: schedule sub-giornaliere fanno **fallire il deploy**) chiama `syncInstagram()` (`src/lib/gallery/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `gallery/youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
+- **Album foto da Google Drive (UX-52):** lo staff incolla in `/admin/gallery` (scheda Album) il link di una cartella Drive condivisa con "Chiunque abbia il link"; il sito ne salva solo l'indice (`PhotoAlbum`, `AlbumPhoto`: id dei file e dimensioni), **i file restano su Drive e non passano mai da Blob**. Lettura con Drive API v3 e `GOOGLE_DRIVE_API_KEY` (`listDriveFolder` in `@/lib/gallery/drive`), solo alla creazione, su "Aggiorna" (`syncAlbum` in `albums.ts`) e nel cron `gallery-sync`, che ogni mattina rilegge gli album degli ultimi 30 giorni (`syncRecentAlbums`: un album che fallisce non ferma gli altri, dopo 20 secondi non ne inizia di nuovi); mai al caricamento di una pagina. Le immagini le serve Google già ridimensionate: l'URL si costruisce **solo** con `drivePhotoUrl(fileId, larghezza)` (formato non documentato: se cambia si interviene lì), sempre in un `<img>` con `referrerPolicy="no-referrer"` (con il `Referer` di localhost Google risponde 429), mai `next/image` (centinaia di foto per album consumerebbero la quota Vercel). **Visibilità per album** (`AlbumVisibility`): `MEMBERS` di default, `PUBLIC` solo per scelta esplicita; chi vede cosa lo dicono `canSeeAlbum` e `visibleAlbumWhere` in `albumRules.ts`. A chi non è tesserato un album riservato non compare in `/gallery` (solo la riga "Altri album sono visibili ai tesserati"), la sua pagina mostra titolo e "Accedi" senza nessuna foto nel payload, ha `noindex` e non entra in sitemap. "Solo tesserati" non è segretezza: la cartella Drive resta aperta a chi ha il link, e il form lo dice. La creazione chiede la spunta "Ho il permesso di chi ha scattato le foto" (rifiutata anche dall'API, registrata nell'audit `CREATE_ALBUM`). Una foto nascosta dallo staff resta nascosta dopo ogni "Aggiorna" (il sync non ricrea le foto rimaste: `planPhotoSync`). Se la cartella non risponde più l'album prende `unreachableAt` e sparisce dal pubblico senza perdere l'indice. Pubblico: `AlbumCards` in `/gallery`, `/gallery/[slug]` con `AlbumPhotoGrid` (righe giustificate con le proporzioni vere) e `Lightbox`, condiviso con i post Instagram. Un album lungo si sfoglia a **pagine da 60** con il numero nell'URL (`?pagina=4`; regole in `albumPages.ts`, controlli in `AlbumPagination`): niente scorrimento infinito né "Mostra altre", perché il footer con gli sponsor deve restare raggiungibile e la pagina è un punto a cui tornare. Il lightbox scorre tutte le foto dell'album e alla chiusura porta la griglia sulla pagina della foto. Nel lightbox "Scarica" salva l'originale direttamente da Google (`driveDownloadUrl`, link con `rel="noreferrer"`); l'album intero si scarica da Drive ("Scarica tutto da Drive"), mai con uno zip fatto dal nostro server. `eventId`/`matchId` collegano l'album a un evento o a una partita (al più uno). Fuori dalla fase 1: fascia "Foto" su eventi e partite, notifica, video e sottocartelle
+- **Gallery:** feed Instagram automatico + video YouTube. Il cron `gallery-sync` (giornaliero alle 06:00, `vercel.json` — su piano Hobby i cron Vercel possono girare al massimo 1 volta/giorno: schedule sub-giornaliere fanno **fallire il deploy**) chiama `syncInstagram()` (`src/lib/gallery/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `gallery/youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
 
 ## Internazionalizzazione (i18n)
 
@@ -444,6 +450,7 @@ CRON_SECRET=                      # Secret per autorizzare i cron job Vercel
 IG_ACCESS_TOKEN=                  # Gallery: token long-lived Instagram Graph API
 IG_BUSINESS_ACCOUNT_ID=          # Gallery: ID account Instagram Business
 YOUTUBE_CHANNEL_ID=               # Gallery: ID canale YouTube (feed RSS, sezione video)
+GOOGLE_DRIVE_API_KEY=             # Gallery: API key Google (Drive API v3) per leggere le cartelle degli album
 ENABLE_TEST_LOGIN=                # "true" per abilitare login fittizio (solo dev)
 TEST_PASSWORD=                    # Password per il login di test (default: karibu-test)
 DISABLE_NOTIFICATIONS=            # "true" spegne push e notifiche in-app (solo dev, ignorata in produzione)

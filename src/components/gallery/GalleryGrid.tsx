@@ -4,24 +4,24 @@ import {
   Box,
   ImageList,
   ImageListItem,
-  Dialog,
-  IconButton,
   Typography,
   useMediaQuery,
   useTheme,
   Button,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import CloseIcon from "@mui/icons-material/Close";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import Image from "next/image";
 import { onHover } from "@/lib/hoverStyles";
-import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import Lightbox from "./Lightbox";
+
+const LIGHTBOX_LABELS = {
+  close: "Chiudi",
+  prev: "Immagine precedente",
+  next: "Immagine successiva",
+};
 
 export interface GalleryPost {
   id: string;
@@ -46,6 +46,7 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
   const [slide, setSlide] = useState(0);
 
   const openPost = openIndex !== null ? posts[openIndex] : null;
+  const multi = !!openPost && openPost.blobUrls.length > 1;
 
   function open(index: number) {
     setOpenIndex(index);
@@ -110,99 +111,15 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
       </ImageList>
 
       {/* Lightbox */}
-      <Dialog
+      <Lightbox
         open={openPost !== null}
         onClose={close}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{ sx: { bgcolor: "background.default", backgroundImage: "none" } }}
-      >
-        {openPost && (
-          <Box sx={{ position: "relative" }}>
-            <IconButton
-              onClick={close}
-              aria-label="Chiudi"
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                zIndex: 3,
-                color: "common.white",
-                bgcolor: (theme) => alpha(theme.palette.common.black, 0.45),
-                "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.65) },
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-
-            <Box
-              sx={{
-                position: "relative",
-                width: "100%",
-                height: { xs: "60vh", md: "70vh" },
-                bgcolor: "common.black",
-              }}
-            >
-              <Image
-                src={openPost.blobUrls[slide]}
-                alt={openPost.caption?.slice(0, 80) ?? "Foto Karibu Baskin"}
-                fill
-                sizes="100vw"
-                style={{ objectFit: "contain" }}
-              />
-
-              {openPost.blobUrls.length > 1 && (
-                <>
-                  <IconButton
-                    onClick={prevSlide}
-                    aria-label="Immagine precedente"
-                    sx={{
-                      position: "absolute",
-                      top: "50%",
-                      left: 8,
-                      transform: "translateY(-50%)",
-                      color: "common.white",
-                      bgcolor: (theme) => alpha(theme.palette.common.black, 0.45),
-                      "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.65) },
-                    }}
-                  >
-                    <ChevronLeftIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={nextSlide}
-                    aria-label="Immagine successiva"
-                    sx={{
-                      position: "absolute",
-                      top: "50%",
-                      right: 8,
-                      transform: "translateY(-50%)",
-                      color: "common.white",
-                      bgcolor: (theme) => alpha(theme.palette.common.black, 0.45),
-                      "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.65) },
-                    }}
-                  >
-                    <ChevronRightIcon />
-                  </IconButton>
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 10,
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      px: 1,
-                      py: 0.25,
-                      borderRadius: RADIUS.pill,
-                      bgcolor: (theme) => alpha(theme.palette.common.black, 0.55),
-                      color: "common.white",
-                      fontSize: TYPE_SCALE.xs,
-                    }}
-                  >
-                    {slide + 1} / {openPost.blobUrls.length}
-                  </Box>
-                </>
-              )}
-            </Box>
-
+        onPrev={multi ? prevSlide : undefined}
+        onNext={multi ? nextSlide : undefined}
+        counter={openPost && multi ? `${slide + 1} / ${openPost.blobUrls.length}` : undefined}
+        labels={LIGHTBOX_LABELS}
+        footer={
+          openPost && (
             <Box sx={{ p: 2 }}>
               {openPost.caption && (
                 <Typography
@@ -225,9 +142,19 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                 Apri su Instagram
               </Button>
             </Box>
-          </Box>
+          )
+        }
+      >
+        {openPost && (
+          <Image
+            src={openPost.blobUrls[slide]}
+            alt={openPost.caption?.slice(0, 80) ?? "Foto Karibu Baskin"}
+            fill
+            sizes="100vw"
+            style={{ objectFit: "contain" }}
+          />
         )}
-      </Dialog>
+      </Lightbox>
     </>
   );
 }

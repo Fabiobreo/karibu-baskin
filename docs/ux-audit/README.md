@@ -127,7 +127,13 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Non c'è un prossimo ticket: il passo successivo è un nuovo riaudit.
+Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Dei riaudit non resta nulla da fare: il passo successivo, su quel fronte, è un nuovo riaudit.
+
+In lista c'è una funzione nuova, chiesta dal committente il 07/10/2026 (ondata 6, non nasce da un riaudit):
+
+| Ticket                                        | Titolo                                           | Stima | Dipende da | In attesa di |
+| --------------------------------------------- | ------------------------------------------------ | ----- | ---------- | ------------ |
+| [UX-52](tickets/UX-52-album-foto-da-drive.md) | Album foto da una cartella Google Drive (fase 1) | L     |            |              |
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

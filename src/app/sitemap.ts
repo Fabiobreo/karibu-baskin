@@ -5,6 +5,7 @@ import { slugify } from "@/lib/slugUtils";
 import { SITE_URL } from "@/lib/siteUrl";
 import { notMinorFilter } from "@/lib/minors";
 import { publicProfileUserFilter } from "@/lib/publicProfile";
+import { visibleAlbumWhere } from "@/lib/gallery/albumRules";
 
 const BASE = SITE_URL;
 
@@ -33,45 +34,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];
 
-  const [teams, players, sessions, matches, opposingTeams, posts, events] = await Promise.all([
-    prisma.competitiveTeam.findMany({
-      // La Karibu di stagione ha una pagina solo quando gioca il campionato.
-      where: PUBLIC_TEAM_WHERE,
-      select: { name: true, season: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    // Privacy: i profili dei minorenni non finiscono in sitemap (stessa regola
-    // applicata alla ricerca globale e al `noindex` sul profilo pubblico).
-    prisma.user.findMany({
-      where: { AND: [publicProfileUserFilter(), { slug: { not: null } }, notMinorFilter()] },
-      select: { slug: true, createdAt: true },
-    }),
-    prisma.trainingSession.findMany({
-      where: { date: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-      select: { dateSlug: true, id: true, date: true },
-      orderBy: { date: "desc" },
-      take: 20,
-    }),
-    prisma.match.findMany({
-      select: { slug: true, id: true, date: true },
-      orderBy: { date: "desc" },
-    }),
-    prisma.opposingTeam.findMany({
-      where: { slug: { not: null } },
-      select: { slug: true, createdAt: true },
-    }),
-    // Solo i post effettivamente pubblicati: le bozze non esistono per il pubblico.
-    prisma.post.findMany({
-      where: { publishedAt: { not: null } },
-      select: { slug: true, updatedAt: true },
-      orderBy: { publishedAt: "desc" },
-    }),
-    prisma.event.findMany({
-      where: { slug: { not: null } },
-      select: { slug: true, updatedAt: true },
-      orderBy: { date: "desc" },
-    }),
-  ]);
+  const [teams, players, sessions, matches, opposingTeams, posts, events, albums] =
+    await Promise.all([
+      prisma.competitiveTeam.findMany({
+        // La Karibu di stagione ha una pagina solo quando gioca il campionato.
+        where: PUBLIC_TEAM_WHERE,
+        select: { name: true, season: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      // Privacy: i profili dei minorenni non finiscono in sitemap (stessa regola
+      // applicata alla ricerca globale e al `noindex` sul profilo pubblico).
+      prisma.user.findMany({
+        where: { AND: [publicProfileUserFilter(), { slug: { not: null } }, notMinorFilter()] },
+        select: { slug: true, createdAt: true },
+      }),
+      prisma.trainingSession.findMany({
+        where: { date: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+        select: { dateSlug: true, id: true, date: true },
+        orderBy: { date: "desc" },
+        take: 20,
+      }),
+      prisma.match.findMany({
+        select: { slug: true, id: true, date: true },
+        orderBy: { date: "desc" },
+      }),
+      prisma.opposingTeam.findMany({
+        where: { slug: { not: null } },
+        select: { slug: true, createdAt: true },
+      }),
+      // Solo i post effettivamente pubblicati: le bozze non esistono per il pubblico.
+      prisma.post.findMany({
+        where: { publishedAt: { not: null } },
+        select: { slug: true, updatedAt: true },
+        orderBy: { publishedAt: "desc" },
+      }),
+      prisma.event.findMany({
+        where: { slug: { not: null } },
+        select: { slug: true, updatedAt: true },
+        orderBy: { date: "desc" },
+      }),
+      // Solo gli album pubblici: quelli per i tesserati non si fanno trovare.
+      prisma.photoAlbum.findMany({
+        where: visibleAlbumWhere(false),
+        select: { slug: true, updatedAt: true },
+        orderBy: { date: "desc" },
+      }),
+    ]);
 
   const teamPages: MetadataRoute.Sitemap = teams.map((t) => ({
     url: `${BASE}/squadre/${t.season.replace("-", "")}/${slugify(t.name)}`,
@@ -128,6 +136,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.55,
     }));
 
+  const albumPages: MetadataRoute.Sitemap = albums.map((a) => ({
+    url: `${BASE}/gallery/${a.slug}`,
+    lastModified: a.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.45,
+  }));
+
   return [
     ...staticPages,
     ...teamPages,
@@ -137,5 +152,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...opposingTeamPages,
     ...postPages,
     ...eventPages,
+    ...albumPages,
   ];
 }

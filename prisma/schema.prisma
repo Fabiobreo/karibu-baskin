@@ -99,6 +99,7 @@ model User {
   pollVotes             PollVote[]
   ratingUpdates         RatingUpdate[]
   suggestions           Suggestion[]
+  albumPermissions      PhotoAlbum[]           @relation("AlbumPermission")
   suggestionNotes       SuggestionNote[]
   earnedBadges          EarnedBadge[]
   eventAttendances      EventAttendance[]      @relation("EventAttendanceUser")
@@ -544,6 +545,7 @@ model Match {
   callups        MatchCallup[]
   mvps           MatchMvp[]
   availabilities MatchAvailability[]
+  albums         PhotoAlbum[]
 
   @@index([teamId, date])
   @@index([opponentId])
@@ -835,6 +837,7 @@ model Event {
   attendances EventAttendance[]
   options     EventOption[]
   guests      EventGuest[]
+  albums      PhotoAlbum[]
 
   @@index([date])
 }
@@ -998,6 +1001,66 @@ model InstagramPost {
 
   @@index([timestamp])
   @@index([hidden, timestamp])
+}
+
+// ── Album foto da cartelle Google Drive (UX-52) ──────────────────────────────
+// I file restano su Drive: qui c'e' solo l'indice (id dei file e dimensioni).
+
+enum AlbumVisibility {
+  MEMBERS // solo i tesserati (ATHLETE o superiore)
+  PUBLIC // chiunque, indicizzabile
+}
+
+model PhotoAlbum {
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  title         String
+  date          DateTime
+  driveFolderId String          @unique
+  visibility    AlbumVisibility @default(MEMBERS)
+  coverPhotoId  String? // AlbumPhoto.id; null = la prima foto visibile
+  photoCount    Int             @default(0) // foto visibili (non nascoste)
+  otherFiles    Int             @default(0) // video e sottocartelle, non mostrati
+  syncedAt      DateTime        @default(now())
+  // Valorizzato quando la cartella non risponde piu' (condivisione tolta o
+  // cartella eliminata): l'album sparisce dal pubblico, le foto restano a DB.
+  unreachableAt DateTime?
+
+  // Collegamento facoltativo, al piu' uno dei due.
+  eventId String?
+  matchId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  match   Match?  @relation(fields: [matchId], references: [id], onDelete: SetNull)
+
+  // Chi ha dichiarato "ho il permesso di chi ha scattato le foto".
+  permissionDeclaredById String?
+  permissionDeclaredBy   User?   @relation("AlbumPermission", fields: [permissionDeclaredById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos AlbumPhoto[]
+
+  @@index([date])
+  @@index([eventId])
+  @@index([matchId])
+}
+
+model AlbumPhoto {
+  id          String    @id @default(cuid())
+  albumId     String
+  driveFileId String
+  name        String
+  width       Int // gia' orientate (rotation applicata)
+  height      Int
+  takenAt     DateTime?
+  hidden      Boolean   @default(false) // moderazione: resta nascosta dopo i sync
+  position    Int
+
+  album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@unique([albumId, driveFileId])
+  @@index([albumId, position])
 }
 
 // ── Suggerimenti utenti ───────────────────────────────────────────────────────

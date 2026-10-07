@@ -44,7 +44,11 @@ export type AuditAction =
   | "CREATE_CHILD"
   | "LINK_GUARDIAN"
   | "UNLINK_GUARDIAN"
-  | "SEND_NOTIFICATION";
+  | "SEND_NOTIFICATION"
+  | "CREATE_ALBUM"
+  | "UPDATE_ALBUM"
+  | "DELETE_ALBUM"
+  | "HIDE_ALBUM_PHOTO";
 
 interface LogAuditInput {
   actorId: string;

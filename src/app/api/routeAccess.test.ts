@@ -34,6 +34,8 @@ const ROUTES: Record<string, Access> = {
   "admin/audit": "staff",
   "admin/export": "staff",
   "admin/people": "staff",
+  // Foto di un album, nascoste comprese: moderazione (UX-52).
+  "albums/[id]/photos": "staff",
   "auth/[...nextauth]": "authjs",
   calendar: "public",
   "calendar/export.ics": "public",
@@ -42,7 +44,7 @@ const ROUTES: Record<string, Access> = {
   "competitive-teams/[teamId]": "public",
   "cron/birthday-notifications": "cron",
   "cron/cleanup-notifications": "cron",
-  "cron/instagram-sync": "cron",
+  "cron/gallery-sync": "cron",
   "cron/match-availability-reminder": "cron",
   "cron/match-callup-reminder": "cron",
   "cron/match-coverage-alert": "cron",
