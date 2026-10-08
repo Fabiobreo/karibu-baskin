@@ -2,14 +2,14 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
-vi.mock("@/lib/apiAuth", () => ({ staffGuard: vi.fn() }));
+vi.mock("@/lib/apiAuth", () => ({ panelGuard: vi.fn() }));
 vi.mock("@/lib/eventResponses", () => ({ loadEventResponses: vi.fn() }));
 
 import { GET } from "./route";
-import { staffGuard } from "@/lib/apiAuth";
+import { panelGuard } from "@/lib/apiAuth";
 import { loadEventResponses } from "@/lib/eventResponses";
 
-const mockGuard = staffGuard as unknown as Mock;
+const mockGuard = panelGuard as unknown as Mock;
 const mockLoad = loadEventResponses as unknown as Mock;
 const params = { params: Promise.resolve({ eventId: "evt-1" }) };
 const get = (q = "") =>

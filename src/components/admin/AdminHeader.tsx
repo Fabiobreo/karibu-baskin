@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -34,12 +34,12 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import AdminNavDrawer from "@/components/admin/AdminNavDrawer";
 import { useThemeMode } from "@/context/ThemeContext";
 import { useHasMounted } from "@/lib/useHasMounted";
-import { hasRole } from "@/lib/authRoles";
+import { canViewAdminPanel } from "@/lib/authRoles";
 import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
 import {
-  ADMIN_NAV,
   ADMIN_NAV_GROUP_LABELS,
   activeAdminSection,
+  adminNavFor,
   type AdminNavGroup,
 } from "@/lib/adminNav";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
@@ -58,11 +58,7 @@ const THEME_MODES = [
   { mode: "dark", label: "Tema scuro", icon: <DarkModeIcon fontSize="small" /> },
 ] as const;
 
-const BAR_ITEMS = ADMIN_NAV.filter((i) => i.inBar);
-const MORE_ITEMS = ADMIN_NAV.filter((i) => !i.inBar);
-const MORE_GROUPS = (["attivita", "anagrafiche", "strumenti"] as const).filter((g) =>
-  MORE_ITEMS.some((i) => i.group === g)
-);
+const GROUPS = ["attivita", "anagrafiche", "strumenti"] as const;
 
 /** Voce della barra: testo pieno, la corrente in arancio con il filo sotto. */
 function barItemSx(active: boolean) {
@@ -97,7 +93,8 @@ function barItemSx(active: boolean) {
  * "Torna al sito": basta il logo (scelta del committente); la scritta resta in
  * fondo al menu.
  *
- * Chi non è dello staff (la pagina di accesso) vede solo il logo e "Admin".
+ * Il dirigente vede le sole sezioni che può leggere (`adminNavFor`). Chi non
+ * entra nel pannello (la pagina di accesso) vede solo il logo e "Admin".
  */
 export default function AdminHeader() {
   const pathname = usePathname();
@@ -111,7 +108,12 @@ export default function AdminHeader() {
 
   const user = session?.user;
   const role = user?.appRole as AppRole | undefined;
-  const isStaff = !!role && hasRole(role, "COACH");
+  // "Staff" qui vuol dire chi entra nel pannello, dirigente compreso.
+  const isStaff = canViewAdminPanel(role);
+  const navItems = useMemo(() => adminNavFor(role), [role]);
+  const BAR_ITEMS = navItems.filter((i) => i.inBar);
+  const MORE_ITEMS = navItems.filter((i) => !i.inBar);
+  const MORE_GROUPS = GROUPS.filter((g) => MORE_ITEMS.some((i) => i.group === g));
   const section = activeAdminSection(pathname);
   const moreActive = !!section && !section.inBar;
   // La preferenza salvata è nota solo dopo il mount.
@@ -371,6 +373,7 @@ export default function AdminHeader() {
 
       {isStaff && (
         <AdminNavDrawer
+          items={navItems}
           open={drawerOpen}
           currentHref={section?.href ?? null}
           onClose={() => {

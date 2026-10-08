@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -10,9 +10,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-vi.mock("@/lib/apiAuth", () => ({
-  isCoachOrAdmin: vi.fn().mockResolvedValue(false),
-}));
+vi.mock("@/lib/apiAuth", () => ({ panelGuard: vi.fn() }));
 
 vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
@@ -24,7 +22,7 @@ vi.mock("@/lib/audit", () => ({
 
 import { GET } from "./route";
 import { prisma } from "@/lib/db";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { panelGuard } from "@/lib/apiAuth";
 
 type PrismaMock = {
   user: { findMany: Mock };
@@ -32,7 +30,8 @@ type PrismaMock = {
   playerMatchStats: { findMany: Mock };
 };
 const p = prisma as unknown as PrismaMock;
-const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
+const mockGuard = panelGuard as unknown as Mock;
+const denied = () => NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
 
 function makeGet(params: Record<string, string>): NextRequest {
   const url = new URL("http://localhost/api/admin/export");
@@ -43,16 +42,16 @@ function makeGet(params: Record<string, string>): NextRequest {
 describe("GET /api/admin/export", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsCoachOrAdmin.mockResolvedValue(false);
+    mockGuard.mockResolvedValue(denied());
   });
 
-  it("restituisce 403 per utente non staff", async () => {
+  it("restituisce 403 a chi non entra nel pannello", async () => {
     const res = await GET(makeGet({ type: "rosa" }));
     expect(res.status).toBe(403);
   });
 
   it("restituisce 400 per formato stagione non valido", async () => {
-    mockIsCoachOrAdmin.mockResolvedValue(true);
+    mockGuard.mockResolvedValue(null);
     const res = await GET(makeGet({ type: "rosa", season: "2025-2026" }));
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -60,7 +59,7 @@ describe("GET /api/admin/export", () => {
   });
 
   it("restituisce 400 per tipo export non valido", async () => {
-    mockIsCoachOrAdmin.mockResolvedValue(true);
+    mockGuard.mockResolvedValue(null);
     const res = await GET(makeGet({ type: "unknown" }));
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -69,7 +68,7 @@ describe("GET /api/admin/export", () => {
 
   describe("type=rosa", () => {
     beforeEach(() => {
-      mockIsCoachOrAdmin.mockResolvedValue(true);
+      mockGuard.mockResolvedValue(null);
       p.user.findMany.mockResolvedValue([
         {
           name: "Mario Rossi",
@@ -206,7 +205,7 @@ describe("GET /api/admin/export", () => {
 
   describe("type=presenze", () => {
     beforeEach(() => {
-      mockIsCoachOrAdmin.mockResolvedValue(true);
+      mockGuard.mockResolvedValue(null);
       p.trainingSession.findMany.mockResolvedValue([
         {
           title: "Allenamento lunedì",
@@ -256,7 +255,7 @@ describe("GET /api/admin/export", () => {
 
   describe("type=stats", () => {
     beforeEach(() => {
-      mockIsCoachOrAdmin.mockResolvedValue(true);
+      mockGuard.mockResolvedValue(null);
       p.playerMatchStats.findMany.mockResolvedValue([
         {
           user: { name: "Luca", email: "luca@example.com", sportRole: 2, sportRoleVariant: null },

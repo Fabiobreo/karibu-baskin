@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { Paper, Typography } from "@mui/material";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import PageHeader from "@/components/common/PageHeader";
 import DevelopmentTracker, { type TrackedAthlete } from "@/components/rating/DevelopmentTracker";
@@ -9,10 +7,7 @@ import DevelopmentTracker, { type TrackedAthlete } from "@/components/rating/Dev
 export const revalidate = 60;
 
 export default async function SviluppoPage() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  await requireAdminPage("/admin/sviluppo");
 
   const [users, children, updates] = await Promise.all([
     prisma.user.findMany({

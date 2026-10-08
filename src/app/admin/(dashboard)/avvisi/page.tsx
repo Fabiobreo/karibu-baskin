@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { Link as MuiLink, Typography } from "@mui/material";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
 import PageHeader from "@/components/common/PageHeader";
@@ -16,10 +14,7 @@ export const metadata: Metadata = { title: "Avviso urgente | Admin" };
  * serve per gli avvisi urgenti e mirati. Gli annunci normali passano dalle News.
  */
 export default async function AdminAvvisiPage() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  await requireAdminPage("/admin/avvisi");
   return (
     <>
       <PageHeader

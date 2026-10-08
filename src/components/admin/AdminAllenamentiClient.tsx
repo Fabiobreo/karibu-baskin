@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import TrainingCloseForm, { type CloseAthlete } from "@/components/admin/TrainingCloseForm";
 import SessionActions from "@/components/admin/SessionActions";
+import TrainingReadOnlyDetails from "@/components/admin/TrainingReadOnlyDetails";
 import type { ParticipantRegistration } from "@/components/admin/ManageParticipantsDialog";
 import { closeStatus, type SavedResult } from "@/lib/trainingClose";
 import type { TeamsData } from "@/lib/schemas";
@@ -123,12 +124,15 @@ export default function AdminAllenamentiClient({
   variant = "toComplete",
   initialOpenId = null,
   initialEditId = null,
+  readOnly = false,
 }: {
   sessions: AdminSessionRow[];
   /** "concluded": gli allenamenti gia' chiusi, solo per correggere. */
   variant?: "toComplete" | "concluded";
   initialOpenId?: string | null;
   initialEditId?: string | null;
+  /** Dirigente: presenze, squadre e risultati da leggere, senza il modulo di chiusura. */
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const concluded = variant === "concluded";
@@ -198,21 +202,34 @@ export default function AdminAllenamentiClient({
                   <SessionSummary s={s} concluded={concluded} />
                 </AccordionSummary>
                 <AccordionDetails sx={{ pt: 0 }}>
-                  <SessionActions session={s} initialEdit={initialEditId === s.id} />
-                  <TrainingCloseForm
-                    sessionId={s.id}
-                    title={s.title}
-                    date={s.date}
-                    athletes={s.athletes}
-                    registrations={s.registrations}
-                    teams={s.teams}
-                    results={s.results}
-                    alreadyConcluded={concluded}
-                    onSaved={(didConclude) => {
-                      if (didConclude) setOpenId(null);
-                      router.refresh();
-                    }}
-                  />
+                  {readOnly ? (
+                    <TrainingReadOnlyDetails
+                      sessionId={s.id}
+                      athletes={s.athletes}
+                      coaches={s.registrations.filter((r) => r.registeredAsCoach)}
+                      teams={s.teams}
+                      results={s.results}
+                      past
+                    />
+                  ) : (
+                    <>
+                      <SessionActions session={s} initialEdit={initialEditId === s.id} />
+                      <TrainingCloseForm
+                        sessionId={s.id}
+                        title={s.title}
+                        date={s.date}
+                        athletes={s.athletes}
+                        registrations={s.registrations}
+                        teams={s.teams}
+                        results={s.results}
+                        alreadyConcluded={concluded}
+                        onSaved={(didConclude) => {
+                          if (didConclude) setOpenId(null);
+                          router.refresh();
+                        }}
+                      />
+                    </>
+                  )}
                 </AccordionDetails>
               </Accordion>
             );

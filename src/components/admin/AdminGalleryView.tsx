@@ -20,6 +20,8 @@ interface AdminGalleryViewProps {
   linkOptions: AlbumLinkOption[];
   driveConfigured: boolean;
   instagram: React.ComponentProps<typeof AdminGalleryClient>;
+  /** Dirigente: album e post si guardano, non si aggiornano né si moderano. */
+  readOnly?: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export default function AdminGalleryView({
   linkOptions,
   driveConfigured,
   instagram,
+  readOnly = false,
 }: AdminGalleryViewProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -49,7 +52,7 @@ export default function AdminGalleryView({
   // `?album=<id>` (da "Gestisci" sulla pagina pubblica) apre la modifica.
   useEffect(() => {
     const id = searchParams.get("album");
-    if (!id) return;
+    if (!id || readOnly) return;
     const album = initialAlbums.find((a) => a.id === id);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (album) setFormAlbum(album);
@@ -119,16 +122,18 @@ export default function AdminGalleryView({
         {...header}
         titleRef={titleRef}
         action={
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setSection("album");
-              setFormAlbum(null);
-            }}
-          >
-            Nuovo album
-          </Button>
+          readOnly ? undefined : (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setSection("album");
+                setFormAlbum(null);
+              }}
+            >
+              Nuovo album
+            </Button>
+          )
         }
       />
       <Box sx={{ mb: 3, borderBottom: "1px solid", borderColor: "divider" }}>
@@ -154,9 +159,10 @@ export default function AdminGalleryView({
           onPhotos={setPhotosAlbum}
           onDelete={remove}
           focusAfterDelete={titleRef}
+          readOnly={readOnly}
         />
       ) : (
-        <AdminGalleryClient {...instagram} />
+        <AdminGalleryClient {...instagram} readOnly={readOnly} />
       )}
 
       {formAlbum !== undefined && (

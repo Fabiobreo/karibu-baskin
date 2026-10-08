@@ -107,6 +107,11 @@ type Props = {
   seasons: SeasonRecord[];
   /** Creare, modificare ed eliminare una squadra è dell'admin: l'API lo rifiuta all'allenatore. */
   isAdmin: boolean;
+  /**
+   * Dirigente: come l'allenatore non crea né modifica squadre, e in più non
+   * segna la stagione in corso (all'allenatore l'API lo permette, a lui no).
+   */
+  readOnly?: boolean;
 };
 
 // ── Componente principale ─────────────────────────────────────────────────────
@@ -116,6 +121,7 @@ export default function AdminSquadreClient({
   clubTeams: initialClubTeams,
   seasons: initialSeasons,
   isAdmin,
+  readOnly = false,
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -461,7 +467,7 @@ export default function AdminSquadreClient({
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
-          {!activeIsCurrentSeason && (
+          {!readOnly && !activeIsCurrentSeason && (
             <Button
               variant="outlined"
               size="small"
@@ -503,7 +509,8 @@ export default function AdminSquadreClient({
               <Switch
                 checked={clubPlaysLeague}
                 onChange={(e) => handleClubLeague(e.target.checked)}
-                disabled={savingClub}
+                // Il dirigente legge la scelta, non la cambia.
+                disabled={savingClub || readOnly}
               />
             }
             label={

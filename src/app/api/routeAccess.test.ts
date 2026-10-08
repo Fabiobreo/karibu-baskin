@@ -24,6 +24,7 @@ type Access =
   | "authenticated" // qualunque sessione, anche GUEST
   | "self" // solo i dati di chi chiama
   | "member" // tesserati (ATHLETE o superiore)
+  | "panel" // chi entra nel pannello: staff, e il dirigente in sola lettura
   | "staff" // COACH o ADMIN
   | "admin"
   | "cron" // Vercel Cron con CRON_SECRET
@@ -32,7 +33,7 @@ type Access =
 
 const ROUTES: Record<string, Access> = {
   "admin/audit": "staff",
-  "admin/export": "staff",
+  "admin/export": "panel",
   "admin/people": "staff",
   // Foto di un album, nascoste comprese: moderazione (UX-52).
   "albums/[id]/photos": "staff",
@@ -52,7 +53,7 @@ const ROUTES: Record<string, Access> = {
   events: "public",
   "events/[eventId]/attendance": "public",
   "events/[eventId]/options": "public",
-  "events/[eventId]/responses": "staff",
+  "events/[eventId]/responses": "panel",
   groups: "public",
   "groups/[groupId]": "public",
   "link-requests": "self",
@@ -94,6 +95,7 @@ const REQUIRED: Partial<Record<Access, RegExp>> = {
   authenticated: /\bauth\(\)/,
   self: /\bauth\(\)/,
   member: /\bisMember(Role)?\(/,
+  panel: /\bpanelGuard\(/,
   staff: /\b(staffGuard|isCoachOrAdmin|isAdminUser)\(/,
   admin: /\bisAdminUser\(/,
   cron: /CRON_SECRET/,

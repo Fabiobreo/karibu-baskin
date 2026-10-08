@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import AdminNewsClient from "@/components/admin/AdminNewsClient";
 import PageHeader from "@/components/common/PageHeader";
@@ -8,10 +6,7 @@ import PageHeader from "@/components/common/PageHeader";
 export const metadata = { title: "News | Admin" };
 
 export default async function AdminNewsPage() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  const { readOnly } = await requireAdminPage("/admin/news");
 
   const rawPosts = await prisma.post.findMany({
     orderBy: { createdAt: "desc" },
@@ -44,7 +39,7 @@ export default async function AdminNewsPage() {
         subtitle="Articoli, sondaggi e comunicazioni del club."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "News" }]}
       />
-      <AdminNewsClient initialPosts={posts} />
+      <AdminNewsClient initialPosts={posts} readOnly={readOnly} />
     </>
   );
 }

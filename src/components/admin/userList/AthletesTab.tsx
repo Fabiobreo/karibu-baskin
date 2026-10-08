@@ -46,12 +46,17 @@ interface AthletesTabProps {
   rows: AdminRow[];
   teams: TeamInfo[];
   currentSeason: string;
-  isAdmin: boolean;
-  onConfirmSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
-  onRejectSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
-  onTeamChange: (row: AdminRow, teamId: string) => void;
-  onEdit: (row: AdminRow) => void;
-  onDelete: (row: AdminRow) => void;
+  isAdmin?: boolean;
+  /**
+   * Dirigente: la lista si legge soltanto. Niente schede, conferme di ruolo,
+   * cambi di squadra né menu di riga; le funzioni qui sotto non servono.
+   */
+  readOnly?: boolean;
+  onConfirmSuggestedRole?: (row: UserEntry & { kind: "user" }) => void;
+  onRejectSuggestedRole?: (row: UserEntry & { kind: "user" }) => void;
+  onTeamChange?: (row: AdminRow, teamId: string) => void;
+  onEdit?: (row: AdminRow) => void;
+  onDelete?: (row: AdminRow) => void;
 }
 
 const STATUS_LABELS: Record<AthleteStatusFilter, string> = {
@@ -87,7 +92,8 @@ export default function AthletesTab({
   rows,
   teams,
   currentSeason,
-  isAdmin,
+  isAdmin = false,
+  readOnly = false,
   onConfirmSuggestedRole,
   onRejectSuggestedRole,
   onTeamChange,
@@ -337,6 +343,7 @@ export default function AthletesTab({
         teams={teams}
         currentSeason={currentSeason}
         isAdmin={isAdmin}
+        readOnly={readOnly}
         emptyLabel={
           activeFilterCount > 0
             ? "Nessun atleta corrisponde ai filtri selezionati."

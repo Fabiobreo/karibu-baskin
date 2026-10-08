@@ -1,6 +1,5 @@
-import { redirect, notFound } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { notFound } from "next/navigation";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import {
   buildTeamCallupContext,
@@ -19,10 +18,7 @@ export const metadata: Metadata = { title: "Convocazioni | Admin" };
 type Params = { params: Promise<{ matchId: string }> };
 
 export default async function ConvocazioniPage({ params }: Params) {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  const { session } = await requireAdminPage("/admin/partite", { staffOnly: true });
 
   const { matchId } = await params;
 

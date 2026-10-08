@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import AdminSquadreClient from "@/components/admin/AdminSquadreClient";
 import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
@@ -9,8 +9,9 @@ export const metadata: Metadata = { title: "Gestione Squadre | Admin" };
 export const revalidate = 60;
 
 export default async function AdminSquadrePage() {
-  const [session, allTeams, seasons] = await Promise.all([
-    auth(),
+  // Chi non è admin (allenatore, dirigente) qui legge soltanto.
+  const { role, readOnly } = await requireAdminPage("/admin/squadre");
+  const [allTeams, seasons] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
@@ -35,7 +36,8 @@ export default async function AdminSquadrePage() {
         teams={teams}
         clubTeams={clubTeams}
         seasons={seasons}
-        isAdmin={!!session?.user && hasRole(session.user.appRole, "ADMIN")}
+        isAdmin={hasRole(role, "ADMIN")}
+        readOnly={readOnly}
       />
     </>
   );

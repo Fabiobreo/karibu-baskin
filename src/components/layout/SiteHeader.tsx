@@ -38,7 +38,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
-import { hasRole } from "@/lib/authRoles";
+import { canViewAdminPanel } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -195,7 +195,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
 
   const user = session?.user;
   const effectiveRole = user?.appRole as AppRole | undefined;
-  const isStaff = status === "authenticated" && !!effectiveRole && hasRole(effectiveRole, "COACH");
+  // La voce "Admin" c'è per chi entra nel pannello, dirigente compreso.
+  const opensPanel = status === "authenticated" && canViewAdminPanel(effectiveRole);
   const initials = user?.name
     ? user.name
         .split(" ")
@@ -621,7 +622,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       {t("myAvailabilities")}
                     </MenuItem>
                   )}
-                  {isStaff && (
+                  {opensPanel && (
                     <MenuItem
                       onClick={() => {
                         setMenuAnchor(null);
@@ -1065,7 +1066,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
           </Collapse>
 
           {/* Admin */}
-          {isStaff && (
+          {opensPanel && (
             <>
               <Divider
                 sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08), my: 0.5 }}

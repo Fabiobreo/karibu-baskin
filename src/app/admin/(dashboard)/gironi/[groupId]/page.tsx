@@ -1,7 +1,6 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import AdminGironeWorkspaceClient from "@/components/admin/AdminGironeWorkspaceClient";
 import { generateGroupSlug } from "@/lib/slugUtils";
@@ -12,10 +11,7 @@ export const metadata: Metadata = { title: "Workspace Girone | Admin" };
 type Params = { params: Promise<{ groupId: string }> };
 
 export default async function AdminGironeWorkspacePage({ params }: Params) {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  await requireAdminPage("/admin/gironi");
   const { groupId } = await params;
 
   // Risolvi per slug o per id (cuid legacy)

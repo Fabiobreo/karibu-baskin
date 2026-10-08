@@ -41,7 +41,19 @@ export interface MatchRowState {
   /** La scheda avversario è già compilata. */
   hasProfile: boolean;
   isAdmin: boolean;
+  /**
+   * Dirigente: guarda soltanto. Nessuna azione di gestione (nemmeno le
+   * convocazioni, che sono uno strumento di lavoro dello staff): resta il link
+   * alla pagina pubblica della partita.
+   */
+  readOnly?: boolean;
 }
+
+const PUBLIC_PAGE: MatchRowPrimaryAction = {
+  key: "public",
+  label: "Pagina pubblica",
+  emphasis: "text",
+};
 
 function callupsLabel({ callups, isInternal, upcoming }: MatchRowState): string {
   if (callups === 0) return upcoming ? "Convoca" : "Convocati";
@@ -50,6 +62,7 @@ function callupsLabel({ callups, isInternal, upcoming }: MatchRowState): string 
 }
 
 export function matchPrimaryAction(state: MatchRowState): MatchRowPrimaryAction {
+  if (state.readOnly) return PUBLIC_PAGE;
   const callups: MatchRowPrimaryAction = {
     key: "callups",
     label: callupsLabel(state),
@@ -67,6 +80,7 @@ export function matchPrimaryAction(state: MatchRowState): MatchRowPrimaryAction 
 
 /** Le voci del menu "⋯", senza quella già in riga. "Elimina" è sempre l'ultima. */
 export function matchMenuActions(state: MatchRowState): MatchRowAction[] {
+  if (state.readOnly) return [];
   const primary = matchPrimaryAction(state).key;
   const items: MatchRowAction[] = [{ key: "callups", label: callupsLabel(state) }];
   if (state.isAdmin) {

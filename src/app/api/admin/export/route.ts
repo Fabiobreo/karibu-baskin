@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { panelGuard } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { ROLE_LABELS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import type { AppRole, Gender } from "@prisma/client";
@@ -12,6 +12,7 @@ const APP_ROLE_IT: Record<AppRole, string> = {
   GUEST: "Ospite",
   ATHLETE: "Atleta",
   PARENT: "Genitore",
+  DIRECTOR: "Dirigente",
   COACH: "Coach",
   ADMIN: "Admin",
 };
@@ -23,10 +24,11 @@ const GENDER_IT: Record<Gender, string> = {
 
 // GET /api/admin/export?type=rosa|presenze|stats&season=2025-26&teamId=xxx
 export async function GET(req: NextRequest) {
+  // Staff e dirigenti (scelta del committente): è una lettura, e finisce nel
+  // registro attività chiunque la faccia.
+  const denied = await panelGuard();
+  if (denied) return denied;
   const session = await auth();
-  if (!(await isCoachOrAdmin())) {
-    return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
-  }
 
   const type = req.nextUrl.searchParams.get("type") ?? "rosa";
   const season = req.nextUrl.searchParams.get("season");

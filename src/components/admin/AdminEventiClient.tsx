@@ -91,7 +91,14 @@ const EventFormSchema = z.object({
 
 type EventFormValues = z.infer<typeof EventFormSchema>;
 
-export default function AdminEventiClient({ events: initialEvents }: { events: Event[] }) {
+export default function AdminEventiClient({
+  events: initialEvents,
+  readOnly = false,
+}: {
+  events: Event[];
+  /** Dirigente: legge l'elenco e le risposte, non crea né modifica. */
+  readOnly?: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [events, setEvents] = useState(initialEvents);
@@ -163,7 +170,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
   useEffect(() => {
     const editId = searchParams.get("edit");
-    if (!editId) return;
+    if (!editId || readOnly) return;
     const ev = initialEvents.find((e) => e.id === editId);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ev) openEdit(ev);
@@ -269,11 +276,18 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
-        <Button ref={newButtonRef} variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-          Aggiungi evento
-        </Button>
-      </Box>
+      {!readOnly && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+          <Button
+            ref={newButtonRef}
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+          >
+            Aggiungi evento
+          </Button>
+        </Box>
+      )}
 
       {events.length === 0 ? (
         <Paper elevation={2} sx={{ py: 4, textAlign: "center" }}>
@@ -295,6 +309,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 onEdit={openEdit}
                 onDelete={handleDelete}
                 focusAfterDelete={newButtonRef}
+                readOnly={readOnly}
               />
             </Paper>
           )}
@@ -310,6 +325,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 onEdit={openEdit}
                 onDelete={handleDelete}
                 focusAfterDelete={newButtonRef}
+                readOnly={readOnly}
               />
               <TablePagination
                 component="div"
@@ -557,14 +573,21 @@ function EventRowActions({
   onEdit,
   onDelete,
   focusAfterDelete,
+  readOnly,
 }: {
   ev: Event;
   onResponses: (id: string) => void;
   onEdit: (ev: Event) => void;
   onDelete: (id: string) => Promise<boolean | void>;
   focusAfterDelete: RefObject<HTMLButtonElement | null>;
+  readOnly: boolean;
 }) {
   const responses = ev._count?.attendances ?? 0;
+  const publicPage = {
+    label: "Pagina pubblica",
+    href: `/eventi/${ev.slug ?? ev.id}`,
+    external: true,
+  };
   return (
     <RowActions
       subject={ev.title}
@@ -573,11 +596,10 @@ function EventRowActions({
         onClick: () => onResponses(ev.id),
         emphasis: "text",
       }}
-      items={[
-        { label: "Modifica", onClick: () => onEdit(ev) },
-        { label: "Pagina pubblica", href: `/eventi/${ev.slug ?? ev.id}`, external: true },
-      ]}
-      onDelete={() => onDelete(ev.id)}
+      items={
+        readOnly ? [publicPage] : [{ label: "Modifica", onClick: () => onEdit(ev) }, publicPage]
+      }
+      onDelete={readOnly ? undefined : () => onDelete(ev.id)}
       deleteLabel="Elimina evento…"
       deleteConfirm={{
         title: "Eliminare l'evento?",
@@ -601,6 +623,7 @@ function EventsList({
   onEdit: (ev: Event) => void;
   onDelete: (id: string) => Promise<boolean | void>;
   focusAfterDelete: RefObject<HTMLButtonElement | null>;
+  readOnly: boolean;
 }) {
   return (
     <>

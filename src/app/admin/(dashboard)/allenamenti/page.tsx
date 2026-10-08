@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
 import AdminTrainingsView, { type TrainingsSection } from "@/components/admin/AdminTrainingsView";
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/adminAccess";
 
 export const metadata: Metadata = { title: "Allenamenti | Admin" };
 export const revalidate = 0;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default async function AdminAllenamentiPage({ searchParams }: Props) {
+  const { readOnly } = await requireAdminPage("/admin/allenamenti");
   const now = new Date();
   const sp = await searchParams;
 
@@ -135,8 +137,9 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
     <AdminTrainingsView
       header={{
         title: "Allenamenti",
-        subtitle:
-          "Crea gli allenamenti, apri le iscrizioni, fai le squadre e, a fine allenamento, segna presenze e risultati.",
+        subtitle: readOnly
+          ? "Iscritti, squadre, presenze e risultati degli allenamenti."
+          : "Crea gli allenamenti, apri le iscrizioni, fai le squadre e, a fine allenamento, segna presenze e risultati.",
         breadcrumb: [{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }],
       }}
       upcoming={upcoming}
@@ -144,7 +147,8 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
       concluded={concluded}
       initialSection={initialSection}
       openId={sp.apri ?? null}
-      editId={sp.modifica ?? null}
+      editId={readOnly ? null : (sp.modifica ?? null)}
+      readOnly={readOnly}
     />
   );
 }

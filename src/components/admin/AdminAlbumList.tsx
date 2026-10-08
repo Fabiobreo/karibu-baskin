@@ -21,6 +21,8 @@ interface AdminAlbumListProps {
   onPhotos: (album: AlbumCard) => void;
   onDelete: (album: AlbumCard) => Promise<boolean>;
   focusAfterDelete: RefObject<HTMLElement | null>;
+  /** Dirigente: solo i link per aprire l'album, sul sito e su Drive. */
+  readOnly?: boolean;
 }
 
 const VISIBILITY_LABEL: Record<AlbumCard["visibility"], string> = {
@@ -39,6 +41,7 @@ export default function AdminAlbumList({
   onPhotos,
   onDelete,
   focusAfterDelete,
+  readOnly = false,
 }: AdminAlbumListProps) {
   if (albums.length === 0) {
     return (
@@ -129,21 +132,34 @@ export default function AdminAlbumList({
             <Box sx={{ ml: "auto" }}>
               <RowActions
                 subject={album.title}
-                primary={{
-                  label: syncing ? "Aggiorno…" : "Aggiorna",
-                  onClick: () => !syncing && onSync(album),
-                }}
+                primary={
+                  readOnly
+                    ? {
+                        label: "Apri sul sito",
+                        href: `/gallery/${album.slug}`,
+                        external: true,
+                        emphasis: "text",
+                      }
+                    : {
+                        label: syncing ? "Aggiorno…" : "Aggiorna",
+                        onClick: () => !syncing && onSync(album),
+                      }
+                }
                 items={[
-                  { label: "Modifica", onClick: () => onEdit(album) },
-                  { label: "Foto", onClick: () => onPhotos(album) },
-                  { label: "Apri sul sito", href: `/gallery/${album.slug}`, external: true },
+                  ...(readOnly
+                    ? []
+                    : [
+                        { label: "Modifica", onClick: () => onEdit(album) },
+                        { label: "Foto", onClick: () => onPhotos(album) },
+                        { label: "Apri sul sito", href: `/gallery/${album.slug}`, external: true },
+                      ]),
                   {
                     label: "Apri su Drive",
                     href: driveFolderUrl(album.driveFolderId),
                     external: true,
                   },
                 ]}
-                onDelete={() => onDelete(album)}
+                onDelete={readOnly ? undefined : () => onDelete(album)}
                 deleteLabel="Elimina album…"
                 deleteConfirm={{
                   title: "Eliminare l'album?",

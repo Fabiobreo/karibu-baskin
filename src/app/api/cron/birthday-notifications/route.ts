@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { loadTodayCelebrants } from "@/lib/birthdays";
+import { MEMBER_APP_ROLES } from "@/lib/authRoles";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
   // auguri vanno solo ai tesserati. Non a tutti i dispositivi iscritti alle
   // push (ci sono anche iscrizioni anonime) né agli account ancora GUEST.
   const members = await prisma.user.findMany({
-    where: { appRole: { in: ["ATHLETE", "PARENT", "COACH", "ADMIN"] } },
+    where: { appRole: { in: MEMBER_APP_ROLES } },
     select: { id: true },
   });
   const memberIds = members.map((m) => m.id);

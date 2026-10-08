@@ -49,13 +49,15 @@ interface AthletesTableProps {
   currentSeason: string;
   /** Squadra ed eliminazione di un account sono dell'admin. */
   isAdmin: boolean;
+  /** Sola lettura (dirigente): nessun controllo, il nome non apre la scheda. */
+  readOnly?: boolean;
   /** Testo della tabella vuota (dipende dai filtri accesi). */
   emptyLabel: string;
-  onConfirmSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
-  onRejectSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
-  onTeamChange: (row: AdminRow, teamId: string) => void;
-  onEdit: (row: AdminRow) => void;
-  onDelete: (row: AdminRow) => void;
+  onConfirmSuggestedRole?: (row: UserEntry & { kind: "user" }) => void;
+  onRejectSuggestedRole?: (row: UserEntry & { kind: "user" }) => void;
+  onTeamChange?: (row: AdminRow, teamId: string) => void;
+  onEdit?: (row: AdminRow) => void;
+  onDelete?: (row: AdminRow) => void;
 }
 
 const rowKey = (row: AdminRow) => `${row.kind}-${row.id}`;
@@ -161,9 +163,28 @@ function RowActions({
       name={rowName(row)}
       // Un account lo elimina solo l'admin; un figlio senza account anche l'allenatore.
       canDelete={isAdmin || row.kind === "child"}
-      onOpen={() => onEdit(row)}
-      onDelete={() => onDelete(row)}
+      onOpen={() => onEdit?.(row)}
+      onDelete={() => onDelete?.(row)}
     />
+  );
+}
+
+/** Su telefono la card apre la scheda; in sola lettura è testo e basta. */
+function CardBody({
+  row,
+  readOnly,
+  onEdit,
+  children,
+}: Pick<AthletesTableProps, "onEdit"> & {
+  row: AdminRow;
+  readOnly: boolean;
+  children: React.ReactNode;
+}) {
+  if (readOnly) return <Box sx={{ flex: 1, minWidth: 0, display: "flex" }}>{children}</Box>;
+  return (
+    <PersonCardButton name={rowName(row)} onOpen={() => onEdit?.(row)}>
+      {children}
+    </PersonCardButton>
   );
 }
 
@@ -176,6 +197,7 @@ export default function AthletesTable({
   teams,
   currentSeason,
   isAdmin,
+  readOnly = false,
   emptyLabel,
   onConfirmSuggestedRole,
   onRejectSuggestedRole,
@@ -217,7 +239,7 @@ export default function AthletesTable({
               <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
                 {sortLabel("registrations", "Allenamenti")}
               </TableCell>
-              <TableCell align="center">Azioni</TableCell>
+              {!readOnly && <TableCell align="center">Azioni</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -228,7 +250,7 @@ export default function AthletesTable({
                     row={row}
                     season={currentSeason}
                     size={30}
-                    onOpen={() => onEdit(row)}
+                    onOpen={readOnly ? undefined : () => onEdit?.(row)}
                   />
                 </TableCell>
 
@@ -249,26 +271,30 @@ export default function AthletesTable({
                         role={row.sportRoleSuggested}
                         variant={row.sportRoleSuggestedVariant}
                       />
-                      <Tooltip title="Conferma ruolo">
-                        <IconButton
-                          size="small"
-                          aria-label={`Conferma ruolo di ${rowName(row)}`}
-                          sx={{ color: "success.main" }}
-                          onClick={() => onConfirmSuggestedRole(row)}
-                        >
-                          <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Rifiuta suggerimento">
-                        <IconButton
-                          size="small"
-                          aria-label={`Rifiuta ruolo suggerito per ${rowName(row)}`}
-                          sx={{ color: "error.main" }}
-                          onClick={() => onRejectSuggestedRole(row)}
-                        >
-                          <HighlightOffIcon sx={{ fontSize: 15 }} />
-                        </IconButton>
-                      </Tooltip>
+                      {!readOnly && (
+                        <>
+                          <Tooltip title="Conferma ruolo">
+                            <IconButton
+                              size="small"
+                              aria-label={`Conferma ruolo di ${rowName(row)}`}
+                              sx={{ color: "success.main" }}
+                              onClick={() => onConfirmSuggestedRole?.(row)}
+                            >
+                              <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Rifiuta suggerimento">
+                            <IconButton
+                              size="small"
+                              aria-label={`Rifiuta ruolo suggerito per ${rowName(row)}`}
+                              sx={{ color: "error.main" }}
+                              onClick={() => onRejectSuggestedRole?.(row)}
+                            >
+                              <HighlightOffIcon sx={{ fontSize: 15 }} />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
                     </Box>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
@@ -282,9 +308,9 @@ export default function AthletesTable({
                     value={currentTeam(row, currentSeason)?.teamId ?? ""}
                     teams={teams}
                     memberships={row.teamMemberships}
-                    onChange={(teamId) => onTeamChange(row, teamId)}
+                    onChange={(teamId) => onTeamChange?.(row, teamId)}
                     ariaLabel={`Squadra di ${rowName(row)}`}
-                    readOnly={!isAdmin}
+                    readOnly={readOnly || !isAdmin}
                   />
                 </TableCell>
 
@@ -304,15 +330,21 @@ export default function AthletesTable({
                   {row._count.registrations}
                 </TableCell>
 
-                <TableCell align="center">
-                  <RowActions row={row} isAdmin={isAdmin} onEdit={onEdit} onDelete={onDelete} />
-                </TableCell>
+                {!readOnly && (
+                  <TableCell align="center">
+                    <RowActions row={row} isAdmin={isAdmin} onEdit={onEdit} onDelete={onDelete} />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
 
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell
+                  colSpan={readOnly ? 5 : 6}
+                  align="center"
+                  sx={{ py: 4, color: "text.secondary" }}
+                >
                   {emptyLabel}
                 </TableCell>
               </TableRow>
@@ -347,7 +379,7 @@ export default function AthletesTable({
                 gap: 1,
               }}
             >
-              <PersonCardButton name={rowName(row)} onOpen={() => onEdit(row)}>
+              <CardBody row={row} readOnly={readOnly} onEdit={onEdit}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <AthleteIdentity row={row} season={currentSeason} size={36} />
                   <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.75, pl: 6 }}>
@@ -365,8 +397,10 @@ export default function AthletesTable({
                     {team && <TeamChip name={team.name} color={team.color} compact />}
                   </Box>
                 </Box>
-              </PersonCardButton>
-              <RowActions row={row} isAdmin={isAdmin} onEdit={onEdit} onDelete={onDelete} />
+              </CardBody>
+              {!readOnly && (
+                <RowActions row={row} isAdmin={isAdmin} onEdit={onEdit} onDelete={onDelete} />
+              )}
             </Box>
           );
         })}

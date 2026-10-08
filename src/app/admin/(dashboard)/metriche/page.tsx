@@ -6,6 +6,7 @@ import {
   METRICS_WINDOW_DAYS,
   loadAdminMetrics,
 } from "@/lib/metrics/loadAdminMetrics";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -25,6 +26,8 @@ const num = (v: number | null) => (v === null ? "n.d." : decimal.format(v));
  * nulla in più: vedi @/lib/metrics/adminMetrics.
  */
 export default async function AdminMetrichePage() {
+  // Le tessere che portano a un lavoro da fare sono link solo per lo staff.
+  const { readOnly } = await requireAdminPage("/admin/metriche");
   const m = await loadAdminMetrics();
   const { community: c, training: t, matches: p, engagement: e } = m;
 
@@ -55,7 +58,7 @@ export default async function AdminMetrichePage() {
           value={String(c.guestsWaiting)}
           label="Account in attesa di ruolo"
           caption="Ancora ospiti: non vedono rose e iscritti finché lo staff non assegna un ruolo."
-          href="/admin/utenti"
+          href={readOnly ? undefined : "/admin/utenti"}
           highlight={c.guestsWaiting > 0}
         />
       </MetricSection>
@@ -87,7 +90,7 @@ export default async function AdminMetrichePage() {
           value={pct(t.concludedWithin48hRate)}
           label="Chiusi entro 48 ore"
           caption="Allenamenti con presenze e partitelle registrate entro due giorni."
-          href="/admin/allenamenti"
+          href={readOnly ? undefined : "/admin/allenamenti"}
         />
       </MetricSection>
 

@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import AdminSuggerimentiClient from "@/components/admin/AdminSuggerimentiClient";
 import PageHeader from "@/components/common/PageHeader";
@@ -10,10 +8,7 @@ export const metadata: Metadata = { title: "Suggerimenti | Admin" };
 export const revalidate = 0;
 
 export default async function AdminSuggerimentiPage() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  const { session } = await requireAdminPage("/admin/suggerimenti");
   // NB: userId/user del suggerimento volutamente esclusi — i suggerimenti sono
   // anonimi verso lo staff. L'autore delle note (staff) invece è visibile.
   const suggestions = await prisma.suggestion.findMany({

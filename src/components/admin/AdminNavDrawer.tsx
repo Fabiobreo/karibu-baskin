@@ -31,12 +31,7 @@ import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import HistoryIcon from "@mui/icons-material/History";
 import type { ReactNode } from "react";
-import {
-  ADMIN_NAV,
-  ADMIN_NAV_GROUP_LABELS,
-  type AdminNavGroup,
-  type AdminNavItem,
-} from "@/lib/adminNav";
+import { ADMIN_NAV_GROUP_LABELS, type AdminNavGroup, type AdminNavItem } from "@/lib/adminNav";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -63,6 +58,8 @@ const ICONS: Record<string, ReactNode> = {
 const GROUPS: Exclude<AdminNavGroup, "main">[] = ["attivita", "anagrafiche", "strumenti"];
 
 interface AdminNavDrawerProps {
+  /** Le sezioni che chi guarda può aprire (`adminNavFor`). */
+  items: AdminNavItem[];
   open: boolean;
   /** `href` della sezione in cui si è, o `null`. */
   currentHref: string | null;
@@ -70,10 +67,11 @@ interface AdminNavDrawerProps {
 }
 
 /**
- * Menu del pannello staff sotto `lg` (UX-40): tutte le sezioni, con i gruppi
- * della dashboard, e in fondo l'uscita verso il sito pubblico.
+ * Menu del pannello staff sotto `lg` (UX-40): le sezioni di chi guarda, con i
+ * gruppi della dashboard, e in fondo l'uscita verso il sito pubblico.
  */
-export default function AdminNavDrawer({ open, currentHref, onClose }: AdminNavDrawerProps) {
+export default function AdminNavDrawer({ items, open, currentHref, onClose }: AdminNavDrawerProps) {
+  const groups = GROUPS.filter((g) => items.some((i) => i.group === g));
   const item = (entry: AdminNavItem) => {
     const active = currentHref === entry.href;
     return (
@@ -141,8 +139,8 @@ export default function AdminNavDrawer({ open, currentHref, onClose }: AdminNavD
         aria-label="Menu dell'amministrazione"
         sx={{ flex: 1, overflowY: "auto" }}
       >
-        <List disablePadding>{ADMIN_NAV.filter((i) => i.group === "main").map(item)}</List>
-        {GROUPS.map((group) => (
+        <List disablePadding>{items.filter((i) => i.group === "main").map(item)}</List>
+        {groups.map((group) => (
           <List
             key={group}
             disablePadding
@@ -157,7 +155,7 @@ export default function AdminNavDrawer({ open, currentHref, onClose }: AdminNavD
               </ListSubheader>
             }
           >
-            {ADMIN_NAV.filter((i) => i.group === group).map(item)}
+            {items.filter((i) => i.group === group).map(item)}
           </List>
         ))}
       </Box>

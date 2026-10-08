@@ -384,9 +384,11 @@ export default function RegistrationForm({
                         ? t("roleGuest")
                         : currentUser.appRole === "PARENT"
                           ? t("roleParent")
-                          : currentUser.appRole === "COACH"
-                            ? t("coachRole")
-                            : t("athlete")}
+                          : currentUser.appRole === "DIRECTOR"
+                            ? t("roleDirector")
+                            : currentUser.appRole === "COACH"
+                              ? t("coachRole")
+                              : t("athlete")}
                     </Typography>
                     {currentUser.teamMemberships
                       .filter((m) => m.teamSeason === currentSeason)

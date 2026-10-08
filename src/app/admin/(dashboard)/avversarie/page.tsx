@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import AdminAvversarieClient from "@/components/admin/AdminAvversarieClient";
 import PageHeader from "@/components/common/PageHeader";
@@ -10,10 +8,7 @@ export const metadata: Metadata = { title: "Squadre avversarie | Admin" };
 export const revalidate = 30;
 
 export default async function AdminAvversariePage() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  await requireAdminPage("/admin/avversarie");
   const opponents = await prisma.opposingTeam.findMany({
     orderBy: { name: "asc" },
     select: {

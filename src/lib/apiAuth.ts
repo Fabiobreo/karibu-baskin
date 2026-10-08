@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "./authjs";
-import { hasRole, isMemberRole } from "./authRoles";
+import { canViewAdminPanel, hasRole, isMemberRole } from "./authRoles";
 import type { AppRole } from "@prisma/client";
 
 /** Vero se l'utente è autenticato come COACH o superiore */
@@ -42,6 +42,23 @@ export async function staffGuard(): Promise<NextResponse | null> {
   }
   const role = session.user.appRole as AppRole | undefined;
   if (!role || !hasRole(role, "COACH")) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+  return null;
+}
+
+/**
+ * Guardia per le **letture** del pannello che anche il dirigente può fare
+ * (riepilogo risposte di un evento, export): `null` se chi chiama entra nel
+ * pannello, altrimenti la risposta da restituire. Mai su una scrittura: quelle
+ * restano dello staff (`staffGuard`, `isCoachOrAdmin`).
+ */
+export async function panelGuard(): Promise<NextResponse | null> {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+  }
+  if (!canViewAdminPanel(session.user.appRole as AppRole | undefined)) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
   return null;

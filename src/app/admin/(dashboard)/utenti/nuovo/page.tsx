@@ -1,7 +1,9 @@
 import PageHeader from "@/components/common/PageHeader";
 import AdminNuovoUtenteClient from "@/components/admin/AdminNuovoUtenteClient";
+import { requireAdminPage } from "@/lib/adminAccess";
 
-export default function NuovoUtentePage() {
+export default async function NuovoUtentePage() {
+  await requireAdminPage("/admin/utenti", { staffOnly: true });
   return (
     <>
       <PageHeader

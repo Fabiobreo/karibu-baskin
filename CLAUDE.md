@@ -314,9 +314,10 @@ sentry.edge.config.ts                      # Sentry edge runtime
 
 > La pagina `/login/verifica` non conferma mai se l'indirizzo esiste: stesso testo in ogni caso, per non trasformare il form in un oracolo di enumerazione degli iscritti.
 
-- **Ruoli:** `GUEST | ATHLETE | PARENT | COACH | ADMIN`
-- **Gerarchia:** `GUEST(0) < ATHLETE(1) < PARENT(2) < COACH(3) < ADMIN(4)`
-- **Accesso admin panel:** richiede ruolo `COACH` o superiore
+- **Ruoli:** `GUEST | ATHLETE | PARENT | DIRECTOR | COACH | ADMIN`
+- **Gerarchia:** `GUEST(0) < ATHLETE(1) < PARENT(2) < DIRECTOR(3) < COACH(4) < ADMIN(5)`
+- **Dirigente (`DIRECTOR`):** chi fa parte della direzione senza allenare. È un tesserato (vede quello che vedono atleti e genitori, può collegare figli) ma sta sotto l'allenatore: nessuna scrittura da staff, e nel pannello entra in **sola lettura** solo nelle sezioni con `director: true` in `ADMIN_NAV` (Dashboard, Allenamenti, Partite senza convocazioni né statistiche, Eventi con il riepilogo risposte, News, Gallery, Utenti come sola rosa, Squadre con le rose, Metriche, Esporta dati; mai Registro attività, Sviluppo giocatori, Avviso urgente, e nemmeno Gironi, Avversarie, Suggerimenti). **Ogni `page.tsx` sotto `/admin` comincia con `await requireAdminPage(href)` da `@/lib/adminAccess`** (`{ staffOnly: true }` per le sottopagine di lavoro di una sezione che il dirigente legge, come convocazioni e statistiche): il layout fa entrare anche il dirigente e da solo non basta, `adminNav.test.ts` lo controlla. `readOnly` che ne esce toglie dalla pagina ogni comando di scrittura. Le letture API che il dirigente può fare usano `panelGuard()` di `@/lib/apiAuth` (livello `panel` in `routeAccess.test.ts`); una scrittura mai. Lo assegna solo l'admin. È atleta solo se ha un ruolo Baskin (card "prossima cosa da fare", dati atleta e traguardi nel profilo, profilo pubblico con le regole del genitore). Chip neutro pieno, senza tinta propria. I ruoli dei tesserati per i filtri Prisma sono `MEMBER_APP_ROLES` in `@/lib/authRoles`, mai un elenco scritto a mano
+- **Accesso admin panel:** `COACH` o superiore per gestire; `DIRECTOR` in sola lettura (vedi sotto). Helper: `isStaffRole`, `canViewAdminPanel` in `@/lib/authRoles`
 - **Protezione API route:** usare `isCoachOrAdmin()` o `isAdminUser()` da `@/lib/apiAuth`. Per le GET di staff preferire `staffGuard()`, che distingue 401 (nessuna sessione) da 403 (sessione senza permessi)
 - **Tesserato non vuol dire autenticato:** il login è aperto a qualunque account Google e un nuovo utente nasce `GUEST` (default dello schema). Per i dati nominativi dei tesserati (rose, iscritti, statistiche per nome, minori) il controllo è `isMember()` da `@/lib/apiAuth` o `isMemberRole(appRole)` da `@/lib/authRoles` (ATHLETE o superiore), **mai** la sola presenza della sessione
 - **Protezione layout:** usare `auth()` da `@/lib/authjs` nei Server Component
@@ -681,17 +682,14 @@ export default function Xxx({ initialItems }: XxxProps) {
 ### Template — pagina Server Component (`src/app/.../page.tsx`)
 
 ```tsx
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import Xxx from "@/components/Xxx";
 
 export default async function Page() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  // Pagina del pannello: la guardia è obbligatoria (lo controlla adminNav.test.ts).
+  // `href` è la sezione in ADMIN_NAV; restituisce anche `session` e `readOnly`.
+  await requireAdminPage("/admin/xxx");
   const items = await prisma.xxx.findMany({ orderBy: { createdAt: "desc" } });
   return <Xxx initialItems={items} />;
 }

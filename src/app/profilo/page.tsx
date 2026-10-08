@@ -210,7 +210,7 @@ export default async function ProfiloPage({
   const childIds = children.map((c) => c.id);
   // Chi vede la card "prossima cosa da fare" non usa questa query (UX-24), e
   // nemmeno l'ospite: l'allenamento sta nei suoi primi passi (UX-46).
-  const showNextAction = showsNextAction(user.appRole, user.sportRole);
+  const showNextAction = showsNextAction(user.appRole, user.sportRole, children.length > 0);
   const isGuest = user.appRole === "GUEST";
   const nextSessionQuery =
     showNextAction || isGuest
@@ -262,9 +262,14 @@ export default async function ProfiloPage({
   ]);
 
   const effectiveRole = session.user.appRole as AppRole;
-  const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
+  // Il dirigente può avere figli da collegare, ed è un atleta solo se gioca.
+  const isParent =
+    effectiveRole === "PARENT" || effectiveRole === "DIRECTOR" || effectiveRole === "ADMIN";
   const isAthlete =
-    effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
+    effectiveRole === "ATHLETE" ||
+    effectiveRole === "COACH" ||
+    effectiveRole === "ADMIN" ||
+    (effectiveRole === "DIRECTOR" && user.sportRole != null);
 
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
