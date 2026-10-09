@@ -28,7 +28,7 @@ const adultChild = {
 };
 
 describe("isMemberRole", () => {
-  it.each(["ATHLETE", "PARENT", "COACH", "ADMIN"])("%s è un tesserato", (role) => {
+  it.each(["ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"])("%s è un tesserato", (role) => {
     expect(isMemberRole(role)).toBe(true);
   });
 

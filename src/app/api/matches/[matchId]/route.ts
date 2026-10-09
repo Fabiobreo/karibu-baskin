@@ -12,11 +12,28 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
-import { mixedMatchError } from "@/lib/matches/mixedTeam";
+import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
+import { isRestrictedClubTeam, mixedMatchError } from "@/lib/matches/mixedTeam";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
+import { isHistoricMatch } from "@/lib/matches/matchPhase";
 import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ matchId: string }> };
+
+/** Ricalcola i badge di chi ha statistiche in questa partita. */
+async function reconcileMatchBadges(matchId: string, notify: boolean): Promise<void> {
+  const players = await prisma.playerMatchStats.findMany({
+    where: { matchId },
+    select: { userId: true, childId: true },
+  });
+  await Promise.all(
+    players.map((s) => {
+      if (s.userId) return reconcilePlayerBadges({ userId: s.userId }, { notify });
+      if (s.childId) return reconcilePlayerBadges({ childId: s.childId }, { notify });
+      return null;
+    })
+  );
+}
 
 export async function GET(req: Request, { params }: Params) {
   const rl = checkRateLimit(getClientIp(req), "get-match", 60, 60_000);
@@ -98,7 +115,7 @@ export async function PUT(req: Request, { params }: Params) {
       groupId: true,
       date: true,
       imageUrl: true,
-      team: { select: { isMixed: true } },
+      team: { select: { isMixed: true, playsLeague: true } },
     },
   });
   if (!previous) {
@@ -114,16 +131,16 @@ export async function PUT(req: Request, { params }: Params) {
   // controlli (Karibu, partita contro se stessa) guardano quella.
   const finalTeamId = body.teamId ?? previous.teamId;
   const teamChanged = finalTeamId !== previous.teamId;
-  let finalTeamIsMixed = !!previous.team?.isMixed;
+  let finalTeamIsMixed = isRestrictedClubTeam(previous.team);
   if (teamChanged) {
     const newTeam = await prisma.competitiveTeam.findUnique({
       where: { id: finalTeamId },
-      select: { isMixed: true },
+      select: { isMixed: true, playsLeague: true },
     });
     if (!newTeam) {
       return NextResponse.json({ error: "Squadra non trovata" }, { status: 400 });
     }
-    finalTeamIsMixed = newTeam.isMixed;
+    finalTeamIsMixed = isRestrictedClubTeam(newTeam);
   }
 
   // Validazione XOR opponentId / opponentTeamId
@@ -156,12 +173,12 @@ export async function PUT(req: Request, { params }: Params) {
   }
   // Karibu di stagione su uno dei due lati: niente campionato, niente gironi.
   const opponentTeamIsMixed = finalOpponentTeamId
-    ? ((
+    ? isRestrictedClubTeam(
         await prisma.competitiveTeam.findUnique({
           where: { id: finalOpponentTeamId },
-          select: { isMixed: true },
+          select: { isMixed: true, playsLeague: true },
         })
-      )?.isMixed ?? false)
+      )
     : false;
   const mixedError = mixedMatchError({
     involvesMixed: finalTeamIsMixed || opponentTeamIsMixed,
@@ -326,10 +343,25 @@ export async function PUT(req: Request, { params }: Params) {
   const resultChanged = resolvedResult !== previous?.result;
   if (resultChanged) {
     inBackground(recomputeRatings(prisma), "rating recompute after match result");
+    // I badge legati alle vittorie dipendono dal risultato: se le statistiche
+    // ci sono già (storico inserito prima del punteggio) vanno ricalcolati
+    // adesso. Altrimenti resterebbero in sospeso e arriverebbero tutti insieme,
+    // con la notifica, al primo salvataggio di una partita recente.
+    inBackground(
+      reconcileMatchBadges(matchId, !isHistoricMatch(match.date, Date.now())),
+      "badges after match result"
+    );
   }
 
-  // Invia notifica solo quando il risultato viene impostato per la prima volta
-  if (resolvedResult && !previous?.result && match.ourScore !== null && match.theirScore !== null) {
+  // Invia notifica solo quando il risultato viene impostato per la prima volta,
+  // e non per una partita di oltre un mese fa (storico inserito a posteriori).
+  if (
+    resolvedResult &&
+    !previous?.result &&
+    match.ourScore !== null &&
+    match.theirScore !== null &&
+    !isHistoricMatch(match.date, Date.now())
+  ) {
     const RESULT_LABEL: Record<string, string> = {
       WIN: "Vittoria",
       LOSS: "Sconfitta",

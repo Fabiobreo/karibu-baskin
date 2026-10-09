@@ -4,6 +4,8 @@ import {
   canManageSessions,
   canRegister,
   canAssignAppRole,
+  canViewAdminPanel,
+  isStaffRole,
   assignableAppRoles,
   ROLE_HIERARCHY,
 } from "./authRoles";
@@ -13,14 +15,15 @@ describe("ROLE_HIERARCHY", () => {
   it("la gerarchia è ordinata correttamente", () => {
     expect(ROLE_HIERARCHY.GUEST).toBeLessThan(ROLE_HIERARCHY.ATHLETE);
     expect(ROLE_HIERARCHY.ATHLETE).toBeLessThan(ROLE_HIERARCHY.PARENT);
-    expect(ROLE_HIERARCHY.PARENT).toBeLessThan(ROLE_HIERARCHY.COACH);
+    expect(ROLE_HIERARCHY.PARENT).toBeLessThan(ROLE_HIERARCHY.DIRECTOR);
+    expect(ROLE_HIERARCHY.DIRECTOR).toBeLessThan(ROLE_HIERARCHY.COACH);
     expect(ROLE_HIERARCHY.COACH).toBeLessThan(ROLE_HIERARCHY.ADMIN);
   });
 });
 
 describe("hasRole", () => {
   it("ADMIN soddisfa qualsiasi ruolo richiesto", () => {
-    const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
+    const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"];
     for (const r of roles) {
       expect(hasRole("ADMIN", r)).toBe(true);
     }
@@ -42,8 +45,16 @@ describe("hasRole", () => {
     expect(hasRole("COACH", "ADMIN")).toBe(false);
   });
 
+  it("DIRECTOR è un tesserato ma non arriva a COACH: niente pannello né scritture", () => {
+    expect(hasRole("DIRECTOR", "ATHLETE")).toBe(true);
+    expect(hasRole("DIRECTOR", "PARENT")).toBe(true);
+    expect(hasRole("DIRECTOR", "COACH")).toBe(false);
+    expect(hasRole("DIRECTOR", "ADMIN")).toBe(false);
+    expect(canManageSessions("DIRECTOR")).toBe(false);
+  });
+
   it("un ruolo soddisfa sempre sé stesso", () => {
-    const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
+    const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"];
     for (const r of roles) {
       expect(hasRole(r, r)).toBe(true);
     }
@@ -74,7 +85,7 @@ describe("canManageSessions", () => {
 
 describe("canRegister", () => {
   it("tutti i ruoli possono registrarsi (GUEST è il minimo)", () => {
-    const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
+    const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"];
     for (const r of roles) {
       expect(canRegister(r)).toBe(true);
     }
@@ -82,7 +93,7 @@ describe("canRegister", () => {
 });
 
 describe("canAssignAppRole", () => {
-  const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
+  const roles: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"];
 
   it("l'admin assegna qualunque ruolo a un'altra persona", () => {
     for (const current of roles) {
@@ -110,18 +121,39 @@ describe("canAssignAppRole", () => {
     expect(coach("GUEST", "ATHLETE")).toBe(true);
     expect(coach("GUEST", "PARENT")).toBe(true);
     expect(coach("GUEST", "COACH")).toBe(false);
+    expect(coach("GUEST", "DIRECTOR")).toBe(false);
     expect(coach("GUEST", "ADMIN")).toBe(false);
     expect(coach("ATHLETE", "PARENT")).toBe(false);
     expect(coach("ATHLETE", "GUEST")).toBe(false);
     expect(coach("PARENT", "ADMIN")).toBe(false);
   });
 
-  it("atleti, genitori e ospiti non assegnano ruoli", () => {
-    for (const actorRole of ["GUEST", "ATHLETE", "PARENT"] as AppRole[]) {
+  it("atleti, genitori, dirigenti e ospiti non assegnano ruoli", () => {
+    for (const actorRole of ["GUEST", "ATHLETE", "PARENT", "DIRECTOR"] as AppRole[]) {
       expect(
         canAssignAppRole({ actorRole, isSelf: false, current: "GUEST", next: "ATHLETE" })
       ).toBe(false);
     }
+  });
+});
+
+describe("pannello", () => {
+  it("entrano staff e dirigenti", () => {
+    expect(canViewAdminPanel("DIRECTOR")).toBe(true);
+    expect(canViewAdminPanel("COACH")).toBe(true);
+    expect(canViewAdminPanel("ADMIN")).toBe(true);
+  });
+
+  it("non entrano ospiti, atleti e genitori, né chi non ha una sessione", () => {
+    for (const role of ["GUEST", "ATHLETE", "PARENT", null, undefined] as const) {
+      expect(canViewAdminPanel(role)).toBe(false);
+    }
+  });
+
+  it("il dirigente entra ma non è staff", () => {
+    expect(isStaffRole("DIRECTOR")).toBe(false);
+    expect(isStaffRole("COACH")).toBe(true);
+    expect(isStaffRole(null)).toBe(false);
   });
 });
 

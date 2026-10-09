@@ -78,13 +78,17 @@ describe("GET /api/search", () => {
     expect(serialized).toContain("birthDate");
   });
 
-  it("ammette i genitori solo con ruolo e almeno una partita giocata", async () => {
+  it("ammette genitori e dirigenti solo con ruolo e almeno una partita giocata", async () => {
     await GET(makeReq("mario"));
     const where = p.user.findMany.mock.calls[0][0].where;
     expect(where.AND).toContainEqual({
       OR: [
-        { appRole: { notIn: ["GUEST", "PARENT"] } },
-        { appRole: "PARENT", sportRole: { not: null }, matchStats: { some: {} } },
+        { appRole: { notIn: ["GUEST", "PARENT", "DIRECTOR"] } },
+        {
+          appRole: { in: ["PARENT", "DIRECTOR"] },
+          sportRole: { not: null },
+          matchStats: { some: {} },
+        },
       ],
     });
   });

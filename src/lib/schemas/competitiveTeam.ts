@@ -28,3 +28,12 @@ export const CompetitiveTeamUpdateSchema = CompetitiveTeamBaseSchema.extend({
   name: z.string().min(1, "Il nome non può essere vuoto").max(200).optional(),
   season: z.string().regex(seasonRegex, 'Stagione in formato YYYY-YY (es. "2025-26")').optional(),
 });
+
+/**
+ * Lo staff decide se in una stagione il club gioca il campionato come Karibu
+ * (`PUT /api/competitive-teams/seasons/club-team`).
+ */
+export const ClubTeamLeagueSchema = z.object({
+  season: z.string().regex(seasonRegex, 'Stagione in formato YYYY-YY (es. "2025-26")'),
+  playsLeague: z.boolean(),
+});

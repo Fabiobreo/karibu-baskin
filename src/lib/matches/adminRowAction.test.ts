@@ -97,3 +97,19 @@ describe("matchMenuActions", () => {
     ).toEqual(["public"]);
   });
 });
+
+describe("sola lettura (dirigente)", () => {
+  it("in riga c'è solo la pagina pubblica, e nessun menu", () => {
+    for (const s of [
+      state({ readOnly: true, isAdmin: false }),
+      state({ readOnly: true, isAdmin: false, upcoming: false, hasResult: true, hasStats: true }),
+    ]) {
+      expect(matchPrimaryAction(s)).toEqual({
+        key: "public",
+        label: "Pagina pubblica",
+        emphasis: "text",
+      });
+      expect(matchMenuActions(s)).toEqual([]);
+    }
+  });
+});

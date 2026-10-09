@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import PageHeader from "@/components/common/PageHeader";
 import AdminNuovoFiglioClient from "@/components/admin/AdminNuovoFiglioClient";
 import type { AdminPerson } from "@/components/admin/people/usePeopleSearch";
+import { requireAdminPage } from "@/lib/adminAccess";
 
 export const metadata: Metadata = { title: "Nuovo figlio | Admin" };
 
@@ -11,6 +12,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 // ?parentId=… arriva dal dettaglio di un utente ("Aggiungi un figlio"): il
 // genitore è già scelto e si parte dal nome del figlio.
 export default async function NuovoFiglioPage({ searchParams }: { searchParams: SearchParams }) {
+  await requireAdminPage("/admin/utenti", { staffOnly: true });
   const { parentId } = await searchParams;
   const parent =
     typeof parentId === "string"

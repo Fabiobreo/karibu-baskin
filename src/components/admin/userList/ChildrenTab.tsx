@@ -1,4 +1,5 @@
 "use client";
+import { compareAthletes } from "@/lib/athletes";
 import { useMemo, useState } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
@@ -35,7 +36,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
 type ChildRow = ChildEntry & { kind: "child" };
-type ChildSortColumn = "name" | "createdAt" | "sportRole";
+type ChildSortColumn = "name" | "createdAt" | "sportRole" | "team" | "gender";
 
 interface ChildrenTabProps {
   childRows: ChildRow[];
@@ -80,6 +81,11 @@ export default function ChildrenTab({
       );
     }
     return [...result].sort((a, b) => {
+      // Squadra e genere: stessa regola della tab Atleti (chi non ha il dato in
+      // fondo, a parità il nome).
+      if (sortBy === "team" || sortBy === "gender") {
+        return compareAthletes(a, b, sortBy, sortDir, currentSeason);
+      }
       let cmp = 0;
       switch (sortBy) {
         case "name":
@@ -94,7 +100,7 @@ export default function ChildrenTab({
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [childRows, search, sortBy, sortDir]);
+  }, [childRows, search, sortBy, sortDir, currentSeason]);
 
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
@@ -176,9 +182,23 @@ export default function ChildrenTab({
                   Baskin
                 </TableSortLabel>
               </TableCell>
-              <TableCell align="center">Squadra</TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={sortBy === "team"}
+                  direction={sortBy === "team" ? sortDir : "asc"}
+                  onClick={() => handleSort("team")}
+                >
+                  Squadra
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                Genere
+                <TableSortLabel
+                  active={sortBy === "gender"}
+                  direction={sortBy === "gender" ? sortDir : "asc"}
+                  onClick={() => handleSort("gender")}
+                >
+                  Genere
+                </TableSortLabel>
               </TableCell>
               <TableCell align="center">Azioni</TableCell>
             </TableRow>

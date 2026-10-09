@@ -52,6 +52,10 @@ export async function POST(
     where: { id: userId },
     select: { name: true },
   });
+  // Senza scheda figlio (richiesta a chi ha già un account) il nome è quello
+  // dell'account: la scheda nasce qui sotto, all'accettazione.
+  const responderName = respondingUser?.name ?? "Il tuo figlio/a";
+  const childName = linkRequest.child?.name ?? null;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -79,24 +83,45 @@ export async function POST(
         if (targetUser?.appRole === "GUEST") {
           await tx.user.update({ where: { id: userId }, data: { appRole: "ATHLETE" } });
         }
-        await tx.child.update({
-          where: { id: linkRequest.childId },
-          data: { userId },
-        });
+        if (linkRequest.childId) {
+          await tx.child.update({
+            where: { id: linkRequest.childId },
+            data: { userId },
+          });
+        } else {
+          // Nessuna scheda da legare: nasce ora, già collegata all'account, con
+          // i dati del profilo e il genitore come primo tutore. Senza slug, come
+          // quando la collega lo staff: il profilo pubblico resta quello
+          // dell'account. Il consenso è quello dato inviando la richiesta.
+          await tx.child.create({
+            data: {
+              name: targetUser?.name?.trim() || targetUser?.email || "?",
+              userId,
+              sportRole: targetUser?.sportRole ?? null,
+              sportRoleVariant: targetUser?.sportRoleVariant ?? null,
+              gender: targetUser?.gender ?? null,
+              birthDate: targetUser?.birthDate ?? null,
+              parentalConsentAt: linkRequest.createdAt,
+              guardians: { create: { userId: linkRequest.parentId } },
+            },
+          });
+        }
       }
 
       // Notifica in-app al genitore
-      const parentName = respondingUser?.name ?? "Il tuo figlio/a";
-      const childName = linkRequest.child.name;
       await tx.appNotification.create({
         data: {
           type: "LINK_RESPONSE",
           title: accept
-            ? `${parentName} ha accettato il collegamento`
-            : `${parentName} ha rifiutato il collegamento`,
+            ? `${responderName} ha accettato il collegamento`
+            : `${responderName} ha rifiutato il collegamento`,
           body: accept
-            ? `L'account di ${parentName} è stato collegato a ${childName}.`
-            : `La richiesta di collegamento per ${childName} è stata rifiutata.`,
+            ? childName
+              ? `L'account di ${responderName} è stato collegato a ${childName}.`
+              : `Ora trovi ${responderName} tra i tuoi figli.`
+            : childName
+              ? `La richiesta di collegamento per ${childName} è stata rifiutata.`
+              : "La richiesta di collegamento è stata rifiutata.",
           url: "/profilo",
           targetUserId: linkRequest.parentId,
         },
@@ -114,13 +139,15 @@ export async function POST(
   }
 
   // Invia push al genitore (fuori dalla transaction)
-  const parentName = respondingUser?.name ?? "Il tuo figlio/a";
-  const childName = linkRequest.child.name;
   await sendPushToUser(linkRequest.parentId, {
-    title: accept ? `${parentName} ha accettato!` : `${parentName} ha rifiutato`,
+    title: accept ? `${responderName} ha accettato!` : `${responderName} ha rifiutato`,
     body: accept
-      ? `L'account è stato collegato a ${childName}.`
-      : `La richiesta per ${childName} è stata rifiutata.`,
+      ? childName
+        ? `L'account è stato collegato a ${childName}.`
+        : `Ora trovi ${responderName} tra i tuoi figli.`
+      : childName
+        ? `La richiesta per ${childName} è stata rifiutata.`
+        : "La richiesta di collegamento è stata rifiutata.",
     url: "/profilo",
     type: "LINK_RESPONSE",
   });

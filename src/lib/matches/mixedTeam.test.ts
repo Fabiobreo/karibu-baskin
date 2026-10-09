@@ -111,3 +111,45 @@ describe("mixedMatchError", () => {
     );
   });
 });
+
+describe("Karibu iscritta al campionato (playsLeague)", () => {
+  const hidden = { isMixed: true, playsLeague: false };
+  const league = { isMixed: true, playsLeague: true };
+  const normal = { isMixed: false, playsLeague: false };
+
+  it("è pubblica come una squadra normale; quella nascosta no", async () => {
+    const { isPublicTeam } = await import("./mixedTeam");
+    expect(isPublicTeam(normal)).toBe(true);
+    expect(isPublicTeam(league)).toBe(true);
+    expect(isPublicTeam(hidden)).toBe(false);
+  });
+
+  it("i limiti su campionato e gironi valgono solo per quella nascosta", async () => {
+    const { isRestrictedClubTeam } = await import("./mixedTeam");
+    expect(isRestrictedClubTeam(hidden)).toBe(true);
+    expect(isRestrictedClubTeam(league)).toBe(false);
+    expect(isRestrictedClubTeam(normal)).toBe(false);
+    expect(isRestrictedClubTeam(null)).toBe(false);
+    // Quindi una partita di campionato in un girone, per lei, è valida.
+    expect(
+      mixedMatchError({
+        involvesMixed: isRestrictedClubTeam(league),
+        matchType: "LEAGUE",
+        groupId: "g1",
+      })
+    ).toBeNull();
+  });
+
+  it("la rosa resta l'unione dei gruppi anche quando gioca il campionato", () => {
+    expect(
+      expandRosterTeamIds(
+        [{ id: "karibu-2026-27", season: "2026-27", isMixed: true }],
+        [
+          { id: "gin", season: "2026-27", isMixed: false },
+          { id: "tonic", season: "2026-27", isMixed: false },
+          { id: "vecchia", season: "2025-26", isMixed: false },
+        ]
+      )
+    ).toEqual(["gin", "tonic"]);
+  });
+});

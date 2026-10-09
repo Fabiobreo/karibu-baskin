@@ -4,8 +4,11 @@ export const ROLE_HIERARCHY: Record<AppRole, number> = {
   GUEST: 0,
   ATHLETE: 1,
   PARENT: 2,
-  COACH: 3,
-  ADMIN: 4,
+  // Dirigente: tesserato che fa parte della direzione. Sotto l'allenatore, quindi
+  // ogni controllo `hasRole(…, "COACH")` continua a escluderlo.
+  DIRECTOR: 3,
+  COACH: 4,
+  ADMIN: 5,
 };
 
 // Re-export for backwards compatibility — source of truth is now @/lib/constants
@@ -13,6 +16,20 @@ export { ROLE_LABELS_IT } from "@/lib/constants";
 
 export function hasRole(userRole: AppRole, required: AppRole): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[required];
+}
+
+/** Staff: allenatore o admin. Gestisce allenamenti, partite, utenti. */
+export function isStaffRole(role: AppRole | null | undefined): boolean {
+  return !!role && hasRole(role, "COACH");
+}
+
+/**
+ * Chi entra nel pannello: lo staff, e il dirigente in sola lettura e solo
+ * nelle sezioni che `@/lib/adminNav` gli apre. Non dice cosa può fare lì
+ * dentro: le scritture restano dietro `hasRole(…, "COACH")`.
+ */
+export function canViewAdminPanel(role: AppRole | null | undefined): boolean {
+  return !!role && hasRole(role, "DIRECTOR");
 }
 
 export function canManageSessions(role: AppRole): boolean {
@@ -69,3 +86,6 @@ export function assignableAppRoles(change: Omit<AppRoleChange, "next">): AppRole
 export function isMemberRole(role: AppRole | string | null | undefined): boolean {
   return !!role && role in ROLE_HIERARCHY && hasRole(role as AppRole, "ATHLETE");
 }
+
+/** I ruoli dei tesserati, per i filtri Prisma (`appRole: { in: MEMBER_APP_ROLES }`). */
+export const MEMBER_APP_ROLES: AppRole[] = ALL_APP_ROLES.filter(isMemberRole);

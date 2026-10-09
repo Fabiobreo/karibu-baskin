@@ -10,6 +10,7 @@ import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 import { inBackground } from "@/lib/background";
+import { isHistoricMatch } from "@/lib/matches/matchPhase";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -63,6 +64,8 @@ export async function PUT(req: Request, { params }: Params) {
   if (!loanLookup) {
     return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
   }
+  // Partita di oltre un mese fa: si sta inserendo lo storico, nessuno va avvisato.
+  const notify = !isHistoricMatch(loanLookup.match.date, Date.now());
 
   // Upsert ogni riga
   const results = await Promise.all(
@@ -126,12 +129,12 @@ export async function PUT(req: Request, { params }: Params) {
         : s.childId
           ? ({ childId: s.childId } as const)
           : null;
-      if (ref) inBackground(reconcilePlayerBadges(ref, { notify: true }), "badges match stats");
+      if (ref) inBackground(reconcilePlayerBadges(ref, { notify }), "badges match stats");
     }
   }
 
   // Notifica push + in-app dopo la risposta agli atleti con stats
-  if (saved.length > 0) {
+  if (saved.length > 0 && notify) {
     // Push e in-app partono insieme; la catena finisce quando sono finiti
     // entrambi, così `after()` tiene viva la funzione per tutti e due.
     inBackground(

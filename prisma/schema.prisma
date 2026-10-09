@@ -14,6 +14,7 @@ enum AppRole {
   GUEST
   ATHLETE
   PARENT
+  DIRECTOR
   COACH
   ADMIN
 }
@@ -99,6 +100,7 @@ model User {
   pollVotes             PollVote[]
   ratingUpdates         RatingUpdate[]
   suggestions           Suggestion[]
+  albumPermissions      PhotoAlbum[]           @relation("AlbumPermission")
   suggestionNotes       SuggestionNote[]
   earnedBadges          EarnedBadge[]
   eventAttendances      EventAttendance[]      @relation("EventAttendanceUser")
@@ -235,16 +237,18 @@ model ChildGuardian {
 
 model LinkRequest {
   id           String            @id @default(cuid())
-  childId      String
+  // null = richiesta a un figlio che ha già un account: la scheda figlio nasce
+  // solo quando accetta. Valorizzato = scheda già esistente da legare all'account.
+  childId      String?
   parentId     String
   targetUserId String
   status       LinkRequestStatus @default(PENDING)
   createdAt    DateTime          @default(now())
   expiresAt    DateTime? // null = non scade; PENDING scadute vengono ignorate
 
-  child      Child @relation(fields: [childId], references: [id], onDelete: Cascade)
-  parent     User  @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
-  targetUser User  @relation("ReceivedLinkRequests", fields: [targetUserId], references: [id], onDelete: Cascade)
+  child      Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent     User   @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
+  targetUser User   @relation("ReceivedLinkRequests", fields: [targetUserId], references: [id], onDelete: Cascade)
 
   @@index([targetUserId, status])
   @@index([parentId])
@@ -363,6 +367,12 @@ model CompetitiveTeam {
   // solo amichevoli e tornei. Nascosta ovunque tranne che nel form partita dello
   // staff. Il nome del campo è storico. Vedi src/lib/matches/mixedTeam.ts.
   isMixed      Boolean  @default(false)
+  // Solo per la Karibu di stagione (`isMixed`): true = in questa stagione il
+  // club gioca il campionato come un'unica squadra. La Karibu diventa una
+  // squadra pubblica (pagina, girone, partite di campionato) e le altre squadre
+  // della stagione restano come gruppi interni. Lo decide lo staff, stagione per
+  // stagione, da /admin/squadre.
+  playsLeague  Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   memberships        TeamMembership[]
@@ -536,6 +546,7 @@ model Match {
   callups        MatchCallup[]
   mvps           MatchMvp[]
   availabilities MatchAvailability[]
+  albums         PhotoAlbum[]
 
   @@index([teamId, date])
   @@index([opponentId])
@@ -827,6 +838,7 @@ model Event {
   attendances EventAttendance[]
   options     EventOption[]
   guests      EventGuest[]
+  albums      PhotoAlbum[]
 
   @@index([date])
 }
@@ -990,6 +1002,66 @@ model InstagramPost {
 
   @@index([timestamp])
   @@index([hidden, timestamp])
+}
+
+// ── Album foto da cartelle Google Drive (UX-52) ──────────────────────────────
+// I file restano su Drive: qui c'e' solo l'indice (id dei file e dimensioni).
+
+enum AlbumVisibility {
+  MEMBERS // solo i tesserati (ATHLETE o superiore)
+  PUBLIC // chiunque, indicizzabile
+}
+
+model PhotoAlbum {
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  title         String
+  date          DateTime
+  driveFolderId String          @unique
+  visibility    AlbumVisibility @default(MEMBERS)
+  coverPhotoId  String? // AlbumPhoto.id; null = la prima foto visibile
+  photoCount    Int             @default(0) // foto visibili (non nascoste)
+  otherFiles    Int             @default(0) // video e sottocartelle, non mostrati
+  syncedAt      DateTime        @default(now())
+  // Valorizzato quando la cartella non risponde piu' (condivisione tolta o
+  // cartella eliminata): l'album sparisce dal pubblico, le foto restano a DB.
+  unreachableAt DateTime?
+
+  // Collegamento facoltativo, al piu' uno dei due.
+  eventId String?
+  matchId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  match   Match?  @relation(fields: [matchId], references: [id], onDelete: SetNull)
+
+  // Chi ha dichiarato "ho il permesso di chi ha scattato le foto".
+  permissionDeclaredById String?
+  permissionDeclaredBy   User?   @relation("AlbumPermission", fields: [permissionDeclaredById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos AlbumPhoto[]
+
+  @@index([date])
+  @@index([eventId])
+  @@index([matchId])
+}
+
+model AlbumPhoto {
+  id          String    @id @default(cuid())
+  albumId     String
+  driveFileId String
+  name        String
+  width       Int // gia' orientate (rotation applicata)
+  height      Int
+  takenAt     DateTime?
+  hidden      Boolean   @default(false) // moderazione: resta nascosta dopo i sync
+  position    Int
+
+  album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@unique([albumId, driveFileId])
+  @@index([albumId, position])
 }
 
 // ── Suggerimenti utenti ───────────────────────────────────────────────────────

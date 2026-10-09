@@ -77,7 +77,7 @@ const ROLES_INFO_IT: RoleInfo[] = [
       "Quando corre con la palla fa almeno 2 palleggi.",
       "Tira nel canestro alto a lato del campo o nel canestro grande.",
       "Nel canestro a lato vale 2 punti. Nel canestro grande vale 3 punti.",
-      "Solo un giocatore di Ruolo 3 può marcarlo.",
+      "Marca i giocatori di Ruolo 3, 4 e 5.",
     ],
     description:
       "Atleta con disabilità che ha uso delle mani, cammino e corsa non fluida con scarso equilibrio. I Ruoli 4 e 5 non possono marcarlo (difesa illegale). Tira nel canestro laterale alto (fuori area) o nel canestro tradizionale. Ogni volta che corre con la palla deve eseguire almeno 2 palleggi durante la corsa. Non contano le infrazioni di passi e doppio, ma ogni tiro effettuato senza i 2 palleggi è annullato.",
@@ -93,7 +93,7 @@ const ROLES_INFO_IT: RoleInfo[] = [
       "Corre e palleggia bene.",
       "Tira solo nel canestro grande.",
       "Prima di tirare si ferma.",
-      "Possono marcarlo i giocatori di Ruolo 3 e di Ruolo 4.",
+      "Marca solo i giocatori di Ruolo 4 e 5.",
     ],
     description:
       "Atleta con uso delle mani, cammino e corsa fluida con palleggio regolare. Tira esclusivamente nei canestri tradizionali. Il Ruolo 5 non può marcarlo (difesa illegale). Prima di tirare deve obbligatoriamente effettuare un arresto. Valgono le infrazioni di passi e doppio (ma non i passi di partenza).",
@@ -163,7 +163,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
       "When they run with the ball, they dribble at least 2 times.",
       "They shoot at the high side basket or at the big basket.",
       "In the side basket it is worth 2 points. In the big basket it is worth 3 points.",
-      "Only a Role 3 player can mark them.",
+      "They mark Role 3, Role 4 and Role 5 players.",
     ],
     description:
       "An athlete with a disability who has use of their hands and a non-fluid walk and run with poor balance. Roles 4 and 5 cannot mark them (illegal defence). They shoot at the high side basket (outside the area) or at the traditional basket. Every time they run with the ball they must take at least 2 dribbles while running. Travelling and double-dribble violations don't count, but any shot taken without the 2 dribbles is annulled.",
@@ -179,7 +179,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
       "They run and dribble well.",
       "They shoot only at the big basket.",
       "They stop before they shoot.",
-      "Role 3 and Role 4 players can mark them.",
+      "They mark only Role 4 and Role 5 players.",
     ],
     description:
       "An athlete with use of their hands and a fluid walk and run with regular dribbling. They shoot exclusively at the traditional baskets. Role 5 cannot mark them (illegal defence). Before shooting they must come to a stop. Travelling and double-dribble violations apply (but not the starting steps).",

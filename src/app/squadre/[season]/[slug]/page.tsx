@@ -1,3 +1,5 @@
+import { PUBLIC_TEAM_WHERE, rosterTeamIds } from "@/lib/matches/mixedTeam";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatDecimal } from "@/lib/numberFormat";
@@ -33,7 +35,7 @@ import { roleColorSx } from "@/lib/constants";
 import { teamColor, teamFill } from "@/lib/teamColors";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
-import type { MatchResult } from "@prisma/client";
+import type { MatchResult, Prisma } from "@prisma/client";
 import UpcomingMatchRow from "@/components/matches/UpcomingMatchRow";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./_components/types";
@@ -59,44 +61,48 @@ function parseSeasonParam(s: string): string {
   return s;
 }
 
+/** Dati di un tesserato in rosa (account o figlio). */
+const MEMBERSHIP_INCLUDE = {
+  user: {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      sportRole: true,
+      sportRoleVariant: true,
+      gender: true,
+      slug: true,
+      birthDate: true,
+      ...PUBLIC_PROFILE_SELECT,
+    },
+  },
+  child: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      sportRole: true,
+      sportRoleVariant: true,
+      gender: true,
+      birthDate: true,
+    },
+  },
+} satisfies Prisma.TeamMembershipInclude;
+
 async function getTeam(season: string, slug: string) {
   const teams = await prisma.competitiveTeam.findMany({
-    // La Karibu di stagione non ha una pagina pubblica: il suo URL risponde 404.
-    where: { season, isMixed: false },
+    // La Karibu di stagione ha una pagina solo quando gioca il campionato:
+    // altrimenti il suo URL risponde 404.
+    where: { AND: [{ season }, PUBLIC_TEAM_WHERE] },
     include: {
       memberships: {
         orderBy: [{ isCaptain: "desc" }, { createdAt: "asc" }],
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              sportRole: true,
-              sportRoleVariant: true,
-              gender: true,
-              slug: true,
-              birthDate: true,
-              ...PUBLIC_PROFILE_SELECT,
-            },
-          },
-          child: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              sportRole: true,
-              sportRoleVariant: true,
-              gender: true,
-              birthDate: true,
-            },
-          },
-        },
+        include: MEMBERSHIP_INCLUDE,
       },
       matches: {
         orderBy: { date: "asc" },
         include: {
-          opponent: { select: { id: true, name: true, city: true } },
+          opponent: { select: { id: true, name: true, city: true, imageUrl: true } },
           opponentTeam: { select: { id: true, name: true, color: true, season: true } },
           playerStats: {
             select: {
@@ -119,7 +125,7 @@ async function getTeam(season: string, slug: string) {
         orderBy: { date: "asc" },
         include: {
           team: { select: { id: true, name: true, color: true, season: true } },
-          opponent: { select: { id: true, name: true, city: true } },
+          opponent: { select: { id: true, name: true, city: true, imageUrl: true } },
           opponentTeam: { select: { id: true, name: true, color: true, season: true } },
           playerStats: {
             select: {
@@ -138,7 +144,28 @@ async function getTeam(season: string, slug: string) {
       },
     },
   });
-  return teams.find((t) => slugify(t.name) === slug) ?? null;
+  const team = teams.find((t) => slugify(t.name) === slug) ?? null;
+  if (team?.isMixed) {
+    // La Karibu non ha tesserati suoi: la sua rosa sono tutti i giocatori della
+    // stagione, cioè le rose delle altre squadre (vedi @/lib/matches/mixedTeam).
+    const rosterIds = await rosterTeamIds([team]);
+    const rows = await prisma.teamMembership.findMany({
+      where: { teamId: { in: rosterIds } },
+      orderBy: { createdAt: "asc" },
+      include: MEMBERSHIP_INCLUDE,
+    });
+    const seen = new Set<string>();
+    team.memberships = rows
+      // Chi sta in due gruppi compare una volta sola; i capitani sono dei gruppi.
+      .filter((m) => {
+        const key = m.userId ? `u:${m.userId}` : `c:${m.childId}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((m) => ({ ...m, isCaptain: false }));
+  }
+  return team;
 }
 
 export async function generateMetadata({
@@ -376,6 +403,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
     .filter((r) => r.freeThrows > 0)
     .sort((a, b) => b.freeThrows - a.freeThrows)[0];
 
+  const hasMatchContent = !!nextMatch || playedMatches.length > 0 || leadersByPoints.length > 0;
+
   return (
     <>
       <EntityHero
@@ -387,36 +416,61 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
         accent={teamHue}
         manage={
           viewerIsStaff && (
-            <StaffManageButton href={`/admin/squadre/${team.id}/rosa`} label={t("manage")} />
+            <StaffManageButton
+              // La Karibu non ha una rosa sua da gestire: si governa da Squadre.
+              href={team.isMixed ? "/admin/squadre" : `/admin/squadre/${team.id}/rosa`}
+              label={t("manage")}
+            />
           )
         }
         leading={
-          <Box
-            sx={{
-              width: { xs: 72, sm: 96 },
-              height: { xs: 72, sm: 96 },
-              borderRadius: "50%",
-              bgcolor: teamHue ?? heroText.surface,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
-              border: `3px solid ${brandColor.darkSoft}`,
-            }}
-          >
-            <Typography
+          team.isMixed ? (
+            // La Karibu è il club: il suo segno è lo stemma, non un'iniziale.
+            <Box
               sx={{
-                fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
-                fontWeight: FONT_WEIGHT.bold,
-                color: "common.white",
-                lineHeight: 1,
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                position: "relative",
+                width: { xs: 72, sm: 96 },
+                height: { xs: 72, sm: 96 },
+                flexShrink: 0,
               }}
             >
-              {team.name[0].toUpperCase()}
-            </Typography>
-          </Box>
+              <Image
+                src="/logo.png"
+                alt=""
+                fill
+                sizes="96px"
+                priority
+                style={{ objectFit: "contain" }}
+              />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                width: { xs: 72, sm: 96 },
+                height: { xs: 72, sm: 96 },
+                borderRadius: "50%",
+                bgcolor: teamHue ?? heroText.surface,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
+                border: `3px solid ${brandColor.darkSoft}`,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
+                  fontWeight: FONT_WEIGHT.bold,
+                  color: "common.white",
+                  lineHeight: 1,
+                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                }}
+              >
+                {team.name[0].toUpperCase()}
+              </Typography>
+            </Box>
+          )
         }
         subtitle={team.championship}
         badges={
@@ -572,8 +626,34 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               );
             })()}
 
+          {/* Il resto del calendario sta subito sotto la prossima partita: è la
+              prima cosa che si cerca, e la rosa sotto può essere lunga. */}
+          {upcomingMatches.length > 1 && (
+            <Box sx={{ mt: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                <Typography variant="overline" color="text.secondary">
+                  {t("upcomingSection")}
+                </Typography>
+              </Box>
+              <Typography variant="h4" sx={{ mb: 2.5 }}>
+                {t("upcomingMatches")}
+              </Typography>
+              <Stack spacing={1}>
+                {upcomingMatches.slice(1).map((m) => (
+                  <UpcomingMatchRow
+                    key={m.id}
+                    match={m}
+                    teamName={team.name}
+                    teamColor={team.color}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
           {playedMatches.length > 0 && (
-            <Box sx={{ mb: 6, mt: nextMatch ? 4 : 0 }}>
+            <Box sx={{ mb: 6, mt: nextMatch ? 6 : 0 }}>
               <Box
                 sx={{
                   display: "flex",
@@ -882,7 +962,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
 
           {team.memberships.length > 0 && (
             <>
-              <Divider sx={{ mb: 5 }} />
+              {/* Il divisore separa la rosa da quello che c'è sopra: senza partite
+                  resterebbe una riga da sola sotto l'intestazione. */}
+              {hasMatchContent && <Divider sx={{ mb: 5, mt: playedMatches.length > 0 ? 0 : 6 }} />}
               <Box sx={{ mb: 6 }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                   <GroupsIcon sx={{ color: teamHue ?? "text.secondary" }} />
@@ -961,6 +1043,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                                 roleVariant={athlete.sportRoleVariant}
                                 isCaptain={m.isCaptain}
                                 teamColor={teamHue}
+                                linked={!!userSlug}
                               />
                             );
                             return (
@@ -987,6 +1070,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                                       roleVariant={athlete.sportRoleVariant}
                                       isCaptain={m.isCaptain}
                                       teamColor={teamHue}
+                                      linked
                                     />
                                   </Link>
                                 )}
@@ -1022,33 +1106,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       match={m}
                       teamName={team.name}
                       teamColor={teamHue}
-                    />
-                  ))}
-                </Stack>
-              </Box>
-            </>
-          )}
-
-          {upcomingMatches.length > 1 && (
-            <>
-              <Divider sx={{ mb: 5 }} />
-              <Box sx={{ mb: 6 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                  <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
-                  <Typography variant="overline" color="text.secondary">
-                    {t("upcomingSection")}
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ mb: 2.5 }}>
-                  {t("upcomingMatches")}
-                </Typography>
-                <Stack spacing={1}>
-                  {upcomingMatches.slice(1).map((m) => (
-                    <UpcomingMatchRow
-                      key={m.id}
-                      match={m}
-                      teamName={team.name}
-                      teamColor={team.color}
                     />
                   ))}
                 </Stack>

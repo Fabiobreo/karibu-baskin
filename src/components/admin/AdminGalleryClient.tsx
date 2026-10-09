@@ -39,12 +39,15 @@ interface AdminGalleryClientProps {
   initialPosts: GalleryAdminPost[];
   instagramConfigured: boolean;
   youtubeConfigured: boolean;
+  /** Dirigente: i post si guardano; sincronizzare, nascondere ed eliminare no. */
+  readOnly?: boolean;
 }
 
 export default function AdminGalleryClient({
   initialPosts,
   instagramConfigured,
   youtubeConfigured,
+  readOnly = false,
 }: AdminGalleryClientProps) {
   const [posts, setPosts] = useState(initialPosts);
   const [syncing, setSyncing] = useState(false);
@@ -120,13 +123,13 @@ export default function AdminGalleryClient({
   return (
     <Box>
       {/* Stato configurazione */}
-      {!instagramConfigured && (
+      {!readOnly && !instagramConfigured && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           Instagram non è ancora configurato. Imposta le variabili d&apos;ambiente{" "}
           <code>IG_ACCESS_TOKEN</code> e <code>IG_BUSINESS_ACCOUNT_ID</code> per abilitare il feed.
         </Alert>
       )}
-      {!youtubeConfigured && (
+      {!readOnly && !youtubeConfigured && (
         <Alert severity="info" sx={{ mb: 2 }}>
           Sezione video YouTube non configurata: imposta <code>YOUTUBE_CHANNEL_ID</code> per
           mostrare i video nella pagina pubblica.
@@ -137,14 +140,16 @@ export default function AdminGalleryClient({
         <Typography variant="body2" color="text.secondary">
           {posts.length} post sincronizzati da Instagram
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={syncing ? <CircularProgress size={16} color="inherit" /> : <SyncIcon />}
-          onClick={handleSync}
-          disabled={syncing || !instagramConfigured}
-        >
-          {syncing ? "Sincronizzo…" : "Sincronizza da Instagram"}
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="contained"
+            startIcon={syncing ? <CircularProgress size={16} color="inherit" /> : <SyncIcon />}
+            onClick={handleSync}
+            disabled={syncing || !instagramConfigured}
+          >
+            {syncing ? "Sincronizzo…" : "Sincronizza da Instagram"}
+          </Button>
+        )}
       </Box>
 
       {posts.length === 0 ? (
@@ -152,9 +157,11 @@ export default function AdminGalleryClient({
           icon={<CollectionsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
           title="Nessun post in Gallery"
           message={
-            instagramConfigured
-              ? "Premi “Sincronizza da Instagram” per importare gli ultimi post."
-              : "Configura Instagram per iniziare a importare i post."
+            readOnly
+              ? "Non ci sono ancora post importati da Instagram."
+              : instagramConfigured
+                ? "Premi “Sincronizza da Instagram” per importare gli ultimi post."
+                : "Configura Instagram per iniziare a importare i post."
           }
         />
       ) : (
@@ -210,24 +217,26 @@ export default function AdminGalleryClient({
                       variant={post.hidden ? "outlined" : "filled"}
                       sx={{ height: 22 }}
                     />
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Switch
-                        size="small"
-                        checked={!post.hidden}
-                        disabled={busyId === post.id}
-                        onChange={() => toggleHidden(post)}
-                        inputProps={{ "aria-label": "Mostra/nascondi post" }}
-                      />
-                      <IconButton
-                        size="small"
-                        color="error"
-                        disabled={busyId === post.id}
-                        onClick={() => confirmDelete(post)}
-                        aria-label="Elimina post"
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
+                    {!readOnly && (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Switch
+                          size="small"
+                          checked={!post.hidden}
+                          disabled={busyId === post.id}
+                          onChange={() => toggleHidden(post)}
+                          inputProps={{ "aria-label": "Mostra/nascondi post" }}
+                        />
+                        <IconButton
+                          size="small"
+                          color="error"
+                          disabled={busyId === post.id}
+                          onClick={() => confirmDelete(post)}
+                          aria-label="Elimina post"
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    )}
                   </Box>
                 </Box>
               </Paper>

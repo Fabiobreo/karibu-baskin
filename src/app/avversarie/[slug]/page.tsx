@@ -1,14 +1,32 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Box, Typography, Paper, Chip, Container, Divider, Alert } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  Divider,
+  Link as MuiLink,
+  Paper,
+  Typography,
+} from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import LanguageIcon from "@mui/icons-material/Language";
 import PaletteIcon from "@mui/icons-material/Palette";
+import PlaceIcon from "@mui/icons-material/Place";
 import StadiumIcon from "@mui/icons-material/Stadium";
+import EventIcon from "@mui/icons-material/Event";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
-import EntityHero from "@/components/common/EntityHero";
+import EntityHero, { HeroMeta } from "@/components/common/EntityHero";
+import OpponentCrest from "@/components/teams/OpponentCrest";
+import { mapsSearchUrl, matchLocation } from "@/lib/clubVenue";
+import { LIVE_WINDOW_MS } from "@/lib/matches/matchPhase";
+import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -79,6 +97,20 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
     })[type] ?? type;
   if (!team) notFound();
 
+  // In programma: senza punteggio e non ancora finite (future o in corso).
+  // Stanno in cima, come blocco a sé; tutto il resto sono i precedenti.
+  // eslint-disable-next-line react-hooks/purity -- Server Component, renders once
+  const now = Date.now();
+  const upcoming = team.matches
+    .filter(
+      (m) =>
+        (m.ourScore === null || m.theirScore === null) &&
+        new Date(m.date).getTime() + LIVE_WINDOW_MS > now
+    )
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const upcomingIds = new Set(upcoming.map((m) => m.id));
+  const pastMatches = team.matches.filter((m) => !upcomingIds.has(m.id));
+
   // Aggrega per stagione
   type SeasonStat = {
     season: string;
@@ -91,7 +123,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
     pending: number;
   };
   const seasonsMap = new Map<string, SeasonStat>();
-  for (const m of team.matches) {
+  for (const m of pastMatches) {
     const season = m.team.season;
     if (!seasonsMap.has(season)) {
       seasonsMap.set(season, {
@@ -119,6 +151,10 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   }
   const seasons = Array.from(seasonsMap.values()).sort((a, b) => b.season.localeCompare(a.season));
 
+  // Indirizzo per Maps: quello di una trasferta da loro (con la città, se
+  // l'indirizzo non la dice già), calcolato come per le partite.
+  const venueAddress = matchLocation({ isHome: false, opponent: team }).label ?? "";
+
   const seasonsPlayed = seasons.map((s) => s.season);
   const lastSeason = seasonsPlayed[0]; // seasons sono ordinate desc
   const playedInCurrentSeason = seasonsPlayed.includes(currentSeason);
@@ -138,12 +174,50 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   return (
     <>
       <EntityHero
-        breadcrumb={[
-          { label: tMatches("resultsHeroChip"), href: "/risultati" },
-          { label: team.name },
-        ]}
+        // "Partite", non "Risultati": un'avversaria mai affrontata non ne ha.
+        breadcrumb={[{ label: tMatches("breadcrumb"), href: "/partite" }, { label: team.name }]}
         title={team.name}
-        subtitle={team.city}
+        leading={team.imageUrl && <OpponentCrest imageUrl={team.imageUrl} name={team.name} />}
+        meta={
+          (team.city || team.address || team.colors || team.website) && (
+            <>
+              {team.city && <HeroMeta icon={<PlaceIcon />}>{team.city}</HeroMeta>}
+              {team.address && (
+                <HeroMeta icon={<StadiumIcon />}>
+                  <MuiLink
+                    href={mapsSearchUrl(venueAddress)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    color="inherit"
+                    aria-label={tMatches("whereWhen.openInMaps", { place: team.address })}
+                  >
+                    {team.address}
+                  </MuiLink>
+                </HeroMeta>
+              )}
+              {team.colors && (
+                <HeroMeta icon={<PaletteIcon />}>
+                  {t("opponentColors", { colors: team.colors })}
+                </HeroMeta>
+              )}
+              {team.website && (
+                <HeroMeta icon={<LanguageIcon />}>
+                  <MuiLink
+                    href={
+                      team.website.startsWith("http") ? team.website : `https://${team.website}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    color="inherit"
+                    sx={{ overflowWrap: "anywhere" }}
+                  >
+                    {team.website.replace(/^https?:\/\//, "")}
+                  </MuiLink>
+                </HeroMeta>
+              )}
+            </>
+          )
+        }
         manage={
           isStaff && (
             <OpposingTeamEditButton
@@ -163,110 +237,161 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
       />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
-          {team.imageUrl && (
-            <Box
-              component="img"
-              src={team.imageUrl}
-              alt={team.name}
-              sx={{
-                width: "100%",
-                maxHeight: 280,
-                objectFit: "cover",
-                borderRadius: RADIUS.lg,
-                border: "1px solid",
-                borderColor: "divider",
-                display: "block",
-                mb: 3,
-              }}
-            />
+          {upcoming.length > 0 && (
+            <Box component="section" sx={{ mb: 5 }}>
+              <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+                {upcoming.length === 1 ? tMatches("nextMatch") : t("upcomingMatches")}
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {upcoming.map((m) => {
+                  const location = matchLocation({
+                    isHome: m.isHome,
+                    venue: m.venue,
+                    opponent: team,
+                  });
+                  return (
+                    <Paper
+                      key={m.id}
+                      elevation={0}
+                      variant="outlined"
+                      sx={{
+                        transition: "border-color 0.15s",
+                        "&:hover": { borderColor: "primary.main" },
+                        "&:hover .next-match-arrow": { color: "primary.main" },
+                      }}
+                    >
+                      {/* La parte alta apre la partita; sotto, Maps e calendario
+                          sono link loro (un link dentro un link non è valido). */}
+                      <MuiLink
+                        href={`/partite/${m.slug ?? m.id}`}
+                        underline="none"
+                        color="inherit"
+                        sx={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 1.5,
+                          p: { xs: 2, sm: 2.5 },
+                        }}
+                      >
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="h6"
+                            component="p"
+                            sx={{ "&::first-letter": { textTransform: "uppercase" } }}
+                          >
+                            {formatRome(new Date(m.date), "EEEE d MMMM yyyy · HH:mm", {
+                              locale: dateLocale,
+                            })}
+                          </Typography>
+                          {/* Chi gioca in casa prima, come nel tabellino (UX-35). */}
+                          <Typography variant="body1" sx={{ mt: 0.25, overflowWrap: "anywhere" }}>
+                            {m.isHome
+                              ? `${m.team.name} vs ${team.name}`
+                              : `${team.name} vs ${m.team.name}`}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                              mt: 1,
+                              color: "text.secondary",
+                            }}
+                          >
+                            {m.isHome ? (
+                              <HomeIcon fontSize="small" />
+                            ) : (
+                              <FlightIcon fontSize="small" />
+                            )}
+                            <Typography variant="body2">
+                              {m.isHome ? tMatches("home") : tMatches("away")}
+                              {" · "}
+                              {matchTypeLabel(m.matchType)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <ArrowForwardIcon
+                          className="next-match-arrow"
+                          sx={{ color: "text.secondary", flexShrink: 0, mt: 0.5 }}
+                        />
+                      </MuiLink>
+                      <Divider />
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          columnGap: 2,
+                          rowGap: 1.5,
+                          p: { xs: 2, sm: 2.5 },
+                        }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "flex-start", gap: 1, minWidth: 0 }}
+                        >
+                          <PlaceIcon
+                            fontSize="small"
+                            sx={{ color: "text.secondary", mt: 0.25 }}
+                            aria-hidden="true"
+                          />
+                          {location.kind === "city" ? (
+                            <Typography variant="body2">
+                              {tMatches("whereWhen.cityOnly", { city: location.label })}
+                            </Typography>
+                          ) : location.label ? (
+                            <MuiLink
+                              href={mapsSearchUrl(location.label)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              variant="body2"
+                              aria-label={tMatches("whereWhen.openInMaps", {
+                                place: location.label,
+                              })}
+                              sx={{ overflowWrap: "anywhere" }}
+                            >
+                              {location.label}
+                            </MuiLink>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              {tMatches("whereWhen.locationTbc")}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Button
+                          href={`/api/matches/${m.id}/event.ics`}
+                          variant="outlined"
+                          startIcon={<EventIcon />}
+                          sx={TOUCH_TARGET_ON_PHONE}
+                        >
+                          {tMatches("whereWhen.addToCalendar")}
+                        </Button>
+                      </Box>
+                    </Paper>
+                  );
+                })}
+              </Box>
+            </Box>
           )}
 
-          {/* Info aggiuntive squadra */}
-          <Box sx={{ mb: 4 }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 0.5,
-                color: "text.secondary",
-                mb: 1.5,
-              }}
-            >
-              {team.address && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  <StadiumIcon fontSize="small" />
-                  <Typography variant="body2">{team.address}</Typography>
-                </Box>
-              )}
-              {team.colors && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  <PaletteIcon fontSize="small" />
-                  <Typography variant="body2">{team.colors}</Typography>
-                </Box>
-              )}
-              {team.website && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  <LanguageIcon fontSize="small" />
-                  <Typography
-                    variant="body2"
-                    component="a"
-                    href={
-                      team.website.startsWith("http") ? team.website : `https://${team.website}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      color: "primary.onLight",
-                      textDecoration: "none",
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    {team.website.replace(/^https?:\/\//, "")}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+          <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+            {t("previousMatches")}
+          </Typography>
 
-            {seasonsPlayed.length > 0 && (
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, alignItems: "center" }}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={FONT_WEIGHT.semibold}
-                  sx={{ mr: 0.5 }}
-                >
-                  {t("facedInSeasons")}
-                </Typography>
-                {seasonsPlayed.map((s) => (
-                  <Chip
-                    key={s}
-                    label={s}
-                    size="small"
-                    variant={s === currentSeason ? "filled" : "outlined"}
-                    color={s === currentSeason ? "primary" : "default"}
-                    sx={{ fontSize: TYPE_SCALE.xs, height: 22 }}
-                  />
-                ))}
-              </Box>
-            )}
-
-            {seasonsPlayed.length > 0 && !playedInCurrentSeason && lastSeason && (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                {t("lastFacedAlert", { season: lastSeason, current: currentSeason })}
-              </Alert>
-            )}
-          </Box>
-
-          {team.matches.length === 0 ? (
-            <Paper elevation={0} variant="outlined" sx={{ p: 6, textAlign: "center" }}>
-              <Typography color="text.secondary">{t("noMatchesAgainst")}</Typography>
-            </Paper>
+          {pastMatches.length === 0 ? (
+            <Typography color="text.secondary">{t("noPreviousMatches")}</Typography>
           ) : (
             <>
+              {upcoming.length === 0 && !playedInCurrentSeason && lastSeason && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  {t("lastFacedAlert", { season: lastSeason, current: currentSeason })}
+                </Alert>
+              )}
+
               {/* Totale storico */}
               {totals.played > 0 &&
                 (() => {
-                  const last5 = team.matches.filter((m) => m.result !== null).slice(0, 5);
+                  const last5 = pastMatches.filter((m) => m.result !== null).slice(0, 5);
                   return (
                     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -377,10 +502,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   );
                 })()}
 
-              {/* Per stagione */}
-              <Typography variant="h4" sx={{ mb: 2 }}>
-                {t("bySeason")}
-              </Typography>
               {seasons.map((s) => (
                 <Paper key={s.season} elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
                   <Box
@@ -393,7 +514,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       mb: 1.5,
                     }}
                   >
-                    <Typography variant="h6" fontWeight={FONT_WEIGHT.bold}>
+                    <Typography variant="h6" component="h3" fontWeight={FONT_WEIGHT.bold}>
                       {t("seasonLabel")} {s.season}
                     </Typography>
                     <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -423,7 +544,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       )}
                       {s.pending > 0 && (
                         <Chip
-                          label={`${s.pending} ${t("toPlay")}`}
+                          label={t("awaitingResults", { count: s.pending })}
                           size="small"
                           variant="outlined"
                         />
@@ -434,7 +555,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   <Divider sx={{ mb: 1.5 }} />
 
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-                    {team.matches
+                    {pastMatches
                       .filter((m) => m.team.season === s.season)
                       .map((m) => {
                         const card = (
@@ -447,6 +568,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                               px: 1,
                               borderRadius: RADIUS.md,
                               "&:hover": { bgcolor: "action.hover" },
+                              "&:hover .match-row-arrow": { color: "primary.main" },
                             }}
                           >
                             <Box sx={{ minWidth: 90 }}>
@@ -498,7 +620,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1,
-                                minWidth: 110,
+                                minWidth: 130,
                                 justifyContent: "flex-end",
                               }}
                             >
@@ -508,7 +630,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 </Typography>
                               ) : (
                                 <Typography variant="body2" color="text.secondary">
-                                  {t("toPlay")}
+                                  {tMatches("phaseAwaitingResult")}
                                 </Typography>
                               )}
                               {m.result && (
@@ -522,6 +644,13 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                     height: 20,
                                     minWidth: 28,
                                   }}
+                                />
+                              )}
+                              {m.slug && (
+                                <ChevronRightIcon
+                                  className="match-row-arrow"
+                                  fontSize="small"
+                                  sx={{ color: "text.secondary" }}
                                 />
                               )}
                             </Box>

@@ -38,7 +38,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
-import { hasRole } from "@/lib/authRoles";
+import { canViewAdminPanel } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -164,7 +164,9 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   const contattiActive = CONTATTI_HREFS.some((l) => l.href === pathname);
 
   // Squadre della stagione corrente per i link dinamici del dropdown
-  const { data: allTeams } = useQuery<{ id: string; name: string; season: string }[]>({
+  const { data: allTeams } = useQuery<
+    { id: string; name: string; season: string; isMixed?: boolean }[]
+  >({
     queryKey: ["competitive-teams"],
     // Su un errore (anche un 429) la query fallisce e le squadre restano
     // vuote: prima il corpo di errore finiva in `allTeams` e il `.filter`
@@ -172,12 +174,19 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
     queryFn: () => fetchJson("/api/competitive-teams"),
   });
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
-  const squadreLinks = [
+  // Stagione a squadra unica: la Karibu (nell'elenco solo quando gioca il
+  // campionato) viene per prima, e le altre squadre sono i suoi gruppi,
+  // rientrati sotto di lei.
+  const clubTeam = currentTeams.find((team) => team.isMixed) ?? null;
+  const teamLink = (team: { name: string }, sub: boolean) => ({
+    label: team.name,
+    href: `/squadre/${currentSeason.replace("-", "")}/${slugify(team.name)}`,
+    sub,
+  });
+  const squadreLinks: { label: string; href: string; sub?: boolean }[] = [
     { label: t("allTeams"), href: "/squadre" },
-    ...currentTeams.map((team) => ({
-      label: team.name,
-      href: `/squadre/${currentSeason.replace("-", "")}/${slugify(team.name)}`,
-    })),
+    ...(clubTeam ? [teamLink(clubTeam, false)] : []),
+    ...currentTeams.filter((team) => !team.isMixed).map((team) => teamLink(team, !!clubTeam)),
     { label: t("archive"), href: "/squadre/archivio" },
     { label: t("whoWeAre"), href: "/il-club" },
   ];
@@ -186,7 +195,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
 
   const user = session?.user;
   const effectiveRole = user?.appRole as AppRole | undefined;
-  const isStaff = status === "authenticated" && !!effectiveRole && hasRole(effectiveRole, "COACH");
+  // La voce "Admin" c'è per chi entra nel pannello, dirigente compreso.
+  const opensPanel = status === "authenticated" && canViewAdminPanel(effectiveRole);
   const initials = user?.name
     ? user.name
         .split(" ")
@@ -399,6 +409,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   sx={{
                     fontSize: TYPE_SCALE.sm,
                     fontWeight: pathname === sl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                    // Gruppo della squadra sopra: rientrato e più leggero.
+                    ...(sl.sub ? { pl: 4, color: "text.secondary" } : {}),
                   }}
                 >
                   {sl.label}
@@ -610,7 +622,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       {t("myAvailabilities")}
                     </MenuItem>
                   )}
-                  {isStaff && (
+                  {opensPanel && (
                     <MenuItem
                       onClick={() => {
                         setMenuAnchor(null);
@@ -875,7 +887,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       }}
                       sx={{
                         py: 1,
-                        pl: 4,
+                        pl: link.sub ? 6 : 4,
                         color: active
                           ? "primary.main"
                           : (theme) => alpha(theme.palette.common.white, 0.55),
@@ -1054,7 +1066,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
           </Collapse>
 
           {/* Admin */}
-          {isStaff && (
+          {opensPanel && (
             <>
               <Divider
                 sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08), my: 0.5 }}

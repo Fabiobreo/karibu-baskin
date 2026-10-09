@@ -25,6 +25,7 @@ import ManageParticipantsDialog, {
   type ParticipantRegistration,
 } from "@/components/admin/ManageParticipantsDialog";
 import SessionActions from "@/components/admin/SessionActions";
+import TrainingReadOnlyDetails from "@/components/admin/TrainingReadOnlyDetails";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
@@ -231,10 +232,13 @@ export default function AdminUpcomingList({
   sessions,
   initialOpenId = null,
   initialEditId = null,
+  readOnly = false,
 }: {
   sessions: AdminUpcomingRow[];
   initialOpenId?: string | null;
   initialEditId?: string | null;
+  /** Dirigente: dentro la riga c'è solo da leggere. */
+  readOnly?: boolean;
 }) {
   const [openId, setOpenId] = useState<string | null>(initialOpenId ?? initialEditId);
 
@@ -242,9 +246,11 @@ export default function AdminUpcomingList({
     return (
       <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
         <Typography fontWeight={FONT_WEIGHT.semibold}>Nessun allenamento in programma</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Crealo con &quot;Nuovo allenamento&quot;.
-        </Typography>
+        {!readOnly && (
+          <Typography variant="body2" color="text.secondary">
+            Crealo con &quot;Nuovo allenamento&quot;.
+          </Typography>
+        )}
       </Paper>
     );
   }
@@ -323,7 +329,17 @@ export default function AdminUpcomingList({
               </Box>
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0 }}>
-              <UpcomingDetails s={s} initialEdit={initialEditId === s.id} />
+              {readOnly ? (
+                <TrainingReadOnlyDetails
+                  sessionId={s.id}
+                  athletes={s.registrations.filter((r) => !r.registeredAsCoach)}
+                  coaches={s.registrations.filter((r) => r.registeredAsCoach)}
+                  teams={s.teams}
+                  registrationLabel={REG_LABEL[state]}
+                />
+              ) : (
+                <UpcomingDetails s={s} initialEdit={initialEditId === s.id} />
+              )}
             </AccordionDetails>
           </Accordion>
         );

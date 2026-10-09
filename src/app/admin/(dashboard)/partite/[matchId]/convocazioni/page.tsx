@@ -1,6 +1,5 @@
-import { redirect, notFound } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { notFound } from "next/navigation";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import {
   buildTeamCallupContext,
@@ -11,6 +10,7 @@ import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
 import MatchQualitySection from "@/components/matches/MatchQualitySection";
 import { computeMatchQuality } from "@/lib/matches/matchQuality";
+import { hasStarted } from "@/lib/matches/matchPhase";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Convocazioni | Admin" };
@@ -18,10 +18,7 @@ export const metadata: Metadata = { title: "Convocazioni | Admin" };
 type Params = { params: Promise<{ matchId: string }> };
 
 export default async function ConvocazioniPage({ params }: Params) {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  const { session } = await requireAdminPage("/admin/partite", { staffOnly: true });
 
   const { matchId } = await params;
 
@@ -110,7 +107,7 @@ export default async function ConvocazioniPage({ params }: Params) {
       <ConvocazioniClient
         matchId={matchId}
         matchLabel={`${match.team.name} vs ${opponentLabel}`}
-        matchDateISO={match.date.toISOString()}
+        matchStarted={hasStarted(match.date, now.getTime())}
         windowEligibleSessions={windowEligibleSessions}
         teams={awayContext ? [homeContext, awayContext] : [homeContext]}
         opponentMu={match.opponent?.ratingMu ?? null}

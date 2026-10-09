@@ -123,7 +123,7 @@ export default async function TraguardiPage() {
     getTranslations("profile"),
     prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, appRole: true },
+      select: { name: true, appRole: true, sportRole: true },
     }),
     prisma.child.findMany({
       where: guardianOf(userId),
@@ -134,7 +134,10 @@ export default async function TraguardiPage() {
   if (!user) redirect("/login");
 
   const isAthlete =
-    user.appRole === "ATHLETE" || user.appRole === "COACH" || user.appRole === "ADMIN";
+    user.appRole === "ATHLETE" ||
+    user.appRole === "COACH" ||
+    user.appRole === "ADMIN" ||
+    (user.appRole === "DIRECTOR" && user.sportRole != null);
 
   const sections: { key: string; name: string; player: PlayerRef }[] = [
     ...(isAthlete ? [{ key: "me", name: user.name ?? t("achievements"), player: { userId } }] : []),

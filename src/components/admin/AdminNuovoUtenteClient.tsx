@@ -104,11 +104,13 @@ export default function AdminNuovoUtenteClient() {
                   onChange={(e) => set("appRole", e.target.value)}
                   renderValue={(val) => <AppRoleChip role={val as AppRole} />}
                 >
-                  {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
-                    <MenuItem key={r} value={r}>
-                      <AppRoleChip role={r} />
-                    </MenuItem>
-                  ))}
+                  {(["GUEST", "ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"] as AppRole[]).map(
+                    (r) => (
+                      <MenuItem key={r} value={r}>
+                        <AppRoleChip role={r} />
+                      </MenuItem>
+                    )
+                  )}
                 </Select>
               </FormControl>
 

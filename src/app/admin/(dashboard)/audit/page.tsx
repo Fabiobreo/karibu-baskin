@@ -1,9 +1,11 @@
 import AuditLogClient from "@/components/admin/AuditLogClient";
 import PageHeader from "@/components/common/PageHeader";
+import { requireAdminPage } from "@/lib/adminAccess";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminAuditPage() {
+export default async function AdminAuditPage() {
+  await requireAdminPage("/admin/audit");
   return (
     <>
       <PageHeader

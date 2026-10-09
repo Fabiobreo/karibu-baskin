@@ -17,13 +17,14 @@ Flusso login:
 
 ## Ruoli applicativi (`AppRole`)
 
-| Ruolo     | Livello | Chi è                                        |
-| --------- | ------- | -------------------------------------------- |
-| `GUEST`   | 0       | Nuovo iscritto, in attesa di classificazione |
-| `ATHLETE` | 1       | Atleta con ruolo Baskin confermato           |
-| `PARENT`  | 2       | Genitore che gestisce figli senza account    |
-| `COACH`   | 3       | Allenatore — accede al pannello admin        |
-| `ADMIN`   | 4       | Amministratore completo                      |
+| Ruolo      | Livello | Chi è                                                |
+| ---------- | ------- | ---------------------------------------------------- |
+| `GUEST`    | 0       | Nuovo iscritto, in attesa di classificazione         |
+| `ATHLETE`  | 1       | Atleta con ruolo Baskin confermato                   |
+| `PARENT`   | 2       | Genitore che gestisce figli senza account            |
+| `DIRECTOR` | 3       | Dirigente: tesserato della direzione, senza pannello |
+| `COACH`    | 4       | Allenatore, accede al pannello admin                 |
+| `ADMIN`    | 5       | Amministratore completo                              |
 
 La gerarchia è definita in `src/lib/authRoles.ts`. La funzione `hasRole(user, minRole)` restituisce `true` se il livello dell'utente è ≥ `minRole`.
 

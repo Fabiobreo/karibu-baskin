@@ -7,6 +7,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 import { inBackground } from "@/lib/background";
+import { hasStarted } from "@/lib/matches/matchPhase";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -63,7 +64,7 @@ export async function PUT(req: Request, { params }: Params) {
   // Carica la partita per validare il teamId richiesto e calcolare il fallback.
   const match = await prisma.match.findUnique({
     where: { id: matchId },
-    select: { teamId: true, opponentTeamId: true },
+    select: { teamId: true, opponentTeamId: true, date: true },
   });
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
 
@@ -91,9 +92,14 @@ export async function PUT(req: Request, { params }: Params) {
   // Chi non ha risposto è considerato non disponibile (default).
   // Eccezione: i giocatori in prestito (non membri della squadra) possono essere
   // aggiunti dallo staff anche senza conferma di disponibilità (override).
+  // A partita iniziata il controllo non c'è: lo staff registra chi ha giocato,
+  // e per le partite inserite a posteriori le disponibilità non esistono.
   const checkUserIds = userIds.filter((id) => !isLoanParticipation(loanLookup, { userId: id }));
   const checkChildIds = childIds.filter((id) => !isLoanParticipation(loanLookup, { childId: id }));
-  if (checkUserIds.length > 0 || checkChildIds.length > 0) {
+  if (
+    !hasStarted(match.date, Date.now()) &&
+    (checkUserIds.length > 0 || checkChildIds.length > 0)
+  ) {
     const availables = await prisma.matchAvailability.findMany({
       where: {
         matchId,

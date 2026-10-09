@@ -110,9 +110,23 @@ export default function UsersTable({
                 Baskin
               </TableSortLabel>
             </TableCell>
-            <TableCell align="center">Squadra</TableCell>
+            <TableCell align="center">
+              <TableSortLabel
+                active={sortBy === "team"}
+                direction={sortBy === "team" ? sortDir : "asc"}
+                onClick={() => onSort("team")}
+              >
+                Squadra
+              </TableSortLabel>
+            </TableCell>
             <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>
-              Genere
+              <TableSortLabel
+                active={sortBy === "gender"}
+                direction={sortBy === "gender" ? sortDir : "asc"}
+                onClick={() => onSort("gender")}
+              >
+                Genere
+              </TableSortLabel>
             </TableCell>
             {/* Solo da `lg`: sotto, otto colonne non stanno nel pannello. */}
             <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" }, px: 1 }}>

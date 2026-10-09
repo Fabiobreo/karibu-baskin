@@ -66,9 +66,11 @@ describe("GET /api/competitive-teams", () => {
     expect(json).toEqual([]);
   });
 
-  it("esclude la Karibu di stagione", async () => {
+  it("esclude la Karibu di stagione, tranne quando gioca il campionato", async () => {
     await GET(new NextRequest("http://localhost/api/competitive-teams"));
-    expect(p.competitiveTeam.findMany.mock.calls[0][0].where).toEqual({ isMixed: false });
+    expect(p.competitiveTeam.findMany.mock.calls[0][0].where).toEqual({
+      OR: [{ isMixed: false }, { playsLeague: true }],
+    });
   });
 });
 

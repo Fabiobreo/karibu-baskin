@@ -8,6 +8,7 @@ import type { AppRole, Prisma } from "@prisma/client";
  *   Baskin **e** ha giocato almeno una partita ufficiale (una riga in
  *   `PlayerMatchStats`). Un genitore che accompagna il figlio non è un
  *   giocatore e non deve comparire in ricerca, sitemap o con una pagina sua.
+ * - `DIRECTOR`: come il genitore. Un dirigente che non gioca non è un giocatore.
  * - Tutti gli altri (`ATHLETE`, `COACH`, `ADMIN`): sì.
  *
  * I `Child` non passano di qui: sono atleti per definizione (le regole sui
@@ -27,7 +28,9 @@ export interface PublicProfileSubject {
 
 export function userHasPublicProfile(u: PublicProfileSubject): boolean {
   if (u.appRole === "GUEST") return false;
-  if (u.appRole === "PARENT") return u.sportRole != null && u.matchesPlayed > 0;
+  if (u.appRole === "PARENT" || u.appRole === "DIRECTOR") {
+    return u.sportRole != null && u.matchesPlayed > 0;
+  }
   return true;
 }
 
@@ -35,8 +38,12 @@ export function userHasPublicProfile(u: PublicProfileSubject): boolean {
 export function publicProfileUserFilter(): Prisma.UserWhereInput {
   return {
     OR: [
-      { appRole: { notIn: ["GUEST", "PARENT"] } },
-      { appRole: "PARENT", sportRole: { not: null }, matchStats: { some: {} } },
+      { appRole: { notIn: ["GUEST", "PARENT", "DIRECTOR"] } },
+      {
+        appRole: { in: ["PARENT", "DIRECTOR"] },
+        sportRole: { not: null },
+        matchStats: { some: {} },
+      },
     ],
   };
 }

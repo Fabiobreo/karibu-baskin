@@ -11,7 +11,7 @@ Tutti i componenti riutilizzabili vanno qui, organizzati per **dominio/feature**
 | `matches/`       | Partite ufficiali, stats, convocazioni, disponibilità            |
 | `teams/`         | Squadre agonistiche, gironi, classifiche, avversarie             |
 | `news/`          | Post + sondaggi (`Post*`, `Poll*`, `LatestNewsHero`)             |
-| `gallery/`       | Feed Instagram + video YouTube                                   |
+| `gallery/`       | Album da Drive, feed Instagram, video YouTube, lightbox          |
 | `rating/`        | TrueSkill, badge, tracker sviluppo                               |
 | `calendar/`      | Calendario + sottoscrizione .ics                                 |
 | `profile/`       | Profilo utente, avatar, collegamento figli, prefs notifiche      |

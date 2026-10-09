@@ -93,11 +93,17 @@ export function pickNextAction(input: {
 
 /**
  * Chi vede la card "La tua prossima cosa da fare" (UX-16, UX-24): atleti e
- * genitori, e lo staff che gioca (ha un ruolo Baskin). Allo staff che non
- * gioca resta il banner delle disponibilità.
+ * genitori, e lo staff o il dirigente che gioca (ha un ruolo Baskin). Il
+ * dirigente anche se ha figli collegati: per loro è un genitore. Allo staff che
+ * non gioca resta il banner delle disponibilità.
  */
-export function showsNextAction(appRole: string | null, sportRole: number | null): boolean {
+export function showsNextAction(
+  appRole: string | null,
+  sportRole: number | null,
+  hasChildren = false
+): boolean {
   if (appRole === "ATHLETE" || appRole === "PARENT") return true;
+  if (appRole === "DIRECTOR") return sportRole != null || hasChildren;
   return (appRole === "COACH" || appRole === "ADMIN") && sportRole != null;
 }
 
@@ -149,8 +155,8 @@ export const loadNextAction = cache(async function loadNextAction(
   const selfRole = user?.sportRole ?? own?.sportRole ?? null;
 
   const subjects: Subject[] = [];
-  // Il genitore che non gioca (senza ruolo) non si propone come atleta.
-  if (user && (appRole !== "PARENT" || selfRole != null)) {
+  // Il genitore o il dirigente che non gioca (senza ruolo) non si propone come atleta.
+  if (user && ((appRole !== "PARENT" && appRole !== "DIRECTOR") || selfRole != null)) {
     subjects.push({
       kind: "self",
       id: userId,

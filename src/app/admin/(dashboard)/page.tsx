@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { Box, Typography, Paper, Chip } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -22,6 +23,8 @@ import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
 import { onHover } from "@/lib/hoverStyles";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
+import { requireAdminPage } from "@/lib/adminAccess";
+import { ATHLETE_ACCOUNT_WHERE } from "@/lib/athletes";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -29,6 +32,9 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 export const revalidate = 30;
 
 export default async function AdminPage() {
+  const { readOnly } = await requireAdminPage("/admin");
+  if (readOnly) return <DirectorDashboard />;
+
   const now = new Date();
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -213,6 +219,73 @@ export default async function AdminPage() {
       <AdminProssimePartite />
 
       <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
+    </Box>
+  );
+}
+
+/**
+ * La dashboard del dirigente: solo le sezioni che può leggere (le stesse di
+ * `ADMIN_NAV` con `director`), senza le cose da fare dello staff.
+ */
+async function DirectorDashboard() {
+  const now = new Date();
+  const [athleteAccounts, athleteChildren, upcomingEvents] = await Promise.all([
+    prisma.user.count({ where: { ...ATHLETE_ACCOUNT_WHERE, athleteStatus: null } }),
+    prisma.child.count({ where: { userId: null, athleteStatus: null } }),
+    // Un evento su più giorni resta fra i prossimi fino alla sua fine.
+    prisma.event.count({ where: { OR: [{ date: { gte: now } }, { endDate: { gte: now } }] } }),
+  ]);
+
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Il club in sola lettura: allenamenti, partite, eventi, rosa, numeri e dati da scaricare."
+        breadcrumb={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
+      />
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+          gap: 2,
+        }}
+      >
+        <StatCard
+          href="/admin/utenti"
+          icon={<PersonIcon />}
+          value={athleteAccounts + athleteChildren}
+          label="Atleti attivi"
+          caption="La rosa: chi gioca, con o senza account."
+        />
+        <StatCard
+          href="/admin/eventi"
+          icon={<CalendarMonthIcon />}
+          value={upcomingEvents}
+          label={upcomingEvents === 1 ? "Evento in programma" : "Eventi in programma"}
+          caption="Per ogni evento, chi ha risposto e a cosa."
+        />
+      </Box>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <NavSection title="Attività">
+          <NavLink href="/admin/allenamenti" icon={<SportsBasketballIcon />} label="Allenamenti" />
+          <NavLink href="/admin/partite" icon={<EmojiEventsIcon />} label="Partite" />
+          <NavLink href="/admin/eventi" icon={<CalendarMonthIcon />} label="Eventi" />
+          <NavLink href="/admin/news" icon={<ArticleIcon />} label="News" />
+          <NavLink href="/admin/gallery" icon={<CollectionsIcon />} label="Gallery" />
+        </NavSection>
+
+        <NavSection title="Anagrafiche">
+          <NavLink href="/admin/utenti" icon={<PersonIcon />} label="Utenti" />
+          <NavLink href="/admin/squadre" icon={<GroupsIcon />} label="Squadre" />
+        </NavSection>
+
+        <NavSection title="Strumenti">
+          <NavLink href="/admin/metriche" icon={<InsightsIcon />} label="Metriche" />
+          <NavLink href="/admin/esporta" icon={<DownloadIcon />} label="Esporta dati" />
+        </NavSection>
+      </Box>
     </Box>
   );
 }

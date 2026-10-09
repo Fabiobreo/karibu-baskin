@@ -1,6 +1,5 @@
-import { redirect, notFound } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { notFound } from "next/navigation";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import MatchStatsClient from "@/components/matches/MatchStatsClient";
 import { it } from "date-fns/locale";
@@ -12,10 +11,7 @@ export const metadata: Metadata = { title: "Statistiche partita | Admin" };
 type Params = { params: Promise<{ matchId: string }> };
 
 export default async function MatchStatsPage({ params }: Params) {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  await requireAdminPage("/admin/partite", { staffOnly: true });
   const { matchId } = await params;
 
   const match = await prisma.match.findUnique({

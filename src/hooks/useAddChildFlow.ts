@@ -9,11 +9,14 @@ import {
   type ChildData,
   type ChildFormState,
   type FoundUser,
+  type PendingLink,
 } from "@/components/profile/childLinkerShared";
 
 interface UseAddChildFlowParams {
-  /** Figlio aggiunto alla lista (creazione manuale o richiesta collegamento inviata). */
+  /** Figlio creato a mano, aggiunto alla lista. */
   onChildAdded: (child: ChildData) => void;
+  /** Richiesta inviata a un figlio con account: in lista come "in attesa". */
+  onRequestSent: (pending: PendingLink) => void;
   /** Chiusura del dialog richiesta dal flusso (es. dopo creazione manuale). */
   onClose: () => void;
 }
@@ -22,7 +25,7 @@ interface UseAddChildFlowParams {
  * Stato e logica del flusso multi-step "Aggiungi figlio":
  * choice → (email | name) → confirm → sent, oppure choice → create.
  */
-export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams) {
+export function useAddChildFlow({ onChildAdded, onRequestSent, onClose }: UseAddChildFlowParams) {
   const { showToast } = useToast();
   const t = useTranslations("childLinker");
   const tCommon = useTranslations("common");
@@ -34,11 +37,11 @@ export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams
   const [nameResults, setNameResults] = useState<FoundUser[]>([]);
   const [nameSearched, setNameSearched] = useState(false);
   const [foundUser, setFoundUser] = useState<FoundUser | null>(null);
-  const [confirmName, setConfirmName] = useState(""); // usato solo se foundUser.name è null
   const [searching, setSearching] = useState(false);
   const [createForm, setCreateForm] = useState<ChildFormState>(EMPTY_CHILD_FORM);
   const [creating, setCreating] = useState(false);
   const [parentalConsent, setParentalConsent] = useState(false);
+  const [sameNameChecked, setSameNameChecked] = useState(false);
 
   async function handleSearchEmail() {
     const email = emailInput.trim().toLowerCase();
@@ -50,7 +53,6 @@ export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams
       if (res.ok) {
         const user: FoundUser = await res.json();
         setFoundUser(user);
-        setConfirmName(user.name ?? "");
         setAddStep("confirm");
       } else {
         setEmailError(t("noUserFound"));
@@ -83,35 +85,22 @@ export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams
   }
 
   async function handleConfirmYes() {
-    if (!foundUser || !confirmName.trim()) return;
-    // Il figlio trovato va aggiunto come Child manuale + inviata richiesta di collegamento
+    if (!foundUser) return;
+    // Una sola chiamata, e nessuna scheda figlio: nasce quando il figlio
+    // accetta. Prima la scheda veniva creata subito e restava come doppione.
     setCreating(true);
     try {
-      // 1. Crea il Child entry per il genitore
-      const createRes = await fetch("/api/users/me/children", {
+      const res = await fetch("/api/link-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: confirmName.trim(), parentalConsent: true }),
+        body: JSON.stringify({ targetUserId: foundUser.id, parentalConsent: true }),
       });
-      const newChild = await createRes.json();
-      if (!createRes.ok) {
-        showToast({ message: newChild.error ?? t("createError"), severity: "error" });
+      if (!res.ok) {
+        showToast({ message: await readError(res), severity: "error" });
         return;
       }
-
-      // 2. Invia richiesta di collegamento
-      const linkRes = await fetch(`/api/children/${newChild.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ linkUserId: foundUser.id }),
-      });
-      const linkData = await linkRes.json();
-      if (!linkRes.ok) {
-        showToast({ message: linkData.error ?? t("linkError"), severity: "error" });
-        return;
-      }
-
-      onChildAdded({ ...newChild, pendingRequestId: linkData.requestId ?? null });
+      const data: { requestId: string } = await res.json();
+      onRequestSent({ requestId: data.requestId, name: foundUser.name, image: foundUser.image });
       setAddStep("sent");
     } catch {
       showToast({ message: tCommon("networkError"), severity: "error" });
@@ -121,14 +110,31 @@ export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams
   }
 
   async function handleCreateManually() {
-    if (!createForm.name.trim()) return;
+    const name = createForm.name.trim();
+    if (!name) return;
     setCreating(true);
     try {
+      // Prima di creare una scheda a mano: c'è già un account con questo nome?
+      // Una volta sola, poi il genitore può creare comunque (omonimi).
+      if (!sameNameChecked) {
+        setSameNameChecked(true);
+        const lookup = await fetch(`/api/users/lookup?name=${encodeURIComponent(name)}`);
+        const found: FoundUser[] = lookup.ok ? await lookup.json() : [];
+        const same = found.filter((u) => u.name?.trim().toLowerCase() === name.toLowerCase());
+        if (same.length > 0) {
+          setNameInput(name);
+          setNameResults(same);
+          setNameSearched(true);
+          setAddStep("name");
+          showToast({ message: t("sameNameFound"), severity: "info" });
+          return;
+        }
+      }
       const res = await fetch("/api/users/me/children", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: createForm.name.trim(),
+          name,
           gender: createForm.gender || null,
           birthDate: createForm.birthDate || null,
           parentalConsent: true,
@@ -164,8 +170,6 @@ export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams
     setNameSearched,
     foundUser,
     setFoundUser,
-    confirmName,
-    setConfirmName,
     searching,
     createForm,
     setCreateForm,

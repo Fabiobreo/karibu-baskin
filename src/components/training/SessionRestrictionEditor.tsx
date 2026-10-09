@@ -57,7 +57,10 @@ export default function SessionRestrictionEditor({
     setLoadingTeams(true);
     fetch("/api/competitive-teams")
       .then((r) => r.json())
-      .then((data: CompetitiveTeam[]) => setAllTeams(data))
+      // La Karibu non ha una rosa sua: restringere a lei non ammetterebbe nessuno.
+      .then((data: (CompetitiveTeam & { isMixed?: boolean })[]) =>
+        setAllTeams(data.filter((t) => !t.isMixed))
+      )
       .catch(() => {})
       .finally(() => setLoadingTeams(false));
   }, []);

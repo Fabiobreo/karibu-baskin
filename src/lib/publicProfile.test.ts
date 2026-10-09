@@ -31,6 +31,15 @@ describe("userHasPublicProfile()", () => {
     );
   });
 
+  it("tratta il dirigente come il genitore: profilo solo se gioca", () => {
+    expect(userHasPublicProfile({ appRole: "DIRECTOR", sportRole: null, matchesPlayed: 0 })).toBe(
+      false
+    );
+    expect(userHasPublicProfile({ appRole: "DIRECTOR", sportRole: 4, matchesPlayed: 2 })).toBe(
+      true
+    );
+  });
+
   it("ammette il genitore con ruolo e almeno una partita", () => {
     expect(userHasPublicProfile({ appRole: "PARENT", sportRole: 2, matchesPlayed: 1 })).toBe(true);
   });

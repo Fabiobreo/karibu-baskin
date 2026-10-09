@@ -25,7 +25,7 @@
       "schedule": "0 9 * * *"
     },
     {
-      "path": "/api/cron/instagram-sync",
+      "path": "/api/cron/gallery-sync",
       "schedule": "0 6 * * *"
     }
   ]

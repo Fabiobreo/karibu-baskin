@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { EventAttendanceStatus } from "@prisma/client";
-import { staffGuard } from "@/lib/apiAuth";
+import { panelGuard } from "@/lib/apiAuth";
 import { loadEventResponses, type ResponseRow } from "@/lib/eventResponses";
 import { csvResponse, csvRow } from "@/lib/csv";
 import { ROLES, sportRoleLabel } from "@/lib/constants";
@@ -24,10 +24,11 @@ const statusLabel = (r: ResponseRow) =>
   r.kind === "guest" && r.status === "NOT_GOING" ? "Solo agli extra" : STATUS_IT[r.status];
 
 // GET /api/events/[eventId]/responses[?format=csv]
-// Riepilogo staff delle risposte: totali, extra, elenco nominativo con note ed
-// esterni. Con `format=csv` lo stesso elenco da scaricare (es. per il ristorante).
+// Riepilogo delle risposte per staff e dirigenti: totali, extra, elenco
+// nominativo con note ed esterni. Con `format=csv` lo stesso elenco da scaricare
+// (es. per il ristorante).
 export async function GET(req: NextRequest, { params }: Params) {
-  const denied = await staffGuard();
+  const denied = await panelGuard();
   if (denied) return denied;
 
   const { eventId } = await params;

@@ -1,7 +1,9 @@
 import PageHeader from "@/components/common/PageHeader";
 import AdminEsportaClient from "@/components/admin/AdminEsportaClient";
+import { requireAdminPage } from "@/lib/adminAccess";
 
-export default function AdminEsportaPage() {
+export default async function AdminEsportaPage() {
+  await requireAdminPage("/admin/esporta");
   return (
     <>
       <PageHeader

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { getTranslations } from "next-intl/server";
 import {
   Box,
@@ -35,7 +36,7 @@ export default async function SquadreArchivioPage() {
   const t = await getTranslations("teams");
   const [teams, { displaySeason }] = await Promise.all([
     prisma.competitiveTeam.findMany({
-      where: { isMixed: false },
+      where: PUBLIC_TEAM_WHERE,
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: { _count: { select: { memberships: true, matches: true } } },
     }),

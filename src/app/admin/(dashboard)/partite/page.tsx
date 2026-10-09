@@ -5,20 +5,22 @@ import { ensureClubTeam } from "@/lib/matches/mixedTeam";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
 import type { Metadata } from "next";
+import { requireAdminPage } from "@/lib/adminAccess";
 
 export const metadata: Metadata = { title: "Partite | Admin" };
 export const revalidate = 30;
 
 export default async function AdminPartitePage() {
+  const { readOnly } = await requireAdminPage("/admin/partite");
   // La Karibu della stagione in corso c'è sempre: il form la propone per
-  // amichevoli e tornei.
-  await ensureClubTeam(await getCurrentSeasonLabel());
+  // amichevoli e tornei. Crearla è una scrittura: non la fa partire chi legge.
+  if (!readOnly) await ensureClubTeam(await getCurrentSeasonLabel());
 
   const [session, teams, opposingTeams, matches, groups] = await Promise.all([
     auth(),
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
-      select: { id: true, name: true, season: true, color: true, isMixed: true },
+      select: { id: true, name: true, season: true, color: true, isMixed: true, playsLeague: true },
     }),
     prisma.opposingTeam.findMany({
       orderBy: { name: "asc" },
@@ -82,22 +84,35 @@ export default async function AdminPartitePage() {
   const coverages: Record<string, MatchCoverage> = {};
   for (const [id, cov] of coverageMap) coverages[id] = cov;
 
+  // Il livello stimato dell'avversaria e la sua scheda sono dello staff: a chi
+  // legge soltanto non arrivano nemmeno nel payload.
+  const visibleMatches = readOnly
+    ? matches.map((m) => ({
+        ...m,
+        opponentProfile: null,
+        opponent: m.opponent && { ...m.opponent, ratingMu: null },
+      }))
+    : matches;
+
   return (
     // L'intestazione la disegna il client: "Nuova partita" apre un suo dialog
     // e sta nello slot azione di PageHeader (UX-51).
     <AdminPartiteClient
       header={{
         title: "Partite",
-        subtitle: "Calendario delle partite ufficiali, convocazioni e statistiche.",
+        subtitle: readOnly
+          ? "Calendario delle partite ufficiali e risultati."
+          : "Calendario delle partite ufficiali, convocazioni e statistiche.",
         breadcrumb: [{ label: "Dashboard", href: "/admin" }, { label: "Partite" }],
       }}
       teams={teams}
       opposingTeams={opposingTeams}
-      matches={matches}
+      matches={visibleMatches}
       groups={groupsForForm}
       groupMatches={groupMatches}
       coverages={coverages}
       isAdmin={session?.user?.appRole === "ADMIN"}
+      readOnly={readOnly}
     />
   );
 }

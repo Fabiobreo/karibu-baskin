@@ -23,6 +23,7 @@ import { teamFill } from "@/lib/teamColors";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import {
   DEFAULT_ATHLETE_FILTERS,
+  compareAthletes,
   countAthleteFilters,
   matchesAthleteFilters,
   type AthleteAccountFilter,
@@ -45,12 +46,17 @@ interface AthletesTabProps {
   rows: AdminRow[];
   teams: TeamInfo[];
   currentSeason: string;
-  isAdmin: boolean;
-  onConfirmSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
-  onRejectSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
-  onTeamChange: (row: AdminRow, teamId: string) => void;
-  onEdit: (row: AdminRow) => void;
-  onDelete: (row: AdminRow) => void;
+  isAdmin?: boolean;
+  /**
+   * Dirigente: la lista si legge soltanto. Niente schede, conferme di ruolo,
+   * cambi di squadra né menu di riga; le funzioni qui sotto non servono.
+   */
+  readOnly?: boolean;
+  onConfirmSuggestedRole?: (row: UserEntry & { kind: "user" }) => void;
+  onRejectSuggestedRole?: (row: UserEntry & { kind: "user" }) => void;
+  onTeamChange?: (row: AdminRow, teamId: string) => void;
+  onEdit?: (row: AdminRow) => void;
+  onDelete?: (row: AdminRow) => void;
 }
 
 const STATUS_LABELS: Record<AthleteStatusFilter, string> = {
@@ -86,7 +92,8 @@ export default function AthletesTab({
   rows,
   teams,
   currentSeason,
-  isAdmin,
+  isAdmin = false,
+  readOnly = false,
   onConfirmSuggestedRole,
   onRejectSuggestedRole,
   onTeamChange,
@@ -107,17 +114,7 @@ export default function AthletesTab({
 
   const filtered = useMemo(() => {
     const result = rows.filter((r) => matchesAthleteFilters(r, filters, currentSeason));
-    return result.sort((a, b) => {
-      let cmp = 0;
-      if (sortBy === "sportRole") cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
-      else if (sortBy === "registrations") cmp = a._count.registrations - b._count.registrations;
-      // A parita' (e per la colonna Atleta) decide il nome.
-      if (cmp === 0) {
-        const byName = (a.name ?? "").localeCompare(b.name ?? "", "it");
-        return sortBy === "name" && sortDir === "desc" ? -byName : byName;
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+    return result.sort((a, b) => compareAthletes(a, b, sortBy, sortDir, currentSeason));
   }, [rows, filters, currentSeason, sortBy, sortDir]);
 
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
@@ -346,6 +343,7 @@ export default function AthletesTab({
         teams={teams}
         currentSeason={currentSeason}
         isAdmin={isAdmin}
+        readOnly={readOnly}
         emptyLabel={
           activeFilterCount > 0
             ? "Nessun atleta corrisponde ai filtri selezionati."

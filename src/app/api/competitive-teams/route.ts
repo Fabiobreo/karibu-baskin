@@ -6,15 +6,19 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { inBackground } from "@/lib/background";
+import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-competitive-teams", 30, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
 
-  // La squadra Karibu di stagione è nascosta: la vede solo lo staff, nel form
-  // delle amichevoli e dei tornei (vedi @/lib/matches/mixedTeam).
+  // La Karibu di stagione è nascosta (la vede solo lo staff, nel form delle
+  // amichevoli e dei tornei), tranne nelle stagioni in cui gioca il campionato:
+  // allora esce qui con `isMixed: true`, e chi usa l'elenco per le rose
+  // (restrizioni degli allenamenti, destinatari delle notifiche) la scarta,
+  // perché non ha tesserati suoi. Vedi @/lib/matches/mixedTeam.
   const teams = await prisma.competitiveTeam.findMany({
-    where: { isMixed: false },
+    where: PUBLIC_TEAM_WHERE,
     orderBy: [{ season: "desc" }, { name: "asc" }],
     include: {
       _count: { select: { memberships: true, matches: true } },

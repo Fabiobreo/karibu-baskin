@@ -27,7 +27,9 @@ function has(sel: TeamSelectionState | undefined, row: ConvocazioneStatRow): boo
  */
 export function useConvocazioniSelection(
   teams: TeamCallupContext[],
-  activeTeam: TeamCallupContext
+  activeTeam: TeamCallupContext,
+  /** A partita iniziata si registra chi ha giocato: "Tutti" non guarda le disponibilità. */
+  ignoreAvailability = false
 ) {
   const [selectionByTeam, setSelectionByTeam] = useState<Map<string, TeamSelectionState>>(() => {
     const m = new Map<string, TeamSelectionState>();
@@ -88,7 +90,7 @@ export function useConvocazioniSelection(
     // "Tutti" seleziona solo i disponibili (esclude chi ha marcato Non
     // disponibile) e non ruba all'altra squadra chi vi è già convocato.
     const pickable = activeTeam.stats.filter(
-      (s) => s.availability !== false && selectedElsewhere(s) === null
+      (s) => (ignoreAvailability || s.availability !== false) && selectedElsewhere(s) === null
     );
     setSelectionByTeam((prev) => {
       const next = new Map(prev);

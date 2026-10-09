@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { isPublicTeam } from "@/lib/matches/mixedTeam";
 import JsonLd from "@/components/common/JsonLd";
 import { sportsEventJsonLd } from "@/lib/structuredData";
 import { isMemberRole } from "@/lib/authRoles";
@@ -21,6 +22,7 @@ import MatchAvailabilityCard, {
 } from "@/components/matches/MatchAvailabilityCard";
 import MatchCountdown from "@/components/matches/MatchCountdown";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
@@ -73,6 +75,23 @@ const sideNameSx = {
   hyphens: "auto",
 } as const;
 
+const CLUB_CREST = "/logo.png";
+
+/**
+ * Stemma sopra il nome: un cerchio uguale ai due lati. Bianco sotto, perché i
+ * loghi delle avversarie sono quasi sempre disegnati per un fondo chiaro.
+ */
+const crestSx = {
+  gridRow: 1,
+  justifySelf: "center",
+  width: { xs: 56, sm: 72, md: 88 },
+  height: { xs: 56, sm: 72, md: 88 },
+  borderRadius: "50%",
+  objectFit: "contain",
+  display: "block",
+  mb: { xs: 0.5, md: 1 },
+} as const;
+
 /** Punteggio: stessa taglia e peso ai due lati, cifre a larghezza fissa. */
 const scoreSx = {
   alignSelf: "start",
@@ -96,9 +115,12 @@ async function getMatch(slug: string) {
           season: true,
           championship: true,
           isMixed: true,
+          playsLeague: true,
         },
       },
-      opponent: { select: { id: true, name: true, city: true, address: true, slug: true } },
+      opponent: {
+        select: { id: true, name: true, city: true, address: true, slug: true, imageUrl: true },
+      },
       opponentTeam: { select: { id: true, name: true, color: true, season: true, isMixed: true } },
       group: { select: { id: true, name: true, championship: true } },
       playerStats: {
@@ -432,6 +454,11 @@ export default async function MatchDetailPage({ params }: Props) {
     ? { fontSize: { xs: TYPE_SCALE.sm, sm: TYPE_SCALE.lg, md: TYPE_SCALE.xl2 } }
     : {};
 
+  // Stemmi solo se l'avversaria ha il suo logo: senza, un lato vuoto romperebbe
+  // la simmetria del tabellino (UX-35). Nelle amichevoli interne non ci sono.
+  const opponentCrest = match.opponent?.imageUrl ?? null;
+  const rowShift = opponentCrest ? 1 : 0;
+
   // Breadcrumb e h1 con chi gioca in casa prima, come il tabellino (UX-35).
   const matchupTitle = match.isHome
     ? `${match.team.name} vs ${opponentName}`
@@ -500,9 +527,33 @@ export default async function MatchDetailPage({ params }: Props) {
                 key: string,
                 name: React.ReactNode,
                 score: number | null,
-                column: 1 | 3
+                column: 1 | 3,
+                crest: string | null
               ) => (
                 <Fragment key={key}>
+                  {/* Decorativi: il nome della squadra è subito sotto. */}
+                  {crest === CLUB_CREST ? (
+                    // Il nostro logo ha già il suo disco, niente bianco sotto. Il
+                    // file pesa mezzo mega: `next/image` lo serve ridimensionato.
+                    <Box
+                      component={Image}
+                      src={CLUB_CREST}
+                      alt=""
+                      width={176}
+                      height={176}
+                      sizes="88px"
+                      sx={{ ...crestSx, gridColumn: column }}
+                    />
+                  ) : crest ? (
+                    // Avversaria: `<img>` semplice (l'URL lo scrive lo staff, e un
+                    // host non previsto farebbe cadere `next/image`), su fondo bianco.
+                    <Box
+                      component="img"
+                      src={crest}
+                      alt=""
+                      sx={{ ...crestSx, gridColumn: column, bgcolor: "common.white" }}
+                    />
+                  ) : null}
                   <Typography
                     component="p"
                     sx={{
@@ -510,20 +561,23 @@ export default async function MatchDetailPage({ params }: Props) {
                       ...nameSizeSx,
                       ...upcomingNameSx,
                       gridColumn: column,
-                      gridRow: 1,
+                      gridRow: 1 + rowShift,
                     }}
                   >
                     {name}
                   </Typography>
                   {hasScore && (
-                    <Typography component="p" sx={{ ...scoreSx, gridColumn: column, gridRow: 2 }}>
+                    <Typography
+                      component="p"
+                      sx={{ ...scoreSx, gridColumn: column, gridRow: 2 + rowShift }}
+                    >
                       {score}
                     </Typography>
                   )}
                 </Fragment>
               );
-              const ourName = match.team.isMixed ? (
-                // La Karibu di stagione non ha una pagina pubblica: solo il nome.
+              const ourName = !isPublicTeam(match.team) ? (
+                // La Karibu di stagione nascosta non ha una pagina pubblica: solo il nome.
                 match.team.name
               ) : (
                 <MuiLink
@@ -534,6 +588,20 @@ export default async function MatchDetailPage({ params }: Props) {
                   {match.team.name}
                 </MuiLink>
               );
+              // L'avversaria porta alla sua pagina (precedenti, sede, logo intero).
+              const theirName = match.opponent?.slug ? (
+                <MuiLink
+                  href={`/avversarie/${match.opponent.slug}`}
+                  underline="hover"
+                  color="inherit"
+                >
+                  {opponentName}
+                </MuiLink>
+              ) : (
+                opponentName
+              );
+              // Il nostro stemma è quello del club, per tutte le nostre squadre.
+              const ourCrest = opponentCrest ? CLUB_CREST : null;
               const middle = (
                 <Typography
                   key="middle"
@@ -541,7 +609,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   aria-hidden={hasScore}
                   sx={{
                     gridColumn: 2,
-                    gridRow: hasScore ? 2 : 1,
+                    gridRow: (hasScore ? 2 : 1) + rowShift,
                     color: heroText.muted,
                     lineHeight: 1,
                     fontVariantNumeric: "tabular-nums",
@@ -566,14 +634,14 @@ export default async function MatchDetailPage({ params }: Props) {
               );
               return match.isHome
                 ? [
-                    side("us", ourName, match.ourScore, 1),
+                    side("us", ourName, match.ourScore, 1, ourCrest),
                     middle,
-                    side("them", opponentName, match.theirScore, 3),
+                    side("them", theirName, match.theirScore, 3, opponentCrest),
                   ]
                 : [
-                    side("them", opponentName, match.theirScore, 1),
+                    side("them", theirName, match.theirScore, 1, opponentCrest),
                     middle,
-                    side("us", ourName, match.ourScore, 3),
+                    side("us", ourName, match.ourScore, 3, ourCrest),
                   ];
             })()}
           </Box>

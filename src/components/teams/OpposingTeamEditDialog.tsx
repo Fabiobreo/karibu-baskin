@@ -8,10 +8,13 @@ import {
   TextField,
   Stack,
   Alert,
+  Box,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
+import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -23,6 +26,7 @@ export type OpposingTeamEditable = {
   address: string | null;
   website: string | null;
   colors: string | null;
+  imageUrl: string | null;
 };
 
 interface Props {
@@ -40,6 +44,7 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
     website: "",
     colors: "",
   });
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -53,6 +58,7 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
       website: team.website ?? "",
       colors: team.colors ?? "",
     });
+    setImageUrl(team.imageUrl);
     setError("");
   }, [open, team]);
 
@@ -74,6 +80,7 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
           address: form.address.trim() || null,
           website: form.website.trim() || null,
           colors: form.colors.trim() || null,
+          imageUrl,
         }),
       });
       if (!res.ok) {
@@ -95,6 +102,20 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Logo o foto
+            </Typography>
+            <ImageUploader
+              currentUrl={imageUrl}
+              folder="opponents"
+              onUploaded={setImageUrl}
+              onRemoved={() => setImageUrl(null)}
+              shape="square"
+              size={96}
+              disabled={saving}
+            />
+          </Box>
           <TextField
             label="Nome"
             size="small"

@@ -7,7 +7,7 @@ import type { AppRole, Prisma } from "@prisma/client";
  * `sportRole=none` = senza ruolo Baskin, combinabile con i numeri.
  */
 
-const APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
+const APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "DIRECTOR", "COACH", "ADMIN"];
 
 const split = (raw: string | undefined) =>
   (raw ?? "")

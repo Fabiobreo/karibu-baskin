@@ -12,8 +12,13 @@ vi.mock("@/lib/db", () => ({
     competitiveTeam: { findUnique: vi.fn() },
     opposingTeam: { findUnique: vi.fn() },
     matchCallup: { findMany: vi.fn(), update: vi.fn() },
+    playerMatchStats: { findMany: vi.fn().mockResolvedValue([]) },
     $transaction: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/rating/badgeService", () => ({
+  reconcilePlayerBadges: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/lib/rating/loanDetection", () => ({
@@ -55,6 +60,7 @@ import { isAdminUser, isMember } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { buildLoanLookup } from "@/lib/rating/loanDetection";
+import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 
 type PrismaMock = {
   match: { findUnique: Mock; update: Mock; delete: Mock };
@@ -270,6 +276,7 @@ describe("PUT /api/matches/[matchId]", () => {
     mockIsAdmin.mockResolvedValue(true);
     p.match.update.mockResolvedValue({
       ...baseMatch,
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
       ourScore: 45,
       theirScore: 30,
       result: "WIN",
@@ -289,6 +296,64 @@ describe("PUT /api/matches/[matchId]", () => {
     expect(mockCreateNotif).toHaveBeenCalledOnce();
     const pushArgs = mockSendPush.mock.calls[0];
     expect(pushArgs[0].type).toBe("MATCH_RESULT");
+  });
+
+  it("non avvisa per il risultato di una partita di oltre un mese fa (storico)", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    p.match.update.mockResolvedValue({
+      ...baseMatch,
+      date: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000),
+      ourScore: 45,
+      theirScore: 30,
+      result: "WIN",
+      team: baseMatch.team,
+      opponent: baseMatch.opponent,
+      group: null,
+    });
+    const req = new Request("http://localhost", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ourScore: 45, theirScore: 30 }),
+    });
+    const res = await PUT(req, makeParams("match-1"));
+    expect(res.status).toBe(200);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(mockSendPush).not.toHaveBeenCalled();
+    expect(mockCreateNotif).not.toHaveBeenCalled();
+  });
+
+  // I badge delle vittorie dipendono dal risultato: con le statistiche già
+  // inserite vanno ricalcolati quando arriva il punteggio, in silenzio se la
+  // partita è storica.
+  it.each([
+    { label: "recente: con notifica", daysAgo: 2, notify: true },
+    { label: "di oltre un mese fa: senza notifica", daysAgo: 200, notify: false },
+  ])("ricalcola i badge di chi ha statistiche ($label)", async ({ daysAgo, notify }) => {
+    mockIsAdmin.mockResolvedValue(true);
+    const stats = (prisma as unknown as { playerMatchStats: { findMany: Mock } }).playerMatchStats;
+    stats.findMany.mockResolvedValue([
+      { userId: "user-1", childId: null },
+      { userId: null, childId: "child-1" },
+    ]);
+    p.match.update.mockResolvedValue({
+      ...baseMatch,
+      date: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000),
+      ourScore: 45,
+      theirScore: 30,
+      result: "WIN",
+      team: baseMatch.team,
+      opponent: baseMatch.opponent,
+      group: null,
+    });
+    const req = new Request("http://localhost", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ourScore: 45, theirScore: 30 }),
+    });
+    await PUT(req, makeParams("match-1"));
+    await vi.waitFor(() => expect(reconcilePlayerBadges).toHaveBeenCalledTimes(2));
+    expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify });
+    expect(reconcilePlayerBadges).toHaveBeenCalledWith({ childId: "child-1" }, { notify });
   });
 
   it("restituisce 404 se la partita non esiste (P2025 via findUnique null)", async () => {

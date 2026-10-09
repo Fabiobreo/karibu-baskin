@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import AdminGironiClient from "@/components/admin/AdminGironiClient";
 import PageHeader from "@/components/common/PageHeader";
@@ -11,10 +9,7 @@ export const metadata: Metadata = { title: "Gironi | Admin" };
 export const revalidate = 30;
 
 export default async function AdminGironiPage() {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  await requireAdminPage("/admin/gironi");
   const [groups, seasons, defaultSeason] = await Promise.all([
     prisma.group.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],

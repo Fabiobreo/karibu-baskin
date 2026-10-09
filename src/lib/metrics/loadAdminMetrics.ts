@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { SESSION_MAX_AGE_SECONDS } from "@/lib/sessionPolicy";
+import { MEMBER_APP_ROLES } from "@/lib/authRoles";
 import {
   computeMatchMetrics,
   computeTrainingMetrics,
@@ -43,8 +44,6 @@ export interface AdminMetrics {
   engagement: EngagementMetrics;
 }
 
-const MEMBER_ROLES = ["ATHLETE", "PARENT", "COACH", "ADMIN"] as const;
-
 export async function loadAdminMetrics(now: Date = new Date()): Promise<AdminMetrics> {
   const since = new Date(now.getTime() - METRICS_WINDOW_DAYS * DAY_MS);
 
@@ -60,7 +59,7 @@ export async function loadAdminMetrics(now: Date = new Date()): Promise<AdminMet
     pollVotes,
     eventResponses,
   ] = await Promise.all([
-    prisma.user.count({ where: { appRole: { in: [...MEMBER_ROLES] } } }),
+    prisma.user.count({ where: { appRole: { in: MEMBER_APP_ROLES } } }),
     prisma.child.count(),
     prisma.child.count({ where: { userId: { not: null } } }),
     prisma.user.count({ where: { appRole: "GUEST" } }),
@@ -69,7 +68,7 @@ export async function loadAdminMetrics(now: Date = new Date()): Promise<AdminMet
       select: { userId: true, expires: true },
     }),
     prisma.user.count({
-      where: { appRole: { in: [...MEMBER_ROLES] }, pushSubscriptions: { some: {} } },
+      where: { appRole: { in: MEMBER_APP_ROLES }, pushSubscriptions: { some: {} } },
     }),
     prisma.trainingSession.findMany({
       where: { date: { gte: since, lt: now } },

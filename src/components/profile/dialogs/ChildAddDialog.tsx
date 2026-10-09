@@ -37,6 +37,7 @@ import {
   formatBirthDate,
   type AddStep,
   type ChildData,
+  type PendingLink,
 } from "@/components/profile/childLinkerShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -45,18 +46,23 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 interface ChildAddDialogProps {
   onClose: () => void;
   onChildAdded: (child: ChildData) => void;
+  onRequestSent: (pending: PendingLink) => void;
 }
 
 /**
  * Dialog multi-step "Aggiungi figlio": ricerca per email/nome con richiesta di
  * collegamento, oppure creazione manuale. Montare solo quando aperto (stato fresco).
  */
-export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialogProps) {
+export default function ChildAddDialog({
+  onClose,
+  onChildAdded,
+  onRequestSent,
+}: ChildAddDialogProps) {
   const t = useTranslations("childLinker");
   const tCommon = useTranslations("common");
   const dateLocale = useActiveDateLocale();
   const { genderLabel } = useEntityLabels();
-  const flow = useAddChildFlow({ onChildAdded, onClose });
+  const flow = useAddChildFlow({ onChildAdded, onRequestSent, onClose });
   const {
     addStep,
     setAddStep,
@@ -72,8 +78,6 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
     setNameSearched,
     foundUser,
     setFoundUser,
-    confirmName,
-    setConfirmName,
     searching,
     createForm,
     setCreateForm,
@@ -239,7 +243,6 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
                     <ListItemButton
                       onClick={() => {
                         setFoundUser(u);
-                        setConfirmName(u.name ?? "");
                         setAddStep("confirm");
                       }}
                     >
@@ -264,6 +267,17 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
                   </ListItem>
                 ))}
               </List>
+            )}
+            {nameSearched && nameResults.length > 0 && (
+              <Button
+                size="small"
+                onClick={() => {
+                  setCreateForm((s) => ({ ...s, name: s.name || nameInput }));
+                  setAddStep("create");
+                }}
+              >
+                {t("noneOfThese")}
+              </Button>
             )}
             {nameSearched && nameResults.length === 0 && (
               <>
@@ -293,21 +307,17 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               {t("areYouParent")}
             </Typography>
             <Paper variant="outlined" sx={{ p: 2.5 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  mb: foundUser.gender || foundUser.birthDate ? 1.5 : 0,
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Avatar
                   src={foundUser.image ?? undefined}
                   sx={{ width: 48, height: 48, flexShrink: 0, fontSize: TYPE_SCALE.xl }}
                 >
-                  {(confirmName || "?")[0].toUpperCase()}
+                  {(foundUser.name ?? "?")[0].toUpperCase()}
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
+                    {foundUser.name ?? "?"}
+                  </Typography>
                   {foundUser.gender && (
                     <Typography variant="caption" color="text.secondary">
                       {genderLabel(foundUser.gender as Gender)}
@@ -320,16 +330,6 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
                   )}
                 </Box>
               </Box>
-              <TextField
-                label={t("nameInProfile")}
-                value={confirmName}
-                onChange={(e) => setConfirmName(e.target.value)}
-                fullWidth
-                size="small"
-                inputProps={{ maxLength: 60 }}
-                helperText={!foundUser.name ? t("noNameHint") : undefined}
-                error={!foundUser.name && !confirmName.trim()}
-              />
             </Paper>
             <ParentalConsentBox checked={parentalConsent} onChange={setParentalConsent} />
           </Stack>
@@ -343,7 +343,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               {t("requestSent")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {t("requestSentDesc", { name: confirmName || foundUser?.name || "" })}
+              {t("requestSentDesc", { name: foundUser?.name ?? "" })}
             </Typography>
           </Stack>
         )}
@@ -437,7 +437,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
             <Button
               variant="contained"
               onClick={handleConfirmYes}
-              disabled={creating || !confirmName.trim() || !parentalConsent}
+              disabled={creating || !parentalConsent}
               startIcon={creating ? <CircularProgress size={14} color="inherit" /> : undefined}
             >
               {creating ? t("sendingRequest") : t("yesMyChild")}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isPublicTeam } from "@/lib/matches/mixedTeam";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -59,8 +60,9 @@ export async function GET(req: Request, { params }: Params) {
     },
   });
 
-  // La Karibu di stagione non ha una pagina pubblica: esiste solo per lo staff.
-  if (!team || (team.isMixed && !(await isCoachOrAdmin()))) {
+  // La Karibu di stagione nascosta non ha una pagina pubblica: esiste solo per
+  // lo staff. Quella iscritta al campionato è pubblica come le altre.
+  if (!team || (!isPublicTeam(team) && !(await isCoachOrAdmin()))) {
     return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
   }
   // Tutela dei minori: chi non è tesserato non li vede, e birthDate non esce
@@ -90,10 +92,21 @@ export async function PUT(req: Request, { params }: Params) {
 
   const current = await prisma.competitiveTeam.findUnique({
     where: { id: teamId },
-    select: { imageUrl: true, isMixed: true },
+    select: { imageUrl: true, isMixed: true, playsLeague: true },
   });
   if (current?.isMixed) {
-    return NextResponse.json({ error: KARIBU_LOCKED }, { status: 400 });
+    // Nascosta: non si tocca. Iscritta al campionato: ha una pagina pubblica,
+    // quindi campionato, descrizione e foto si scrivono; nome, stagione e
+    // tinta restano quelli dell'app.
+    if (!current.playsLeague) {
+      return NextResponse.json({ error: KARIBU_LOCKED }, { status: 400 });
+    }
+    if (body.name !== undefined || body.season !== undefined || body.color !== undefined) {
+      return NextResponse.json(
+        { error: "Della Karibu si cambiano solo campionato, descrizione e foto" },
+        { status: 400 }
+      );
+    }
   }
 
   // Gestione immagine: elimina la vecchia se viene sostituita o rimossa

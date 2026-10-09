@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/db";
 import AdminUserList from "@/components/admin/AdminUserList";
-import { Button, Stack } from "@mui/material";
+import { Paper, Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import PageHeader from "@/components/common/PageHeader";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
-import { auth } from "@/lib/authjs";
+import { requireAdminPage } from "@/lib/adminAccess";
+import AthletesTab from "@/components/admin/userList/AthletesTab";
+import type { AdminRow } from "@/components/admin/userList/userListShared";
 import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 import { cookies } from "next/headers";
 import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
@@ -30,7 +32,126 @@ function toUserEntry<
   };
 }
 
+const USER_ROW_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  image: true,
+  appRole: true,
+  sportRole: true,
+  sportRoleVariant: true,
+  sportRoleSuggested: true,
+  sportRoleSuggestedVariant: true,
+  gender: true,
+  birthDate: true,
+  athleteStatus: true,
+  createdAt: true,
+  _count: { select: { registrations: true } },
+  // Figli collegati: sotto il nome del genitore compare "Genitore di …".
+  guardianOf: {
+    orderBy: { createdAt: "asc" as const },
+    select: { child: { select: { name: true } } },
+  },
+  // Genitori di chi ha un account ma e' anche figlio di qualcuno: sotto il
+  // nome compare "Figlio di …", come per i figli senza account.
+  childAccount: {
+    select: {
+      guardians: {
+        orderBy: { createdAt: "asc" as const },
+        select: { user: { select: { name: true, email: true } } },
+      },
+    },
+  },
+  sportRoleHistory: {
+    orderBy: { changedAt: "desc" as const },
+    select: { sportRole: true, changedAt: true },
+  },
+  teamMemberships: {
+    select: {
+      id: true,
+      teamId: true,
+      isCaptain: true,
+      team: { select: { id: true, name: true, season: true, color: true } },
+    },
+  },
+};
+
+const CHILD_ROW_SELECT = {
+  id: true,
+  name: true,
+  sportRole: true,
+  sportRoleVariant: true,
+  gender: true,
+  birthDate: true,
+  athleteStatus: true,
+  createdAt: true,
+  ...GUARDIANS_SELECT,
+  _count: { select: { registrations: true } },
+  teamMemberships: {
+    select: {
+      id: true,
+      teamId: true,
+      isCaptain: true,
+      team: { select: { id: true, name: true, season: true, color: true } },
+    },
+  },
+};
+
+/** Squadre a cui si assegnano gli atleti: la Karibu di stagione non ha una rosa sua. */
+const seasonTeams = (season: string) =>
+  prisma.competitiveTeam.findMany({
+    where: { season, isMixed: false },
+    select: { id: true, name: true, season: true, color: true },
+    orderBy: { name: "asc" },
+  });
+
+/**
+ * La pagina del dirigente: la rosa (la tab Atleti) in sola lettura. Niente
+ * account, ospiti in attesa, schede da aprire o comandi; la data di nascita non
+ * serve alla lista e non arriva al browser.
+ */
+async function ReadOnlyRoster() {
+  const currentSeason = await getCurrentSeasonLabel();
+  const [athleteUsers, childEntries, teams] = await Promise.all([
+    prisma.user.findMany({
+      where: ATHLETE_ACCOUNT_WHERE,
+      orderBy: { name: "asc" },
+      select: USER_ROW_SELECT,
+    }),
+    prisma.child.findMany({
+      where: { userId: null },
+      orderBy: [{ athleteStatus: { sort: "asc", nulls: "first" } }, { createdAt: "asc" }],
+      select: CHILD_ROW_SELECT,
+    }),
+    seasonTeams(currentSeason),
+  ]);
+  const rows: AdminRow[] = [
+    ...athleteUsers.map((u) => ({ ...toUserEntry(u), birthDate: null, kind: "user" as const })),
+    ...childEntries.map(({ guardians, ...c }) => ({
+      ...c,
+      birthDate: null,
+      guardians: guardianList({ guardians }),
+      kind: "child" as const,
+    })),
+  ];
+  return (
+    <>
+      <PageHeader
+        title="Utenti"
+        subtitle="La rosa: chi gioca, con o senza account."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
+      />
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
+        <AthletesTab rows={rows} teams={teams} currentSeason={currentSeason} readOnly />
+      </Paper>
+    </>
+  );
+}
+
 export default async function AdminUtentiPage({ searchParams }: { searchParams: SearchParams }) {
+  const { session, readOnly } = await requireAdminPage("/admin/utenti");
+  if (readOnly) return <ReadOnlyRoster />;
+
   const sp = await searchParams;
   const search = (sp.search as string | undefined)?.trim() ?? "";
   // Piu' valori separati da virgola (es. ruoli Baskin 4 e 5 insieme).
@@ -55,52 +176,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     Math.max(10, parseInt((sp.limit as string | undefined) ?? String(savedLimit), 10) || 25)
   );
 
-  const select = {
-    id: true,
-    name: true,
-    email: true,
-    image: true,
-    appRole: true,
-    sportRole: true,
-    sportRoleVariant: true,
-    sportRoleSuggested: true,
-    sportRoleSuggestedVariant: true,
-    gender: true,
-    birthDate: true,
-    athleteStatus: true,
-    createdAt: true,
-    _count: { select: { registrations: true } },
-    // Figli collegati: sotto il nome del genitore compare "Genitore di …".
-    guardianOf: {
-      orderBy: { createdAt: "asc" as const },
-      select: { child: { select: { name: true } } },
-    },
-    // Genitori di chi ha un account ma e' anche figlio di qualcuno: sotto il
-    // nome compare "Figlio di …", come per i figli senza account.
-    childAccount: {
-      select: {
-        guardians: {
-          orderBy: { createdAt: "asc" as const },
-          select: { user: { select: { name: true, email: true } } },
-        },
-      },
-    },
-    sportRoleHistory: {
-      orderBy: { changedAt: "desc" as const },
-      select: { sportRole: true, changedAt: true },
-    },
-    teamMemberships: {
-      select: {
-        id: true,
-        teamId: true,
-        isCaptain: true,
-        team: { select: { id: true, name: true, season: true, color: true } },
-      },
-    },
-  };
-
-  const session = await auth();
-  const isAdmin = session?.user?.appRole === "ADMIN";
+  const isAdmin = session.user.appRole === "ADMIN";
   const currentSeason = await getCurrentSeasonLabel();
 
   const [users, athleteUsers, childEntries, teams] = await Promise.all([
@@ -108,40 +184,20 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     // filtri, ordinamento e pagine avvengono nel browser, come nelle altre due
     // tab: con il filtro sul server ogni lettera digitata rifaceva tutta la
     // pagina (sei query) e la ricerca arrivava con secondi di ritardo.
-    prisma.user.findMany({ orderBy: { createdAt: "desc" }, select }),
+    prisma.user.findMany({ orderBy: { createdAt: "desc" }, select: USER_ROW_SELECT }),
     // Tab Atleti: tutti gli account che giocano, senza filtri ne' paginazione
     // (poche decine di righe: ricerca e filtri avvengono nel browser).
-    prisma.user.findMany({ where: ATHLETE_ACCOUNT_WHERE, orderBy: { name: "asc" }, select }),
+    prisma.user.findMany({
+      where: ATHLETE_ACCOUNT_WHERE,
+      orderBy: { name: "asc" },
+      select: USER_ROW_SELECT,
+    }),
     prisma.child.findMany({
       where: { userId: null },
       orderBy: [{ athleteStatus: { sort: "asc", nulls: "first" } }, { createdAt: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        sportRole: true,
-        sportRoleVariant: true,
-        gender: true,
-        birthDate: true,
-        athleteStatus: true,
-        createdAt: true,
-        ...GUARDIANS_SELECT,
-        _count: { select: { registrations: true } },
-        teamMemberships: {
-          select: {
-            id: true,
-            teamId: true,
-            isCaptain: true,
-            team: { select: { id: true, name: true, season: true, color: true } },
-          },
-        },
-      },
+      select: CHILD_ROW_SELECT,
     }),
-    prisma.competitiveTeam.findMany({
-      // La Karibu di stagione non ha una rosa a cui assegnare gli atleti.
-      where: { season: currentSeason, isMixed: false },
-      select: { id: true, name: true, season: true, color: true },
-      orderBy: { name: "asc" },
-    }),
+    seasonTeams(currentSeason),
   ]);
 
   return (
@@ -179,7 +235,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         }))}
         initialTeams={teams}
         isAdmin={isAdmin}
-        currentUserId={session?.user?.id ?? null}
+        currentUserId={session.user.id ?? null}
         currentSeason={currentSeason}
         currentFilters={{
           search,

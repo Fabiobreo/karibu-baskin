@@ -24,7 +24,11 @@ import { teamColor, teamFill } from "@/lib/teamColors";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
-import { formatBirthDate, type ChildData } from "@/components/profile/childLinkerShared";
+import {
+  formatBirthDate,
+  type ChildData,
+  type PendingLink,
+} from "@/components/profile/childLinkerShared";
 import ChildAddDialog from "@/components/profile/dialogs/ChildAddDialog";
 import ChildEditDialog from "@/components/profile/dialogs/ChildEditDialog";
 import ChildLinkDialog from "@/components/profile/dialogs/ChildLinkDialog";
@@ -36,6 +40,8 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ParentChildLinkerProps {
   initialChildren: ChildData[];
+  /** Richieste inviate a figli con account, ancora senza risposta. */
+  initialPendingLinks?: PendingLink[];
   /** Stagione in corso (flag dello staff, o calendario), per le squadre dei figli. */
   currentSeason: string;
 }
@@ -43,9 +49,12 @@ interface ParentChildLinkerProps {
 /** Lista figli del genitore + azioni: aggiungi, modifica, collega/scollega account, elimina. */
 export default function ParentChildLinker({
   initialChildren,
+  initialPendingLinks = [],
   currentSeason,
 }: ParentChildLinkerProps) {
   const [children, setChildren] = useState<ChildData[]>(initialChildren);
+  const [pendingLinks, setPendingLinks] = useState<PendingLink[]>(initialPendingLinks);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ChildData | null>(null);
@@ -76,6 +85,21 @@ export default function ParentChildLinker({
     }
   }
 
+  async function handleCancelRequest(pending: PendingLink) {
+    setCancellingId(pending.requestId);
+    try {
+      const res = await fetch(`/api/link-requests/${pending.requestId}`, { method: "DELETE" });
+      // 404 e 409: la richiesta non è più in attesa, la riga non ha più senso.
+      if (!res.ok && res.status !== 404 && res.status !== 409) throw new Error("cancel failed");
+      setPendingLinks((prev) => prev.filter((p) => p.requestId !== pending.requestId));
+      showToast({ message: t("requestCancelled"), severity: "info" });
+    } catch {
+      showToast({ message: t("cancelRequestError"), severity: "error" });
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
   async function handleDelete(child: ChildData) {
     setDeletingId(child.id);
     try {
@@ -101,7 +125,7 @@ export default function ParentChildLinker({
 
   return (
     <Box>
-      {children.length > 0 ? (
+      {children.length > 0 || pendingLinks.length > 0 ? (
         <Stack spacing={1.5} sx={{ mb: 2 }}>
           {children.map((child) => (
             <Paper key={child.id} variant="outlined" sx={{ p: 2 }}>
@@ -272,6 +296,44 @@ export default function ParentChildLinker({
               </Box>
             </Paper>
           ))}
+          {/* Figli con account che non hanno ancora risposto: nessuna scheda finché non accettano */}
+          {pendingLinks.map((pending) => (
+            <Paper key={pending.requestId} variant="outlined" sx={{ p: 2 }}>
+              <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
+                <Avatar
+                  src={pending.image ?? undefined}
+                  sx={{ width: 44, height: 44, flexShrink: 0, fontSize: TYPE_SCALE.lg }}
+                >
+                  {(pending.name ?? "?")[0].toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
+                    {pending.name ?? "?"}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      mt: 0.5,
+                      color: "text.secondary",
+                    }}
+                  >
+                    <HourglassEmptyIcon fontSize="inherit" />
+                    <Typography variant="caption">{t("pendingConfirm")}</Typography>
+                  </Box>
+                </Box>
+                <Button
+                  size="small"
+                  onClick={() => handleCancelRequest(pending)}
+                  disabled={cancellingId === pending.requestId}
+                  sx={{ flexShrink: 0 }}
+                >
+                  {t("cancelRequest")}
+                </Button>
+              </Box>
+            </Paper>
+          ))}
         </Stack>
       ) : (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -318,6 +380,11 @@ export default function ParentChildLinker({
         <ChildAddDialog
           onClose={() => setAddOpen(false)}
           onChildAdded={(child) => setChildren((prev) => [...prev, child])}
+          onRequestSent={(pending) =>
+            setPendingLinks((prev) =>
+              prev.some((p) => p.requestId === pending.requestId) ? prev : [...prev, pending]
+            )
+          }
         />
       )}
     </Box>

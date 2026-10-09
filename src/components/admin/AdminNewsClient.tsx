@@ -58,6 +58,8 @@ interface PostSummary {
 
 interface AdminNewsClientProps {
   initialPosts: PostSummary[];
+  /** Dirigente: legge i post, bozze comprese, senza crearli né modificarli. */
+  readOnly?: boolean;
 }
 
 const EMPTY_POLL: PollDraft = {
@@ -70,7 +72,7 @@ const EMPTY_POLL: PollDraft = {
   ],
 };
 
-export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) {
+export default function AdminNewsClient({ initialPosts, readOnly = false }: AdminNewsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState(initialPosts);
@@ -154,7 +156,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
 
   useEffect(() => {
     const editId = searchParams.get("edit");
-    if (!editId) return;
+    if (!editId || readOnly) return;
     const post = initialPosts.find((p) => p.id === editId);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (post) openEdit(post);
@@ -271,6 +273,20 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
 
   /** "Modifica" in riga; nel "⋯" pubblica o bozza, pagina pubblica (se uscita), elimina. */
   function postActions(post: PostSummary) {
+    // Dirigente: di un post uscito apre la pagina, di una bozza legge solo la riga.
+    if (readOnly) {
+      return post.publishedAt ? (
+        <RowActions
+          subject={post.title}
+          primary={{
+            label: "Pagina pubblica",
+            href: `/news/${post.slug}`,
+            external: true,
+            emphasis: "text",
+          }}
+        />
+      ) : null;
+    }
     return (
       <RowActions
         subject={post.title}
@@ -293,11 +309,13 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
-        <Button ref={newButtonRef} variant="contained" startIcon={<AddIcon />} onClick={openNew}>
-          Nuovo post
-        </Button>
-      </Box>
+      {!readOnly && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
+          <Button ref={newButtonRef} variant="contained" startIcon={<AddIcon />} onClick={openNew}>
+            Nuovo post
+          </Button>
+        </Box>
+      )}
 
       {/* Desktop table */}
       <TableContainer

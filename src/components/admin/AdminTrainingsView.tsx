@@ -24,6 +24,8 @@ interface AdminTrainingsViewProps {
   editId: string | null;
   /** Intestazione della pagina: il bottone "Nuovo allenamento" sta nel suo slot (UX-51). */
   header: { title: string; subtitle?: string; breadcrumb: BreadcrumbItem[] };
+  /** Dirigente: legge iscritti, squadre, presenze e risultati, senza comandi. */
+  readOnly?: boolean;
 }
 
 /**
@@ -40,6 +42,7 @@ export default function AdminTrainingsView({
   openId,
   editId,
   header,
+  readOnly = false,
 }: AdminTrainingsViewProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,9 +67,11 @@ export default function AdminTrainingsView({
       <PageHeader
         {...header}
         action={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreating(true)}>
-            Nuovo allenamento
-          </Button>
+          readOnly ? undefined : (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreating(true)}>
+              Nuovo allenamento
+            </Button>
+          )
         }
       />
       <Box sx={{ mb: 2, borderBottom: "1px solid", borderColor: "divider" }}>
@@ -86,13 +91,19 @@ export default function AdminTrainingsView({
       </Box>
 
       {section === "prossimi" && (
-        <AdminUpcomingList sessions={upcoming} initialOpenId={openId} initialEditId={editId} />
+        <AdminUpcomingList
+          sessions={upcoming}
+          initialOpenId={openId}
+          initialEditId={editId}
+          readOnly={readOnly}
+        />
       )}
       {section === "da-completare" && (
         <AdminAllenamentiClient
           sessions={toComplete}
           initialOpenId={openId}
           initialEditId={editId}
+          readOnly={readOnly}
         />
       )}
       {section === "conclusi" && (
@@ -101,11 +112,12 @@ export default function AdminTrainingsView({
           variant="concluded"
           initialOpenId={openId}
           initialEditId={editId}
+          readOnly={readOnly}
         />
       )}
 
       <Dialog
-        open={creating}
+        open={creating && !readOnly}
         onClose={() => !creatingBusy && setCreating(false)}
         maxWidth="sm"
         fullWidth

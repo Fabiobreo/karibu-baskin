@@ -29,7 +29,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type { MatchCoverage } from "@/lib/matches/matchCoverage";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useState, useEffect, useMemo, useRef } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { alpha } from "@mui/material/styles";
@@ -111,9 +111,15 @@ type Props = {
    * mostrano.
    */
   isAdmin: boolean;
+  /** Dirigente: l'elenco si legge soltanto, senza convocazioni né altre azioni. */
+  readOnly?: boolean;
   /** Intestazione della pagina: "Nuova partita" sta nel suo slot azione (UX-51). */
   header: { title: string; subtitle?: string; breadcrumb: BreadcrumbItem[] };
 };
+
+// Le righe stanno quattro componenti più in basso: la sola lettura ci arriva da
+// qui, senza passare di mano in mano come `isAdmin`.
+const ReadOnlyContext = createContext(false);
 
 const RESULT_LABELS: Record<MatchResult, string> = {
   WIN: "Vittoria",
@@ -337,6 +343,7 @@ function RowActions({
     delete: () => onDelete(m.id),
     profile: () => onProfile(m),
   };
+  const readOnly = useContext(ReadOnlyContext);
   return (
     <MatchRowActions
       state={{
@@ -348,6 +355,7 @@ function RowActions({
         hasOpponent: !!m.opponentId,
         hasProfile: !!m.opponentProfile,
         isAdmin,
+        readOnly,
       }}
       matchLabel={`${m.team.name} vs ${m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}`}
       hrefs={{
@@ -403,6 +411,7 @@ export default function AdminPartiteClient({
   groupMatches: initialGroupMatches,
   coverages,
   isAdmin,
+  readOnly = false,
   header,
 }: Props) {
   const router = useRouter();
@@ -426,7 +435,8 @@ export default function AdminPartiteClient({
 
   useEffect(() => {
     const editId = searchParams.get("edit");
-    if (!editId) return;
+    // Modificare una partita è dell'admin: per gli altri il link non apre nulla.
+    if (!editId || !isAdmin) return;
     const match = initialMatches.find((m) => m.id === editId);
     if (match) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -542,147 +552,149 @@ export default function AdminPartiteClient({
   );
 
   return (
-    <Box>
-      <PageHeader
-        {...header}
-        titleRef={titleRef}
-        action={
-          // Creare una partita e' dell'admin; senza squadre il bottone resta spento.
-          isAdmin ? (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={openCreate}
-              disabled={teams.length === 0}
-            >
-              Nuova partita
-            </Button>
-          ) : undefined
-        }
-      />
-      {matchesWithShortfall.length > 0 && (
-        <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
-          <AlertTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
-            Copertura ruoli insufficiente in {matchesWithShortfall.length} partit
-            {matchesWithShortfall.length === 1 ? "a" : "e"}
-          </AlertTitle>
-          <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-            {matchesWithShortfall.slice(0, 5).map((m) => {
-              const cov = coverages[m.id]!;
-              const detail = cov.perGroup
-                .filter((r) => r.shortfall > 0)
-                .map((r) => `${r.label}: ${r.available}/${r.required}`)
-                .join(" · ");
-              return (
-                <Typography key={m.id} variant="body2">
-                  <strong>{format(new Date(m.date), "d MMM", { locale: it })}</strong> vs{" "}
-                  {m.opponent?.name ?? m.opponentTeam?.name ?? "—"} — {detail}
-                </Typography>
-              );
-            })}
-            {matchesWithShortfall.length > 5 && (
-              <Typography variant="caption" color="text.secondary">
-                + altre {matchesWithShortfall.length - 5}
-              </Typography>
-            )}
-          </Stack>
-        </Alert>
-      )}
-
-      <Tabs
-        value={tab}
-        onChange={(_, v) => {
-          setTab(v);
-          setPage(0);
-        }}
-        sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}
-      >
-        {(Object.keys(TAB_LABELS) as TabKey[]).map((k) => (
-          <Tab
-            key={k}
-            value={k}
-            label={`${TAB_LABELS[k]} (${matches.filter((m) => m.matchType === k).length})`}
-          />
-        ))}
-      </Tabs>
-
-      {matches.length === 0 ? (
-        <EmptyState onCreate={openCreate} disabled={teams.length === 0} canCreate={isAdmin} />
-      ) : tab === "LEAGUE" ? (
-        <LeagueView
-          matches={filteredMatches}
-          groupMatches={groupMatches}
-          coverages={coverages}
-          now={now}
-          isAdmin={isAdmin}
-          onResult={(m) => setResultMatch(m)}
-          onEdit={openEdit}
-          onDelete={handleDeleteMatch}
-          onProfile={(m) => setProfileMatch(m)}
-          onGroupMatchSaved={handleGroupMatchSaved}
-        />
-      ) : (
-        <FlatView
-          matches={filteredMatches}
-          coverages={coverages}
-          page={page}
-          rpp={rpp}
-          setPage={setPage}
-          setRpp={setRpp}
-          now={now}
-          isAdmin={isAdmin}
-          onResult={(m) => setResultMatch(m)}
-          onEdit={openEdit}
-          onDelete={handleDeleteMatch}
-          onProfile={(m) => setProfileMatch(m)}
-        />
-      )}
-
-      {resultMatch && (
-        <MatchResultDialog
-          open={!!resultMatch}
-          onClose={() => setResultMatch(null)}
-          matchId={resultMatch.id}
-          matchLabel={`${resultMatch.team.name} vs ${resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"} del ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
-          ourTeamName={resultMatch.team.name}
-          theirTeamName={
-            resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"
+    <ReadOnlyContext.Provider value={readOnly}>
+      <Box>
+        <PageHeader
+          {...header}
+          titleRef={titleRef}
+          action={
+            // Creare una partita e' dell'admin; senza squadre il bottone resta spento.
+            isAdmin ? (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={openCreate}
+                disabled={teams.length === 0}
+              >
+                Nuova partita
+              </Button>
+            ) : undefined
           }
-          initialOurScore={resultMatch.ourScore}
-          initialTheirScore={resultMatch.theirScore}
-          initialResult={resultMatch.result}
-          onSaved={handleResultSaved}
         />
-      )}
+        {matchesWithShortfall.length > 0 && (
+          <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
+            <AlertTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+              Copertura ruoli insufficiente in {matchesWithShortfall.length} partit
+              {matchesWithShortfall.length === 1 ? "a" : "e"}
+            </AlertTitle>
+            <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+              {matchesWithShortfall.slice(0, 5).map((m) => {
+                const cov = coverages[m.id]!;
+                const detail = cov.perGroup
+                  .filter((r) => r.shortfall > 0)
+                  .map((r) => `${r.label}: ${r.available}/${r.required}`)
+                  .join(" · ");
+                return (
+                  <Typography key={m.id} variant="body2">
+                    <strong>{format(new Date(m.date), "d MMM", { locale: it })}</strong> vs{" "}
+                    {m.opponent?.name ?? m.opponentTeam?.name ?? "—"} — {detail}
+                  </Typography>
+                );
+              })}
+              {matchesWithShortfall.length > 5 && (
+                <Typography variant="caption" color="text.secondary">
+                  + altre {matchesWithShortfall.length - 5}
+                </Typography>
+              )}
+            </Stack>
+          </Alert>
+        )}
 
-      <MatchFormDialog
-        open={matchDialog}
-        onClose={() => setMatchDialog(false)}
-        editMatch={editMatch}
-        teams={teams}
-        opponents={opponents}
-        groups={groups}
-        onOpponentCreated={(opp) =>
-          setOpponents((prev) => [...prev, opp].sort((a, b) => a.name.localeCompare(b.name)))
-        }
-        onSaved={(saved, isEdit) => handleSaved(saved as Match, isEdit)}
-      />
+        <Tabs
+          value={tab}
+          onChange={(_, v) => {
+            setTab(v);
+            setPage(0);
+          }}
+          sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}
+        >
+          {(Object.keys(TAB_LABELS) as TabKey[]).map((k) => (
+            <Tab
+              key={k}
+              value={k}
+              label={`${TAB_LABELS[k]} (${matches.filter((m) => m.matchType === k).length})`}
+            />
+          ))}
+        </Tabs>
 
-      {profileMatch && profileMatch.opponentId && (
-        <OpponentProfileDialog
-          open={!!profileMatch}
-          onClose={() => setProfileMatch(null)}
-          matchId={profileMatch.id}
-          opponentId={profileMatch.opponentId}
-          opponentName={profileMatch.opponent?.name ?? "Avversario"}
-          opponentRatingMu={profileMatch.opponent?.ratingMu ?? null}
-          currentProfile={(profileMatch.opponentProfile as OpponentProfile) ?? null}
-          onSaved={handleProfileSaved}
+        {matches.length === 0 ? (
+          <EmptyState onCreate={openCreate} disabled={teams.length === 0} canCreate={isAdmin} />
+        ) : tab === "LEAGUE" ? (
+          <LeagueView
+            matches={filteredMatches}
+            groupMatches={groupMatches}
+            coverages={coverages}
+            now={now}
+            isAdmin={isAdmin}
+            onResult={(m) => setResultMatch(m)}
+            onEdit={openEdit}
+            onDelete={handleDeleteMatch}
+            onProfile={(m) => setProfileMatch(m)}
+            onGroupMatchSaved={handleGroupMatchSaved}
+          />
+        ) : (
+          <FlatView
+            matches={filteredMatches}
+            coverages={coverages}
+            page={page}
+            rpp={rpp}
+            setPage={setPage}
+            setRpp={setRpp}
+            now={now}
+            isAdmin={isAdmin}
+            onResult={(m) => setResultMatch(m)}
+            onEdit={openEdit}
+            onDelete={handleDeleteMatch}
+            onProfile={(m) => setProfileMatch(m)}
+          />
+        )}
+
+        {resultMatch && (
+          <MatchResultDialog
+            open={!!resultMatch}
+            onClose={() => setResultMatch(null)}
+            matchId={resultMatch.id}
+            matchLabel={`${resultMatch.team.name} vs ${resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"} del ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
+            ourTeamName={resultMatch.team.name}
+            theirTeamName={
+              resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"
+            }
+            initialOurScore={resultMatch.ourScore}
+            initialTheirScore={resultMatch.theirScore}
+            initialResult={resultMatch.result}
+            onSaved={handleResultSaved}
+          />
+        )}
+
+        <MatchFormDialog
+          open={matchDialog}
+          onClose={() => setMatchDialog(false)}
+          editMatch={editMatch}
+          teams={teams}
+          opponents={opponents}
+          groups={groups}
+          onOpponentCreated={(opp) =>
+            setOpponents((prev) => [...prev, opp].sort((a, b) => a.name.localeCompare(b.name)))
+          }
+          onSaved={(saved, isEdit) => handleSaved(saved as Match, isEdit)}
         />
-      )}
 
-      {ConfirmDialog}
-    </Box>
+        {profileMatch && profileMatch.opponentId && (
+          <OpponentProfileDialog
+            open={!!profileMatch}
+            onClose={() => setProfileMatch(null)}
+            matchId={profileMatch.id}
+            opponentId={profileMatch.opponentId}
+            opponentName={profileMatch.opponent?.name ?? "Avversario"}
+            opponentRatingMu={profileMatch.opponent?.ratingMu ?? null}
+            currentProfile={(profileMatch.opponentProfile as OpponentProfile) ?? null}
+            onSaved={handleProfileSaved}
+          />
+        )}
+
+        {ConfirmDialog}
+      </Box>
+    </ReadOnlyContext.Provider>
   );
 }
 
@@ -751,6 +763,7 @@ function LeagueView({
 }) {
   // Raggruppamento per girone (matches con groupId noto). Le partite di
   // campionato senza girone finiscono in una sezione "Senza girone".
+  const readOnly = useContext(ReadOnlyContext);
   const sections = useMemo(() => {
     const map = new Map<string, { groupId: string | null; groupName: string; rows: Match[] }>();
     for (const m of matches) {
@@ -813,7 +826,7 @@ function LeagueView({
             <Typography component="h2" variant="subtitle2">
               {sec.groupName}
             </Typography>
-            {sec.groupId && (
+            {sec.groupId && !readOnly && (
               <Button
                 href={`/admin/gironi/${sec.groupId}`}
                 size="small"

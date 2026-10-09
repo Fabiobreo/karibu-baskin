@@ -16,6 +16,10 @@
  *   - un atleta di prova e due allenamenti passati con iscrizioni anonime al
  *     suo nome ("Ti riconosco!" in /profilo confronta il nome, non l'email);
  *   - due partite future, di sabato, con avversarie dal nome lungo;
+ *   - una stagione in corso per la pagina squadra: tre partite di campionato
+ *     giocate con i tabellini e due future, contro avversarie con e senza logo.
+ *     Vanno alla Karibu se quella stagione gioca il campionato, altrimenti alla
+ *     prima squadra;
  *   - un evento futuro con risposta Ci sarò/Forse/No (UX-25), con un "Pranzo" e
  *     gli esterni ammessi (massimo 2);
  *   - una famiglia per la risposta "uno per tutti": due genitori dello stesso
@@ -43,11 +47,38 @@ const CHILD_ID = "ux-child";
 
 const TRAINING_OPEN = "ux-training-open";
 const TRAINING_PAST = ["ux-training-past-1", "ux-training-past-2"];
-const OPPONENTS = [
-  { id: "ux-opp-1", name: `${UX_MARKER} Polisportiva Dilettantistica Baskin Valle dell'Agno` },
+// I loghi sono file già in `public/`: bastano a provare lo stemma in un cerchio.
+const OPPONENTS: { id: string; name: string; city?: string; imageUrl?: string }[] = [
+  {
+    id: "ux-opp-1",
+    name: `${UX_MARKER} Polisportiva Dilettantistica Baskin Valle dell'Agno`,
+    imageUrl: "/sponsors/cgrd.png",
+  },
   { id: "ux-opp-2", name: `${UX_MARKER} Associazione Sportiva Inclusiva Riviera Berica` },
+  {
+    id: "ux-opp-3",
+    name: `${UX_MARKER} Falchi Schio`,
+    city: "Schio",
+    imageUrl: "/sponsors/LLP.png",
+  },
+  { id: "ux-opp-4", name: `${UX_MARKER} Orsi Thiene`, city: "Thiene" },
 ];
 const MATCHES = ["ux-match-1", "ux-match-2"];
+
+/** Stagione di prova della pagina squadra: `days` da oggi, `theirScore` solo se giocata. */
+const SEASON_MATCHES: {
+  id: string;
+  opponent: number;
+  days: number;
+  isHome: boolean;
+  theirScore?: number;
+}[] = [
+  { id: "ux-season-1", opponent: 2, days: -21, isHome: true, theirScore: 31 },
+  { id: "ux-season-2", opponent: 3, days: -14, isHome: false, theirScore: 71 },
+  { id: "ux-season-3", opponent: 0, days: -7, isHome: true, theirScore: 40 },
+  { id: "ux-season-4", opponent: 2, days: 4, isHome: false },
+  { id: "ux-season-5", opponent: 3, days: 18, isHome: true },
+];
 const EVENT_ID = "ux-event";
 const EVENT_LUNCH_ID = "ux-event-lunch";
 
@@ -187,7 +218,9 @@ async function seed() {
       upsertTraining(
         id,
         `${UX_MARKER} Allenamento passato`,
-        atDaysFromNow(-10 - 7 * i, 18, 30),
+        // Un minuto insolito: `dateSlug` è unico, e alle 18:30 può esserci già
+        // un allenamento vero nello stesso giorno.
+        atDaysFromNow(-10 - 7 * i, 18, 31),
         false
       )
     )
@@ -212,7 +245,12 @@ async function seed() {
   }
 
   for (const opp of OPPONENTS) {
-    const data = { name: opp.name, slug: slugify(opp.name), city: "Vicenza" };
+    const data = {
+      name: opp.name,
+      slug: slugify(opp.name),
+      city: opp.city ?? "Vicenza",
+      imageUrl: opp.imageUrl ?? null,
+    };
     await prisma.opposingTeam.upsert({
       where: { id: opp.id },
       create: { id: opp.id, ...data },
@@ -234,6 +272,69 @@ async function seed() {
       theirScore: null,
     };
     await prisma.match.upsert({ where: { id }, create: { id, ...data }, update: data });
+  }
+
+  // Stagione di prova per la pagina squadra. La Karibu che gioca il campionato
+  // schiera i tesserati delle altre squadre della stagione.
+  const clubTeam = await prisma.competitiveTeam.findFirst({
+    where: { season: team.season, isMixed: true, playsLeague: true },
+  });
+  const seasonTeam = clubTeam ?? team;
+  const players = await prisma.teamMembership.findMany({
+    where: { team: { season: team.season, isMixed: false } },
+    orderBy: { createdAt: "asc" },
+    take: 7,
+    select: { userId: true, childId: true },
+  });
+  for (const [i, m] of SEASON_MATCHES.entries()) {
+    const opponent = OPPONENTS[m.opponent];
+    const date = atDaysFromNow(m.days, 15);
+    const played = m.theirScore !== undefined;
+    // Tabellino fisso per giocatore e partita: il punteggio è la somma.
+    const stats = played
+      ? players.map((p, j) => {
+          const twoPointers = (i + j * 2) % 5;
+          const threePointers = (i * 2 + j) % 3;
+          const freeThrows = (i + j) % 4;
+          return {
+            userId: p.userId,
+            childId: p.childId,
+            twoPointers,
+            threePointers,
+            freeThrows,
+            points: 2 * twoPointers + 3 * threePointers + freeThrows,
+          };
+        })
+      : [];
+    const ourScore = played ? stats.reduce((sum, st) => sum + st.points, 0) : null;
+    const theirScore = m.theirScore ?? null;
+    const data = {
+      teamId: seasonTeam.id,
+      opponentId: opponent.id,
+      date,
+      isHome: m.isHome,
+      matchType: "LEAGUE" as const,
+      matchday: i + 1,
+      notes: `${UX_MARKER} Partita di prova per la pagina squadra.`,
+      slug: `ux-${slugify(seasonTeam.name)}-vs-${slugify(opponent.name)}-${date.toISOString().slice(0, 10)}`,
+      ourScore,
+      theirScore,
+      result:
+        ourScore === null || theirScore === null
+          ? null
+          : ourScore > theirScore
+            ? ("WIN" as const)
+            : ourScore < theirScore
+              ? ("LOSS" as const)
+              : ("DRAW" as const),
+    };
+    await prisma.match.upsert({ where: { id: m.id }, create: { id: m.id, ...data }, update: data });
+    await prisma.playerMatchStats.deleteMany({ where: { matchId: m.id } });
+    if (stats.length > 0) {
+      await prisma.playerMatchStats.createMany({
+        data: stats.map((st) => ({ matchId: m.id, ...st })),
+      });
+    }
   }
 
   const event = {
@@ -273,6 +374,9 @@ async function seed() {
   console.log(`  atleta        ${ATHLETE.email} (2 iscrizioni anonime da collegare in /profilo)`);
   console.log(`  allenamento   /allenamento/${open.dateSlug}`);
   console.log(`  partite       ${MATCHES.length} contro avversarie "[UX]", squadra ${team.name}`);
+  console.log(
+    `  stagione      ${SEASON_MATCHES.length} partite di campionato, squadra ${seasonTeam.name}`
+  );
   console.log(`  evento        /eventi/${event.slug} (Pranzo, esterni ammessi)`);
   console.log(`  utenti id     ${parent.id}, ${athlete.id}`);
 }
@@ -305,7 +409,10 @@ async function clean() {
   const sessions = await prisma.trainingSession.deleteMany({ where: { id: { in: trainingIds } } });
   const matches = await prisma.match.deleteMany({
     where: {
-      OR: [{ id: { in: MATCHES } }, { opponentId: { in: OPPONENTS.map((o) => o.id) } }],
+      OR: [
+        { id: { in: [...MATCHES, ...SEASON_MATCHES.map((m) => m.id)] } },
+        { opponentId: { in: OPPONENTS.map((o) => o.id) } },
+      ],
     },
   });
   const opponents = await prisma.opposingTeam.deleteMany({

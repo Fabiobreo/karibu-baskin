@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { auth } from "@/lib/authjs";
+import { requireAdminPage } from "@/lib/adminAccess";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import PageHeader from "@/components/common/PageHeader";
@@ -31,10 +31,7 @@ const TEAM_INCLUDE = {
 } satisfies Prisma.CompetitiveTeamInclude;
 
 export default async function AdminRosaPage({ params }: Params) {
-  const session = await auth();
-  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
-    redirect("/admin/login");
-  }
+  const { role } = await requireAdminPage("/admin/squadre");
 
   const { teamId } = await params;
 
@@ -46,9 +43,9 @@ export default async function AdminRosaPage({ params }: Params) {
   // La Karibu di stagione non ha una rosa propria da gestire.
   if (team.isMixed) redirect("/admin/squadre");
 
-  // La rosa la modifica solo l'admin (API members con `isAdminUser`): l'allenatore
-  // la legge soltanto, e il pool di chi si può aggiungere non gli serve.
-  const isAdmin = hasRole(session.user.appRole, "ADMIN");
+  // La rosa la modifica solo l'admin (API members con `isAdminUser`): allenatore
+  // e dirigente la leggono soltanto, e il pool di chi si può aggiungere non serve.
+  const isAdmin = hasRole(role, "ADMIN");
   if (!isAdmin) {
     return (
       <>

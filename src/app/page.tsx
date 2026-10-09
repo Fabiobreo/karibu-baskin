@@ -19,6 +19,7 @@ import GuestOnboardingSkeleton from "@/components/common/GuestOnboardingSkeleton
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
 import NextActionSection from "@/components/common/NextActionSection";
 import { showsNextAction } from "@/lib/nextAction";
+import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
 
@@ -47,8 +48,7 @@ export default async function HomePage() {
   const appRole = userSession?.user?.appRole ?? null;
   const isStaff = appRole === "COACH" || appRole === "ADMIN";
   // Membri attivi: home "operativa" (allenamenti prima); anonimi/GUEST: home istituzionale
-  const isMember =
-    appRole === "ATHLETE" || appRole === "PARENT" || appRole === "COACH" || appRole === "ADMIN";
+  const isMember = isMemberRole(appRole);
 
   const matchesBlock = (
     <Suspense fallback={<HomeSectionSkeleton variant="matches" />}>
@@ -91,14 +91,20 @@ export default async function HomePage() {
   // cosa da fare per atleti e genitori, i primi passi per chi e' in attesa,
   // l'invito a provare per chi non ha fatto l'accesso.
   const firstName = userSession?.user?.name?.trim().split(/\s+/)[0] || null;
-  // Lo staff che gioca vede la card come gli atleti (UX-24): il ruolo Baskin
-  // non e' nella sessione, e la query serve solo allo staff.
-  const staffSportRole =
-    isStaff && userId
-      ? ((await prisma.user.findUnique({ where: { id: userId }, select: { sportRole: true } }))
-          ?.sportRole ?? null)
+  // Lo staff e il dirigente che giocano vedono la card come gli atleti (UX-24):
+  // il ruolo Baskin non e' nella sessione, e la query serve solo a loro.
+  const ownProfile =
+    (isStaff || appRole === "DIRECTOR") && userId
+      ? await prisma.user.findUnique({
+          where: { id: userId },
+          select: { sportRole: true, _count: { select: { guardianOf: true } } },
+        })
       : null;
-  const showNextAction = showsNextAction(appRole, staffSportRole);
+  const showNextAction = showsNextAction(
+    appRole,
+    ownProfile?.sportRole ?? null,
+    (ownProfile?._count.guardianOf ?? 0) > 0
+  );
   const isGuest = appRole === "GUEST" && !!userId;
   const memberHead = showNextAction && !!userId && !!appRole;
 

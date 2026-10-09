@@ -5,6 +5,7 @@ export const ROLE_LABELS_IT: Record<AppRole, string> = {
   GUEST: "Ospite",
   ATHLETE: "Atleta",
   PARENT: "Genitore",
+  DIRECTOR: "Dirigente",
   COACH: "Allenatore",
   ADMIN: "Admin",
 };

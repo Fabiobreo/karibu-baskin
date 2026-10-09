@@ -7,7 +7,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import type { MatchResult } from "@prisma/client";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { mixedMatchError } from "@/lib/matches/mixedTeam";
+import { isRestrictedClubTeam, mixedMatchError } from "@/lib/matches/mixedTeam";
 import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   const [team, opponentExt, opponentInt] = await Promise.all([
     prisma.competitiveTeam.findUnique({
       where: { id: body.teamId },
-      select: { name: true, isMixed: true },
+      select: { name: true, isMixed: true, playsLeague: true },
     }),
     body.opponentId
       ? prisma.opposingTeam.findUnique({
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     body.opponentTeamId
       ? prisma.competitiveTeam.findUnique({
           where: { id: body.opponentTeamId },
-          select: { name: true, isMixed: true },
+          select: { name: true, isMixed: true, playsLeague: true },
         })
       : Promise.resolve(null),
   ]);
@@ -95,7 +95,8 @@ export async function POST(req: Request) {
 
   // Le partite interne sono sempre amichevoli (lo schema lo richiede); una
   // Karibu di stagione senza tipo indicato gioca un'amichevole, mai il campionato.
-  const involvesMixed = team.isMixed || !!opponentInt?.isMixed;
+  // La Karibu iscritta al campionato (`playsLeague`) è una squadra come le altre.
+  const involvesMixed = isRestrictedClubTeam(team) || isRestrictedClubTeam(opponentInt);
   const resolvedMatchType = body.opponentTeamId
     ? "FRIENDLY"
     : (body.matchType ?? (involvesMixed ? "FRIENDLY" : "LEAGUE"));

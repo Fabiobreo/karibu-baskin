@@ -6,6 +6,7 @@ import type { SvgIconComponent } from "@mui/icons-material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import SportsIcon from "@mui/icons-material/Sports";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PauseCircleOutlineIcon from "@mui/icons-material/PauseCircleOutline";
@@ -19,6 +20,7 @@ export const ROLE_CHIP_ICONS: Record<AppRole, SvgIconComponent> = {
   GUEST: PersonOutlineIcon,
   ATHLETE: SportsBasketballIcon,
   PARENT: FamilyRestroomIcon,
+  DIRECTOR: BusinessCenterIcon,
   COACH: SportsIcon,
   ADMIN: AdminPanelSettingsIcon,
 };
@@ -30,12 +32,15 @@ const CHIP_ICON = "& .MuiChip-icon, & .MuiChip-label .MuiSvgIcon-root";
 /**
  * `sx` del chip del ruolo utente (01/10): tonale per atleta, genitore e
  * allenatore (`palette.appRole`), nero del marchio pieno per l'admin, neutro
- * contornato per l'ospite. Solo token del tema: va bene anche nei Server
+ * contornato per l'ospite, neutro pieno per il dirigente (nessuna tinta nuova:
+ * lo distinguono icona e parola). Solo token del tema: va bene anche nei Server
  * Component. Il chip va usato con `variant="outlined"` per l'ospite e
  * `"filled"` per gli altri (`appRoleChipVariant`).
  */
 export function appRoleChipSx(role: AppRole) {
   if (role === "GUEST") return { [CHIP_ICON]: { color: "text.secondary" } };
+  // Il grigio del chip pieno di MUI, con il testo del tema.
+  if (role === "DIRECTOR") return { [CHIP_ICON]: { color: "inherit" } };
   if (role === "ADMIN") {
     return {
       bgcolor: "secondary.main",

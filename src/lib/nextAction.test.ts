@@ -122,6 +122,12 @@ describe("showsNextAction", () => {
   });
   it("lo staff solo se gioca", () => {
     expect(showsNextAction("COACH", 3)).toBe(true);
+    expect(showsNextAction("DIRECTOR", 3)).toBe(true);
+    expect(showsNextAction("DIRECTOR", null)).toBe(false);
+    // Il dirigente con figli collegati è un genitore: la card serve per loro.
+    expect(showsNextAction("DIRECTOR", null, true)).toBe(true);
+    // Lo staff che non gioca resta col banner, figli o no.
+    expect(showsNextAction("COACH", null, true)).toBe(false);
     expect(showsNextAction("ADMIN", 5)).toBe(true);
     expect(showsNextAction("COACH", null)).toBe(false);
   });
