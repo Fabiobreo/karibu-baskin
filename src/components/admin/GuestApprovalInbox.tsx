@@ -1,8 +1,20 @@
 "use client";
 import { useState } from "react";
-import { Avatar, Box, Button, Chip, CircularProgress, Paper, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Menu,
+  MenuItem,
+  Paper,
+  Typography,
+} from "@mui/material";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
-import { useRouter } from "next/navigation";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import type { AppRole } from "@prisma/client";
+import { assignableAppRoles, ROLE_LABELS_IT } from "@/lib/authRoles";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
@@ -20,19 +32,41 @@ export interface GuestUser {
   createdAt: string | Date;
 }
 
+interface GuestApprovalInboxProps {
+  /** Gli account ancora ospiti: la lista li ricava dalle sue righe. */
+  guests: GuestUser[];
+  /** L'admin assegna anche gli altri ruoli; l'allenatore solo Atleta o Genitore. */
+  isAdmin?: boolean;
+  /** Ruolo assegnato: la lista aggiorna la riga, e l'account esce da qui. */
+  onApproved: (guestId: string, appRole: AppRole) => void;
+}
+
+/** I due ruoli con il bottone in riga: gli altri stanno nel menu "Altro". */
+const QUICK_ROLES: AppRole[] = ["ATHLETE", "PARENT"];
+
 /**
  * Corsia rapida di approvazione dei nuovi account (GUEST): un click per
  * promuovere ad Atleta o Genitore, senza passare dalla scheda completa.
  */
-export default function GuestApprovalInbox({ guests: initialGuests }: { guests: GuestUser[] }) {
-  const router = useRouter();
+export default function GuestApprovalInbox({
+  guests,
+  isAdmin = false,
+  onApproved,
+}: GuestApprovalInboxProps) {
   const { showToast } = useToast();
-  const [guests, setGuests] = useState(initialGuests);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ anchor: HTMLElement; guest: GuestUser } | null>(null);
 
   if (guests.length === 0) return null;
 
-  async function approve(guest: GuestUser, appRole: "ATHLETE" | "PARENT") {
+  // Stessa regola dell'API (`canAssignAppRole`): niente voci che verrebbero rifiutate.
+  const otherRoles = assignableAppRoles({
+    actorRole: isAdmin ? "ADMIN" : "COACH",
+    isSelf: false,
+    current: "GUEST",
+  }).filter((role) => role !== "GUEST" && !QUICK_ROLES.includes(role));
+
+  async function approve(guest: GuestUser, appRole: AppRole) {
     setProcessing(guest.id);
     try {
       const res = await fetch(`/api/users/${guest.id}`, {
@@ -45,12 +79,11 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
         showToast({ message: message, severity: "error" });
         return;
       }
-      setGuests((prev) => prev.filter((g) => g.id !== guest.id));
+      onApproved(guest.id, appRole);
       showToast({
-        message: `${guest.name ?? guest.email} approvato come ${appRole === "ATHLETE" ? "Atleta" : "Genitore"}`,
+        message: `${guest.name ?? guest.email} approvato come ${ROLE_LABELS_IT[appRole]}`,
         severity: "success",
       });
-      router.refresh();
     } catch {
       showToast({ message: "Errore di rete", severity: "error" });
     } finally {
@@ -125,13 +158,42 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                 >
                   Genitore
                 </Button>
+                {otherRoles.length > 0 && (
+                  <Button
+                    size="small"
+                    variant="text"
+                    disabled={busy}
+                    sx={TOUCH_TARGET_ON_PHONE}
+                    endIcon={<ExpandMoreIcon />}
+                    aria-haspopup="menu"
+                    aria-label={`Altro ruolo per ${g.name ?? g.email}`}
+                    onClick={(e) => setMenu({ anchor: e.currentTarget, guest: g })}
+                  >
+                    Altro
+                  </Button>
+                )}
               </Box>
             </Box>
           );
         })}
       </Box>
+      <Menu anchorEl={menu?.anchor} open={!!menu} onClose={() => setMenu(null)}>
+        {otherRoles.map((role) => (
+          <MenuItem
+            key={role}
+            onClick={() => {
+              if (menu) approve(menu.guest, role);
+              setMenu(null);
+            }}
+          >
+            {ROLE_LABELS_IT[role]}
+          </MenuItem>
+        ))}
+      </Menu>
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-        Per altri ruoli o per i dati atleta usa la scheda utente nella lista qui sotto.
+        {isAdmin
+          ? "Per i dati atleta usa la scheda utente nella lista qui sotto."
+          : "Per i dati atleta usa la scheda utente nella lista qui sotto. Gli altri ruoli li assegna un admin."}
       </Typography>
     </Paper>
   );

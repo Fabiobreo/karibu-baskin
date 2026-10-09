@@ -1,10 +1,11 @@
 "use client";
-import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { writeRowsPerPageCookie } from "@/lib/rowsPerPage";
 import { joinFilter, parseAppRoles, parseSportRoles } from "@/lib/userFilters";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Box,
+  Paper,
   Tabs,
   Tab,
   TablePagination,
@@ -26,6 +27,7 @@ import ChildrenTab from "@/components/admin/userList/ChildrenTab";
 import AthletesTab from "@/components/admin/userList/AthletesTab";
 import { isAthleteAccount } from "@/lib/athletes";
 import UserEditDialog from "@/components/admin/userList/UserEditDialog";
+import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
 import type {
   AdminRow,
   ChildEntry,
@@ -36,7 +38,7 @@ import type {
   UserEntry,
 } from "@/components/admin/userList/userListShared";
 
-/** Righe per pagina di default, allineato al server (vedi utenti/page.tsx). */
+/** Righe per pagina di default (vedi utenti/page.tsx). */
 const DEFAULT_ROWS_PER_PAGE = 25;
 
 type UserRow = UserEntry & { kind: "user" };
@@ -44,11 +46,14 @@ type TabKey = "athletes" | "accounts" | "children";
 
 const toUserRow = (u: UserEntry): UserRow => ({ ...u, kind: "user" });
 
+/** Attivi in cima, poi "In pausa", poi "Ex": dentro ogni gruppo l'ordine scelto. */
+const ATHLETE_STATUS_RANK = { INACTIVE_SEASON: 1, FORMER: 2 } as const;
+
 /**
  * Tab di partenza: Atleti, a meno che l'URL non chieda altro. Un link con dei
- * filtri (ricerca, ruolo utente, pagina…) parla della lista degli account.
+ * filtri (ricerca, ruolo utente…) parla della lista degli account.
  */
-function initialTab(filters: CurrentFilters, page: number): TabKey {
+function initialTab(filters: CurrentFilters): TabKey {
   if (filters.tab === "figli") return "children";
   const hasAccountFilters =
     !!filters.search ||
@@ -56,8 +61,7 @@ function initialTab(filters: CurrentFilters, page: number): TabKey {
     !!filters.sportRole ||
     !!filters.gender ||
     !!filters.teamId ||
-    !!filters.athleteStatus ||
-    page > 1;
+    !!filters.athleteStatus;
   return filters.tab === "account" || hasAccountFilters ? "accounts" : "athletes";
 }
 
@@ -68,13 +72,10 @@ export default function AdminUserList({
   initialTeams = [],
   isAdmin = false,
   currentUserId = null,
-  serverTotal,
-  serverPage = 1,
-  serverLimit = DEFAULT_ROWS_PER_PAGE,
   currentFilters = {},
   currentSeason,
 }: {
-  /** Pagina corrente della tab Account (filtrata e paginata dal server). */
+  /** Tutti gli account: ricerca, filtri e pagine della tab Account sono nel browser. */
   users: UserEntry[];
   /** Tutti gli account che giocano, per la tab Atleti (vedi `@/lib/athletes`). */
   athleteUsers: UserEntry[];
@@ -85,16 +86,11 @@ export default function AdminUserList({
   currentUserId?: string | null;
   /** Stagione in corso (flag dello staff, o calendario), dal Server Component. */
   currentSeason: string;
-  serverTotal?: number;
-  serverPage?: number;
-  serverLimit?: number;
   currentFilters?: CurrentFilters;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [, startTransition] = useTransition();
 
-  // URL-driven filter state (initialised from server-rendered searchParams)
+  // Filtri della tab Account: partono dall'URL (link dalla dashboard, ricarica).
   const [search, setSearch] = useState(currentFilters.search ?? "");
   const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>(() =>
     parseAppRoles(currentFilters.appRole)
@@ -115,57 +111,8 @@ export default function AdminUserList({
     (currentFilters.sortDir as "asc" | "desc") ?? "desc"
   );
 
-  // Server-side pagination (page is 1-based from server, MUI TablePagination is 0-based)
-  const serverDriven = serverTotal !== undefined;
-  const [page, setPage] = useState(serverDriven ? serverPage - 1 : 0);
-  const [rowsPerPage, setRowsPerPage] = useState(currentFilters.limit ?? serverLimit);
-
-  const pushFilters = useCallback(
-    (overrides: Partial<CurrentFilters & { page?: number }>) => {
-      const params = new URLSearchParams();
-      const merged = {
-        search,
-        appRole: joinFilter(filterAppRoles),
-        sportRole: joinFilter(filterSportRoles),
-        gender: filterGender,
-        teamId: filterTeamId,
-        athleteStatus: filterAthleteStatus,
-        sortBy,
-        sortDir,
-        page: serverPage,
-        limit: rowsPerPage,
-        ...overrides,
-      };
-      if (merged.search) params.set("search", merged.search);
-      if (merged.appRole) params.set("appRole", merged.appRole);
-      if (merged.sportRole) params.set("sportRole", merged.sportRole);
-      if (merged.gender) params.set("gender", merged.gender);
-      if (merged.teamId) params.set("teamId", merged.teamId);
-      if (merged.athleteStatus) params.set("athleteStatus", merged.athleteStatus);
-      if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
-      if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
-      if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
-      if ((merged.limit ?? DEFAULT_ROWS_PER_PAGE) !== DEFAULT_ROWS_PER_PAGE)
-        params.set("limit", String(merged.limit));
-      // Filtri e pagine sono della tab Account: l'URL la riapre al ricaricamento.
-      params.set("tab", "account");
-      startTransition(() => router.push(`${pathname}?${params.toString()}`));
-    },
-    [
-      search,
-      filterAppRoles,
-      filterSportRoles,
-      filterGender,
-      filterTeamId,
-      filterAthleteStatus,
-      sortBy,
-      sortDir,
-      serverPage,
-      rowsPerPage,
-      pathname,
-      router,
-    ]
-  );
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(currentFilters.limit ?? DEFAULT_ROWS_PER_PAGE);
 
   // Account che giocano: tutti, indipendenti da filtri e pagina della tab Account.
   const [athleteUserRows, setAthleteUserRows] = useState<UserRow[]>(() =>
@@ -177,7 +124,7 @@ export default function AdminUserList({
     ...initialChildren.map((c) => ({ ...c, kind: "child" as const })),
   ]);
 
-  // Quando il server manda dati nuovi (cambio pagina/filtro), sincronizza rows.
+  // Quando il server manda dati nuovi (router.refresh), sincronizza rows.
   // Usiamo un ref per non triggherare al primo render (initialUsers non cambia lì).
   const isFirstRender = useRef(true);
   useEffect(() => {
@@ -192,7 +139,7 @@ export default function AdminUserList({
     setAthleteUserRows(initialAthleteUsers.map(toUserRow));
   }, [initialUsers, initialAthleteUsers, initialChildren]);
 
-  const [activeTab, setActiveTab] = useState<TabKey>(() => initialTab(currentFilters, serverPage));
+  const [activeTab, setActiveTab] = useState<TabKey>(() => initialTab(currentFilters));
 
   /**
    * Aggiorna una persona ovunque compaia. Un account puo' stare nella pagina
@@ -224,7 +171,6 @@ export default function AdminUserList({
 
   const availableTeams = initialTeams;
 
-  const userCount = serverDriven ? (serverTotal ?? initialUsers.length) : initialUsers.length;
   const childCount = initialChildren.length;
 
   // ── Filtro + ordinamento (memo) ────────────────────────────────────────────
@@ -237,14 +183,25 @@ export default function AdminUserList({
     (filterAthleteStatus ? 1 : 0) +
     (search ? 1 : 0);
 
-  // Tab 0 — utenti: filtra/ordina solo le righe utente
-  const processed = useMemo(() => {
-    const userRows = rows.filter((r) => r.kind === "user");
-    if (serverDriven) return userRows; // già filtrati/ordinati dal server
+  const userRows = useMemo(() => rows.filter((r) => r.kind === "user"), [rows]);
+  const userCount = userRows.length;
 
+  // Account in attesa di approvazione, dal più recente. Sono le stesse righe
+  // della tabella: approvare da lì (scheda utente) toglie l'account dal
+  // riquadro in alto, e approvare dal riquadro aggiorna la riga.
+  const pendingGuests = useMemo(
+    () =>
+      userRows
+        .filter((r) => r.kind === "user" && r.appRole === "GUEST")
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [userRows]
+  );
+
+  // Tab Account: filtra e ordina nel browser, come le altre due tab.
+  const processed = useMemo(() => {
     let result = userRows;
-    if (search) {
-      const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
+    if (q) {
       result = result.filter(
         (r) =>
           r.kind === "user" &&
@@ -268,8 +225,15 @@ export default function AdminUserList({
         r.teamMemberships.some((m) => m.teamId === filterTeamId && m.team.season === currentSeason)
       );
     }
+    if (filterAthleteStatus === "active") result = result.filter((r) => !r.athleteStatus);
+    else if (filterAthleteStatus)
+      result = result.filter((r) => r.athleteStatus === filterAthleteStatus);
 
+    const statusRank = (r: AdminRow) =>
+      r.athleteStatus ? ATHLETE_STATUS_RANK[r.athleteStatus] : 0;
     return [...result].sort((a, b) => {
+      const byStatus = statusRank(a) - statusRank(b);
+      if (byStatus !== 0) return byStatus;
       let cmp = 0;
       switch (sortBy) {
         case "name":
@@ -294,21 +258,50 @@ export default function AdminUserList({
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [
-    rows,
-    serverDriven,
+    userRows,
     search,
     filterAppRoles,
     filterSportRoles,
     filterGender,
     filterTeamId,
+    filterAthleteStatus,
     currentSeason,
     sortBy,
     sortDir,
   ]);
 
-  const paginated = serverDriven
-    ? processed
-    : processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  // Dopo un'eliminazione l'ultima pagina puo' restare vuota: si torna all'ultima piena.
+  const lastPage = Math.max(0, Math.ceil(processed.length / rowsPerPage) - 1);
+  const currentPage = Math.min(page, lastPage);
+  const paginated = processed.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage);
+
+  // L'URL segue i filtri della tab Account senza chiedere niente al server:
+  // ricaricando (o condividendo il link) si ritrova la stessa lista.
+  useEffect(() => {
+    if (activeTab !== "accounts") return;
+    const params = new URLSearchParams();
+    if (search.trim()) params.set("search", search.trim());
+    if (filterAppRoles.length > 0) params.set("appRole", joinFilter(filterAppRoles));
+    if (filterSportRoles.length > 0) params.set("sportRole", joinFilter(filterSportRoles));
+    if (filterGender) params.set("gender", filterGender);
+    if (filterTeamId) params.set("teamId", filterTeamId);
+    if (filterAthleteStatus) params.set("athleteStatus", filterAthleteStatus);
+    if (sortBy !== "createdAt") params.set("sortBy", sortBy);
+    if (sortDir !== "desc") params.set("sortDir", sortDir);
+    params.set("tab", "account");
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+  }, [
+    activeTab,
+    search,
+    filterAppRoles,
+    filterSportRoles,
+    filterGender,
+    filterTeamId,
+    filterAthleteStatus,
+    sortBy,
+    sortDir,
+    pathname,
+  ]);
 
   const childRows = useMemo(
     () => rows.filter((r): r is ChildEntry & { kind: "child" } => r.kind === "child"),
@@ -322,7 +315,6 @@ export default function AdminUserList({
     setSortBy(col);
     setSortDir(newDir);
     setPage(0);
-    if (serverDriven) pushFilters({ sortBy: col, sortDir: newDir, page: 1 });
   }
 
   function resetFilters() {
@@ -333,18 +325,16 @@ export default function AdminUserList({
     setFilterTeamId("");
     setFilterAthleteStatus("");
     setPage(0);
-    if (serverDriven) startTransition(() => router.push(`${pathname}?tab=account`));
   }
 
-  // Scelta multipla anche con la paginazione sul server: nell'URL i valori
-  // vanno separati da virgola (vedi @/lib/userFilters), es. ruoli 4 e 5 insieme.
+  // Scelta multipla: nell'URL i valori vanno separati da virgola (vedi
+  // @/lib/userFilters), es. ruoli 4 e 5 insieme.
   function toggleAppRole(role: AppRole) {
     const newRoles = filterAppRoles.includes(role)
       ? filterAppRoles.filter((r) => r !== role)
       : [...filterAppRoles, role];
     setFilterAppRoles(newRoles);
     setPage(0);
-    if (serverDriven) pushFilters({ appRole: joinFilter(newRoles), page: 1 });
   }
 
   function toggleSportRole(val: string) {
@@ -353,7 +343,6 @@ export default function AdminUserList({
       : [...filterSportRoles, val];
     setFilterSportRoles(newVals);
     setPage(0);
-    if (serverDriven) pushFilters({ sportRole: joinFilter(newVals), page: 1 });
   }
 
   // ── Azioni tabella ────────────────────────────────────────────────────────
@@ -486,11 +475,8 @@ export default function AdminUserList({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const summary = serverDriven
-    ? `${serverTotal} account`
-    : processed.length !== userCount
-      ? `${processed.length} di ${userCount}`
-      : `${userCount} account`;
+  const summary =
+    processed.length !== userCount ? `${processed.length} di ${userCount}` : `${userCount} account`;
 
   // La rosa: account che giocano e figli senza account, insieme.
   const athleteRows = useMemo<AdminRow[]>(
@@ -500,83 +486,36 @@ export default function AdminUserList({
   const activeAthleteCount = athleteRows.filter((r) => r.athleteStatus === null).length;
 
   return (
-    <Box>
-      {/* ── Tabs ── */}
-      <Tabs
-        ref={tabsRef}
-        value={activeTab === "children" && childCount === 0 ? "athletes" : activeTab}
-        onChange={(_, v: TabKey) => setActiveTab(v)}
-        variant="scrollable"
-        scrollButtons={false}
-        sx={{ mb: 2.5, borderBottom: "1px solid", borderColor: "divider" }}
-      >
-        {/* Il numero e' la rosa attiva: in pausa ed ex si vedono dal filtro di stato. */}
-        <Tab value="athletes" label={`Atleti (${activeAthleteCount})`} />
-        <Tab value="accounts" label={`Account (${userCount})`} />
-        {childCount > 0 && <Tab value="children" label={`Figli senza account (${childCount})`} />}
-      </Tabs>
+    <>
+      <GuestApprovalInbox
+        guests={pendingGuests}
+        isAdmin={isAdmin}
+        onApproved={(id, appRole) =>
+          updateRow({ kind: "user", id }, (r) => (r.kind === "user" ? { ...r, appRole } : r))
+        }
+      />
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
+        {/* ── Tabs ── */}
+        <Tabs
+          ref={tabsRef}
+          value={activeTab === "children" && childCount === 0 ? "athletes" : activeTab}
+          onChange={(_, v: TabKey) => setActiveTab(v)}
+          variant="scrollable"
+          scrollButtons={false}
+          sx={{ mb: 2.5, borderBottom: "1px solid", borderColor: "divider" }}
+        >
+          {/* Il numero e' la rosa attiva: in pausa ed ex si vedono dal filtro di stato. */}
+          <Tab value="athletes" label={`Atleti (${activeAthleteCount})`} />
+          <Tab value="accounts" label={`Account (${userCount})`} />
+          {childCount > 0 && <Tab value="children" label={`Figli senza account (${childCount})`} />}
+        </Tabs>
 
-      {/* Atleti: chi gioca, con o senza account */}
-      {(activeTab === "athletes" || (activeTab === "children" && childCount === 0)) && (
-        <AthletesTab
-          rows={athleteRows}
-          teams={availableTeams}
-          currentSeason={currentSeason}
-          isAdmin={isAdmin}
-          onConfirmSuggestedRole={handleConfirmSuggestedRole}
-          onRejectSuggestedRole={handleRejectSuggestedRole}
-          onTeamChange={handleTeamChange}
-          onEdit={setEditRow}
-          onDelete={setDeleteRow}
-        />
-      )}
-
-      {/* Account: chiunque possa entrare nell'app */}
-      {activeTab === "accounts" && (
-        <>
-          <UserFilters
-            search={search}
-            onSearchChange={(v) => {
-              setSearch(v);
-              setPage(0);
-              if (serverDriven) pushFilters({ search: v, page: 1 });
-            }}
-            summary={summary}
-            activeFilterCount={activeFilterCount}
-            onResetFilters={resetFilters}
-            filterAppRoles={filterAppRoles}
-            onToggleAppRole={toggleAppRole}
-            filterSportRoles={filterSportRoles}
-            onToggleSportRole={toggleSportRole}
-            filterGender={filterGender}
-            onGenderChange={(v) => {
-              setFilterGender(v);
-              setPage(0);
-              if (serverDriven) pushFilters({ gender: v, page: 1 });
-            }}
-            filterAthleteStatus={filterAthleteStatus}
-            onAthleteStatusChange={(v) => {
-              setFilterAthleteStatus(v);
-              setPage(0);
-              if (serverDriven) pushFilters({ athleteStatus: v, page: 1 });
-            }}
-            filterTeamId={filterTeamId}
-            onTeamFilterChange={(v) => {
-              setFilterTeamId(v);
-              setPage(0);
-              if (serverDriven) pushFilters({ teamId: v, page: 1 });
-            }}
-            teams={availableTeams}
-          />
-
-          <UsersTable
-            rows={paginated}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSort={handleSort}
+        {/* Atleti: chi gioca, con o senza account */}
+        {(activeTab === "athletes" || (activeTab === "children" && childCount === 0)) && (
+          <AthletesTab
+            rows={athleteRows}
             teams={availableTeams}
             currentSeason={currentSeason}
-            activeFilterCount={activeFilterCount}
             isAdmin={isAdmin}
             onConfirmSuggestedRole={handleConfirmSuggestedRole}
             onRejectSuggestedRole={handleRejectSuggestedRole}
@@ -584,105 +523,151 @@ export default function AdminUserList({
             onEdit={setEditRow}
             onDelete={setDeleteRow}
           />
+        )}
 
-          <UsersMobileCards
-            rows={paginated}
+        {/* Account: chiunque possa entrare nell'app */}
+        {activeTab === "accounts" && (
+          <>
+            <UserFilters
+              search={search}
+              onSearchChange={(v) => {
+                setSearch(v);
+                setPage(0);
+              }}
+              summary={summary}
+              activeFilterCount={activeFilterCount}
+              onResetFilters={resetFilters}
+              filterAppRoles={filterAppRoles}
+              onToggleAppRole={toggleAppRole}
+              filterSportRoles={filterSportRoles}
+              onToggleSportRole={toggleSportRole}
+              filterGender={filterGender}
+              onGenderChange={(v) => {
+                setFilterGender(v);
+                setPage(0);
+              }}
+              filterAthleteStatus={filterAthleteStatus}
+              onAthleteStatusChange={(v) => {
+                setFilterAthleteStatus(v);
+                setPage(0);
+              }}
+              filterTeamId={filterTeamId}
+              onTeamFilterChange={(v) => {
+                setFilterTeamId(v);
+                setPage(0);
+              }}
+              teams={availableTeams}
+            />
+
+            <UsersTable
+              rows={paginated}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSort={handleSort}
+              teams={availableTeams}
+              currentSeason={currentSeason}
+              activeFilterCount={activeFilterCount}
+              isAdmin={isAdmin}
+              onConfirmSuggestedRole={handleConfirmSuggestedRole}
+              onRejectSuggestedRole={handleRejectSuggestedRole}
+              onTeamChange={handleTeamChange}
+              onEdit={setEditRow}
+              onDelete={setDeleteRow}
+            />
+
+            <UsersMobileCards
+              rows={paginated}
+              currentSeason={currentSeason}
+              activeFilterCount={activeFilterCount}
+              isAdmin={isAdmin}
+              onEdit={setEditRow}
+              onDelete={setDeleteRow}
+            />
+
+            {/* ── Paginazione ── */}
+            <TablePagination
+              component="div"
+              count={processed.length}
+              page={currentPage}
+              onPageChange={(_e, p) => setPage(p)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                const newLimit = parseInt(e.target.value);
+                setRowsPerPage(newLimit);
+                writeRowsPerPageCookie("users", newLimit);
+                setPage(0);
+              }}
+              rowsPerPageOptions={[10, 25, 50, 100]}
+              labelRowsPerPage="Righe:"
+              labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+              sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            />
+          </>
+        )}
+
+        {/* Figli senza account */}
+        {activeTab === "children" && childCount > 0 && (
+          <ChildrenTab
+            childRows={childRows}
+            teams={availableTeams}
             currentSeason={currentSeason}
-            activeFilterCount={activeFilterCount}
             isAdmin={isAdmin}
+            onTeamChange={handleTeamChange}
             onEdit={setEditRow}
             onDelete={setDeleteRow}
           />
+        )}
 
-          {/* ── Paginazione ── */}
-          <TablePagination
-            component="div"
-            count={serverDriven ? (serverTotal ?? processed.length) : processed.length}
-            page={serverDriven ? serverPage - 1 : page}
-            onPageChange={(_e, p) => {
-              if (serverDriven) {
-                pushFilters({ page: p + 1 });
-              } else {
-                setPage(p);
-              }
+        {/* ── Dialog conferma eliminazione ── */}
+        <Dialog open={!!deleteRow} onClose={() => !deleting && setDeleteRow(null)}>
+          <DialogTitle>
+            {deleteRow?.kind === "user" ? "Elimina utente" : "Elimina figlio"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Sei sicuro di voler eliminare{" "}
+              <strong>
+                {deleteRow?.kind === "user" ? (deleteRow.name ?? deleteRow.email) : deleteRow?.name}
+              </strong>
+              ? Verranno eliminate anche tutte le iscrizioni associate. Questa azione è
+              irreversibile.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteRow(null)} disabled={deleting}>
+              Annulla
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              color="error"
+              variant="contained"
+              disabled={deleting}
+            >
+              {deleting ? "Eliminazione..." : "Elimina"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* ── Dialog modifica utente/figlio (montato solo quando aperto) ── */}
+        {editRow && (
+          <UserEditDialog
+            row={editRow}
+            isAdmin={isAdmin}
+            currentUserId={currentUserId}
+            teams={availableTeams}
+            currentSeason={currentSeason}
+            onClose={() => setEditRow(null)}
+            onSaved={(updated) => {
+              updateRow(updated, () => updated);
+              // I genitori si salvano subito, a scheda aperta: la scheda deve
+              // vedere la lista nuova.
+              setEditRow((cur) =>
+                cur && cur.id === updated.id && cur.kind === updated.kind ? updated : cur
+              );
             }}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => {
-              const newLimit = parseInt(e.target.value);
-              setRowsPerPage(newLimit);
-              writeRowsPerPageCookie("users", newLimit);
-              setPage(0);
-              if (serverDriven) pushFilters({ limit: newLimit, page: 1 });
-            }}
-            rowsPerPageOptions={[10, 25, 50, 100]}
-            labelRowsPerPage="Righe:"
-            labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-            sx={{ borderTop: "1px solid", borderColor: "divider" }}
           />
-        </>
-      )}
-
-      {/* Figli senza account */}
-      {activeTab === "children" && childCount > 0 && (
-        <ChildrenTab
-          childRows={childRows}
-          teams={availableTeams}
-          currentSeason={currentSeason}
-          isAdmin={isAdmin}
-          onTeamChange={handleTeamChange}
-          onEdit={setEditRow}
-          onDelete={setDeleteRow}
-        />
-      )}
-
-      {/* ── Dialog conferma eliminazione ── */}
-      <Dialog open={!!deleteRow} onClose={() => !deleting && setDeleteRow(null)}>
-        <DialogTitle>
-          {deleteRow?.kind === "user" ? "Elimina utente" : "Elimina figlio"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Sei sicuro di voler eliminare{" "}
-            <strong>
-              {deleteRow?.kind === "user" ? (deleteRow.name ?? deleteRow.email) : deleteRow?.name}
-            </strong>
-            ? Verranno eliminate anche tutte le iscrizioni associate. Questa azione è irreversibile.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteRow(null)} disabled={deleting}>
-            Annulla
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-          >
-            {deleting ? "Eliminazione..." : "Elimina"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ── Dialog modifica utente/figlio (montato solo quando aperto) ── */}
-      {editRow && (
-        <UserEditDialog
-          row={editRow}
-          isAdmin={isAdmin}
-          currentUserId={currentUserId}
-          teams={availableTeams}
-          currentSeason={currentSeason}
-          onClose={() => setEditRow(null)}
-          onSaved={(updated) => {
-            updateRow(updated, () => updated);
-            // I genitori si salvano subito, a scheda aperta: la scheda deve
-            // vedere la lista nuova.
-            setEditRow((cur) =>
-              cur && cur.id === updated.id && cur.kind === updated.kind ? updated : cur
-            );
-          }}
-        />
-      )}
-    </Box>
+        )}
+      </Paper>
+    </>
   );
 }

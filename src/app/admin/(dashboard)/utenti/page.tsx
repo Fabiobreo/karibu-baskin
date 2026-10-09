@@ -1,23 +1,18 @@
 import { prisma } from "@/lib/db";
 import AdminUserList from "@/components/admin/AdminUserList";
-import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
-import { Paper, Button, Stack } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import PageHeader from "@/components/common/PageHeader";
-import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
 import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 import { cookies } from "next/headers";
 import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
-import { joinFilter, parseAppRoles, parseSportRoles, sportRoleWhere } from "@/lib/userFilters";
+import { joinFilter, parseAppRoles, parseSportRoles } from "@/lib/userFilters";
 import { ATHLETE_ACCOUNT_WHERE } from "@/lib/athletes";
 
 export const revalidate = 60;
-
-const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
-const VALID_ATHLETE_STATUSES: AthleteStatus[] = ["INACTIVE_SEASON", "FORMER"];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -47,7 +42,6 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const tab = sp.tab as string | undefined;
   const sortBy = (sp.sortBy as string | undefined) ?? "createdAt";
   const sortDir = ((sp.sortDir as string | undefined) ?? "desc") as "asc" | "desc";
-  const page = Math.max(1, parseInt((sp.page as string | undefined) ?? "1", 10));
   // 25 e non 10: con 111 utenti la paginazione a dieci righe faceva dodici
   // pagine, ed e' il default gia' documentato in CLAUDE.md. Senza `limit`
   // nell'URL vale l'ultima scelta dello staff (cookie, vedi @/lib/rowsPerPage).
@@ -60,42 +54,6 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     100,
     Math.max(10, parseInt((sp.limit as string | undefined) ?? String(savedLimit), 10) || 25)
   );
-
-  const where: Prisma.UserWhereInput = {};
-  if (search) {
-    where.OR = [
-      { name: { contains: search, mode: "insensitive" } },
-      { email: { contains: search, mode: "insensitive" } },
-    ];
-  }
-  if (appRoles.length > 0) where.appRole = { in: appRoles };
-  // In AND: la ricerca usa gia' `where.OR`, e "senza ruolo o ruolo 1" e' un altro OR.
-  const sportRoleCond = sportRoleWhere(sportRoles);
-  if (sportRoleCond) where.AND = [sportRoleCond];
-  if (gender === "none") where.gender = null;
-  else if (gender && VALID_GENDERS.includes(gender as Gender)) where.gender = gender as Gender;
-  if (teamId) where.teamMemberships = { some: { teamId } };
-  if (athleteStatus === "active") where.athleteStatus = null;
-  else if (athleteStatus && VALID_ATHLETE_STATUSES.includes(athleteStatus as AthleteStatus))
-    where.athleteStatus = athleteStatus as AthleteStatus;
-
-  const chosenOrderBy: Prisma.UserOrderByWithRelationInput =
-    sortBy === "name"
-      ? { name: sortDir }
-      : sortBy === "sportRole"
-        ? { sportRole: sortDir }
-        : sortBy === "appRole"
-          ? { appRole: sortDir }
-          : sortBy === "registrations"
-            ? { registrations: { _count: sortDir } }
-            : { createdAt: sortDir };
-
-  // Attivi (athleteStatus null) sempre in cima; "In pausa" prima di "Ex"
-  // (ordine enum). Dentro ogni gruppo si applica il sort scelto dall'utente.
-  const orderBy: Prisma.UserOrderByWithRelationInput[] = [
-    { athleteStatus: { sort: "asc", nulls: "first" } },
-    chosenOrderBy,
-  ];
 
   const select = {
     id: true,
@@ -145,9 +103,12 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const isAdmin = session?.user?.appRole === "ADMIN";
   const currentSeason = await getCurrentSeasonLabel();
 
-  const [users, total, athleteUsers, childEntries, teams, pendingGuests] = await Promise.all([
-    prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
-    prisma.user.count({ where }),
+  const [users, athleteUsers, childEntries, teams] = await Promise.all([
+    // Tab Account: tutti gli account, senza filtri ne' paginazione. Ricerca,
+    // filtri, ordinamento e pagine avvengono nel browser, come nelle altre due
+    // tab: con il filtro sul server ogni lettera digitata rifaceva tutta la
+    // pagina (sei query) e la ricerca arrivava con secondi di ritardo.
+    prisma.user.findMany({ orderBy: { createdAt: "desc" }, select }),
     // Tab Atleti: tutti gli account che giocano, senza filtri ne' paginazione
     // (poche decine di righe: ricerca e filtri avvengono nel browser).
     prisma.user.findMany({ where: ATHLETE_ACCOUNT_WHERE, orderBy: { name: "asc" }, select }),
@@ -181,12 +142,6 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       select: { id: true, name: true, season: true, color: true },
       orderBy: { name: "asc" },
     }),
-    // Corsia rapida: nuovi account in attesa di approvazione
-    prisma.user.findMany({
-      where: { appRole: "GUEST" },
-      orderBy: { createdAt: "desc" },
-      select: { id: true, name: true, email: true, image: true, createdAt: true },
-    }),
   ]);
 
   return (
@@ -214,36 +169,31 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           </Stack>
         }
       />
-      <GuestApprovalInbox guests={pendingGuests} />
-      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
-        <AdminUserList
-          users={users.map(toUserEntry)}
-          athleteUsers={athleteUsers.map(toUserEntry)}
-          childEntries={childEntries.map(({ guardians, ...c }) => ({
-            ...c,
-            guardians: guardianList({ guardians }),
-          }))}
-          initialTeams={teams}
-          isAdmin={isAdmin}
-          currentUserId={session?.user?.id ?? null}
-          currentSeason={currentSeason}
-          serverTotal={total}
-          serverPage={page}
-          serverLimit={limit}
-          currentFilters={{
-            search,
-            appRole: joinFilter(appRoles),
-            sportRole: joinFilter(sportRoles),
-            gender,
-            teamId,
-            athleteStatus,
-            sortBy,
-            sortDir,
-            limit,
-            tab,
-          }}
-        />
-      </Paper>
+      {/* I nuovi account da approvare li mostra la lista, dalle stesse righe. */}
+      <AdminUserList
+        users={users.map(toUserEntry)}
+        athleteUsers={athleteUsers.map(toUserEntry)}
+        childEntries={childEntries.map(({ guardians, ...c }) => ({
+          ...c,
+          guardians: guardianList({ guardians }),
+        }))}
+        initialTeams={teams}
+        isAdmin={isAdmin}
+        currentUserId={session?.user?.id ?? null}
+        currentSeason={currentSeason}
+        currentFilters={{
+          search,
+          appRole: joinFilter(appRoles),
+          sportRole: joinFilter(sportRoles),
+          gender,
+          teamId,
+          athleteStatus,
+          sortBy,
+          sortDir,
+          limit,
+          tab,
+        }}
+      />
     </>
   );
 }
