@@ -20,6 +20,8 @@ export const PostCreateSchema = z.object({
   body: z.string().min(1, "Il contenuto è obbligatorio").max(50000, "Contenuto troppo lungo"),
   imageUrl: z.string().url().nullable().optional(),
   publish: z.boolean().default(false),
+  // Spunta "Avvisa tutti della pubblicazione": conta solo se si pubblica.
+  notify: z.boolean().default(true),
   poll: PollSchema.nullable().optional(),
 });
 
@@ -29,6 +31,7 @@ export const PostUpdateSchema = z.object({
   imageUrl: z.string().url().nullable().optional(),
   publish: z.boolean().optional(),
   unpublish: z.boolean().optional(),
+  notify: z.boolean().default(true),
   poll: PollSchema.nullable().optional(),
 });
 

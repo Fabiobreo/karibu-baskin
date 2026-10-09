@@ -6,8 +6,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateEventSlug } from "@/lib/slugUtils";
-import { sendPushToAll } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { announceEvent } from "@/lib/notifications/announce";
 import { inBackground } from "@/lib/background";
 
 export async function GET(req: NextRequest) {
@@ -38,6 +37,11 @@ export async function POST(req: Request) {
 
   const slug = await generateEventSlug(body.title);
 
+  // Un evento inserito a cose fatte non è una novità per nessuno: niente
+  // avviso, qualunque cosa dica la spunta.
+  const now = new Date();
+  const notify = body.notify && new Date(body.endDate ?? body.date) >= now;
+
   const event = await prisma.event.create({
     data: {
       title: body.title.trim(),
@@ -47,6 +51,7 @@ export async function POST(req: Request) {
       location: body.location?.trim() || null,
       description: body.description?.trim() || null,
       imageUrl: body.imageUrl ?? null,
+      lastNotifiedAt: notify ? now : null,
       allowGuests: body.allowGuests ?? false,
       maxGuests: body.allowGuests ? (body.maxGuests ?? null) : null,
     },
@@ -65,21 +70,8 @@ export async function POST(req: Request) {
     );
   }
 
-  // Notifica push + in-app dopo la risposta a tutti
-  const url = `/eventi/${event.slug ?? event.id}`;
-  inBackground(
-    sendPushToAll({ title: "Nuovo evento", body: event.title, url, type: "SYSTEM" }, false),
-    "push new event"
-  );
-  inBackground(
-    createAppNotification({
-      type: "NEW_EVENT",
-      title: "Nuovo evento",
-      body: event.title,
-      url,
-    }),
-    "notification new event"
-  );
+  // Notifica push + in-app dopo la risposta a tutti, se la spunta è accesa
+  if (notify) inBackground(announceEvent(event, "new"), "notification new event");
 
   return NextResponse.json(event, { status: 201 });
 }

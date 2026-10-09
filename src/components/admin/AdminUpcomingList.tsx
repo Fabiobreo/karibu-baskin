@@ -32,6 +32,8 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import type { TeamsData } from "@/lib/schemas";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { lastNotifiedLabel, notifyConfirm } from "@/lib/adminRowActions";
+import { hasRestrictions } from "@/lib/registrationRestrictions";
 
 export interface AdminUpcomingRow {
   id: string;
@@ -42,6 +44,8 @@ export interface AdminUpcomingRow {
   dateSlug: string | null;
   registrationOpen: boolean;
   registrationOpenedAt: string | null;
+  /** Ultimo avviso mandato agli utenti per questo allenamento. */
+  lastNotifiedAt: string | null;
   allowedRoles: number[];
   restrictTeamId: string | null;
   openRoles: number[];
@@ -99,6 +103,12 @@ function UpcomingDetails({ s, initialEdit }: { s: AdminUpcomingRow; initialEdit:
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [managing, setManaging] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Aggiornato qui dopo "Avvisa di nuovo"; un avviso partito da altre azioni
+  // (riapertura, modifica) arriva dal server ed è per forza più recente.
+  const [sentAt, setSentAt] = useState<string | null>(null);
+  const [now] = useState(() => Date.now());
+  const lastNotifiedAt =
+    sentAt && (!s.lastNotifiedAt || sentAt > s.lastNotifiedAt) ? sentAt : s.lastNotifiedAt;
   const athletes = s.registrations.filter((r) => !r.registeredAsCoach);
   const state = regState(s);
 
@@ -120,6 +130,34 @@ function UpcomingDetails({ s, initialEdit }: { s: AdminUpcomingRow; initialEdit:
     } finally {
       setBusy(false);
     }
+  }
+
+  async function sendReminder() {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/sessions/${s.id}/notify`, { method: "POST" });
+      if (!res.ok) throw new Error(await readError(res));
+      const data = (await res.json()) as { lastNotifiedAt: string };
+      setSentAt(data.lastNotifiedAt);
+      showToast({ message: "Avviso inviato", severity: "success" });
+    } catch (err) {
+      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function askReminder() {
+    const c = notifyConfirm({
+      title: s.title,
+      lastNotifiedAt,
+      now: Date.now(),
+      audience: hasRestrictions(s) ? "a chi può iscriversi" : "a tutti",
+    });
+    openConfirm(c.title, c.message, () => void sendReminder(), {
+      confirmLabel: c.confirmLabel,
+      confirmColor: "primary",
+    });
   }
 
   return (
@@ -168,23 +206,36 @@ function UpcomingDetails({ s, initialEdit }: { s: AdminUpcomingRow; initialEdit:
           {REG_LABEL[state]}.
         </Typography>
         {state === "open" ? (
-          <Button
-            variant="outlined"
-            color="error"
-            disabled={busy}
-            startIcon={busy ? <CircularProgress size={16} color="inherit" /> : <LockIcon />}
-            onClick={() =>
-              openConfirm(
-                "Chiudere le iscrizioni?",
-                `Per "${s.title}" chi non è iscritto non potrà più iscriversi. Verrà inviata una notifica.`,
-                () => toggleRegistrations(false),
-                { confirmLabel: "Chiudi e notifica", confirmColor: "error" }
-              )
-            }
-            sx={{ minHeight: 44 }}
-          >
-            Chiudi iscrizioni
-          </Button>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
+            <Button
+              variant="outlined"
+              color="error"
+              disabled={busy}
+              startIcon={busy ? <CircularProgress size={16} color="inherit" /> : <LockIcon />}
+              onClick={() =>
+                openConfirm(
+                  "Chiudere le iscrizioni?",
+                  `Per "${s.title}" chi non è iscritto non potrà più iscriversi. Verrà inviata una notifica.`,
+                  () => toggleRegistrations(false),
+                  { confirmLabel: "Chiudi e notifica", confirmColor: "error" }
+                )
+              }
+              sx={{ minHeight: 44 }}
+            >
+              Chiudi iscrizioni
+            </Button>
+            {/* Terziario: chi è aperto è già stato avvisato, rimandarlo è l'eccezione. */}
+            {new Date(s.date).getTime() > now && (
+              <Button variant="text" disabled={busy} onClick={askReminder} sx={{ minHeight: 44 }}>
+                Avvisa di nuovo
+              </Button>
+            )}
+            {lastNotifiedAt && (
+              <Typography variant="caption" color="text.secondary" sx={{ flexBasis: "100%" }}>
+                Ultimo avviso: {lastNotifiedLabel(lastNotifiedAt, now)}
+              </Typography>
+            )}
+          </Box>
         ) : (
           <Button
             variant="contained"

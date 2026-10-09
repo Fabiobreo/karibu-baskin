@@ -13,14 +13,17 @@ vi.mock("@/lib/db", () => ({
     teamMembership: {
       findMany: vi.fn().mockResolvedValue([{ userId: "user-1", childId: null }]),
     },
+    child: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
 vi.mock("@/lib/notifications/webpush", () => ({
-  sendPushToAll: vi.fn().mockResolvedValue(undefined),
+  sendPushToUsers: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("@/lib/notifications/appNotifications", () => ({
-  createAppNotification: vi.fn().mockResolvedValue(undefined),
+  createTargetedAppNotifications: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/rating/badgeService", () => ({
@@ -43,8 +46,8 @@ vi.mock("@/lib/audit", () => ({
 import { GET, PUT } from "./route";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { sendPushToAll } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 
 type PrismaMock = {
@@ -243,12 +246,12 @@ describe("PUT /api/matches/[matchId]/stats · notifiche", () => {
       opponent: { name: "Avversari FC" },
       opponentTeam: null,
     });
-  const putStats = () =>
+  const putStats = (rows: object[] = [{ userId: "user-1", twoPointers: 3 }]) =>
     PUT(
       new Request("http://localhost/api/matches/match-1/stats", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify([{ userId: "user-1", twoPointers: 3 }]),
+        body: JSON.stringify(rows),
       }),
       makeParams("match-1")
     );
@@ -259,12 +262,25 @@ describe("PUT /api/matches/[matchId]/stats · notifiche", () => {
     p.playerMatchStats.upsert.mockResolvedValue(stat1);
   });
 
-  it("partita recente: avvisa", async () => {
+  it("partita recente: avvisa solo chi ha una riga, rispettando la preferenza", async () => {
     matchOn(new Date(Date.now() - 2 * DAY));
     expect((await putStats()).status).toBe(200);
-    await vi.waitFor(() => expect(sendPushToAll).toHaveBeenCalledOnce());
-    expect(createAppNotification).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(sendPushToUsers).toHaveBeenCalledOnce());
+    const [ids, , notifType] = (sendPushToUsers as Mock).mock.calls[0];
+    expect(ids).toEqual(["user-1"]);
+    expect(notifType).toBe("MATCH_RESULT");
+    expect((createTargetedAppNotifications as Mock).mock.calls[0][0]).toEqual(["user-1"]);
     expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify: true });
+  });
+
+  it("per un figlio avvisa i genitori", async () => {
+    matchOn(new Date(Date.now() - 2 * DAY));
+    (prisma as unknown as { child: { findMany: Mock } }).child.findMany.mockResolvedValue([
+      { userId: null, guardians: [{ userId: "mamma" }] },
+    ]);
+    expect((await putStats([{ childId: "child-1", twoPointers: 1 }])).status).toBe(200);
+    await vi.waitFor(() => expect(sendPushToUsers).toHaveBeenCalledOnce());
+    expect((sendPushToUsers as Mock).mock.calls[0][0]).toEqual(["mamma"]);
   });
 
   it("partita di oltre un mese fa: salva senza avvisare", async () => {
@@ -272,8 +288,8 @@ describe("PUT /api/matches/[matchId]/stats · notifiche", () => {
     expect((await putStats()).status).toBe(200);
     expect(p.playerMatchStats.upsert).toHaveBeenCalledOnce();
     await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(sendPushToAll).not.toHaveBeenCalled();
-    expect(createAppNotification).not.toHaveBeenCalled();
+    expect(sendPushToUsers).not.toHaveBeenCalled();
+    expect(createTargetedAppNotifications).not.toHaveBeenCalled();
     // I badge si salvano comunque, ma in silenzio.
     expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify: false });
   });

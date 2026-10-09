@@ -284,6 +284,7 @@ model TrainingSession {
   registrationOpen     Boolean   @default(false) // false = "in arrivo" (mai aperto) o "iscrizioni chiuse" (chiuso manualmente)
   registrationOpenedAt DateTime? // timestamp prima apertura — distingue "mai aperto" da "chiuso manualmente"
   openReminderSentAt   DateTime? // ultima notifica reminder agli admin per allenamento non ancora aperto
+  lastNotifiedAt       DateTime? // ultimo avviso mandato agli utenti (apertura, modifica, "Avvisa di nuovo")
 
   // Gestione admin
   managedAt DateTime? // impostato quando lo staff conclude la gestione post-allenamento
@@ -757,15 +758,16 @@ model AuditEvent {
 // ── News / Bacheca ────────────────────────────────────────────────────────────
 
 model Post {
-  id          String    @id @default(cuid())
-  slug        String    @unique // es. "cena-fine-stagione-2025"
-  title       String
-  body        String    @db.Text // HTML sanitizzato (TipTap output)
-  imageUrl    String? // banner/copertina post (Vercel Blob)
-  authorId    String
-  publishedAt DateTime? // null = bozza
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  slug           String    @unique // es. "cena-fine-stagione-2025"
+  title          String
+  body           String    @db.Text // HTML sanitizzato (TipTap output)
+  imageUrl       String? // banner/copertina post (Vercel Blob)
+  authorId       String
+  publishedAt    DateTime? // null = bozza
+  lastNotifiedAt DateTime? // ultimo avviso mandato a tutti; null = uscito senza avvisare
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
   poll   Poll?
@@ -820,16 +822,17 @@ model PollVote {
 // ── Eventi generici ───────────────────────────────────────────────────────────
 
 model Event {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String?   @unique // URL leggibile pagina pubblica
-  date        DateTime
-  endDate     DateTime? // per eventi multi-giorno (es. torneo)
-  location    String?
-  description String?   @db.Text
-  imageUrl    String? // copertina evento (Vercel Blob)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  title          String
+  slug           String?   @unique // URL leggibile pagina pubblica
+  date           DateTime
+  endDate        DateTime? // per eventi multi-giorno (es. torneo)
+  location       String?
+  description    String?   @db.Text
+  imageUrl       String? // copertina evento (Vercel Blob)
+  lastNotifiedAt DateTime? // ultimo avviso mandato a tutti; null = creato senza avvisare
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   // Esterni (chi non e' nell'app: la ragazza, i nonni). Decide lo staff.
   allowGuests Boolean @default(false)

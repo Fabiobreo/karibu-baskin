@@ -3,6 +3,7 @@ import { Box, Container } from "@mui/material";
 import GuestOnboardingCard from "./GuestOnboardingCard";
 import HeroSection from "./HeroSection";
 import { heroOverlapSx } from "@/lib/heroStyles";
+import { HERO_PHOTOS } from "@/lib/heroPhotos";
 import { computeOnboardingSteps, type GuestOnboarding } from "@/lib/guestOnboarding";
 
 const nextSession = {
@@ -74,7 +75,7 @@ export const HomeGuest: Story = {
   decorators: [(Story) => <Story />],
   render: () => (
     <Box sx={{ bgcolor: "background.default", pb: 6 }}>
-      <HeroSection greeting="Ciao Fabio, ti diamo il benvenuto!" />
+      <HeroSection photo={HERO_PHOTOS[0]} greeting="Ciao Fabio, ti diamo il benvenuto!" />
       <Container maxWidth="lg" sx={heroOverlapSx}>
         <GuestOnboardingCard data={data({ hasRole: false, hasRegistration: false })} />
       </Container>

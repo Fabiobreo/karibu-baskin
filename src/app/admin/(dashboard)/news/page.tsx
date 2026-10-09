@@ -16,6 +16,7 @@ export default async function AdminNewsPage() {
       title: true,
       imageUrl: true,
       publishedAt: true,
+      lastNotifiedAt: true,
       createdAt: true,
       updatedAt: true,
       author: { select: { name: true } },
@@ -27,6 +28,7 @@ export default async function AdminNewsPage() {
   const posts = rawPosts.map((p) => ({
     ...p,
     publishedAt: p.publishedAt?.toISOString() ?? null,
+    lastNotifiedAt: p.lastNotifiedAt?.toISOString() ?? null,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
     poll: p.poll ? { ...p.poll, closesAt: p.poll.closesAt?.toISOString() ?? null } : null,

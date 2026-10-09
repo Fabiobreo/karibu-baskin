@@ -30,6 +30,7 @@ export async function POST(
         registrationOpen: true,
         registrationOpenedAt: existing?.registrationOpenedAt ?? new Date(),
         openReminderSentAt: null,
+        lastNotifiedAt: new Date(),
       },
       include: {
         _count: { select: { registrations: true } },

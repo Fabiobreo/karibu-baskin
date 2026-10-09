@@ -41,6 +41,8 @@ import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { sendPushToAll } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 function makeGet(): NextRequest {
   return new NextRequest("http://localhost/api/events");
@@ -192,5 +194,50 @@ describe("POST /api/events", () => {
     await POST(req);
     const call = p.event.create.mock.calls[0][0].data;
     expect(call.endDate).toBeNull();
+  });
+});
+
+// Spunta "Avvisa tutti del nuovo evento": spenta, l'evento nasce in silenzio e
+// resta "mai avvisato", così dal menu si può avvisare più tardi.
+describe("POST /api/events · avviso", () => {
+  const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const PAST = "2020-01-10T09:00:00.000Z";
+  const post = (body: object) =>
+    POST(
+      new Request("http://localhost/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Cena sociale", ...body }),
+      })
+    );
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 20));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.event.findUnique.mockResolvedValue(null);
+    p.event.create.mockResolvedValue({ ...baseEvent, id: "evt-new", slug: "cena-sociale" });
+  });
+
+  it("senza indicazioni avvisa tutti e segna l'ora dell'avviso", async () => {
+    expect((await post({ date: FUTURE })).status).toBe(201);
+    await vi.waitFor(() => expect(sendPushToAll).toHaveBeenCalledOnce());
+    expect(createAppNotification).toHaveBeenCalledOnce();
+    expect(p.event.create.mock.calls[0][0].data.lastNotifiedAt).toBeInstanceOf(Date);
+  });
+
+  it("spunta spenta: crea senza avvisare", async () => {
+    expect((await post({ date: FUTURE, notify: false })).status).toBe(201);
+    await flush();
+    expect(sendPushToAll).not.toHaveBeenCalled();
+    expect(createAppNotification).not.toHaveBeenCalled();
+    expect(p.event.create.mock.calls[0][0].data.lastNotifiedAt).toBeNull();
+  });
+
+  it("evento già passato: non avvisa nemmeno con la spunta accesa", async () => {
+    expect((await post({ date: PAST, notify: true })).status).toBe(201);
+    await flush();
+    expect(sendPushToAll).not.toHaveBeenCalled();
+    expect(p.event.create.mock.calls[0][0].data.lastNotifiedAt).toBeNull();
   });
 });

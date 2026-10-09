@@ -20,6 +20,7 @@ import {
   TextField,
   FormControlLabel,
   Switch,
+  Checkbox,
   Divider,
   Tooltip,
   Alert,
@@ -39,7 +40,8 @@ import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { visuallyHidden } from "@mui/utils";
 import RowActions from "@/components/admin/RowActions";
-import { newsMenuEntries } from "@/lib/adminRowActions";
+import { newsMenuEntries, notifyConfirm } from "@/lib/adminRowActions";
+import { canNotifyPost } from "@/lib/notifications/renotifyRules";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 
 const PostEditor = dynamic(() => import("@/components/news/PostEditor"), { ssr: false });
@@ -50,6 +52,8 @@ interface PostSummary {
   title: string;
   imageUrl: string | null;
   publishedAt: string | null;
+  /** Ultimo avviso mandato a tutti; null = mai avvisato. */
+  lastNotifiedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   author: { name: string | null };
@@ -60,6 +64,11 @@ interface AdminNewsClientProps {
   initialPosts: PostSummary[];
   /** Dirigente: legge i post, bozze comprese, senza crearli né modificarli. */
   readOnly?: boolean;
+}
+
+/** L'unica prova, dopo il salvataggio, che i telefoni hanno suonato o no. */
+function publishedMessage(notified: boolean): string {
+  return notified ? "Post pubblicato, avviso inviato" : "Post pubblicato senza avvisare";
 }
 
 const EMPTY_POLL: PollDraft = {
@@ -82,6 +91,9 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [publish, setPublish] = useState(false);
+  // Spunta "Avvisa tutti della pubblicazione": conta solo quando il post esce.
+  const [notify, setNotify] = useState(true);
+  const [now] = useState(() => Date.now());
   const [hasPoll, setHasPoll] = useState(false);
   const [poll, setPoll] = useState<PollDraft>(EMPTY_POLL);
   const [saving, setSaving] = useState(false);
@@ -101,6 +113,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     setBody("");
     setImageUrl(null);
     setPublish(false);
+    setNotify(true);
     setHasPoll(false);
     setPoll(EMPTY_POLL);
     setOpen(true);
@@ -112,6 +125,8 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     setBody("");
     setImageUrl(post.imageUrl ?? null);
     setPublish(!!post.publishedAt);
+    // Un post già avvisato e poi rimesso in bozza non riavvisa da solo.
+    setNotify(!post.lastNotifiedAt);
     setHasPoll(!!post.poll);
     setPoll(EMPTY_POLL);
     setOpen(true);
@@ -164,6 +179,10 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Il salvataggio fa uscire il post per la prima volta (nuovo, o bozza che esce).
+  const goesLive = publish && !editPost?.publishedAt;
+  const willNotify = goesLive && notify;
+
   async function handleSave() {
     if (!title.trim()) {
       showToast({ message: "Il titolo è obbligatorio", severity: "warning" });
@@ -191,6 +210,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
         body,
         imageUrl,
         publish,
+        notify: willNotify,
         // Lo schema Zod vuole un ISO con offset; l'input ne produce uno senza
         // secondi ne' fuso, e la creazione falliva con "Invalid ISO datetime".
         poll: hasPoll ? { ...poll, closesAt: localInputToIso(poll.closesAt) } : null,
@@ -214,12 +234,18 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
 
       if (editPost) {
         setPosts((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
-        showToast({ message: "Post aggiornato", severity: "success" });
       } else {
         setPosts((prev) => [saved, ...prev]);
         setPage(0);
-        showToast({ message: publish ? "Post pubblicato" : "Bozza salvata", severity: "success" });
       }
+      showToast({
+        message: goesLive
+          ? publishedMessage(willNotify)
+          : editPost
+            ? "Post aggiornato"
+            : "Bozza salvata",
+        severity: "success",
+      });
       setOpen(false);
     } catch (err) {
       showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
@@ -242,12 +268,14 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     );
   }
 
-  async function handleTogglePublish(post: PostSummary) {
+  async function handleTogglePublish(post: PostSummary, notifyAll = true) {
     const willPublish = !post.publishedAt;
     const res = await fetch(`/api/posts/${post.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(willPublish ? { publish: true } : { unpublish: true }),
+      body: JSON.stringify(
+        willPublish ? { publish: true, notify: notifyAll } : { unpublish: true }
+      ),
     });
     if (!res.ok) {
       showToast({ message: "Errore", severity: "error" });
@@ -256,9 +284,40 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     const updated = await res.json();
     setPosts((prev) => prev.map((p) => (p.id === post.id ? updated : p)));
     showToast({
-      message: willPublish ? "Post pubblicato" : "Post rimesso in bozza",
+      message: willPublish ? publishedMessage(notifyAll) : "Post rimesso in bozza",
       severity: "success",
     });
+  }
+
+  async function sendNotify(post: PostSummary) {
+    const res = await fetch(`/api/posts/${post.id}/notify`, { method: "POST" });
+    if (!res.ok) {
+      showToast({ message: await readError(res), severity: "error" });
+      return;
+    }
+    const { lastNotifiedAt } = (await res.json()) as { lastNotifiedAt: string };
+    setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, lastNotifiedAt } : p)));
+    showToast({ message: "Avviso inviato", severity: "success" });
+  }
+
+  /** "Avvisa tutti…" / "Avvisa di nuovo…": la notifica non si ritira, prima si chiede. */
+  function askNotify(post: PostSummary) {
+    const c = notifyConfirm({
+      title: post.title,
+      lastNotifiedAt: post.lastNotifiedAt,
+      now,
+    });
+    openConfirm(c.title, c.message, () => void sendNotify(post), {
+      confirmLabel: c.confirmLabel,
+      confirmColor: "primary",
+    });
+  }
+
+  function menuAction(key: string, post: PostSummary) {
+    if (key === "notify") return askNotify(post);
+    // Senza avviso non c'è niente da confermare: si annulla con "Rimetti in bozza".
+    if (key === "publishSilent") return void handleTogglePublish(post, false);
+    askTogglePublish(post);
   }
 
   async function handleDelete(post: PostSummary) {
@@ -291,10 +350,13 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
       <RowActions
         subject={post.title}
         primary={{ label: "Modifica", onClick: () => openEdit(post) }}
-        items={newsMenuEntries(!!post.publishedAt).map((e) =>
+        items={newsMenuEntries(!!post.publishedAt, {
+          canNotify: canNotifyPost(post.publishedAt, now),
+          notified: !!post.lastNotifiedAt,
+        }).map((e) =>
           e.key === "public"
             ? { label: e.label, href: `/news/${post.slug}`, external: true }
-            : { label: e.label, onClick: () => askTogglePublish(post) }
+            : { label: e.label, onClick: () => menuAction(e.key, post) }
         )}
         onDelete={() => handleDelete(post)}
         deleteLabel="Elimina post…"
@@ -534,13 +596,38 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
             control={<Switch checked={publish} onChange={(e) => setPublish(e.target.checked)} />}
             label={publish ? "Pubblicato" : "Bozza (non visibile al pubblico)"}
           />
+          {goesLive && (
+            <FormControlLabel
+              control={<Checkbox checked={notify} onChange={(e) => setNotify(e.target.checked)} />}
+              label={
+                <Box>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                    Avvisa tutti della pubblicazione
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Manda una notifica a tutti. Se la spegni il post esce in silenzio, e puoi
+                    avvisare più tardi dal menu ⋯.
+                  </Typography>
+                </Box>
+              }
+              sx={{ alignItems: "flex-start", m: 0 }}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)} disabled={saving}>
             Annulla
           </Button>
           <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>
-            {saving ? "Salvataggio..." : "Salva"}
+            {saving
+              ? "Salvataggio..."
+              : goesLive
+                ? willNotify
+                  ? "Pubblica e avvisa"
+                  : "Pubblica senza avvisare"
+                : publish
+                  ? "Salva"
+                  : "Salva bozza"}
           </Button>
         </DialogActions>
       </ResponsiveDialog>

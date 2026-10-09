@@ -27,13 +27,19 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/notifications/sessionNotify", () => ({
+  notifySessionOpen: vi.fn(),
+}));
+
 import { GET, PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 
 type PrismaMock = {
   trainingSession: {
     findFirst: Mock;
+    findUnique: Mock;
     update: Mock;
     delete: Mock;
   };
@@ -218,6 +224,46 @@ describe("PATCH /api/sessions/[sessionId]", () => {
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json.error).toMatch(/non trovato/i);
+  });
+});
+
+// "Allenamento aggiornato" va solo a iscrizioni aperte e solo se cambia quando
+// o dove: correggere il titolo non deve far suonare i telefoni di tutti.
+describe("PATCH /api/sessions/[sessionId] · notifiche", () => {
+  const open = { ...baseSession, registrationOpen: true, location: null };
+
+  async function patch(before: object, after: object) {
+    p.trainingSession.findUnique.mockResolvedValue(before);
+    p.trainingSession.update.mockResolvedValue(after);
+    const res = await PATCH(...makePATCH("sess-abc", { title: "Qualsiasi" }));
+    expect(res.status).toBe(200);
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+  });
+
+  it("titolo corretto: nessuna notifica", async () => {
+    await patch(open, { ...open, title: "Corretto" });
+    expect(notifySessionOpen).not.toHaveBeenCalled();
+  });
+
+  it("orario spostato: avvisa", async () => {
+    await patch(open, { ...open, date: new Date("2025-06-01T19:00:00Z") });
+    expect(notifySessionOpen).toHaveBeenCalledWith(expect.anything(), "updated");
+  });
+
+  it("fine tolta o luogo cambiato: avvisa", async () => {
+    await patch(open, { ...open, endTime: null });
+    await patch(open, { ...open, location: "Palestra di Sovizzo" });
+    expect(notifySessionOpen).toHaveBeenCalledTimes(2);
+  });
+
+  it("iscrizioni chiuse: nessuna notifica anche se cambia l'orario", async () => {
+    const closed = { ...open, registrationOpen: false };
+    await patch(closed, { ...closed, date: new Date("2025-06-01T19:00:00Z") });
+    expect(notifySessionOpen).not.toHaveBeenCalled();
   });
 });
 

@@ -87,8 +87,21 @@ export async function PATCH(
     throw err;
   }
 
-  if (session.registrationOpen) {
+  // "Allenamento aggiornato" parte solo se cambia quando o dove: un titolo
+  // corretto o una restrizione ritoccata non sono una novità per chi viene.
+  const whenOrWhereChanged =
+    !!before &&
+    (before.date.getTime() !== session.date.getTime() ||
+      (before.endTime?.getTime() ?? null) !== (session.endTime?.getTime() ?? null) ||
+      before.location !== session.location);
+  if (session.registrationOpen && whenOrWhereChanged) {
     notifySessionOpen(session, "updated");
+    // "Ultimo avviso" nel pannello: aspettato, perché la pagina si ricarica subito.
+    const lastNotifiedAt = new Date();
+    await prisma.trainingSession
+      .update({ where: { id: sessionId }, data: { lastNotifiedAt } })
+      .catch((err) => console.error("[sessions] lastNotifiedAt", err));
+    session = { ...session, lastNotifiedAt };
   }
 
   if (authSession?.user?.id) {

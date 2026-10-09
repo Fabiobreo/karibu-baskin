@@ -69,7 +69,12 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
     prisma.trainingSession.findMany({
       where: { date: { gt: now } },
       orderBy: { date: "asc" },
-      select: { ...sessionFields, registrationOpen: true, registrationOpenedAt: true },
+      select: {
+        ...sessionFields,
+        registrationOpen: true,
+        registrationOpenedAt: true,
+        lastNotifiedAt: true,
+      },
     }),
   ]);
 
@@ -78,6 +83,7 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
     date: s.date.toISOString(),
     endTime: s.endTime?.toISOString() ?? null,
     registrationOpenedAt: s.registrationOpenedAt?.toISOString() ?? null,
+    lastNotifiedAt: s.lastNotifiedAt?.toISOString() ?? null,
     teams: parseTeamsData(s.teams),
   }));
 

@@ -1,5 +1,6 @@
 "use client";
-import Image from "next/image";
+import { getImageProps } from "next/image";
+import type { HeroPhoto } from "@/lib/heroPhotos";
 import { Box, Typography, Button, Container, Link as MuiLink } from "@mui/material";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { alpha } from "@mui/material/styles";
@@ -23,7 +24,59 @@ const SCRIM_FADE_COMPACT_PX = 64;
 // sta sopra le maglie arancioni e con meno velo si legge peggio.
 const SCRIM_ALPHA = 0.72;
 
+// Da qui in su la fascia e' larga e prende la foto orizzontale (`sm` del tema).
+const WIDE_MEDIA = "(min-width: 600px)";
+const TALL_MEDIA = "(max-width: 599.95px)";
+
+/**
+ * Foto di sfondo: una verticale per il telefono e una orizzontale dal tablet in
+ * su, con `<picture>`, cosi' il browser scarica solo quella che serve. E'
+ * l'immagine piu' pesante del primo schermo: la precarica il `<link>` con la
+ * stessa condizione (`priority` di `next/image` le precaricherebbe entrambe).
+ */
+function HeroPicture({ photo }: { photo: HeroPhoto }) {
+  const common = { alt: "Squadra Karibu Baskin", fill: true, sizes: "100vw" };
+  const wide = getImageProps({ ...common, src: photo.wide.src }).props;
+  const { srcSet: tallSrcSet, ...img } = getImageProps({ ...common, src: photo.tall.src }).props;
+  return (
+    <>
+      <link
+        rel="preload"
+        as="image"
+        imageSrcSet={wide.srcSet}
+        imageSizes="100vw"
+        media={WIDE_MEDIA}
+        fetchPriority="high"
+      />
+      <link
+        rel="preload"
+        as="image"
+        imageSrcSet={tallSrcSet}
+        imageSizes="100vw"
+        media={TALL_MEDIA}
+        fetchPriority="high"
+      />
+      <picture>
+        <source media={WIDE_MEDIA} srcSet={wide.srcSet} sizes="100vw" />
+        <source srcSet={tallSrcSet} sizes="100vw" />
+        <Box
+          component="img"
+          {...img}
+          loading="eager"
+          fetchPriority="high"
+          sx={{
+            objectFit: "cover",
+            objectPosition: { xs: photo.tall.position, sm: photo.wide.position },
+          }}
+        />
+      </picture>
+    </>
+  );
+}
+
 interface HeroSectionProps {
+  /** La foto del giorno: la sceglie il server (`todaysHeroPhoto`). */
+  photo: HeroPhoto;
   /**
    * Visitatore senza accesso (UX-15): la CTA porta a "Vieni a provare". Senza,
    * e' lo staff che non gioca: la CTA scorre agli allenamenti.
@@ -41,7 +94,7 @@ interface HeroSectionProps {
  * Hero con foto della home (UX-33). La foto della squadra resta scoperta in
  * alto; il testo sta in basso a sinistra, sopra una velatura che parte solo li'.
  */
-export default function HeroSection({ visitor = false, greeting }: HeroSectionProps) {
+export default function HeroSection({ photo, visitor = false, greeting }: HeroSectionProps) {
   const t = useTranslations("home");
   const compact = greeting !== undefined;
   const fade = compact ? SCRIM_FADE_COMPACT_PX : SCRIM_FADE_PX;
@@ -59,16 +112,7 @@ export default function HeroSection({ visitor = false, greeting }: HeroSectionPr
         overflow: "hidden",
       }}
     >
-      {/* ── Foto di sfondo ── */}
-      <Image
-        src="/hero.jpg"
-        alt="Squadra Karibu Baskin"
-        fill
-        priority
-        style={{ objectFit: "cover", objectPosition: "center" }}
-        sizes="100vw"
-      />
-
+      <HeroPicture photo={photo} />
       {/* ── Contenuto, con la sua velatura ── */}
       <Box
         sx={{

@@ -3,8 +3,9 @@ import { prisma } from "@/lib/db";
 import { isAdminUser, isMember } from "@/lib/apiAuth";
 import { publicSubjects } from "@/lib/minors";
 import { PlayerStatsBatchSchema, computePoints } from "@/lib/schemas";
-import { sendPushToAll } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
+import { playerRecipientIds } from "@/lib/notifications/recipients";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
@@ -133,7 +134,7 @@ export async function PUT(req: Request, { params }: Params) {
     }
   }
 
-  // Notifica push + in-app dopo la risposta agli atleti con stats
+  // Notifica push + in-app dopo la risposta, solo agli atleti con stats
   if (saved.length > 0 && notify) {
     // Push e in-app partono insieme; la catena finisce quando sono finiti
     // entrambi, così `after()` tiene viva la funzione per tutti e due.
@@ -152,15 +153,19 @@ export async function PUT(req: Request, { params }: Params) {
           if (!match) return;
           const title = "Statistiche disponibili";
           const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
-          const body = `Le tue statistiche per ${match.team.name} vs ${opponentName} sono online.`;
+          const text = `Le statistiche di ${match.team.name} vs ${opponentName} sono online.`;
           const url = `/partite/${match.slug ?? matchId}`;
+          // Solo chi ha una riga di statistiche (per un figlio, i genitori):
+          // agli altri la partita è già arrivata con il risultato.
+          const ids = await playerRecipientIds(body);
+          const push = { title, body: text, url, type: "MATCH_RESULT" };
           await Promise.all([
-            sendPushToAll({ title, body, url, type: "MATCH_RESULT" }, false).catch((err) =>
+            sendPushToUsers(ids, push, "MATCH_RESULT").catch((err) =>
               console.error("[push match stats]", err)
             ),
-            createAppNotification({
+            createTargetedAppNotifications(ids, {
               title,
-              body,
+              body: text,
               url,
               type: "MATCH_RESULT",
             }).catch((err) => console.error("[notification match stats]", err)),

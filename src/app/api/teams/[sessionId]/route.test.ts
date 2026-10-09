@@ -12,6 +12,9 @@ vi.mock("@/lib/db", () => ({
       update: vi.fn(),
       findUnique: vi.fn(),
     },
+    child: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 
@@ -44,6 +47,7 @@ import { createTargetedAppNotifications } from "@/lib/notifications/appNotificat
 type PrismaMock = {
   registration: { findMany: Mock };
   trainingSession: { update: Mock; findUnique: Mock };
+  child: { findMany: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
@@ -162,6 +166,7 @@ describe("POST /api/teams/[sessionId]", () => {
     const res = await POST(makePost(), mockParams);
     expect(res.status).toBe(200);
     expect(p.trainingSession.update).toHaveBeenCalledOnce();
+    await new Promise((resolve) => setTimeout(resolve, 20));
     expect(mockCreateTargeted).not.toHaveBeenCalled();
   });
 
@@ -231,13 +236,13 @@ describe("POST /api/teams/[sessionId]", () => {
     p.registration.findMany.mockResolvedValue(athletes);
     await POST(makePost(), mockParams);
     // Deve usare createTargetedAppNotifications, non createAppNotification
-    expect(mockCreateTargeted).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalledOnce());
     const [userIds] = mockCreateTargeted.mock.calls[0] as [string[], unknown];
     // Solo gli userId degli atleti con userId non-null
     expect(userIds).toEqual(["u1", "u2", "u3", "u4", "u5", "u6"]);
   });
 
-  it("non include gli iscritti senza userId (childId only) nelle notifiche in-app", async () => {
+  it("per un figlio iscritto avvisa i genitori", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
     const withChild = [
       ...athletes,
@@ -253,10 +258,25 @@ describe("POST /api/teams/[sessionId]", () => {
       },
     ];
     p.registration.findMany.mockResolvedValue(withChild);
+    p.child.findMany.mockResolvedValue([
+      { userId: null, guardians: [{ userId: "mamma" }, { userId: "papa" }] },
+    ]);
     await POST(makePost(), mockParams);
+    await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalledOnce());
     const [userIds] = mockCreateTargeted.mock.calls[0] as [string[], unknown];
-    expect(userIds).not.toContain(null);
-    expect(userIds).toHaveLength(6); // solo gli atleti con userId
+    expect(userIds).toEqual(["u1", "u2", "u3", "u4", "u5", "u6", "mamma", "papa"]);
+  });
+
+  it("non avvisa chi è iscritto come allenatore", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.registration.findMany.mockResolvedValue([
+      ...athletes,
+      { ...athletes[0], id: "r7", name: "Coach", registeredAsCoach: true, userId: "u7" },
+    ]);
+    await POST(makePost(), mockParams);
+    await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalledOnce());
+    const [userIds] = mockCreateTargeted.mock.calls[0] as [string[], unknown];
+    expect(userIds).not.toContain("u7");
   });
 });
 

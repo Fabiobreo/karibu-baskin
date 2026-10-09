@@ -4,8 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { PostCreateSchema } from "@/lib/schemas/post";
 import { generatePostSlug } from "@/lib/slugUtils";
-import { sendPushToAll } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { announcePost } from "@/lib/notifications/announce";
 import { auth } from "@/lib/authjs";
 import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
@@ -53,8 +52,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { title, body, imageUrl, publish, poll } = parsed.data;
+  const { title, body, imageUrl, publish, notify, poll } = parsed.data;
   const publishedAt = publish ? new Date() : null;
+  const willNotify = publish && notify;
 
   // Tutto dentro il try: anche la sanitizzazione e la generazione dello slug
   // (che interroga il DB) possono esplodere, e fuori dal try diventavano un 500
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
         imageUrl: imageUrl ?? null,
         authorId,
         publishedAt,
+        lastNotifiedAt: willNotify ? publishedAt : null,
         ...(poll
           ? {
               poll: {
@@ -113,30 +114,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (publish && publishedAt) {
-    const notifType = poll ? "NEW_POLL" : "NEW_POST";
-    const notifTitle = poll ? "Nuovo sondaggio" : "Nuova news";
-    const notifBody = title;
-
-    inBackground(
-      sendPushToAll(
-        { title: notifTitle, body: notifBody, url: `/news/${slug}`, type: notifType },
-        false,
-        "NEW_POST"
-      ),
-      "push new post"
-    );
-
-    inBackground(
-      createAppNotification({
-        type: notifType,
-        title: notifTitle,
-        body: notifBody,
-        url: `/news/${slug}`,
-      }),
-      "notification new post"
-    );
-  }
+  if (willNotify) inBackground(announcePost(post, "new"), "notification new post");
 
   return NextResponse.json(post, { status: 201 });
 }

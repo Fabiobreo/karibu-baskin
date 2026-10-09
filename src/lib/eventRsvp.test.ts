@@ -16,7 +16,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { saveFamilyRsvp, RsvpError, loadFamilyRsvp } from "./eventRsvp";
+import { saveFamilyRsvp, RsvpError, loadFamilyRsvp, loadFamilyAnswerStates } from "./eventRsvp";
 import { prisma } from "@/lib/db";
 import type { FamilyMember } from "./eventFamily";
 
@@ -59,6 +59,28 @@ beforeEach(() => {
   p.eventOptionSelection.findMany.mockResolvedValue([]);
   p.eventGuest.findMany.mockResolvedValue([]);
   tx.eventGuest.create.mockImplementation(({ data }) => Promise.resolve({ id: "g-new", ...data }));
+});
+
+describe("loadFamilyAnswerStates()", () => {
+  it("nessuno, qualcuno, tutti; la riga della scheda figlio vale per chi ha anche l'account", async () => {
+    p.eventAttendance.findMany.mockResolvedValue([
+      { eventId: "some", userId: "me", childId: null, status: "GOING" },
+      { eventId: "all", userId: "me", childId: null, status: "NOT_GOING" },
+      { eventId: "all", userId: "dad", childId: null, status: "GOING" },
+      { eventId: "all", userId: null, childId: "son", status: "MAYBE" },
+    ]);
+    const states = await loadFamilyAnswerStates(["empty", "some", "all"], [me, dad, son]);
+    expect(Object.fromEntries(states)).toEqual({
+      empty: "none",
+      some: "partial",
+      all: "answered",
+    });
+  });
+
+  it("senza eventi non interroga il database", async () => {
+    expect((await loadFamilyAnswerStates([], [me])).size).toBe(0);
+    expect(p.eventAttendance.findMany).not.toHaveBeenCalled();
+  });
 });
 
 describe("saveFamilyRsvp()", () => {

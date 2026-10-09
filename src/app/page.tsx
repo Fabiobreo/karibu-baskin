@@ -11,6 +11,7 @@ import HeroSection from "@/components/common/HeroSection";
 import LatestNewsHero from "@/components/news/LatestNewsHero";
 import LoSapeviCard from "@/components/common/LoSapeviCard";
 import ProssimePartiteHome from "@/components/matches/ProssimePartiteHome";
+import ProssimiEventiHome from "@/components/common/ProssimiEventiHome";
 import ClubValues from "@/components/common/ClubValues";
 import ClubHistory from "@/components/common/ClubHistory";
 import BirthdayBanner from "@/components/common/BirthdayBanner";
@@ -19,6 +20,7 @@ import GuestOnboardingSkeleton from "@/components/common/GuestOnboardingSkeleton
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
 import NextActionSection from "@/components/common/NextActionSection";
 import { showsNextAction } from "@/lib/nextAction";
+import { todaysHeroPhoto } from "@/lib/heroPhotos";
 import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
@@ -37,11 +39,16 @@ export const revalidate = 0;
 // appena pronta, mentre hero e testi statici sono subito a schermo. Senza,
 // le query andavano in fila e la pagina compariva tutta insieme alla fine,
 // lentissima quando il database era sospeso (avvio a freddo Neon).
-export default async function HomePage() {
-  const [t, tGuest, userSession] = await Promise.all([
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ foto?: string | string[] }>;
+}) {
+  const [t, tGuest, userSession, { foto }] = await Promise.all([
     getTranslations("home"),
     getTranslations("guestOnboarding"),
     auth(),
+    searchParams,
   ]);
 
   const userId = userSession?.user?.id ?? null;
@@ -53,6 +60,13 @@ export default async function HomePage() {
   const matchesBlock = (
     <Suspense fallback={<HomeSectionSkeleton variant="matches" />}>
       <ProssimePartiteHome />
+    </Suspense>
+  );
+
+  // Il più delle volte non ci sono eventi nel mese: niente skeleton.
+  const eventsBlock = (
+    <Suspense fallback={null}>
+      <ProssimiEventiHome userId={userId} />
     </Suspense>
   );
 
@@ -106,6 +120,8 @@ export default async function HomePage() {
     (ownProfile?._count.guardianOf ?? 0) > 0
   );
   const isGuest = appRole === "GUEST" && !!userId;
+  // `/?foto=<chiave>` mostra una foto precisa, per provarle tutte.
+  const heroPhoto = todaysHeroPhoto(typeof foto === "string" ? foto : undefined);
   const memberHead = showNextAction && !!userId && !!appRole;
 
   // Il Container #allenamenti resta fuori dal Suspense: è l'ancora della CTA
@@ -152,6 +168,7 @@ export default async function HomePage() {
       {memberHead && userId && appRole ? (
         <>
           <HeroSection
+            photo={heroPhoto}
             greeting={firstName ? t("heroHello", { name: firstName }) : t("heroHelloNoName")}
           />
           <Suspense fallback={<GuestOnboardingSkeleton compact />}>
@@ -161,6 +178,7 @@ export default async function HomePage() {
       ) : isGuest && userId ? (
         <>
           <HeroSection
+            photo={heroPhoto}
             greeting={
               firstName ? tGuest("heroGreeting", { name: firstName }) : tGuest("heroGreetingNoName")
             }
@@ -171,7 +189,7 @@ export default async function HomePage() {
         </>
       ) : (
         <>
-          <HeroSection visitor={!userId} />
+          <HeroSection photo={heroPhoto} visitor={!userId} />
           {/* Staff: le disponibilita' da dare restano in un banner. */}
           {isStaff && userId && (
             <Suspense fallback={null}>
@@ -183,6 +201,7 @@ export default async function HomePage() {
 
       {sessionsBlock}
       {matchesBlock}
+      {eventsBlock}
       {newsBlock}
       <LoSapeviCard />
       {chiSiamoBlock}

@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
         openRoles: openRoles ?? [],
         registrationOpen: openImmediately === true,
         registrationOpenedAt: openImmediately === true ? new Date() : null,
+        lastNotifiedAt: openImmediately === true ? new Date() : null,
       },
       include: { _count: { select: { registrations: true } } },
     });

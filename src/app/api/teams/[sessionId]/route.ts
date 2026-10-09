@@ -8,6 +8,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { isMemberRole } from "@/lib/authRoles";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
+import { playerRecipientIds } from "@/lib/notifications/recipients";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { inBackground } from "@/lib/background";
@@ -113,28 +114,28 @@ export async function POST(
   const sessionEnded =
     !!trainingSession && (trainingSession.endTime ?? trainingSession.date) < new Date();
   if (trainingSession && !sessionEnded) {
-    // Raccoglie gli userId degli iscritti come atleti (non allenatori)
-    const registeredUserIds = registrations
-      .filter((r) => !r.registeredAsCoach && r.userId)
-      .map((r) => r.userId as string);
-
     const pushPayload = {
       title: "📋 Squadre pronte!",
       body: `Le squadre per "${trainingSession.title}" sono state create.`,
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
       type: "TEAMS_READY",
     };
+    // Chi è iscritto come atleta (non allenatore); per un figlio iscritto, i
+    // suoi genitori. Push e in-app partono insieme, alle stesse persone.
     inBackground(
-      sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY"),
-      "push teams ready"
-    );
-    inBackground(
-      createTargetedAppNotifications(registeredUserIds, {
-        type: "TEAMS_READY",
-        title: "Squadre pronte!",
-        body: `Le squadre per "${trainingSession.title}" sono state create.`,
-        url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
-      }),
+      playerRecipientIds(registrations.filter((r) => !r.registeredAsCoach)).then((ids) =>
+        Promise.all([
+          sendPushToUsers(ids, pushPayload, "TEAMS_READY").catch((err) =>
+            console.error("[push teams ready]", err)
+          ),
+          createTargetedAppNotifications(ids, {
+            type: "TEAMS_READY",
+            title: "Squadre pronte!",
+            body: pushPayload.body,
+            url: pushPayload.url,
+          }),
+        ])
+      ),
       "notification teams ready"
     );
   }

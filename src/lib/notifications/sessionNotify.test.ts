@@ -11,12 +11,17 @@ vi.mock("@/lib/notifications/sessionAudience", () => ({
 vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
   createTargetedAppNotifications: vi.fn().mockResolvedValue(undefined),
+  removeAppNotifications: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { notifySessionOpen, type SessionNotifyInput } from "./sessionNotify";
 import { sendPushToAll, sendPushToUsers } from "./webpush";
 import { loadSessionAudience } from "./sessionAudience";
-import { createAppNotification, createTargetedAppNotifications } from "./appNotifications";
+import {
+  createAppNotification,
+  createTargetedAppNotifications,
+  removeAppNotifications,
+} from "./appNotifications";
 
 const mockAudience = loadSessionAudience as Mock;
 const mockToAll = sendPushToAll as Mock;
@@ -42,6 +47,20 @@ describe("notifySessionOpen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAudience.mockResolvedValue(["u1", "u2"]);
+  });
+
+  it("promemoria: titolo proprio, e in lista sostituisce l'avviso precedente", async () => {
+    notifySessionOpen(base, "reminder");
+    await flush();
+    expect(mockToAll.mock.calls[0][0].title).toContain("Iscrizioni ancora aperte");
+    expect(removeAppNotifications).toHaveBeenCalledWith("NEW_TRAINING", "/allenamento/2026-10-06");
+    expect(mockAppAll.mock.calls[0][0].title).toBe("Iscrizioni ancora aperte");
+  });
+
+  it("il primo avviso non cancella niente", async () => {
+    notifySessionOpen(base);
+    await flush();
+    expect(removeAppNotifications).not.toHaveBeenCalled();
   });
 
   it("allenamento aperto a tutti: push e notifica in-app a tutti", async () => {

@@ -1,5 +1,7 @@
 import { Box, Button, Container, Divider, Stack, Typography } from "@mui/material";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { RADIUS } from "@/lib/radius";
 import PageHero from "@/components/common/PageHero";
 import ClubValues from "@/components/common/ClubValues";
 import ClubHistory from "@/components/common/ClubHistory";
@@ -38,13 +40,43 @@ export default async function IlClubPage() {
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <Stack spacing={{ xs: 5, md: 7 }} sx={columnSx("reading")}>
-          <Box>
-            <Typography variant="body1" sx={{ lineHeight: 1.75, mb: 2 }}>
-              {t("intro")}
-            </Typography>
-            <Button href="/il-baskin" variant="outlined">
-              {t("baskinCta")}
-            </Button>
+          {/* Presentazione con la foto di gruppo: accanto al testo da `md`, sotto
+              su telefono. E' verticale, e qui non ha testo sopra. */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 300px" },
+              alignItems: "center",
+              gap: { xs: 3, md: 5 },
+            }}
+          >
+            <Box>
+              <Typography variant="body1" sx={{ lineHeight: 1.75, mb: 2 }}>
+                {t("intro")}
+              </Typography>
+              <Button href="/il-baskin" variant="outlined">
+                {t("baskinCta")}
+              </Button>
+            </Box>
+            <Box
+              sx={{
+                position: "relative",
+                aspectRatio: "4 / 5",
+                width: "100%",
+                maxWidth: { xs: 480, md: "none" },
+                mx: "auto",
+                borderRadius: RADIUS.lg,
+                overflow: "hidden",
+              }}
+            >
+              <Image
+                src="/club/scalinata.jpg"
+                alt={t("photoAlt")}
+                fill
+                sizes="(min-width: 900px) 300px, (min-width: 520px) 480px, 100vw"
+                style={{ objectFit: "cover" }}
+              />
+            </Box>
           </Box>
 
           <ClubValues overline={false} />

@@ -1,7 +1,9 @@
 import { inBackground } from "@/lib/background";
 import { prisma } from "@/lib/db";
 import { generateUserSlug } from "@/lib/slugUtils";
-import { sendPushToAll } from "@/lib/notifications/webpush";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
+import { staffUserIds } from "@/lib/notifications/recipients";
 
 export type SetOwnNameResult =
   | { ok: true; name: string }
@@ -27,6 +29,23 @@ export function newUserPushBody(nameOrEmail: string): string {
  *   creazione dell'account (vedi `createUser` in authjs.ts) avrebbe mostrato
  *   solo un indirizzo email.
  */
+/**
+ * Avvisa lo staff di un nuovo account da confermare: push e in-app agli
+ * allenatori e agli admin, perché anche un allenatore può approvare un ospite
+ * (`canAssignAppRole`).
+ */
+export async function notifyStaffOfNewUser(name: string): Promise<void> {
+  const staffIds = await staffUserIds();
+  const body = newUserPushBody(name);
+  const url = "/admin/utenti";
+  await Promise.all([
+    sendPushToUsers(staffIds, { title: "👤 Nuovo utente", body, url }).catch((err) =>
+      console.error("[push new user]", err)
+    ),
+    createTargetedAppNotifications(staffIds, { type: "SYSTEM", title: "Nuovo utente", body, url }),
+  ]);
+}
+
 export async function setOwnName(userId: string, name: string): Promise<SetOwnNameResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -43,13 +62,7 @@ export async function setOwnName(userId: string, name: string): Promise<SetOwnNa
   });
 
   if (!hadName && user.appRole === "GUEST") {
-    inBackground(
-      sendPushToAll(
-        { title: "👤 Nuovo utente", body: newUserPushBody(name), url: "/admin/utenti" },
-        true // solo admin
-      ),
-      "push new user"
-    );
+    inBackground(notifyStaffOfNewUser(name), "notification new user");
   }
 
   return { ok: true, name };

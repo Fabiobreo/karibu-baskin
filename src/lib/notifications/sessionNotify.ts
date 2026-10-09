@@ -5,6 +5,7 @@ import { hasRestrictions } from "@/lib/registrationRestrictions";
 import {
   createAppNotification,
   createTargetedAppNotifications,
+  removeAppNotifications,
 } from "@/lib/notifications/appNotifications";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 import { NEW_TRAINING_TITLE } from "@/lib/notifications/notificationDisplay";
@@ -20,7 +21,22 @@ export interface SessionNotifyInput {
   openRoles: number[];
 }
 
-type NotifKind = "new" | "updated" | "closed";
+/** "reminder": lo staff rimanda l'avviso di un allenamento già aperto. */
+type NotifKind = "new" | "updated" | "closed" | "reminder";
+
+const APP_TITLE: Record<NotifKind, string> = {
+  new: NEW_TRAINING_TITLE,
+  updated: "Allenamento aggiornato",
+  closed: "Iscrizioni chiuse",
+  reminder: "Iscrizioni ancora aperte",
+};
+
+const PUSH_TITLE: Record<NotifKind, string> = {
+  new: "🏀 Iscrizioni aperte",
+  updated: "🏀 Allenamento aggiornato",
+  closed: "🔒 Iscrizioni chiuse",
+  reminder: "🏀 Iscrizioni ancora aperte",
+};
 
 export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind = "new") {
   const timeRange = session.endTime
@@ -29,25 +45,18 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
   const dateLabel = formatRomeDayLabel(session.date);
   const body = `${session.title}: ${dateLabel}, ${timeRange}`;
   const url = `/allenamento/${session.dateSlug ?? session.id}`;
-  const pushTitle =
-    kind === "updated"
-      ? "🏀 Allenamento aggiornato"
-      : kind === "closed"
-        ? "🔒 Iscrizioni chiuse"
-        : "🏀 Iscrizioni aperte";
-  const pushPayload = { title: pushTitle, body, url, type: "NEW_TRAINING" };
+  const pushPayload = { title: PUSH_TITLE[kind], body, url, type: "NEW_TRAINING" };
 
   const appNotification = {
     type: "NEW_TRAINING" as const,
-    title:
-      kind === "updated"
-        ? "Allenamento aggiornato"
-        : kind === "closed"
-          ? "Iscrizioni chiuse"
-          : NEW_TRAINING_TITLE,
+    title: APP_TITLE[kind],
     body,
     url,
   };
+  // Un promemoria sostituisce in lista gli avvisi già mandati per questo
+  // allenamento, invece di aggiungerne un altro.
+  const clearPrevious = () =>
+    kind === "reminder" ? removeAppNotifications("NEW_TRAINING", url) : Promise.resolve();
 
   const restrictions = {
     allowedRoles: session.allowedRoles,
@@ -57,7 +66,10 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
 
   if (!hasRestrictions(restrictions)) {
     inBackground(sendPushToAll(pushPayload, false, "NEW_TRAINING"), "push session open");
-    inBackground(createAppNotification(appNotification), "notification session open");
+    inBackground(
+      clearPrevious().then(() => createAppNotification(appNotification)),
+      "notification session open"
+    );
     return;
   }
 
@@ -73,7 +85,7 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
         sendPushToUsers(ids, pushPayload, "NEW_TRAINING").catch((err) =>
           console.error("[push session open (filtered)]", err)
         ),
-        createTargetedAppNotifications(ids, appNotification),
+        clearPrevious().then(() => createTargetedAppNotifications(ids, appNotification)),
       ]);
     }),
     "notification session open (filtered)"

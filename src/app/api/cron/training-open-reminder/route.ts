@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
-import { sendPushToAll } from "@/lib/notifications/webpush";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     // congela la funzione. Ognuno ha il suo catch, così una push fallita non
     // ferma la notifica in-app né il resto del giro.
     await Promise.all([
-      sendPushToAll({ title, body, url, type: "SYSTEM" }, true).catch((err) =>
+      sendPushToUsers(staffIds, { title, body, url, type: "SYSTEM" }).catch((err) =>
         console.error("[push] open reminder", err)
       ),
       staffIds.length > 0

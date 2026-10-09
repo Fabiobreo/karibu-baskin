@@ -7,9 +7,8 @@ import { prisma } from "@/lib/db";
 import { inBackground } from "@/lib/background";
 import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
-import { sendPushToAll } from "@/lib/notifications/webpush";
 import { generateUserSlug } from "@/lib/slugUtils";
-import { newUserPushBody } from "@/lib/userName";
+import { notifyStaffOfNewUser } from "@/lib/userName";
 import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS } from "@/lib/sessionPolicy";
 import { showsAvailabilities } from "@/lib/matches/availabilityAudience";
 
@@ -129,13 +128,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // ancora (solo l'email): la notifica parte quando l'utente lo inserisce,
       // da setOwnName, così lo staff legge un nome e non un indirizzo.
       if (user.name?.trim()) {
-        inBackground(
-          sendPushToAll(
-            { title: "👤 Nuovo utente", body: newUserPushBody(user.name), url: "/admin/utenti" },
-            true // solo admin
-          ),
-          "push new user (createUser)"
-        );
+        inBackground(notifyStaffOfNewUser(user.name), "notification new user (createUser)");
       }
     },
   },

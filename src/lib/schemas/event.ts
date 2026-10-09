@@ -16,6 +16,8 @@ export const EventCreateSchema = EventBaseSchema.extend({
   date: isoDateTime(),
   location: z.string().max(200).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
+  // Spunta "Avvisa tutti del nuovo evento": spenta, l'evento nasce in silenzio.
+  notify: z.boolean().default(true),
 });
 
 export const EventUpdateSchema = EventBaseSchema.extend({

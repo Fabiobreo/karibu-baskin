@@ -3,8 +3,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { PostUpdateSchema } from "@/lib/schemas/post";
-import { sendPushToAll } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { announcePost } from "@/lib/notifications/announce";
 import { auth } from "@/lib/authjs";
 import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
@@ -87,9 +86,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 
-  const { title, body, imageUrl, publish, unpublish, poll } = parsed.data;
+  const { title, body, imageUrl, publish, unpublish, notify, poll } = parsed.data;
   const wasPublished = !!existing.publishedAt;
   const willPublish = publish && !wasPublished;
+  // L'avviso parte solo quando il post esce, e solo con la spunta accesa.
+  const willNotify = willPublish && notify;
 
   // Come nella POST: senza try/catch un errore Prisma esce come 500 con pagina
   // HTML, e il messaggio vero non arriva mai al client.
@@ -108,6 +109,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
           ...(body ? { body: sanitizePostHtml(body) } : {}),
           ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
           publishedAt,
+          ...(willNotify ? { lastNotifiedAt: publishedAt } : {}),
         },
         include: {
           author: { select: { name: true } },
@@ -175,33 +177,22 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 
-  // Notifiche alla prima pubblicazione
-  if (willPublish) {
-    const hasPoll = !!updatedPost.poll || !!poll;
-    const notifType = hasPoll ? "NEW_POLL" : "NEW_POST";
-    const notifTitle = hasPoll ? "Nuovo sondaggio" : "Nuova news";
-
+  // Il sondaggio può essere stato aggiunto o tolto in questo salvataggio: per
+  // il testo dell'avviso vale quello che c'è adesso.
+  if (willNotify) {
+    const currentPoll =
+      poll === undefined ? existing.poll : poll && { closesAt: poll.closesAt ?? null };
     inBackground(
-      sendPushToAll(
+      announcePost(
         {
-          title: notifTitle,
-          body: updatedPost.title,
-          url: `/news/${updatedPost.slug}`,
-          type: notifType,
+          slug: updatedPost.slug,
+          title: updatedPost.title,
+          poll: currentPoll
+            ? { closesAt: currentPoll.closesAt ? new Date(currentPoll.closesAt) : null }
+            : null,
         },
-        false,
-        "NEW_POST"
+        "new"
       ),
-      "push new post"
-    );
-
-    inBackground(
-      createAppNotification({
-        type: notifType,
-        title: notifTitle,
-        body: updatedPost.title,
-        url: `/news/${updatedPost.slug}`,
-      }),
       "notification new post"
     );
   }

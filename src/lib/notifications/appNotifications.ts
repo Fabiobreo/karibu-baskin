@@ -17,6 +17,19 @@ export async function createAppNotification(payload: AppNotificationPayload): Pr
   await prisma.appNotification.create({ data: payload });
 }
 
+/**
+ * Toglie dalla lista gli avvisi già mandati per la stessa cosa (stesso tipo e
+ * stessa pagina): un promemoria li sostituisce, così il centro notifiche non
+ * si riempie di doppioni.
+ */
+export async function removeAppNotifications(
+  type: AppNotificationType,
+  url: string
+): Promise<void> {
+  if (notificationsDisabled()) return;
+  await prisma.appNotification.deleteMany({ where: { type, url } });
+}
+
 export async function createTargetedAppNotifications(
   userIds: string[],
   payload: Omit<AppNotificationPayload, "targetUserId">

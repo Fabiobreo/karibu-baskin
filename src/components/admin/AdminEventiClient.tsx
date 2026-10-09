@@ -23,6 +23,7 @@ import {
   Divider,
   FormControlLabel,
   Switch,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -32,14 +33,15 @@ import HistoryIcon from "@mui/icons-material/History";
 import { useState, useTransition, useEffect, useMemo, useRef, type RefObject } from "react";
 import { visuallyHidden } from "@mui/utils";
 import RowActions from "@/components/admin/RowActions";
-import { eventDeleteMessage } from "@/lib/adminRowActions";
+import { eventDeleteMessage, notifyActionLabel, notifyConfirm } from "@/lib/adminRowActions";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatRome } from "@/lib/dateUtils";
 import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 import { it } from "date-fns/locale";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ImageUploader from "@/components/common/ImageUploader";
@@ -66,6 +68,8 @@ type Event = {
   slug?: string | null;
   allowGuests?: boolean;
   maxGuests?: number | null;
+  /** Ultimo avviso mandato a tutti; null = creato senza avvisare. */
+  lastNotifiedAt?: string | Date | null;
   options?: EventOptionRow[];
   /** Risposte date (persone ed esterni): la risposta dell'API non lo include. */
   _count?: { attendances: number };
@@ -110,6 +114,9 @@ export default function AdminEventiClient({
   const [allowGuests, setAllowGuests] = useState(false);
   // Stringa per l'input numerico: "" = nessun limite.
   const [maxGuests, setMaxGuests] = useState("");
+  // Spunta "Avvisa tutti del nuovo evento": solo in creazione.
+  const [notify, setNotify] = useState(true);
+  const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useRowsPerPage("events", [10, 25, 50], 10);
@@ -123,11 +130,19 @@ export default function AdminEventiClient({
     handleSubmit,
     reset,
     setError,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<EventFormValues>({
     resolver: zodResolver(EventFormSchema),
     defaultValues: { title: "", date: "", endDate: "", location: "", description: "" },
   });
+
+  // Un evento inserito a cose fatte non avvisa nessuno (lo rifiuta anche il
+  // server): la spunta c'è solo in creazione e con una data futura.
+  const [dateValue, endDateValue] = useWatch({ control, name: ["date", "endDate"] });
+  const endsAt = endDateValue || dateValue;
+  const canNotifyOnCreate = !editingId && (!endsAt || new Date(endsAt).getTime() >= now);
+  const willNotify = canNotifyOnCreate && notify;
 
   const openCreate = () => {
     setEditingId(null);
@@ -135,6 +150,7 @@ export default function AdminEventiClient({
     setOptionDrafts([]);
     setAllowGuests(false);
     setMaxGuests("");
+    setNotify(true);
     reset({ title: "", date: "", endDate: "", location: "", description: "" });
     setDialogOpen(true);
   };
@@ -201,7 +217,7 @@ export default function AdminEventiClient({
       : await fetch("/api/events", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ ...body, notify: willNotify }),
         });
 
     if (!res.ok) {
@@ -241,6 +257,13 @@ export default function AdminEventiClient({
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         )
       );
+      // L'unica prova che i telefoni hanno suonato, o no.
+      showToast({
+        message: saved.lastNotifiedAt
+          ? "Evento creato, avviso inviato"
+          : "Evento creato senza avvisare",
+        severity: "success",
+      });
     }
     setDialogOpen(false);
     startTransition(() => router.refresh());
@@ -262,6 +285,30 @@ export default function AdminEventiClient({
   const lastPage = Math.max(0, Math.ceil(past.length / rowsPerPage) - 1);
   const safePage = Math.min(page, lastPage);
   const pastPaginated = past.slice(safePage * rowsPerPage, (safePage + 1) * rowsPerPage);
+
+  const sendNotify = async (ev: Event) => {
+    const res = await fetch(`/api/events/${ev.id}/notify`, { method: "POST" });
+    if (!res.ok) {
+      showToast({ message: await readError(res), severity: "error" });
+      return;
+    }
+    const { lastNotifiedAt } = (await res.json()) as { lastNotifiedAt: string };
+    setEvents((prev) => prev.map((e) => (e.id === ev.id ? { ...e, lastNotifiedAt } : e)));
+    showToast({ message: "Avviso inviato", severity: "success" });
+  };
+
+  /** "Avvisa tutti…" / "Avvisa di nuovo…": la notifica non si ritira, prima si chiede. */
+  const askNotify = (ev: Event) => {
+    const c = notifyConfirm({
+      title: ev.title,
+      lastNotifiedAt: ev.lastNotifiedAt,
+      now: Date.now(),
+    });
+    openConfirm(c.title, c.message, () => void sendNotify(ev), {
+      confirmLabel: c.confirmLabel,
+      confirmColor: "primary",
+    });
+  };
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
@@ -307,6 +354,7 @@ export default function AdminEventiClient({
                 events={upcoming}
                 onResponses={setResponsesId}
                 onEdit={openEdit}
+                onNotify={askNotify}
                 onDelete={handleDelete}
                 focusAfterDelete={newButtonRef}
                 readOnly={readOnly}
@@ -528,18 +576,50 @@ export default function AdminEventiClient({
                   />
                 )}
               </Box>
+
+              {canNotifyOnCreate && (
+                <>
+                  <Divider />
+                  <FormControlLabel
+                    control={
+                      <Checkbox checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                          Avvisa tutti del nuovo evento
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Manda una notifica a tutti. Se la spegni l&apos;evento si vede lo stesso,
+                          e puoi avvisare più tardi dal menu ⋯.
+                        </Typography>
+                      </Box>
+                    }
+                    sx={{ alignItems: "flex-start", m: 0 }}
+                  />
+                </>
+              )}
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={() => setDialogOpen(false)}>Annulla</Button>
             <Button variant="contained" size="large" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <CircularProgress size={18} /> : editingId ? "Salva" : "Crea"}
+              {isSubmitting ? (
+                <CircularProgress size={18} />
+              ) : editingId ? (
+                "Salva"
+              ) : willNotify ? (
+                "Crea e avvisa"
+              ) : (
+                "Crea"
+              )}
             </Button>
           </DialogActions>
         </Box>
       </Dialog>
 
       <EventResponsesDialog eventId={responsesId} onClose={() => setResponsesId(null)} />
+      {ConfirmDialog}
     </Box>
   );
 }
@@ -571,6 +651,7 @@ function EventRowActions({
   ev,
   onResponses,
   onEdit,
+  onNotify,
   onDelete,
   focusAfterDelete,
   readOnly,
@@ -578,6 +659,8 @@ function EventRowActions({
   ev: Event;
   onResponses: (id: string) => void;
   onEdit: (ev: Event) => void;
+  /** Solo per gli eventi in programma: un evento passato non si avvisa più. */
+  onNotify?: (ev: Event) => void;
   onDelete: (id: string) => Promise<boolean | void>;
   focusAfterDelete: RefObject<HTMLButtonElement | null>;
   readOnly: boolean;
@@ -597,7 +680,15 @@ function EventRowActions({
         emphasis: "text",
       }}
       items={
-        readOnly ? [publicPage] : [{ label: "Modifica", onClick: () => onEdit(ev) }, publicPage]
+        readOnly
+          ? [publicPage]
+          : [
+              { label: "Modifica", onClick: () => onEdit(ev) },
+              ...(onNotify
+                ? [{ label: notifyActionLabel(ev.lastNotifiedAt), onClick: () => onNotify(ev) }]
+                : []),
+              publicPage,
+            ]
       }
       onDelete={readOnly ? undefined : () => onDelete(ev.id)}
       deleteLabel="Elimina evento…"
@@ -621,6 +712,7 @@ function EventsList({
   events: Event[];
   onResponses: (id: string) => void;
   onEdit: (ev: Event) => void;
+  onNotify?: (ev: Event) => void;
   onDelete: (id: string) => Promise<boolean | void>;
   focusAfterDelete: RefObject<HTMLButtonElement | null>;
   readOnly: boolean;

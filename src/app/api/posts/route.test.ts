@@ -160,3 +160,25 @@ describe("POST /api/posts", () => {
     expect(res.status).toBe(401);
   });
 });
+
+// Spunta "Avvisa tutti della pubblicazione": conta solo quando il post esce.
+describe("POST /api/posts · avviso", () => {
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 20));
+
+  it("pubblicato con la spunta: avvisa e segna l'ora", async () => {
+    expect((await POST(makePost({ ...basePost, publish: true }))).status).toBe(201);
+    const { sendPushToAll } = await import("@/lib/notifications/webpush");
+    await vi.waitFor(() => expect(sendPushToAll).toHaveBeenCalledOnce());
+    expect(p.post.create.mock.calls[0][0].data.lastNotifiedAt).toBeInstanceOf(Date);
+  });
+
+  it("pubblicato senza spunta, o salvato in bozza: nessun avviso", async () => {
+    const { sendPushToAll } = await import("@/lib/notifications/webpush");
+    await POST(makePost({ ...basePost, publish: true, notify: false }));
+    await POST(makePost({ ...basePost, publish: false, notify: true }));
+    await flush();
+    expect(sendPushToAll).not.toHaveBeenCalled();
+    expect(p.post.create.mock.calls[0][0].data.lastNotifiedAt).toBeNull();
+    expect(p.post.create.mock.calls[1][0].data.lastNotifiedAt).toBeNull();
+  });
+});

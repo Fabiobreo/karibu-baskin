@@ -121,6 +121,36 @@ export async function loadFamilyRsvp(
   };
 }
 
+// ── Stato delle risposte (home) ───────────────────────────────────────────────
+
+/** A che punto e' la famiglia con un evento: nessuno, qualcuno o tutti. */
+export type FamilyAnswerState = "none" | "partial" | "answered";
+
+export function familyAnswerState(statuses: (RsvpStatus | null)[]): FamilyAnswerState {
+  const answered = statuses.filter((s) => s !== null).length;
+  if (answered === 0) return "none";
+  return answered === statuses.length ? "answered" : "partial";
+}
+
+/** Lo stato delle risposte della famiglia per piu' eventi, con una sola query. */
+export async function loadFamilyAnswerStates(
+  eventIds: string[],
+  members: FamilyMember[]
+): Promise<Map<string, FamilyAnswerState>> {
+  const states = new Map<string, FamilyAnswerState>();
+  if (eventIds.length === 0 || members.length === 0) return states;
+
+  const rows = await prisma.eventAttendance.findMany({
+    where: { eventId: { in: eventIds }, OR: subjectOr(members) },
+    select: { eventId: true, userId: true, childId: true, status: true },
+  });
+  for (const eventId of eventIds) {
+    const ofEvent = rows.filter((r) => r.eventId === eventId);
+    states.set(eventId, familyAnswerState(members.map((m) => pick(ofEvent, m)[0]?.status ?? null)));
+  }
+  return states;
+}
+
 // ── Salvataggio ───────────────────────────────────────────────────────────────
 
 export interface MemberInput {
