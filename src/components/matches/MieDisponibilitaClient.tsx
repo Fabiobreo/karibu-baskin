@@ -427,7 +427,10 @@ function CompactMatchRow({
                   <ToggleButton
                     value={true}
                     sx={{
-                      "&.Mui-selected": {
+                      // Anche `:hover`: su telefono il tocco lascia il bottone
+                      // "sotto il mouse" finché non si tocca altrove, e lo
+                      // sfondo tenue di MUI per quello stato copriva il verde.
+                      "&.Mui-selected, &.Mui-selected:hover": {
                         bgcolor: "success.main",
                         color: "success.contrastText",
                       },
@@ -439,7 +442,7 @@ function CompactMatchRow({
                   <ToggleButton
                     value={false}
                     sx={{
-                      "&.Mui-selected": {
+                      "&.Mui-selected, &.Mui-selected:hover": {
                         bgcolor: "error.main",
                         color: "error.contrastText",
                       },

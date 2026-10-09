@@ -162,7 +162,13 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
                   <ToggleButton
                     value={true}
                     sx={{
-                      "&.Mui-selected": { bgcolor: "success.main", color: "success.contrastText" },
+                      // Anche `:hover`: su telefono il tocco lascia il bottone
+                      // "sotto il mouse" finché non si tocca altrove, e lo
+                      // sfondo tenue di MUI per quello stato copriva il verde.
+                      "&.Mui-selected, &.Mui-selected:hover": {
+                        bgcolor: "success.main",
+                        color: "success.contrastText",
+                      },
                     }}
                   >
                     <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
@@ -171,7 +177,10 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
                   <ToggleButton
                     value={false}
                     sx={{
-                      "&.Mui-selected": { bgcolor: "error.main", color: "error.contrastText" },
+                      "&.Mui-selected, &.Mui-selected:hover": {
+                        bgcolor: "error.main",
+                        color: "error.contrastText",
+                      },
                     }}
                   >
                     <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
