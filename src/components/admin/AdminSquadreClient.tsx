@@ -533,7 +533,7 @@ export default function AdminSquadreClient({
                   onClick={() => openEdit(clubTeam)}
                   sx={TOUCH_TARGET_ON_PHONE}
                 >
-                  Campionato, descrizione e foto
+                  Campionato, descrizione e stemma
                 </Button>
               )}
               <Button
@@ -766,14 +766,15 @@ export default function AdminSquadreClient({
             />
             <Box>
               <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
-                Immagine copertina
+                Stemma o mascotte
               </Typography>
               <Typography
                 variant="caption"
                 color="text.secondary"
                 sx={{ display: "block", mb: 1.5 }}
               >
-                Facoltativa: mostrata nella pagina pubblica della squadra.
+                Facoltativo: compare nel cerchio accanto al nome, nella pagina pubblica della
+                squadra. Meglio un&apos;immagine quadrata, con il soggetto al centro.
               </Typography>
               <ImageUploader
                 currentUrl={teamForm.imageUrl}

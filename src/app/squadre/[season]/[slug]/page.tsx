@@ -45,7 +45,8 @@ import LeaderCard from "./_components/LeaderCard";
 import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
-import { brandColor, heroGradient, heroImage, heroText, heroTint } from "@/lib/heroStyles";
+import { brandColor, heroGradient, heroText, heroTint } from "@/lib/heroStyles";
+import OpponentCrest from "@/components/teams/OpponentCrest";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -410,9 +411,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
       <EntityHero
         breadcrumb={[{ label: t("teamBreadcrumb"), href: "/squadre" }, { label: team.name }]}
         title={team.name}
-        background={
-          team.imageUrl ? heroImage(team.imageUrl) : teamHue ? heroTint(teamHue) : heroGradient.band
-        }
+        // L'immagine della squadra è il suo stemma (nel cerchio, intera), non
+        // uno sfondo: nella fascia se ne vedrebbe una striscia.
+        background={teamHue ? heroTint(teamHue) : heroGradient.band}
         accent={teamHue}
         manage={
           viewerIsStaff && (
@@ -424,7 +425,14 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           )
         }
         leading={
-          team.isMixed ? (
+          team.imageUrl ? (
+            <OpponentCrest
+              imageUrl={team.imageUrl}
+              name={team.name}
+              size="lg"
+              ringColor={teamHue}
+            />
+          ) : team.isMixed ? (
             // La Karibu è il club: il suo segno è lo stemma, non un'iniziale.
             <Box
               sx={{

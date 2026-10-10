@@ -535,15 +535,18 @@ export default async function MatchDetailPage({ params }: Props) {
                   {crest === CLUB_CREST ? (
                     // Il nostro logo ha già il suo disco, niente bianco sotto. Il
                     // file pesa mezzo mega: `next/image` lo serve ridimensionato.
-                    <Box
-                      component={Image}
-                      src={CLUB_CREST}
-                      alt=""
-                      width={176}
-                      height={176}
-                      sizes="88px"
-                      sx={{ ...crestSx, gridColumn: column }}
-                    />
+                    // L'immagine sta dentro un Box, non è il Box: su `Box`
+                    // `width` e `height` sono proprietà di stile e non arrivano a
+                    // `next/image`, che senza si rifiuta di disegnare (errore 500).
+                    <Box sx={{ ...crestSx, gridColumn: column, position: "relative" }}>
+                      <Image
+                        src={CLUB_CREST}
+                        alt=""
+                        fill
+                        sizes="88px"
+                        style={{ objectFit: "contain" }}
+                      />
+                    </Box>
                   ) : crest ? (
                     // Avversaria: `<img>` semplice (l'URL lo scrive lo staff, e un
                     // host non previsto farebbe cadere `next/image`), su fondo bianco.

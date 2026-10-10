@@ -11,15 +11,28 @@ interface OpponentCrestProps {
   imageUrl: string;
   /** Nome della squadra, per le etichette. */
   name: string;
+  /** `lg` per le nostre squadre: lo stemma è il segno della pagina. */
+  size?: "md" | "lg";
+  /** Anello nella tinta della squadra (hex da `teamColor()`); senza, neutro. */
+  ringColor?: string | null;
 }
 
 /**
- * Stemma dell'avversaria nell'entity hero: l'immagine intera in un cerchio
- * bianco (i loghi sono quasi sempre disegnati per un fondo chiaro). È un
- * bottone: al tocco l'immagine si apre grande, perché nel cerchio un logo
- * ricco o una foto di squadra perdono i dettagli.
+ * Stemma di una squadra nell'entity hero (avversarie e squadre nostre):
+ * l'immagine intera in un cerchio bianco (i loghi sono quasi sempre disegnati
+ * per un fondo chiaro). È un bottone: al tocco l'immagine si apre grande,
+ * perché nel cerchio un logo ricco o una foto di squadra perdono i dettagli.
+ *
+ * Mai come sfondo della fascia: è larga otto volte la sua altezza, e di un
+ * logo quadrato resterebbe una striscia.
  */
-export default function OpponentCrest({ imageUrl, name }: OpponentCrestProps) {
+export default function OpponentCrest({
+  imageUrl,
+  name,
+  size = "md",
+  ringColor = null,
+}: OpponentCrestProps) {
+  const side = size === "lg" ? { xs: 80, sm: 120 } : { xs: 72, sm: 96 };
   const [open, setOpen] = useState(false);
   const t = useTranslations("teams");
   const tCommon = useTranslations("common");
@@ -30,13 +43,14 @@ export default function OpponentCrest({ imageUrl, name }: OpponentCrestProps) {
         onClick={() => setOpen(true)}
         aria-label={t("zoomLogo", { name })}
         sx={{
-          width: { xs: 72, sm: 96 },
-          height: { xs: 72, sm: 96 },
+          width: side,
+          height: side,
+          flexShrink: 0,
           borderRadius: "50%",
           overflow: "hidden",
           bgcolor: "common.white",
-          border: "2px solid",
-          borderColor: heroText.lineStrong,
+          border: ringColor ? "3px solid" : "2px solid",
+          borderColor: ringColor ?? heroText.lineStrong,
           transition: "border-color 0.15s",
           "&:hover, &.Mui-focusVisible": { borderColor: "primary.main" },
         }}
