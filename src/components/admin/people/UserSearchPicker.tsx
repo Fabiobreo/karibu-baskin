@@ -14,6 +14,10 @@ interface UserSearchPickerProps {
   autoFocus?: boolean;
   /** Utenti da non proporre (es. i genitori già collegati). */
   excludeIds?: string[];
+  /** Ricerca già scritta all'apertura (es. il nome del figlio da collegare). */
+  initialQuery?: string;
+  /** Testo quando non si trova nessuno; senza, il suggerimento per i genitori. */
+  emptyHint?: React.ReactNode;
 }
 
 /**
@@ -26,8 +30,10 @@ export default function UserSearchPicker({
   placeholder = "Cerca il genitore per nome o email",
   autoFocus,
   excludeIds = [],
+  initialQuery = "",
+  emptyHint,
 }: UserSearchPickerProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const { people, searching, enabled, isError } = usePeopleSearch(query, "user");
   const results = people.filter((p) => !excludeIds.includes(p.id));
 
@@ -61,8 +67,12 @@ export default function UserSearchPicker({
             <Hint>Ricerca non riuscita: riprova.</Hint>
           ) : results.length === 0 && !searching ? (
             <Hint>
-              Nessun utente trovato. Se il genitore non ha ancora un account,{" "}
-              <Link href="/admin/utenti/nuovo">crealo prima qui</Link>.
+              {emptyHint ?? (
+                <>
+                  Nessun utente trovato. Se il genitore non ha ancora un account,{" "}
+                  <Link href="/admin/utenti/nuovo">crealo prima qui</Link>.
+                </>
+              )}
             </Hint>
           ) : (
             results.map((p) => (

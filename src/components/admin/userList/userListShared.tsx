@@ -75,6 +75,10 @@ export interface UserEntry {
   childNames?: string[];
   /** Genitori collegati, se l'account e' anche figlio di qualcuno. */
   parentNames?: string[];
+  /** Scheda figlio legata a questo account (storico e squadra stanno lì). */
+  linkedChild?: { id: string; name: string } | null;
+  /** Ha già fatto l'accesso almeno una volta (login Google o sessione). */
+  hasSignedIn?: boolean;
 }
 
 export interface ChildEntry {

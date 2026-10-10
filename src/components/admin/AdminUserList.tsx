@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { writeRowsPerPageCookie } from "@/lib/rowsPerPage";
 import { joinFilter, parseAppRoles, parseSportRoles } from "@/lib/userFilters";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Box,
   Paper,
@@ -27,6 +27,7 @@ import ChildrenTab from "@/components/admin/userList/ChildrenTab";
 import AthletesTab from "@/components/admin/userList/AthletesTab";
 import { compareAthletes, isAthleteAccount } from "@/lib/athletes";
 import UserEditDialog from "@/components/admin/userList/UserEditDialog";
+import MergeAccountDialog from "@/components/admin/userList/MergeAccountDialog";
 import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
 import type {
   AdminRow,
@@ -89,6 +90,7 @@ export default function AdminUserList({
   currentFilters?: CurrentFilters;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   // Filtri della tab Account: partono dall'URL (link dalla dashboard, ricarica).
   const [search, setSearch] = useState(currentFilters.search ?? "");
@@ -163,6 +165,25 @@ export default function AdminUserList({
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
   const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  // Unione di un account in attesa con una scheda già in elenco (solo admin).
+  const [mergeRow, setMergeRow] = useState<UserRow | null>(null);
+  const openMerge = isAdmin
+    ? (row: UserRow) => {
+        setEditRow(null);
+        setMergeRow(row);
+      }
+    : undefined;
+
+  /**
+   * Unioni e collegamenti scheda-account spostano una persona da una riga
+   * all'altra (un figlio esce dai "senza account", un ospite sparisce): si
+   * chiudono le schede e si rileggono le liste dal server.
+   */
+  function reloadLists() {
+    setEditRow(null);
+    setMergeRow(null);
+    router.refresh();
+  }
   // Dopo un'eliminazione la riga e il suo "⋯" non ci sono più: il focus va sulla
   // scheda attiva (Atleti, Account, Figli), punto fisso sopra la lista.
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -497,6 +518,13 @@ export default function AdminUserList({
         onApproved={(id, appRole) =>
           updateRow({ kind: "user", id }, (r) => (r.kind === "user" ? { ...r, appRole } : r))
         }
+        onMerge={
+          openMerge &&
+          ((id) => {
+            const guest = pendingGuests.find((g) => g.id === id);
+            if (guest?.kind === "user") openMerge(guest);
+          })
+        }
       />
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         {/* ── Tabs ── */}
@@ -577,6 +605,7 @@ export default function AdminUserList({
               onTeamChange={handleTeamChange}
               onEdit={setEditRow}
               onDelete={setDeleteRow}
+              onMerge={openMerge}
             />
 
             <UsersMobileCards
@@ -586,6 +615,7 @@ export default function AdminUserList({
               isAdmin={isAdmin}
               onEdit={setEditRow}
               onDelete={setDeleteRow}
+              onMerge={openMerge}
             />
 
             {/* ── Paginazione ── */}
@@ -661,6 +691,8 @@ export default function AdminUserList({
             teams={availableTeams}
             currentSeason={currentSeason}
             onClose={() => setEditRow(null)}
+            onMerge={openMerge}
+            onLinkChanged={reloadLists}
             onSaved={(updated) => {
               updateRow(updated, () => updated);
               // I genitori si salvano subito, a scheda aperta: la scheda deve
@@ -668,6 +700,23 @@ export default function AdminUserList({
               setEditRow((cur) =>
                 cur && cur.id === updated.id && cur.kind === updated.kind ? updated : cur
               );
+            }}
+          />
+        )}
+
+        {/* ── Dialog unione account (montato solo quando aperto) ── */}
+        {mergeRow && (
+          <MergeAccountDialog
+            source={mergeRow}
+            candidates={userRows.filter((r): r is UserRow => r.kind === "user")}
+            currentUserId={currentUserId}
+            currentSeason={currentSeason}
+            onClose={() => setMergeRow(null)}
+            onMerged={() => {
+              // L'ospite sparisce subito dalla lista, senza aspettare il server.
+              const goneId = mergeRow.id;
+              setRows((prev) => prev.filter((r) => !(r.kind === "user" && r.id === goneId)));
+              reloadLists();
             }}
           />
         )}

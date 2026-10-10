@@ -116,6 +116,9 @@ const ACTION_LABELS: Record<string, string> = {
   CREATE_CHILD: "Creazione figlio (staff)",
   LINK_GUARDIAN: "Genitore collegato a un figlio",
   UNLINK_GUARDIAN: "Genitore scollegato da un figlio",
+  LINK_CHILD_ACCOUNT: "Scheda figlio collegata a un account",
+  UNLINK_CHILD_ACCOUNT: "Scheda figlio scollegata dall'account",
+  MERGE_USER: "Account unito a una scheda",
   SEND_NOTIFICATION: "Avviso inviato",
 };
 

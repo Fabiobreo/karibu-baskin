@@ -82,17 +82,23 @@ export function PersonRowMenu({
   canDelete,
   onOpen,
   onDelete,
+  onMerge,
 }: {
   name: string;
   /** Un account lo elimina solo l'admin; un figlio senza account anche l'allenatore. */
   canDelete: boolean;
   onOpen: () => void;
   onDelete: () => void;
+  /** Solo per un account in attesa che è il doppione di una scheda già in elenco. */
+  onMerge?: () => void;
 }) {
   return (
     <RowActions
       subject={name}
-      items={[{ label: "Apri scheda", onClick: onOpen }]}
+      items={[
+        { label: "Apri scheda", onClick: onOpen },
+        ...(onMerge ? [{ label: "È già in elenco: unisci…", onClick: onMerge }] : []),
+      ]}
       onDelete={canDelete ? onDelete : undefined}
       deleteConfirm={false}
     />

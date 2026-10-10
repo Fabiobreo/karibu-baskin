@@ -17,8 +17,10 @@ interface CallupsListSectionProps {
 }
 
 /**
- * Lista convocati raggruppata per ruolo Baskin (1-5), con sezioni
- * "ruolo non assegnato" e "non scesi in campo" (gated per i non membri).
+ * Lista convocati raggruppata per ruolo Baskin (1-5), con la sezione
+ * "ruolo non assegnato" (gated per i non membri). A partita giocata i
+ * convocati sono chi ha giocato: chi non ha una riga di statistiche (niente
+ * punti né falli da segnare) resta nel suo ruolo, senza punteggio.
  */
 export default function CallupsListSection({
   callups,
@@ -64,16 +66,11 @@ export default function CallupsListSection({
     );
   }
 
-  // Raggruppamento: convocati per ruolo vs senza ruolo vs non scesi in campo
+  // Raggruppamento: convocati per ruolo vs senza ruolo
   const byRole = new Map<number, CallupWithStat[]>();
   const noRole: CallupWithStat[] = [];
-  const notPlayed: CallupWithStat[] = [];
 
   for (const c of callups) {
-    if (hasScore && !c.stat) {
-      notPlayed.push(c);
-      continue;
-    }
     const role = (c.user ?? c.child)?.sportRole ?? null;
     if (!role) {
       noRole.push(c);
@@ -89,18 +86,11 @@ export default function CallupsListSection({
     byRole
       .get(r)!
       .sort((a, b) =>
-        hasScore && a.stat && b.stat
-          ? b.stat.points - a.stat.points
+        hasScore && (a.stat?.points ?? 0) !== (b.stat?.points ?? 0)
+          ? (b.stat?.points ?? 0) - (a.stat?.points ?? 0)
           : ((a.user ?? a.child)?.name ?? "").localeCompare((b.user ?? b.child)?.name ?? "")
       );
   }
-  notPlayed.sort((a, b) => {
-    const ra = (a.user ?? a.child)?.sportRole ?? 99;
-    const rb = (b.user ?? b.child)?.sportRole ?? 99;
-    return ra !== rb
-      ? ra - rb
-      : ((a.user ?? a.child)?.name ?? "").localeCompare((b.user ?? b.child)?.name ?? "");
-  });
 
   const groupLabelSx = {
     textTransform: "uppercase",
@@ -149,25 +139,6 @@ export default function CallupsListSection({
             <Stack divider={<Divider />}>
               {noRole.map((c) => (
                 <CallupRow key={c.id} c={c} hasScore={hasScore} teamColor={teamColor} />
-              ))}
-            </Stack>
-          </Paper>
-        </Box>
-      )}
-
-      {hasScore && notPlayed.length > 0 && (
-        <Box>
-          <Typography
-            variant="caption"
-            fontWeight={FONT_WEIGHT.semibold}
-            sx={{ ...groupLabelSx, color: "text.secondary" }}
-          >
-            {t("notPlayed", { count: notPlayed.length })}
-          </Typography>
-          <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", opacity: 0.65 }}>
-            <Stack divider={<Divider />}>
-              {notPlayed.map((c) => (
-                <CallupRow key={c.id} c={c} hasScore={false} teamColor={teamColor} />
               ))}
             </Stack>
           </Paper>

@@ -22,13 +22,20 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 function toUserEntry<
   T extends {
     guardianOf: { child: { name: string } }[];
-    childAccount: { guardians: { user: { name: string | null; email: string } }[] } | null;
+    childAccount: {
+      id: string;
+      name: string;
+      guardians: { user: { name: string | null; email: string } }[];
+    } | null;
+    _count: { registrations: number; accounts: number; authSessions: number };
   },
 >({ guardianOf, childAccount, ...user }: T) {
   return {
     ...user,
     childNames: guardianOf.map((g) => g.child.name),
     parentNames: (childAccount?.guardians ?? []).map((g) => g.user.name?.trim() || g.user.email),
+    linkedChild: childAccount ? { id: childAccount.id, name: childAccount.name } : null,
+    hasSignedIn: user._count.accounts + user._count.authSessions > 0,
   };
 }
 
@@ -46,7 +53,8 @@ const USER_ROW_SELECT = {
   birthDate: true,
   athleteStatus: true,
   createdAt: true,
-  _count: { select: { registrations: true } },
+  // `accounts` e `authSessions`: "ha già fatto l'accesso", per l'unione degli account.
+  _count: { select: { registrations: true, accounts: true, authSessions: true } },
   // Figli collegati: sotto il nome del genitore compare "Genitore di …".
   guardianOf: {
     orderBy: { createdAt: "asc" as const },
@@ -56,6 +64,8 @@ const USER_ROW_SELECT = {
   // nome compare "Figlio di …", come per i figli senza account.
   childAccount: {
     select: {
+      id: true,
+      name: true,
       guardians: {
         orderBy: { createdAt: "asc" as const },
         select: { user: { select: { name: true, email: true } } },

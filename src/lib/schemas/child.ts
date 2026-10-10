@@ -70,6 +70,23 @@ export const AccountChildLinkSchema = z.object({
 });
 
 /**
+ * Lo staff lega una scheda figlio già esistente all'account che il ragazzo si
+ * è fatto dopo (`PUT /api/admin/children/[childId]/account`).
+ */
+export const ChildAccountSchema = z.object({
+  userId: z.string().min(1, "Scegli l'account"),
+});
+
+/**
+ * L'admin unisce un account in attesa alla scheda che lo staff aveva creato
+ * con un'email sbagliata (`POST /api/admin/users/merge`).
+ */
+export const UserMergeSchema = z.object({
+  sourceId: z.string().min(1, "Scegli l'account da unire"),
+  targetId: z.string().min(1, "Scegli la scheda"),
+});
+
+/**
  * Un genitore chiede a un figlio che ha già un account di confermare il
  * legame (`POST /api/link-requests`). Nessuna scheda figlio nasce qui: la crea
  * l'accettazione. Il consenso è lo stesso della creazione di un figlio.

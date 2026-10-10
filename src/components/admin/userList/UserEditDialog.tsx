@@ -18,6 +18,7 @@ import {
 import HistoryIcon from "@mui/icons-material/History";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import MergeIcon from "@mui/icons-material/Merge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { AppRole } from "@prisma/client";
@@ -35,6 +36,7 @@ import {
 } from "@/components/admin/userList/userListShared";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import ChildGuardiansSection from "@/components/admin/userList/ChildGuardiansSection";
+import ChildAccountSection from "@/components/admin/userList/ChildAccountSection";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface EditState {
@@ -58,6 +60,10 @@ interface UserEditDialogProps {
   onClose: () => void;
   /** Riceve la riga aggiornata (dati + membership squadra) da applicare alla lista. */
   onSaved: (updated: AdminRow) => void;
+  /** Apre l'unione di questo account in attesa con una scheda già in elenco (solo admin). */
+  onMerge?: (row: UserEntry & { kind: "user" }) => void;
+  /** Scheda figlio collegata o scollegata da un account: la lista va riletta. */
+  onLinkChanged?: () => void;
 }
 
 /**
@@ -72,6 +78,8 @@ export default function UserEditDialog({
   currentSeason,
   onClose,
   onSaved,
+  onMerge,
+  onLinkChanged,
 }: UserEditDialogProps) {
   const { showToast } = useToast();
 
@@ -254,6 +262,54 @@ export default function UserEditDialog({
               onChange={(guardians) => onSaved({ ...row, guardians })}
             />
           )}
+
+          {/* Account del figlio: anche questo ha effetto immediato */}
+          {row.kind === "child" && onLinkChanged && (
+            <ChildAccountSection
+              childId={row.id}
+              childName={row.name}
+              linked={false}
+              label="Account"
+              excludeIds={row.guardians.map((g) => g.id)}
+              onChanged={onLinkChanged}
+            />
+          )}
+          {row.kind === "user" && row.linkedChild && onLinkChanged && (
+            <ChildAccountSection
+              childId={row.linkedChild.id}
+              childName={row.linkedChild.name}
+              linked
+              label="Scheda figlio collegata"
+              onChanged={onLinkChanged}
+            />
+          )}
+
+          {/* Doppione di una scheda creata con l'email sbagliata (solo admin) */}
+          {row.kind === "user" &&
+            row.appRole === "GUEST" &&
+            isAdmin &&
+            row.id !== currentUserId &&
+            onMerge && (
+              <Box>
+                <Button
+                  variant="outlined"
+                  startIcon={<MergeIcon />}
+                  onClick={() => onMerge(row)}
+                  sx={{ minHeight: 44 }}
+                >
+                  È già in elenco? Unisci
+                </Button>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  sx={{ mt: 0.5 }}
+                >
+                  Se la sua scheda esiste già con un&apos;email sbagliata, questo accesso passa a
+                  quella scheda.
+                </Typography>
+              </Box>
+            )}
 
           {/* Email (solo utenti) */}
           {row.kind === "user" && (

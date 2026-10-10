@@ -22,6 +22,8 @@ interface UsersMobileCardsProps {
   isAdmin: boolean;
   onEdit: (row: AdminRow) => void;
   onDelete: (row: AdminRow) => void;
+  /** Unione di un account in attesa con una scheda già in elenco (solo admin). */
+  onMerge?: (row: AdminRow & { kind: "user" }) => void;
 }
 
 /** Vista a card del tab Utenti per viewport mobile. */
@@ -32,6 +34,7 @@ export default function UsersMobileCards({
   isAdmin,
   onEdit,
   onDelete,
+  onMerge,
 }: UsersMobileCardsProps) {
   return (
     <Box
@@ -130,6 +133,11 @@ export default function UsersMobileCards({
                 canDelete={isAdmin}
                 onOpen={() => onEdit(row)}
                 onDelete={() => onDelete(row)}
+                onMerge={
+                  onMerge && row.kind === "user" && row.appRole === "GUEST"
+                    ? () => onMerge(row)
+                    : undefined
+                }
               />
             </Box>
           );

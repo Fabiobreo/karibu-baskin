@@ -51,6 +51,8 @@ interface UsersTableProps {
   onTeamChange: (row: AdminRow, teamId: string) => void;
   onEdit: (row: AdminRow) => void;
   onDelete: (row: AdminRow) => void;
+  /** Unione di un account in attesa con una scheda già in elenco (solo admin). */
+  onMerge?: (row: UserEntry & { kind: "user" }) => void;
 }
 
 /** Tabella desktop del tab Utenti. */
@@ -68,6 +70,7 @@ export default function UsersTable({
   onTeamChange,
   onEdit,
   onDelete,
+  onMerge,
 }: UsersTableProps) {
   return (
     <TableContainer
@@ -309,6 +312,11 @@ export default function UsersTable({
                     canDelete={isAdmin}
                     onOpen={() => onEdit(row)}
                     onDelete={() => onDelete(row)}
+                    onMerge={
+                      onMerge && row.kind === "user" && row.appRole === "GUEST"
+                        ? () => onMerge(row)
+                        : undefined
+                    }
                   />
                 </TableCell>
               </TableRow>

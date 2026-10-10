@@ -259,24 +259,20 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
     setSaving(true);
     setSaveError("");
     try {
-      const payload = rows
-        .filter((r) => {
-          if (r.hasExistingStats) return true;
-          return (
-            STAT_FIELDS.some((f) => parseInt(r[f] || "0", 10) > 0) || r.notes.trim().length > 0
-          );
-        })
-        .map((r) => {
-          const entry: Record<string, number | string> = {
-            ...(r.userId ? { userId: r.userId } : {}),
-            ...(r.childId ? { childId: r.childId } : {}),
-          };
-          for (const f of STAT_FIELDS) {
-            entry[f] = isAllowed(r.sportRole, f) ? parseInt(r[f] || "0", 10) || 0 : 0;
-          }
-          if (r.notes.trim()) entry.notes = r.notes.trim();
-          return entry;
-        });
+      // Si salva una riga per ogni convocato, anche a zero: a partita giocata i
+      // convocati sono chi ha giocato, e chi non ha segnato né fatto falli ha
+      // comunque una presenza (prima risultava "non sceso in campo").
+      const payload = rows.map((r) => {
+        const entry: Record<string, number | string> = {
+          ...(r.userId ? { userId: r.userId } : {}),
+          ...(r.childId ? { childId: r.childId } : {}),
+        };
+        for (const f of STAT_FIELDS) {
+          entry[f] = isAllowed(r.sportRole, f) ? parseInt(r[f] || "0", 10) || 0 : 0;
+        }
+        if (r.notes.trim()) entry.notes = r.notes.trim();
+        return entry;
+      });
       const res = await fetch(`/api/matches/${matchId}/stats`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

@@ -68,6 +68,14 @@ In entrambi i casi:
 3. Notifica `LINK_RESPONSE` al genitore
 4. Se l'account ha già una scheda figlio (un altro genitore): 409, il secondo genitore lo collega lo staff
 
+### Collegamento fatto dallo staff
+
+Nella scheda del figlio in `/admin/utenti` la sezione **Account** ("Collega a un account") lega la scheda all'account che il ragazzo si è fatto dopo, senza richiesta da accettare: `PUT /api/admin/children/[childId]/account` (allenatore o admin). L'account in attesa diventa Atleta e prende dalla scheda ruolo Baskin, genere e data di nascita **solo dove non ne ha di suoi**; dove account e scheda hanno la stessa iscrizione o la stessa squadra resta la riga della scheda; le richieste in attesa su quella scheda si chiudono. Lo storico non si sposta e lo slug della scheda resta. Dopo il collegamento la persona esce dai "Figli senza account" e si ritrova come account: nella sua scheda la sezione **Scheda figlio collegata** permette di scollegare (`DELETE`, rimedio a un'identità sbagliata: non ripristina ruolo e dati copiati). Ragazzo e genitori ricevono una notifica in-app; audit `LINK_CHILD_ACCOUNT` / `UNLINK_CHILD_ACCOUNT`.
+
+### Account doppio per un'email sbagliata ("Unisci")
+
+Lo staff aveva creato l'utente con un'email sbagliata e la persona è entrata con quella giusta: esistono la scheda vera e un account in attesa. L'admin parte dall'ospite ("È già in elenco: unisci…" nel riquadro dei nuovi account, nel "⋯" della riga o nella scheda) e sceglie la scheda: `POST /api/admin/users/merge` sposta sulla scheda accessi, sessioni, notifiche push, iscrizioni e risposte agli eventi dell'ospite, le dà la sua email e lo elimina. Chi è collegato resta collegato. Non si annulla, quindi si unisce solo un ospite "leggero": le regole che bloccano (non più ospite, genitore, scheda figlio, squadra, partite) stanno in `mergeBlockers` di `@/lib/userMerge`. Audit `MERGE_USER`.
+
 Dopo il collegamento, le iscrizioni future tramite `childId` saranno riconosciute anche quando il figlio usa il proprio account (controllo incrociato in `RosterByRole` e `RegistrationForm`).
 
 ## Iscrizioni anonime e rivendicazione

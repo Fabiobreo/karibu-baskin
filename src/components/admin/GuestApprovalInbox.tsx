@@ -6,6 +6,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Divider,
   Menu,
   MenuItem,
   Paper,
@@ -39,6 +40,8 @@ interface GuestApprovalInboxProps {
   isAdmin?: boolean;
   /** Ruolo assegnato: la lista aggiorna la riga, e l'account esce da qui. */
   onApproved: (guestId: string, appRole: AppRole) => void;
+  /** L'ospite è il doppione di una scheda già in elenco: apre l'unione (solo admin). */
+  onMerge?: (guestId: string) => void;
 }
 
 /** I due ruoli con il bottone in riga: gli altri stanno nel menu "Altro". */
@@ -52,6 +55,7 @@ export default function GuestApprovalInbox({
   guests,
   isAdmin = false,
   onApproved,
+  onMerge,
 }: GuestApprovalInboxProps) {
   const { showToast } = useToast();
   const [processing, setProcessing] = useState<string | null>(null);
@@ -158,7 +162,7 @@ export default function GuestApprovalInbox({
                 >
                   Genitore
                 </Button>
-                {otherRoles.length > 0 && (
+                {(otherRoles.length > 0 || onMerge) && (
                   <Button
                     size="small"
                     variant="text"
@@ -166,7 +170,7 @@ export default function GuestApprovalInbox({
                     sx={TOUCH_TARGET_ON_PHONE}
                     endIcon={<ExpandMoreIcon />}
                     aria-haspopup="menu"
-                    aria-label={`Altro ruolo per ${g.name ?? g.email}`}
+                    aria-label={`Altre scelte per ${g.name ?? g.email}`}
                     onClick={(e) => setMenu({ anchor: e.currentTarget, guest: g })}
                   >
                     Altro
@@ -189,6 +193,17 @@ export default function GuestApprovalInbox({
             {ROLE_LABELS_IT[role]}
           </MenuItem>
         ))}
+        {onMerge && otherRoles.length > 0 && <Divider />}
+        {onMerge && (
+          <MenuItem
+            onClick={() => {
+              if (menu) onMerge(menu.guest.id);
+              setMenu(null);
+            }}
+          >
+            È già in elenco: unisci…
+          </MenuItem>
+        )}
       </Menu>
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
         {isAdmin
