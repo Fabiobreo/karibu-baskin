@@ -12,6 +12,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { logAudit } from "@/lib/audit";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { isGuardian } from "@/lib/guardians";
+import { personRows } from "@/lib/person";
 import { guardianOf } from "@/lib/guardians";
 import { inBackground } from "@/lib/background";
 
@@ -49,7 +50,16 @@ export async function GET(req: NextRequest) {
     const userId = authSession.user.id;
     if (!userId) return NextResponse.json([]);
     const mine = await prisma.registration.findMany({
-      where: { sessionId, OR: [{ userId }, { child: guardianOf(userId) }] },
+      where: {
+        sessionId,
+        // Proprie, dei figli, e dei figli con un account: la loro iscrizione
+        // sta sull'account anche quando l'ha fatta il genitore (@/lib/person).
+        OR: [
+          { userId },
+          { child: guardianOf(userId) },
+          { user: { childAccount: guardianOf(userId) } },
+        ],
+      },
       orderBy: { createdAt: "asc" },
       select: { id: true, name: true, userId: true, childId: true, registeredAsCoach: true },
     });
@@ -187,8 +197,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
     }
 
+    // Un figlio con un account è quell'account (@/lib/person): ruolo, squadra
+    // e iscrizione sono i suoi, anche quando lo iscrive il genitore.
+    const account = child.userId
+      ? await prisma.user.findUnique({
+          where: { id: child.userId },
+          select: { id: true, name: true, sportRole: true },
+        })
+      : null;
+
     // Usa il ruolo confermato del figlio se disponibile, altrimenti quello scelto dal form
-    const effectiveRole = child.sportRole ?? role;
+    const effectiveRole = account?.sportRole ?? child.sportRole ?? role;
 
     // Controllo restrizioni
     const parent = await prisma.user.findUnique({
@@ -199,7 +218,7 @@ export async function POST(req: NextRequest) {
       let isInRestrictedTeam = false;
       if (restrictions.restrictTeamId) {
         const membership = await prisma.teamMembership.findFirst({
-          where: { teamId: restrictions.restrictTeamId, childId },
+          where: { teamId: restrictions.restrictTeamId, OR: personRows(child) },
         });
         isInRestrictedTeam = !!membership;
       }
@@ -217,7 +236,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const existing = await prisma.registration.findFirst({ where: { sessionId, childId } });
+    // Già iscritto, dal genitore o da solo con il suo account.
+    const existing = await prisma.registration.findFirst({
+      where: { sessionId, OR: personRows(child) },
+    });
     if (existing) {
       return NextResponse.json(
         { error: `${child.name} è già iscritto a questo allenamento` },
@@ -225,21 +247,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Se il figlio ha un account collegato, controlla che non si sia già iscritto da solo
-    if (child.userId) {
-      const accountReg = await prisma.registration.findFirst({
-        where: { sessionId, userId: child.userId },
-      });
-      if (accountReg) {
-        return NextResponse.json(
-          { error: `${child.name} è già iscritto con il proprio account` },
-          { status: 409 }
-        );
-      }
-    }
-
     try {
       const registration = await prisma.$transaction(async (tx) => {
+        if (account) {
+          // L'iscrizione va sull'account: presenze, squadre e partitelle del
+          // ragazzo restano in un posto solo.
+          return tx.registration.create({
+            data: {
+              sessionId,
+              name: account.name?.trim() || child.name,
+              role: effectiveRole,
+              userId: account.id,
+              note: trimmedNote,
+            },
+          });
+        }
         // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
         if (!child.sportRole) {
           await tx.child.update({

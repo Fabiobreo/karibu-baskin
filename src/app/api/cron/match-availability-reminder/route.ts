@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
+import { withGuardians } from "@/lib/person";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { MIN_CALLUPS } from "@/lib/constants";
@@ -101,7 +102,8 @@ export async function GET(req: NextRequest) {
     const title = "🏀 Disponibilità partita";
     const body = `${m.team.name} vs ${opponentName} ${dateLabel} alle ${timeLabel}: segnala se sei disponibile.`;
 
-    const ids = [...targetUserIds];
+    // Anche i genitori di chi ha un account: possono rispondere per lui.
+    const ids = await withGuardians([...targetUserIds]);
 
     // Nei cron si aspetta tutto prima di rispondere: dopo la risposta Vercel
     // congela la funzione. Ognuno ha il suo catch, così una push fallita non

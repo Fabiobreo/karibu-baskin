@@ -32,14 +32,32 @@ export async function GET() {
           team: { select: { name: true, color: true, season: true } },
         },
       },
+      // Un figlio con un account è quell'account (@/lib/person): ruolo e
+      // squadra si leggono da lì.
+      user: {
+        select: {
+          sportRole: true,
+          sportRoleVariant: true,
+          teamMemberships: {
+            select: {
+              teamId: true,
+              team: { select: { name: true, color: true, season: true } },
+            },
+          },
+        },
+      },
     },
   });
 
   return NextResponse.json(
-    children.map(({ teamMemberships, guardians, ...child }) => ({
+    children.map(({ teamMemberships: cardTeams, guardians, user: account, ...child }) => ({
       ...child,
+      ...(account?.sportRole != null && {
+        sportRole: account.sportRole,
+        sportRoleVariant: account.sportRoleVariant,
+      }),
       otherGuardians: guardians.map((g) => g.user.name ?? "?"),
-      teamMemberships: teamMemberships.map((m) => ({
+      teamMemberships: [...(account?.teamMemberships ?? []), ...cardTeams].map((m) => ({
         teamId: m.teamId,
         teamName: m.team.name,
         teamColor: m.team.color,

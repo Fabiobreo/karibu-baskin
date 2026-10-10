@@ -15,12 +15,19 @@ describe("playerRecipientIds", () => {
     vi.clearAllMocks();
   });
 
-  it("solo account: nessuna query sui figli", async () => {
+  it("account senza scheda figlio: solo loro", async () => {
+    p.child.findMany.mockResolvedValue([]);
     expect(await playerRecipientIds([{ userId: "u1" }, { userId: "u2", childId: null }])).toEqual([
       "u1",
       "u2",
     ]);
-    expect(p.child.findMany).not.toHaveBeenCalled();
+  });
+
+  it("account con una scheda figlio: anche i suoi genitori", async () => {
+    p.child.findMany.mockResolvedValue([{ guardians: [{ userId: "mamma" }, { userId: "papà" }] }]);
+    const ids = await playerRecipientIds([{ userId: "kid-account" }]);
+    expect(ids.sort()).toEqual(["kid-account", "mamma", "papà"]);
+    expect(p.child.findMany.mock.calls[0][0].where).toEqual({ userId: { in: ["kid-account"] } });
   });
 
   it("per un figlio avvisa tutti i genitori e il suo account, senza doppioni", async () => {

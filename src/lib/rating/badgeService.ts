@@ -162,23 +162,32 @@ export async function reconcilePlayerBadges(
   return newIds;
 }
 
-/** Invia notifica in-app + push al destinatario corretto per i badge sbloccati. */
+/**
+ * Invia notifica in-app + push per i badge sbloccati: all'atleta, se ha un
+ * account ("Hai sbloccato…"), e ai suoi genitori ("Luca ha sbloccato…"). Un
+ * account con una scheda figlio collegata è la stessa persona (@/lib/person).
+ */
 async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<void> {
-  let targetUserIds: string[] = [];
+  let selfId: string | null = null;
+  let guardianIds: string[] = [];
   let subjectName: string | null = null;
   let profileSlug: string | null = null;
-  let isSelf = false;
 
   if (ref.userId) {
     const user = await prisma.user.findUnique({
       where: { id: ref.userId },
-      select: { id: true, name: true, slug: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        childAccount: { select: { guardians: { select: { userId: true } } } },
+      },
     });
     if (!user) return;
-    targetUserIds = [user.id];
+    selfId = user.id;
+    guardianIds = user.childAccount?.guardians.map((g) => g.userId) ?? [];
     subjectName = user.name;
     profileSlug = user.slug ?? user.id;
-    isSelf = true;
   } else {
     const child = await prisma.child.findUnique({
       where: { id: ref.childId },
@@ -191,42 +200,46 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
       },
     });
     if (!child) return;
-    // Il figlio con un account riceve lui la notifica; altrimenti tutti i
-    // suoi genitori (i figli senza account non ricevono notifiche).
-    targetUserIds = child.userId ? [child.userId] : child.guardians.map((g) => g.userId);
+    selfId = child.userId;
+    guardianIds = child.guardians.map((g) => g.userId);
     subjectName = child.name;
     profileSlug = child.slug ?? child.id;
   }
+  guardianIds = guardianIds.filter((id) => id !== selfId);
 
-  if (targetUserIds.length === 0) return;
   const url = `/giocatori/${profileSlug}`;
+  const audiences = [
+    { ids: selfId ? [selfId] : [], isSelf: true },
+    { ids: guardianIds, isSelf: false },
+  ].filter((a) => a.ids.length > 0);
 
-  for (const badgeId of badgeIds) {
-    const badge = getBadgeById(badgeId);
-    if (!badge) continue;
-    const title = `${badge.emoji} Nuovo traguardo!`;
-    const body = isSelf
-      ? `Hai sbloccato il traguardo "${badge.label}" 🎉`
-      : `${subjectName} ha sbloccato il traguardo "${badge.label}" 🎉`;
-
-    for (const targetUserId of targetUserIds) {
-      await createAppNotification({ type: "BADGE_UNLOCKED", title, body, url, targetUserId });
+  for (const { ids, isSelf } of audiences) {
+    for (const badgeId of badgeIds) {
+      const badge = getBadgeById(badgeId);
+      if (!badge) continue;
+      const title = `${badge.emoji} Nuovo traguardo!`;
+      const body = isSelf
+        ? `Hai sbloccato il traguardo "${badge.label}" 🎉`
+        : `${subjectName} ha sbloccato il traguardo "${badge.label}" 🎉`;
+      for (const targetUserId of ids) {
+        await createAppNotification({ type: "BADGE_UNLOCKED", title, body, url, targetUserId });
+      }
     }
+
+    // Una sola push riepilogativa se i badge sono più d'uno.
+    const pushTitle =
+      badgeIds.length === 1
+        ? `${getBadgeById(badgeIds[0])?.emoji ?? "🏅"} Nuovo traguardo!`
+        : "🏅 Nuovi traguardi sbloccati!";
+    const pushBody =
+      badgeIds.length === 1
+        ? isSelf
+          ? `Hai sbloccato "${getBadgeById(badgeIds[0])?.label}"`
+          : `${subjectName} ha sbloccato "${getBadgeById(badgeIds[0])?.label}"`
+        : isSelf
+          ? `Hai sbloccato ${badgeIds.length} nuovi traguardi`
+          : `${subjectName} ha sbloccato ${badgeIds.length} nuovi traguardi`;
+
+    await sendPushToUsers(ids, { title: pushTitle, body: pushBody, url });
   }
-
-  // Una sola push riepilogativa se i badge sono più d'uno.
-  const pushTitle =
-    badgeIds.length === 1
-      ? `${getBadgeById(badgeIds[0])?.emoji ?? "🏅"} Nuovo traguardo!`
-      : "🏅 Nuovi traguardi sbloccati!";
-  const pushBody =
-    badgeIds.length === 1
-      ? isSelf
-        ? `Hai sbloccato "${getBadgeById(badgeIds[0])?.label}"`
-        : `${subjectName} ha sbloccato "${getBadgeById(badgeIds[0])?.label}"`
-      : isSelf
-        ? `Hai sbloccato ${badgeIds.length} nuovi traguardi`
-        : `${subjectName} ha sbloccato ${badgeIds.length} nuovi traguardi`;
-
-  await sendPushToUsers(targetUserIds, { title: pushTitle, body: pushBody, url });
 }

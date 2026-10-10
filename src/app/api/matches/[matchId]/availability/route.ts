@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { AvailabilitySchema } from "@/lib/schemas";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import { guardianOf } from "@/lib/guardians";
+import { personRows } from "@/lib/person";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -12,6 +13,8 @@ type Params = { params: Promise<{ matchId: string }> };
 // - L'utente marca la propria disponibilità OPPURE quella di un figlio.
 // - Solo membri della squadra (User o Child) della partita possono marcare.
 // - Non si può modificare la disponibilità per partite già giocate.
+// - Un figlio con un account è una persona sola (@/lib/person): la riga è
+//   sempre quella dell'account, che risponda lui o un genitore.
 export async function PUT(req: Request, { params }: Params) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -57,14 +60,14 @@ export async function PUT(req: Request, { params }: Params) {
     // Verifica che il childId appartenga al genitore loggato
     const child = await prisma.child.findFirst({
       where: { id: childId, ...guardianOf(userId) },
-      select: { id: true },
+      select: { id: true, userId: true },
     });
     if (!child) {
       return NextResponse.json({ error: "Non autorizzato per questo figlio" }, { status: 403 });
     }
     // Verifica membership del child in una delle squadre della partita
     const membership = await prisma.teamMembership.findFirst({
-      where: { childId, teamId: { in: teamIds } },
+      where: { teamId: { in: teamIds }, OR: personRows(child) },
       select: { id: true },
     });
     if (!membership) {
@@ -74,14 +77,22 @@ export async function PUT(req: Request, { params }: Params) {
       );
     }
 
-    await prisma.matchAvailability.upsert({
-      where: { matchId_childId: { matchId, childId } },
-      create: { matchId, childId, available },
-      update: { available },
-    });
+    if (child.userId) {
+      await saveAccountAvailability(matchId, child.userId, childId, available);
+    } else {
+      await prisma.matchAvailability.upsert({
+        where: { matchId_childId: { matchId, childId } },
+        create: { matchId, childId, available },
+        update: { available },
+      });
+    }
   } else {
+    const ownCard = await prisma.child.findUnique({ where: { userId }, select: { id: true } });
     const membership = await prisma.teamMembership.findFirst({
-      where: { userId, teamId: { in: teamIds } },
+      where: {
+        teamId: { in: teamIds },
+        OR: [{ userId }, ...(ownCard ? [{ childId: ownCard.id }] : [])],
+      },
       select: { id: true },
     });
     if (!membership) {
@@ -91,12 +102,30 @@ export async function PUT(req: Request, { params }: Params) {
       );
     }
 
-    await prisma.matchAvailability.upsert({
-      where: { matchId_userId: { matchId, userId } },
-      create: { matchId, userId, available },
-      update: { available },
-    });
+    await saveAccountAvailability(matchId, userId, ownCard?.id ?? null, available);
   }
 
   return NextResponse.json({ ok: true, available });
+}
+
+/**
+ * La risposta di chi ha un account sta sull'account. Una vecchia riga sulla
+ * sua scheda figlio si toglie, così non restano due risposte diverse.
+ */
+async function saveAccountAvailability(
+  matchId: string,
+  userId: string,
+  cardId: string | null,
+  available: boolean
+) {
+  await prisma.$transaction([
+    ...(cardId
+      ? [prisma.matchAvailability.deleteMany({ where: { matchId, childId: cardId } })]
+      : []),
+    prisma.matchAvailability.upsert({
+      where: { matchId_userId: { matchId, userId } },
+      create: { matchId, userId, available },
+      update: { available },
+    }),
+  ]);
 }

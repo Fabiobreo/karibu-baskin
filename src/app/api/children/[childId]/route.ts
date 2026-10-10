@@ -8,6 +8,7 @@ import { ChildPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { generateChildSlug } from "@/lib/slugUtils";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { moveChildHistoryToUser } from "@/lib/childHistory";
 import { isGuardian } from "@/lib/guardians";
 import { inBackground } from "@/lib/background";
 
@@ -57,6 +58,19 @@ export async function PATCH(
     linkUserId,
     unlinkAccount,
   } = parsed.data;
+
+  // I dati di chi ha un account sono dell'account: li cambia lui dal suo
+  // profilo, o lo staff. Il genitore non modifica la copia sulla scheda, che
+  // nessuno legge più (@/lib/person).
+  const editsData = [name, sportRole, sportRoleVariant, gender, birthDate].some(
+    (v) => v !== undefined
+  );
+  if (child.userId && !isStaff && editsData) {
+    return NextResponse.json(
+      { error: `${child.name} ha un account: i suoi dati li cambia dal suo profilo, o lo staff` },
+      { status: 403 }
+    );
+  }
 
   // ── Invia richiesta di collegamento (via email o userId) ──────────────────
   if (linkEmail !== undefined || linkUserId !== undefined) {
@@ -287,6 +301,18 @@ export async function DELETE(
       where: { childId_userId: { childId, userId: session.user.id } },
     });
     return NextResponse.json({ unlinked: true });
+  }
+
+  // La scheda di chi ha un account è solo il legame con i genitori: se le è
+  // rimasto dello storico (collegamenti fatti prima), passa all'account prima
+  // di eliminarla. I dati del ragazzo non spariscono con la scheda.
+  if (child.userId) {
+    const accountId = child.userId;
+    await prisma.$transaction((tx) => moveChildHistoryToUser(tx, childId, accountId), {
+      timeout: 30_000,
+      maxWait: 10_000,
+    });
+    inBackground(recomputeRatings(prisma), "rating delete linked child");
   }
 
   // Trova le sessioni con squadre generate che includono questo figlio,

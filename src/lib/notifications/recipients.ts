@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { withGuardians } from "@/lib/person";
 
 /** Allenatori e admin: chi gestisce il pannello e riceve gli avvisi di lavoro. */
 export async function staffUserIds(): Promise<string[]> {
@@ -10,8 +11,9 @@ export async function staffUserIds(): Promise<string[]> {
 }
 
 /**
- * Account da avvisare per un elenco di giocatori: l'account del giocatore e,
- * per un figlio, tutti i suoi genitori più il suo account, se ne ha uno.
+ * Account da avvisare per un elenco di giocatori: l'account del giocatore e
+ * i genitori della sua scheda figlio, se ne ha una; per un figlio, tutti i
+ * suoi genitori più il suo account, se ne ha uno.
  * Stessa regola di `resolveFilterUserIds`, ma partendo dalle persone.
  */
 export async function playerRecipientIds(
@@ -35,5 +37,5 @@ export async function playerRecipientIds(
     }
   }
 
-  return [...ids];
+  return withGuardians([...ids]);
 }

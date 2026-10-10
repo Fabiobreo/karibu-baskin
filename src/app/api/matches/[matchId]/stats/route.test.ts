@@ -19,6 +19,8 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+// I genitori di chi ha un account hanno i loro test (@/lib/person.test.ts).
+vi.mock("@/lib/person", () => ({ withGuardians: vi.fn(async (ids: string[]) => ids) }));
 vi.mock("@/lib/notifications/webpush", () => ({
   sendPushToUsers: vi.fn().mockResolvedValue(undefined),
 }));

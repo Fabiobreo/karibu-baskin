@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { prisma } from "@/lib/db";
+import { withGuardians } from "@/lib/person";
 import { logSkippedNotification, notificationsDisabled } from "./devSwitch";
 import { mergePrefs, type ControllableNotifType } from "./notifPrefs";
 
@@ -232,7 +233,8 @@ export async function resolveFilterUserIds(filter: {
     }
   }
 
-  return [...userIds];
+  // I genitori di chi ha un account ricevono quello che riceve lui.
+  return withGuardians([...userIds]);
 }
 
 export async function sendPushToFilter(

@@ -30,7 +30,8 @@ interface ChildAccountSectionProps {
 /**
  * Lega una scheda figlio all'account che il ragazzo si è fatto dopo, o toglie
  * il legame. Ha effetto subito, come la sezione Genitori: è un collegamento,
- * non un campo che aspetta "Salva". Lo storico resta sulla scheda.
+ * non un campo che aspetta "Salva". Collegando, lo storico sportivo della scheda
+ * passa all'account (vedi `@/lib/childHistory`) e non torna indietro.
  */
 export default function ChildAccountSection({
   childId,
@@ -105,7 +106,7 @@ export default function ChildAccountSection({
             <PersonRow
               name={childName}
               sportRole={null}
-              meta="Storico e squadra restano sulla scheda"
+              meta="Lo storico sportivo è sull'account"
               trailing={
                 confirmUnlink ? (
                   <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -141,7 +142,8 @@ export default function ChildAccountSection({
             />
             {confirmUnlink && (
               <Typography variant="caption" color="text.secondary" display="block" sx={{ py: 1 }}>
-                L&apos;account resta, ma non vedrà più lo storico di {firstName}.
+                L&apos;account tiene tutto lo storico: la scheda di {firstName} torna senza account
+                e resta vuota.
               </Typography>
             )}
           </>
@@ -156,8 +158,9 @@ export default function ChildAccountSection({
                   {picked.email}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  {firstName} entrerà con questo account e vedrà il suo storico. I genitori
-                  continuano a gestirlo.
+                  Tutto lo storico di {firstName} (squadra, partite, statistiche, traguardi,
+                  allenamenti) passa a questo account. Non si può annullare: controlla che sia la
+                  persona giusta. I genitori restano collegati.
                   {picked.appRole === "GUEST" && " L'account diventa Atleta."}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1, mt: 1 }}>

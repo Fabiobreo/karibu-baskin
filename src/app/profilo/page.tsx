@@ -105,7 +105,21 @@ export default async function ProfiloPage({
               gender: true,
               birthDate: true,
               userId: true,
-              user: { select: { email: true, image: true } },
+              // Un figlio con un account è quell'account (@/lib/person): ruolo,
+              // squadra e dati si leggono da lì, non dalla copia sulla scheda.
+              user: {
+                select: {
+                  email: true,
+                  image: true,
+                  sportRole: true,
+                  sportRoleVariant: true,
+                  gender: true,
+                  birthDate: true,
+                  teamMemberships: {
+                    include: { team: { select: { name: true, color: true, season: true } } },
+                  },
+                },
+              },
               teamMemberships: {
                 include: { team: { select: { name: true, color: true, season: true } } },
               },
@@ -190,8 +204,16 @@ export default async function ProfiloPage({
   ]);
 
   if (!user) redirect("/login");
-  const children = user.guardianOf.map(({ child: { guardians, ...child } }) => ({
+  const children = user.guardianOf.map(({ child: { guardians, user: account, ...child } }) => ({
     ...child,
+    ...(account && {
+      sportRole: account.sportRole ?? child.sportRole,
+      sportRoleVariant: account.sportRole ? account.sportRoleVariant : child.sportRoleVariant,
+      gender: account.gender ?? child.gender,
+      birthDate: account.birthDate ?? child.birthDate,
+      teamMemberships: [...account.teamMemberships, ...child.teamMemberships],
+    }),
+    user: account ? { email: account.email, image: account.image } : null,
     otherGuardians: guardians.map((g) => g.user.name ?? "?"),
     pendingRequestId: sentLinkRequests.find((r) => r.childId === child.id)?.id ?? null,
   }));
@@ -208,6 +230,8 @@ export default async function ProfiloPage({
   // È il motivo principale per cui un atleta apre il sito, e nel profilo non
   // c'era. Per un genitore le righe sono quelle dei figli collegati.
   const childIds = children.map((c) => c.id);
+  // Le iscrizioni dei figli con un account stanno sull'account.
+  const childAccountIds = children.flatMap((c) => (c.userId ? [c.userId] : []));
   // Chi vede la card "prossima cosa da fare" non usa questa query (UX-24), e
   // nemmeno l'ospite: l'allenamento sta nei suoi primi passi (UX-46).
   const showNextAction = showsNextAction(user.appRole, user.sportRole, children.length > 0);
@@ -231,7 +255,7 @@ export default async function ProfiloPage({
             registrations: {
               where: {
                 OR: [
-                  { userId: user.id },
+                  { userId: { in: [user.id, ...childAccountIds] } },
                   ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
                 ],
               },
@@ -326,7 +350,10 @@ export default async function ProfiloPage({
         id: child.id,
         name: child.name,
         sportRole: child.sportRole,
-        registrationId: nextSession.registrations.find((r) => r.childId === child.id)?.id ?? null,
+        registrationId:
+          nextSession.registrations.find(
+            (r) => r.childId === child.id || (!!child.userId && r.userId === child.userId)
+          )?.id ?? null,
         allowed: check.allowed,
         reason: check.reason ?? null,
       });
@@ -617,7 +644,8 @@ export default async function ProfiloPage({
         {children.map((c) => (
           <Suspense key={c.id} fallback={badgesSkeleton}>
             <ProfileBadges
-              player={{ childId: c.id }}
+              // I traguardi di un figlio con un account sono dell'account.
+              player={c.userId ? { userId: c.userId } : { childId: c.id }}
               title={t("childAchievements", { name: c.name })}
               nextTitle={t("nextAchievements")}
             />

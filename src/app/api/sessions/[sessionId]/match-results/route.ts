@@ -130,10 +130,16 @@ async function buildSnapshotForSession(
 ) {
   const registrations = await prisma.registration.findMany({
     where: { sessionId },
-    select: { id: true, userId: true, childId: true },
+    select: { id: true, userId: true, childId: true, child: { select: { userId: true } } },
   });
+  // Un figlio con un account collegato è quell'account (lo storico sta lì,
+  // vedi @/lib/childHistory): se lo ha iscritto il genitore, la partitella
+  // conta comunque per il livello dell'account e non per la scheda.
   const refs: RegistrationRefMap = new Map(
-    registrations.map((r) => [r.id, { userId: r.userId, childId: r.childId }])
+    registrations.map((r) => {
+      const accountId = r.userId ?? r.child?.userId ?? null;
+      return [r.id, { userId: accountId, childId: accountId ? null : r.childId }];
+    })
   );
   const teams = (teamsJson ?? {}) as { teamA?: { id: string; name: string }[] };
   return buildRostersSnapshot(teams, matchup, refs);

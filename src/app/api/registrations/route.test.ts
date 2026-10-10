@@ -382,13 +382,39 @@ describe("POST /api/registrations", () => {
         sportRole: 3,
         userId: "linked-user",
       });
-      p.registration.findFirst
-        .mockResolvedValueOnce(null) // check childId duplicate
-        .mockResolvedValueOnce({ id: "dup" }); // check linked userId
+      // Un controllo solo, su scheda e account insieme.
+      p.registration.findFirst.mockResolvedValueOnce({ id: "dup" });
       const res = await POST(makePost({ sessionId: "sess-1", role: 3, childId: "child-1" }));
       expect(res.status).toBe(409);
       const json = await res.json();
-      expect(json.error).toContain("proprio account");
+      expect(json.error).toContain("già iscritto");
+      expect(p.registration.findFirst).toHaveBeenCalledWith({
+        where: { sessionId: "sess-1", OR: [{ childId: "child-1" }, { userId: "linked-user" }] },
+      });
+    });
+
+    it("figlio con un account: l'iscrizione fatta dal genitore va sull'account", async () => {
+      p.child.findUnique.mockResolvedValue({
+        id: "child-1",
+        name: "Luca",
+        sportRole: null,
+        userId: "linked-user",
+      });
+      // La prima lettura è l'account del figlio, poi il genitore.
+      p.user.findUnique.mockResolvedValueOnce({
+        id: "linked-user",
+        name: "Luca Rossi",
+        sportRole: 4,
+      });
+      const res = await POST(makePost({ sessionId: "sess-1", role: 2, childId: "child-1" }));
+      expect(res.status).toBe(201);
+      const data = p.registration.create.mock.calls[0][0].data;
+      expect(data.userId).toBe("linked-user");
+      expect(data.childId).toBeUndefined();
+      // Ruolo e nome sono quelli dell'account, e la scheda non si tocca.
+      expect(data.role).toBe(4);
+      expect(data.name).toBe("Luca Rossi");
+      expect(p.child.update).not.toHaveBeenCalled();
     });
 
     it("salva il ruolo proposto sul figlio se non ha ruolo confermato", async () => {
@@ -645,7 +671,12 @@ describe("GET /api/registrations · ospiti", () => {
     const [args] = p.registration.findMany.mock.calls[0] as [{ where: unknown; select: unknown }];
     expect(args.where).toEqual({
       sessionId: "sess-1",
-      OR: [{ userId: "g1" }, { child: { guardians: { some: { userId: "g1" } } } }],
+      OR: [
+        { userId: "g1" },
+        { child: { guardians: { some: { userId: "g1" } } } },
+        // I figli con un account: la loro iscrizione sta sull'account.
+        { user: { childAccount: { guardians: { some: { userId: "g1" } } } } },
+      ],
     });
     // Niente note, email o dati di altri iscritti.
     expect(args.select).toEqual({

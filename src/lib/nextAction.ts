@@ -146,6 +146,8 @@ export const loadNextAction = cache(async function loadNextAction(
         userId: true,
         sportRole: true,
         teamMemberships: { select: { teamId: true } },
+        // Un figlio con un account: ruolo e squadra sono quelli dell'account.
+        user: { select: { sportRole: true, teamMemberships: { select: { teamId: true } } } },
       },
     }),
   ]);
@@ -173,12 +175,19 @@ export const loadNextAction = cache(async function loadNextAction(
       kind: "child",
       id: c.id,
       name: c.name,
-      sportRole: c.sportRole,
-      teamIds: c.teamMemberships.map((m) => m.teamId),
+      sportRole: c.user?.sportRole ?? c.sportRole,
+      teamIds: [...c.teamMemberships, ...(c.user?.teamMemberships ?? [])].map((m) => m.teamId),
     });
   }
   const childIds = children.map((c) => c.id);
-  const mine = { OR: [{ userId }, ...(childIds.length ? [{ childId: { in: childIds } }] : [])] };
+  // L'iscrizione di un figlio con un account sta sull'account (@/lib/person).
+  const childOfAccount = new Map(others.flatMap((c) => (c.userId ? [[c.userId, c.id]] : [])));
+  const mine = {
+    OR: [
+      { userId: { in: [userId, ...childOfAccount.keys()] } },
+      ...(childIds.length ? [{ childId: { in: childIds } }] : []),
+    ],
+  };
 
   const sessionSelect = {
     id: true,
@@ -239,7 +248,9 @@ export const loadNextAction = cache(async function loadNextAction(
       openRoles: s.openRoles,
       // Un'iscrizione fatta con la propria scheda figlio vale come propria.
       registeredIds: s.registrations.map((r) =>
-        own && r.childId === own.id ? userId : (r.userId ?? r.childId ?? "")
+        own && r.childId === own.id
+          ? userId
+          : ((r.userId && childOfAccount.get(r.userId)) ?? r.userId ?? r.childId ?? "")
       ),
     })),
     registered: nextRegistered

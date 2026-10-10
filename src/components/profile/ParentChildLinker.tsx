@@ -269,13 +269,16 @@ export default function ParentChildLinker({
                       <LinkIcon fontSize="small" />
                     </IconButton>
                   )}
-                  <IconButton
-                    size="small"
-                    onClick={() => setEditTarget(child)}
-                    aria-label={tCommon("edit")}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
+                  {/* Chi ha un account cambia i propri dati dal suo profilo. */}
+                  {!child.userId && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setEditTarget(child)}
+                      aria-label={tCommon("edit")}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  )}
                   <IconButton
                     size="small"
                     color="error"

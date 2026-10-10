@@ -10,6 +10,9 @@ vi.mock("@/lib/db", () => ({
     competitiveTeam: {
       findUnique: vi.fn(),
     },
+    child: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -38,6 +41,7 @@ import { createAppNotification } from "@/lib/notifications/appNotifications";
 type PrismaMock = {
   teamMembership: { create: Mock; findFirst: Mock };
   competitiveTeam: { findUnique: Mock };
+  child: { findUnique: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
@@ -75,6 +79,8 @@ describe("POST /api/competitive-teams/[teamId]/members", () => {
     p.teamMembership.create.mockResolvedValue(baseMembership);
     p.teamMembership.findFirst.mockResolvedValue(null);
     p.competitiveTeam.findUnique.mockResolvedValue({ season: "2025-26" });
+    // Nessuna scheda figlio collegata, salvo nei test che la mettono.
+    p.child.findUnique.mockResolvedValue(null);
   });
 
   it("returns 403 when not admin", async () => {
@@ -166,6 +172,53 @@ describe("POST /api/competitive-teams/[teamId]/members", () => {
     expect(res.status).toBe(409);
     const body = (await res.json()) as { error: string };
     expect(body.error).toContain("Karibu B");
+    expect(p.teamMembership.create).not.toHaveBeenCalled();
+  });
+
+  it("account con scheda figlio che ha storico: in rosa va la scheda, una volta sola", async () => {
+    p.child.findUnique.mockResolvedValue({
+      id: "c-9",
+      _count: { teamMemberships: 0, matchStats: 4, callups: 5 },
+    });
+    await POST(makeReq({ userId: "u-1" }), { params });
+    expect(p.teamMembership.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: null, childId: "c-9" }),
+      })
+    );
+    // Il doppione si cerca su entrambe le identità.
+    expect(p.teamMembership.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ OR: [{ userId: "u-1" }, { childId: "c-9" }] }),
+      })
+    );
+  });
+
+  it("scheda figlio nata già collegata, senza storico: in rosa va l'account", async () => {
+    p.child.findUnique.mockResolvedValue({
+      id: "c-9",
+      _count: { teamMemberships: 0, matchStats: 0, callups: 0 },
+    });
+    await POST(makeReq({ userId: "u-1" }), { params });
+    expect(p.teamMembership.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: "u-1", childId: null }),
+      })
+    );
+  });
+
+  it("già in questa rosa con l'altra identità: 409, nessun doppione", async () => {
+    p.child.findUnique.mockResolvedValue({
+      id: "c-9",
+      _count: { teamMemberships: 1, matchStats: 0, callups: 0 },
+    });
+    p.teamMembership.findFirst.mockResolvedValue({
+      id: "m-child",
+      teamId: "t-1",
+      team: { name: "Karibu A" },
+    });
+    const res = await POST(makeReq({ userId: "u-1" }), { params });
+    expect(res.status).toBe(409);
     expect(p.teamMembership.create).not.toHaveBeenCalled();
   });
 

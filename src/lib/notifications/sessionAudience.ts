@@ -11,6 +11,8 @@ export interface AudienceUser {
   sportRole: number | null;
   inRestrictedTeam: boolean;
   hasAnyTeam: boolean;
+  /** Genitori della sua scheda figlio, se ne ha una: ricevono lo stesso avviso. */
+  guardianIds?: string[];
 }
 
 export interface AudienceChild {
@@ -56,7 +58,10 @@ export function sessionAudience(
       inTeam,
       isStaff
     );
-    if (check.allowed) ids.add(u.id);
+    if (check.allowed) {
+      ids.add(u.id);
+      for (const id of u.guardianIds ?? []) ids.add(id);
+    }
   }
 
   for (const c of children) {
@@ -87,9 +92,13 @@ export async function loadSessionAudience(
         appRole: true,
         sportRole: true,
         teamMemberships: { select: { teamId: true } },
+        childAccount: { select: { guardians: { select: { userId: true } } } },
       },
     }),
+    // Solo i figli senza account: chi ha un account è valutato come account
+    // (ruolo e squadra sono i suoi) e porta con sé i genitori.
     prisma.child.findMany({
+      where: { userId: null },
       select: {
         sportRole: true,
         userId: true,
@@ -107,6 +116,7 @@ export async function loadSessionAudience(
       sportRole: u.sportRole,
       inRestrictedTeam: !!teamId && u.teamMemberships.some((m) => m.teamId === teamId),
       hasAnyTeam: u.teamMemberships.length > 0,
+      guardianIds: u.childAccount?.guardians.map((g) => g.userId) ?? [],
     })),
     children.map((c) => ({
       sportRole: c.sportRole,

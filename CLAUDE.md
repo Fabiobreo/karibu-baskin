@@ -296,6 +296,7 @@ sentry.edge.config.ts                      # Sentry edge runtime
 | `VerificationToken`    | `VerificationToken`    | Token verifica Auth.js                                  |
 
 > **Genitori dei figli:** un `Child` ha uno o più genitori in `ChildGuardian`, tutti paritari. Ogni controllo "è suo genitore?" passa da `@/lib/guardians` (`guardianOf`, `isGuardian`); dettagli in [`docs/workflows/06-genitore-figlio.md`](docs/workflows/06-genitore-figlio.md).
+> **Figlio con un account = una persona sola** (`@/lib/person`): chi ha un account può avere una scheda figlio collegata (`Child.userId`), che è il legame con i genitori. I dati sportivi stanno sull'**account** (al collegamento lo storico della scheda ci passa, `@/lib/childHistory`), e i genitori agiscono sull'account passando dalla scheda: disponibilità, iscrizioni e notifiche valgono per entrambi. Una funzione nuova che riguarda un atleta non guarda una chiave sola: in lettura `personRows(child)`, per i destinatari `withGuardians(userIds)`, in scrittura la riga va sull'account se c'è. Eccezione: le risposte agli eventi stanno sulla scheda.
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
 

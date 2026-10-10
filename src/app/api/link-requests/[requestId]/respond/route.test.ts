@@ -12,6 +12,13 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+// Il passaggio dello storico ha i suoi test (@/lib/childHistory.test.ts).
+vi.mock("@/lib/childHistory", () => ({
+  moveChildHistoryToUser: vi.fn().mockResolvedValue({}),
+}));
+vi.mock("@/lib/rating/ratingEngine", () => ({
+  recomputeRatings: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
 }));

@@ -4,6 +4,10 @@
 //
 // Una persona partecipa a una partita se una delle due squadre è una in cui è
 // tesserata, oppure una squadra mista della stessa stagione (vedi mixedTeam.ts).
+//
+// Un figlio con un account è una persona sola (vedi @/lib/person): la squadra
+// si legge dall'account e dalla scheda, e la risposta è una riga sola,
+// sull'account. La vedono e la cambiano sia il ragazzo sia i genitori.
 
 import { prisma } from "@/lib/db";
 import { withMixedTeams } from "@/lib/matches/mixedTeam";
@@ -13,20 +17,27 @@ import { guardianOf } from "@/lib/guardians";
 type PersonKey = `user:${string}` | `child:${string}`;
 
 async function loadEligibility(userId: string) {
-  const [userMemberships, children] = await Promise.all([
+  const team = { select: { team: { select: { id: true, season: true } } } } as const;
+  const [userMemberships, ownCard, guarded] = await Promise.all([
+    // Le proprie squadre: dell'account e della propria scheda figlio, se c'è.
     prisma.teamMembership.findMany({
-      where: { userId },
-      select: { team: { select: { id: true, season: true } } },
+      where: { OR: [{ userId }, { child: { userId } }] },
+      ...team,
     }),
+    prisma.child.findUnique({ where: { userId }, select: { id: true } }),
     prisma.child.findMany({
       where: guardianOf(userId),
       select: {
         id: true,
         name: true,
-        teamMemberships: { select: { team: { select: { id: true, season: true } } } },
+        userId: true,
+        teamMemberships: team,
+        user: { select: { teamMemberships: team } },
       },
     }),
   ]);
+  // Chi è tutore della propria scheda non è figlio di sé stesso.
+  const children = guarded.filter((c) => c.userId !== userId);
 
   const people = new Map<PersonKey, { id: string; season: string }[]>();
   people.set(
@@ -36,7 +47,7 @@ async function loadEligibility(userId: string) {
   for (const c of children) {
     people.set(
       `child:${c.id}`,
-      c.teamMemberships.map((m) => m.team)
+      [...c.teamMemberships, ...(c.user?.teamMemberships ?? [])].map((m) => m.team)
     );
   }
   const teamIdsByPerson = await withMixedTeams(people);
@@ -44,9 +55,11 @@ async function loadEligibility(userId: string) {
 
   return {
     userTeamIds: teamIdsByPerson.get(`user:${userId}`) ?? [],
+    ownCardId: ownCard?.id ?? null,
     children: children.map((c) => ({
       id: c.id,
       name: c.name,
+      accountId: c.userId,
       teamIds: teamIdsByPerson.get(`child:${c.id}`) ?? [],
     })),
     allTeamIds,
@@ -84,12 +97,16 @@ export async function loadMyAvailabilityPage(
 }
 
 async function matchesFor(
-  { userTeamIds, children, allTeamIds }: Awaited<ReturnType<typeof loadEligibility>>,
+  { userTeamIds, ownCardId, children, allTeamIds }: Awaited<ReturnType<typeof loadEligibility>>,
   userId: string,
   userName: string,
   options: { from?: Date }
 ): Promise<AvailabilityMatch[]> {
   if (allTeamIds.length === 0) return [];
+
+  // Le righe di queste persone, su una chiave o sull'altra.
+  const rowUserIds = [userId, ...children.flatMap((c) => (c.accountId ? [c.accountId] : []))];
+  const rowChildIds = [...(ownCardId ? [ownCardId] : []), ...children.map((c) => c.id)];
 
   const matches = await prisma.match.findMany({
     where: {
@@ -112,8 +129,8 @@ async function matchesFor(
       availabilities: {
         where: {
           OR: [
-            { userId },
-            ...(children.length > 0 ? [{ childId: { in: children.map((c) => c.id) } }] : []),
+            { userId: { in: rowUserIds } },
+            ...(rowChildIds.length > 0 ? [{ childId: { in: rowChildIds } }] : []),
           ],
         },
         select: { userId: true, childId: true, available: true },
@@ -129,7 +146,10 @@ async function matchesFor(
 
     const userTeamId = teamInMatch(userTeamIds, teamsInMatch);
     if (userTeamId) {
-      const av = m.availabilities.find((a) => a.userId === userId);
+      // L'account prima: una vecchia riga sulla scheda vale solo come ripiego.
+      const av =
+        m.availabilities.find((a) => a.userId === userId) ??
+        m.availabilities.find((a) => !!ownCardId && a.childId === ownCardId);
       const teamRef = teamRefOf(userTeamId);
       entities.push({
         kind: "user",
@@ -145,7 +165,9 @@ async function matchesFor(
     for (const child of children) {
       const childTeamId = teamInMatch(child.teamIds, teamsInMatch);
       if (!childTeamId) continue;
-      const av = m.availabilities.find((a) => a.childId === child.id);
+      const av =
+        m.availabilities.find((a) => !!child.accountId && a.userId === child.accountId) ??
+        m.availabilities.find((a) => a.childId === child.id);
       const teamRef = teamRefOf(childTeamId);
       entities.push({
         kind: "child",

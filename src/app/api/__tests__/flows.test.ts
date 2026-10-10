@@ -28,6 +28,14 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/authjs", () => ({ auth: vi.fn().mockResolvedValue(null) }));
+// Il passaggio dello storico dalla scheda all'account ha i suoi test
+// (@/lib/childHistory.test.ts): qui interessa solo il flusso della richiesta.
+vi.mock("@/lib/childHistory", () => ({
+  moveChildHistoryToUser: vi.fn().mockResolvedValue({}),
+}));
+vi.mock("@/lib/rating/ratingEngine", () => ({
+  recomputeRatings: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(true),
   isAdminUser: vi.fn().mockResolvedValue(false),

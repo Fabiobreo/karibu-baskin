@@ -12,7 +12,7 @@ vi.mock("@/lib/db", () => {
   const tx = {
     child: { findUnique: vi.fn(), update: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
-    sportRoleHistory: { create: vi.fn() },
+    sportRoleHistory: { create: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
     registration: many(),
     teamMembership: many(),
     linkRequest: many(),
@@ -21,6 +21,13 @@ vi.mock("@/lib/db", () => {
     prisma: { ...tx, $transaction: vi.fn((cb: (t: unknown) => unknown) => cb(tx)) },
   };
 });
+// Il passaggio dello storico ha i suoi test (@/lib/childHistory.test.ts).
+vi.mock("@/lib/childHistory", () => ({
+  moveChildHistoryToUser: vi.fn().mockResolvedValue({ registrations: 3, teamMemberships: 1 }),
+}));
+vi.mock("@/lib/rating/ratingEngine", () => ({
+  recomputeRatings: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/authjs", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/apiAuth", () => ({ isCoachOrAdmin: vi.fn() }));
 vi.mock("@/lib/audit", () => ({ logAudit: vi.fn().mockResolvedValue(undefined) }));
@@ -34,12 +41,14 @@ import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
+import { moveChildHistoryToUser } from "@/lib/childHistory";
+import { recomputeRatings } from "@/lib/rating/ratingEngine";
 
 type Many = { findMany: Mock; updateMany: Mock; deleteMany: Mock };
 const p = prisma as unknown as {
   child: { findUnique: Mock; update: Mock };
   user: { findUnique: Mock; update: Mock };
-  sportRoleHistory: { create: Mock };
+  sportRoleHistory: { create: Mock; findFirst: Mock };
   registration: Many;
   teamMembership: Many;
   linkRequest: Many;
@@ -54,6 +63,8 @@ const CHILD = {
   sportRoleVariant: null,
   gender: "MALE",
   birthDate: new Date("2011-03-02"),
+  height: 150,
+  athleteStatus: null,
   guardians: [{ userId: "p1" }],
 };
 const ACCOUNT = {
@@ -64,6 +75,8 @@ const ACCOUNT = {
   sportRole: null,
   gender: null,
   birthDate: null,
+  height: null,
+  athleteStatus: null,
   childAccount: null,
 };
 
@@ -88,8 +101,8 @@ beforeEach(() => {
   p.child.findUnique.mockResolvedValue(CHILD);
   p.user.findUnique.mockResolvedValue(ACCOUNT);
   p.child.update.mockResolvedValue({});
-  p.registration.findMany.mockResolvedValue([]);
-  p.teamMembership.findMany.mockResolvedValue([]);
+  p.sportRoleHistory.findFirst.mockResolvedValue(null);
+  (moveChildHistoryToUser as Mock).mockResolvedValue({ registrations: 3, teamMemberships: 1 });
 });
 
 describe("PUT /api/admin/children/[childId]/account", () => {
@@ -114,6 +127,7 @@ describe("PUT /api/admin/children/[childId]/account", () => {
         sportRoleSuggestedVariant: null,
         gender: "MALE",
         birthDate: CHILD.birthDate,
+        height: 150,
       },
     });
     expect(p.sportRoleHistory.create).toHaveBeenCalledWith({
@@ -133,6 +147,7 @@ describe("PUT /api/admin/children/[childId]/account", () => {
       sportRole: 4,
       gender: "FEMALE",
       birthDate: new Date("2010-01-01"),
+      height: 170,
     });
     const res = await put({ userId: "u9" });
     expect((await res.json()).promoted).toBe(false);
@@ -140,16 +155,17 @@ describe("PUT /api/admin/children/[childId]/account", () => {
     expect(p.sportRoleHistory.create).not.toHaveBeenCalled();
   });
 
-  it("doppioni: stessa sessione e stessa squadra, resta la riga della scheda", async () => {
-    p.registration.findMany.mockResolvedValue([{ sessionId: "s1" }]);
-    p.teamMembership.findMany.mockResolvedValue([{ teamId: "t1" }]);
+  it("passa tutto lo storico all'account e ricalcola il livello", async () => {
+    const res = await put({ userId: "u9" });
+    expect(moveChildHistoryToUser).toHaveBeenCalledWith(expect.anything(), "c1", "u9");
+    expect((await res.json()).moved).toEqual({ registrations: 3, teamMemberships: 1 });
+    expect(recomputeRatings).toHaveBeenCalled();
+  });
+
+  it("la scheda aveva già uno storico del ruolo: non se ne crea un altro", async () => {
+    p.sportRoleHistory.findFirst.mockResolvedValue({ id: "h1" });
     await put({ userId: "u9" });
-    expect(p.registration.deleteMany).toHaveBeenCalledWith({
-      where: { userId: "u9", sessionId: { in: ["s1"] } },
-    });
-    expect(p.teamMembership.deleteMany).toHaveBeenCalledWith({
-      where: { userId: "u9", teamId: { in: ["t1"] } },
-    });
+    expect(p.sportRoleHistory.create).not.toHaveBeenCalled();
   });
 
   it("account già legato a un'altra scheda: 409", async () => {
@@ -163,12 +179,21 @@ describe("PUT /api/admin/children/[childId]/account", () => {
     expect(p.child.update).not.toHaveBeenCalled();
   });
 
-  it("scheda già legata a un altro account: 409; allo stesso: nessuna modifica", async () => {
+  it("scheda già legata a un altro account: 409", async () => {
     p.child.findUnique.mockResolvedValue({ ...CHILD, userId: "altro" });
     expect((await put({ userId: "u9" })).status).toBe(409);
+    expect(moveChildHistoryToUser).not.toHaveBeenCalled();
+  });
+
+  it("già legata allo stesso account: completa il passaggio dello storico, senza riavvisare", async () => {
     p.child.findUnique.mockResolvedValue({ ...CHILD, userId: "u9" });
+    p.user.findUnique.mockResolvedValue({
+      ...ACCOUNT,
+      childAccount: { id: "c1", name: "Luca Rossi" },
+    });
     expect((await put({ userId: "u9" })).status).toBe(200);
-    expect(p.child.update).not.toHaveBeenCalled();
+    expect(moveChildHistoryToUser).toHaveBeenCalledWith(expect.anything(), "c1", "u9");
+    expect(createTargetedAppNotifications).not.toHaveBeenCalled();
   });
 
   it("un genitore del figlio non può essere il suo account", async () => {

@@ -7,7 +7,7 @@ import PageHeader from "@/components/common/PageHeader";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { requireAdminPage } from "@/lib/adminAccess";
 import AthletesTab from "@/components/admin/userList/AthletesTab";
-import type { AdminRow } from "@/components/admin/userList/userListShared";
+import type { AdminRow, MembershipInfo } from "@/components/admin/userList/userListShared";
 import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 import { cookies } from "next/headers";
 import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
@@ -26,12 +26,27 @@ function toUserEntry<
       id: string;
       name: string;
       guardians: { user: { name: string | null; email: string } }[];
+      teamMemberships: MembershipInfo[];
+      _count: { registrations: number };
     } | null;
+    teamMemberships: MembershipInfo[];
     _count: { registrations: number; accounts: number; authSessions: number };
   },
 >({ guardianOf, childAccount, ...user }: T) {
+  // Account e scheda figlio collegata sono la stessa persona: squadra e
+  // iscrizioni della scheda si leggono sulla riga dell'account, altrimenti
+  // sembrerebbe senza squadra e la si aggiungerebbe una seconda volta.
+  const ownTeamIds = new Set(user.teamMemberships.map((m) => m.teamId));
   return {
     ...user,
+    teamMemberships: [
+      ...user.teamMemberships,
+      ...(childAccount?.teamMemberships ?? []).filter((m) => !ownTeamIds.has(m.teamId)),
+    ],
+    _count: {
+      ...user._count,
+      registrations: user._count.registrations + (childAccount?._count.registrations ?? 0),
+    },
     childNames: guardianOf.map((g) => g.child.name),
     parentNames: (childAccount?.guardians ?? []).map((g) => g.user.name?.trim() || g.user.email),
     linkedChild: childAccount ? { id: childAccount.id, name: childAccount.name } : null,
@@ -69,6 +84,15 @@ const USER_ROW_SELECT = {
       guardians: {
         orderBy: { createdAt: "asc" as const },
         select: { user: { select: { name: true, email: true } } },
+      },
+      _count: { select: { registrations: true } },
+      teamMemberships: {
+        select: {
+          id: true,
+          teamId: true,
+          isCaptain: true,
+          team: { select: { id: true, name: true, season: true, color: true } },
+        },
       },
     },
   },

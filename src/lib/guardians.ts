@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { moveChildHistoryToUser } from "@/lib/childHistory";
 
 /**
  * Genitori (tutori) di un figlio senza account.
@@ -58,9 +59,18 @@ export async function deleteUserAndOrphanedChildren(userId: string): Promise<voi
   await prisma.$transaction(async (tx) => {
     const links = await tx.childGuardian.findMany({
       where: { userId },
-      select: { childId: true, child: { select: { _count: { select: { guardians: true } } } } },
+      select: {
+        childId: true,
+        child: { select: { userId: true, _count: { select: { guardians: true } } } },
+      },
     });
-    const orphaned = links.filter((l) => l.child._count.guardians <= 1).map((l) => l.childId);
+    const orphans = links.filter((l) => l.child._count.guardians <= 1);
+    // La scheda di chi ha un account è solo il legame con i genitori: se le è
+    // rimasto dello storico passa all'account, non sparisce col genitore.
+    for (const o of orphans) {
+      if (o.child.userId) await moveChildHistoryToUser(tx, o.childId, o.child.userId);
+    }
+    const orphaned = orphans.map((l) => l.childId);
     if (orphaned.length > 0) {
       await tx.child.deleteMany({ where: { id: { in: orphaned } } });
     }

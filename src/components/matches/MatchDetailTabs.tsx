@@ -61,13 +61,35 @@ export default function MatchDetailTabs({
   // statistiche, la pagina parte da quelle (UX-06).
   const [tab, setTab] = useState(!canSeeCallups && hasStats ? 1 : 0);
 
-  // Merge callups + stats per partite già giocate
+  // Merge callups + stats per partite già giocate. A statistiche inserite, un
+  // convocato senza riga salvata ha giocato senza punti né falli: vale una riga
+  // a zero, nei convocati e nella tab Statistiche (non "nessun dato"). Solo per
+  // chi vede i convocati: agli altri non si aggiungono nomi.
+  const statOf = (c: CallupEntry) =>
+    stats.find(
+      (s) => (c.userId && s.user?.id === c.userId) || (c.childId && s.child?.id === c.childId)
+    ) ?? null;
+  const zeroRows: MatchStatRow[] =
+    hasStats && canSeeCallups
+      ? callups
+          .filter((c) => (c.user || c.child) && !statOf(c))
+          .map((c) => ({
+            id: `zero-${c.id}`,
+            points: 0,
+            twoPointers: 0,
+            threePointers: 0,
+            freeThrows: 0,
+            fouls: 0,
+            illegalFouls: 0,
+            shotsAttempted: 0,
+            user: c.user,
+            child: c.child,
+          }))
+      : [];
+  const allStats = [...stats, ...zeroRows];
   const callupsWithStats: CallupWithStat[] = callups.map((c) => ({
     ...c,
-    stat:
-      stats.find(
-        (s) => (c.userId && s.user?.id === c.userId) || (c.childId && s.child?.id === c.childId)
-      ) ?? null,
+    stat: statOf(c) ?? zeroRows.find((z) => z.id === `zero-${c.id}`) ?? null,
   }));
 
   const callupsLabel = `${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`;
@@ -138,7 +160,7 @@ export default function MatchDetailTabs({
           <Tab
             icon={<LeaderboardIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
-            label={`${t("tabStats")}${hasStats ? ` (${stats.length})` : ""}`}
+            label={`${t("tabStats")}${hasStats ? ` (${allStats.length})` : ""}`}
             sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm }}
           />
         </Tabs>
@@ -148,7 +170,7 @@ export default function MatchDetailTabs({
 
       {tab === 1 && (
         <MatchStatsTab
-          stats={stats}
+          stats={allStats}
           matchId={matchId}
           isStaff={isStaff}
           teamColor={playersTeamColor}

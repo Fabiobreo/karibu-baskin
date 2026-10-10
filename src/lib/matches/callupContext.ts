@@ -293,26 +293,49 @@ export async function buildTeamCallupContext({
     childId: c.childId,
   }));
 
-  const availabilities =
+  // Account e scheda figlio collegata sono una persona sola (@/lib/person): la
+  // risposta si legge su tutte e due le chiavi, quella dell'account per prima.
+  const linkedCards =
     candidateUserIds.length > 0 || candidateChildIds.length > 0
+      ? await prisma.child.findMany({
+          where: {
+            OR: [{ userId: { in: candidateUserIds } }, { id: { in: candidateChildIds } }],
+            userId: { not: null },
+          },
+          select: { id: true, userId: true },
+        })
+      : [];
+  const cardOfAccount = new Map(linkedCards.map((c) => [c.userId!, c.id]));
+  const accountOfCard = new Map(linkedCards.map((c) => [c.id, c.userId!]));
+  const rowUserIds = [...new Set([...candidateUserIds, ...accountOfCard.values()])];
+  const rowChildIds = [...new Set([...candidateChildIds, ...cardOfAccount.values()])];
+
+  const availabilities =
+    rowUserIds.length > 0 || rowChildIds.length > 0
       ? await prisma.matchAvailability.findMany({
           where: {
             matchId,
             OR: [
-              candidateUserIds.length > 0 ? { userId: { in: candidateUserIds } } : null,
-              candidateChildIds.length > 0 ? { childId: { in: candidateChildIds } } : null,
+              rowUserIds.length > 0 ? { userId: { in: rowUserIds } } : null,
+              rowChildIds.length > 0 ? { childId: { in: rowChildIds } } : null,
             ].filter((x): x is NonNullable<typeof x> => x !== null),
           },
           select: { userId: true, childId: true, available: true },
         })
       : [];
 
-  const availByUserId = new Map<string, boolean>();
-  const availByChildId = new Map<string, boolean>();
+  const rowByUserId = new Map<string, boolean>();
+  const rowByChildId = new Map<string, boolean>();
   for (const a of availabilities) {
-    if (a.userId) availByUserId.set(a.userId, a.available);
-    if (a.childId) availByChildId.set(a.childId, a.available);
+    if (a.userId) rowByUserId.set(a.userId, a.available);
+    if (a.childId) rowByChildId.set(a.childId, a.available);
   }
+  const availByUserId = {
+    get: (id: string) => rowByUserId.get(id) ?? rowByChildId.get(cardOfAccount.get(id) ?? ""),
+  };
+  const availByChildId = {
+    get: (id: string) => rowByUserId.get(accountOfCard.get(id) ?? "") ?? rowByChildId.get(id),
+  };
 
   const stats = computeCandidateStats({
     candidates,

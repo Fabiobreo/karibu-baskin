@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { sendPushToUser } from "@/lib/notifications/webpush";
+import { moveChildHistoryToUser } from "@/lib/childHistory";
+import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { inBackground } from "@/lib/background";
 
 // POST /api/link-requests/[requestId]/respond
 // Body: { accept: boolean }
@@ -57,76 +60,85 @@ export async function POST(
   const responderName = respondingUser?.name ?? "Il tuo figlio/a";
   const childName = linkRequest.child?.name ?? null;
 
+  const moved = { history: false };
   try {
-    await prisma.$transaction(async (tx) => {
-      // Aggiorna stato richiesta solo se ancora PENDING — previene doppio accept concorrente
-      const { count } = await tx.linkRequest.updateMany({
-        where: { id: requestId, status: "PENDING" },
-        data: { status: newStatus },
-      });
-      if (count === 0) {
-        throw new Error("Richiesta già elaborata");
-      }
-
-      if (accept) {
-        // Verifica che il child non sia già collegato ad altro utente
-        const alreadyLinked = await tx.child.findUnique({ where: { userId } });
-        if (alreadyLinked && alreadyLinked.id !== linkRequest.childId) {
-          throw new Error("Questo account è già collegato a un altro figlio");
+    await prisma.$transaction(
+      async (tx) => {
+        // Aggiorna stato richiesta solo se ancora PENDING — previene doppio accept concorrente
+        const { count } = await tx.linkRequest.updateMany({
+          where: { id: requestId, status: "PENDING" },
+          data: { status: newStatus },
+        });
+        if (count === 0) {
+          throw new Error("Richiesta già elaborata");
         }
 
-        // Collega il child all'utente.
-        // La promozione è solo a livello appRole (GUEST → ATHLETE).
-        // Il ruolo Baskin NON viene copiato automaticamente: richiede conferma esplicita
-        // dell'admin per evitare che un genitore malevolo assegni ruoli sportivi a terzi.
-        const targetUser = await tx.user.findUnique({ where: { id: userId } });
-        if (targetUser?.appRole === "GUEST") {
-          await tx.user.update({ where: { id: userId }, data: { appRole: "ATHLETE" } });
-        }
-        if (linkRequest.childId) {
-          await tx.child.update({
-            where: { id: linkRequest.childId },
-            data: { userId },
-          });
-        } else {
-          // Nessuna scheda da legare: nasce ora, già collegata all'account, con
-          // i dati del profilo e il genitore come primo tutore. Senza slug, come
-          // quando la collega lo staff: il profilo pubblico resta quello
-          // dell'account. Il consenso è quello dato inviando la richiesta.
-          await tx.child.create({
-            data: {
-              name: targetUser?.name?.trim() || targetUser?.email || "?",
-              userId,
-              sportRole: targetUser?.sportRole ?? null,
-              sportRoleVariant: targetUser?.sportRoleVariant ?? null,
-              gender: targetUser?.gender ?? null,
-              birthDate: targetUser?.birthDate ?? null,
-              parentalConsentAt: linkRequest.createdAt,
-              guardians: { create: { userId: linkRequest.parentId } },
-            },
-          });
-        }
-      }
+        if (accept) {
+          // Verifica che il child non sia già collegato ad altro utente
+          const alreadyLinked = await tx.child.findUnique({ where: { userId } });
+          if (alreadyLinked && alreadyLinked.id !== linkRequest.childId) {
+            throw new Error("Questo account è già collegato a un altro figlio");
+          }
 
-      // Notifica in-app al genitore
-      await tx.appNotification.create({
-        data: {
-          type: "LINK_RESPONSE",
-          title: accept
-            ? `${responderName} ha accettato il collegamento`
-            : `${responderName} ha rifiutato il collegamento`,
-          body: accept
-            ? childName
-              ? `L'account di ${responderName} è stato collegato a ${childName}.`
-              : `Ora trovi ${responderName} tra i tuoi figli.`
-            : childName
-              ? `La richiesta di collegamento per ${childName} è stata rifiutata.`
-              : "La richiesta di collegamento è stata rifiutata.",
-          url: "/profilo",
-          targetUserId: linkRequest.parentId,
-        },
-      });
-    });
+          // Collega il child all'utente.
+          // La promozione è solo a livello appRole (GUEST → ATHLETE).
+          // Il ruolo Baskin NON viene copiato automaticamente: richiede conferma esplicita
+          // dell'admin per evitare che un genitore malevolo assegni ruoli sportivi a terzi.
+          const targetUser = await tx.user.findUnique({ where: { id: userId } });
+          if (targetUser?.appRole === "GUEST") {
+            await tx.user.update({ where: { id: userId }, data: { appRole: "ATHLETE" } });
+          }
+          if (linkRequest.childId) {
+            await tx.child.update({
+              where: { id: linkRequest.childId },
+              data: { userId },
+            });
+            // Da qui l'atleta è l'account: lo storico della scheda passa a lui,
+            // come quando collega lo staff (vedi @/lib/childHistory).
+            await moveChildHistoryToUser(tx, linkRequest.childId, userId);
+            moved.history = true;
+          } else {
+            // Nessuna scheda da legare: nasce ora, già collegata all'account, con
+            // i dati del profilo e il genitore come primo tutore. Senza slug, come
+            // quando la collega lo staff: il profilo pubblico resta quello
+            // dell'account. Il consenso è quello dato inviando la richiesta.
+            await tx.child.create({
+              data: {
+                name: targetUser?.name?.trim() || targetUser?.email || "?",
+                userId,
+                sportRole: targetUser?.sportRole ?? null,
+                sportRoleVariant: targetUser?.sportRoleVariant ?? null,
+                gender: targetUser?.gender ?? null,
+                birthDate: targetUser?.birthDate ?? null,
+                parentalConsentAt: linkRequest.createdAt,
+                guardians: { create: { userId: linkRequest.parentId } },
+              },
+            });
+          }
+        }
+
+        // Notifica in-app al genitore
+        await tx.appNotification.create({
+          data: {
+            type: "LINK_RESPONSE",
+            title: accept
+              ? `${responderName} ha accettato il collegamento`
+              : `${responderName} ha rifiutato il collegamento`,
+            body: accept
+              ? childName
+                ? `L'account di ${responderName} è stato collegato a ${childName}.`
+                : `Ora trovi ${responderName} tra i tuoi figli.`
+              : childName
+                ? `La richiesta di collegamento per ${childName} è stata rifiutata.`
+                : "La richiesta di collegamento è stata rifiutata.",
+            url: "/profilo",
+            targetUserId: linkRequest.parentId,
+          },
+        });
+      },
+      // Con lo storico da spostare le query sono molte: il default di 5 secondi non basta.
+      { timeout: 30_000, maxWait: 10_000 }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "";
     if (msg === "Richiesta già elaborata") {
@@ -137,6 +149,9 @@ export async function POST(
     }
     throw err;
   }
+
+  // Il livello si rilegge dallo storico, che ora è dell'account.
+  if (moved.history) inBackground(recomputeRatings(prisma), "rating link request accepted");
 
   // Invia push al genitore (fuori dalla transaction)
   await sendPushToUser(linkRequest.parentId, {

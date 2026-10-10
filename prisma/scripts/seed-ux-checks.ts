@@ -42,8 +42,13 @@ const PARENT = { email: `genitore${UX_EMAIL_DOMAIN}`, name: "Paola Provini" };
 const PARENT2 = { email: `genitore2${UX_EMAIL_DOMAIN}`, name: "Marco Provini" };
 const ADULT_CHILD = { email: `figlia${UX_EMAIL_DOMAIN}`, name: "Giulia Provini" };
 const ADULT_CHILD_ID = "ux-child-adult";
+// Figlia che giocava da "scheda" e si è fatta l'account dopo: la scheda ha
+// squadra e disponibilità, da passare all'account (vedi src/lib/childHistory.ts).
+const LINKED_CHILD = { email: `figlia2${UX_EMAIL_DOMAIN}`, name: "Sofia Provini" };
+const LINKED_CHILD_ID = "ux-child-linked";
 const ATHLETE = { email: `atleta${UX_EMAIL_DOMAIN}`, name: "Luca Riconoscimento" };
 const CHILD_ID = "ux-child";
+const UX_CHILD_IDS = [CHILD_ID, ADULT_CHILD_ID, LINKED_CHILD_ID];
 
 const TRAINING_OPEN = "ux-training-open";
 const TRAINING_PAST = ["ux-training-past-1", "ux-training-past-2"];
@@ -204,8 +209,59 @@ async function seed() {
     });
   }
 
-  // Se una prova precedente ha iscritto il figlio, si riparte da zero.
-  await prisma.registration.deleteMany({ where: { childId: CHILD_ID } });
+  // I due casi di "figlio con account" (vedi src/lib/person.ts), nella squadra
+  // delle partite di prova così hanno disponibilità da dare:
+  //  - Giulia: account prima, scheda nata collegata. La squadra è sull'account.
+  //  - Sofia: scheda prima, account dopo. La squadra è ancora sulla scheda, come
+  //    nei collegamenti fatti prima del passaggio dello storico: a ogni seed si
+  //    riparte da lì, per provare lo script o il collegamento dello staff.
+  const linkedChildUser = await prisma.user.upsert({
+    where: { email: LINKED_CHILD.email },
+    create: { ...LINKED_CHILD, appRole: "ATHLETE", gender: "FEMALE" },
+    update: { name: LINKED_CHILD.name, appRole: "ATHLETE", sportRole: null },
+  });
+  const linkedChild = {
+    name: LINKED_CHILD.name,
+    gender: "FEMALE" as const,
+    birthDate: new Date("2010-09-14"),
+    parentalConsentAt: new Date(),
+    sportRole: 3,
+    userId: linkedChildUser.id,
+  };
+  await prisma.child.upsert({
+    where: { id: LINKED_CHILD_ID },
+    create: { id: LINKED_CHILD_ID, ...linkedChild },
+    update: linkedChild,
+  });
+  await prisma.childGuardian.upsert({
+    where: { childId_userId: { childId: LINKED_CHILD_ID, userId: parent.id } },
+    create: { childId: LINKED_CHILD_ID, userId: parent.id },
+    update: {},
+  });
+  const familyAccountIds = [adultChildUser.id, linkedChildUser.id];
+  await prisma.teamMembership.deleteMany({
+    where: {
+      OR: [{ userId: { in: familyAccountIds } }, { childId: { in: UX_CHILD_IDS } }],
+    },
+  });
+  await prisma.teamMembership.createMany({
+    data: [
+      { teamId: team.id, userId: adultChildUser.id },
+      { teamId: team.id, childId: LINKED_CHILD_ID },
+    ],
+  });
+  await prisma.matchAvailability.deleteMany({
+    where: {
+      OR: [{ userId: { in: familyAccountIds } }, { childId: { in: UX_CHILD_IDS } }],
+    },
+  });
+
+  // Se una prova precedente ha iscritto i figli, si riparte da zero.
+  await prisma.registration.deleteMany({
+    where: {
+      OR: [{ childId: { in: UX_CHILD_IDS } }, { userId: { in: familyAccountIds } }],
+    },
+  });
 
   const open = await upsertTraining(
     TRAINING_OPEN,
@@ -371,6 +427,9 @@ async function seed() {
   console.log("Dati di prova UX pronti:");
   console.log(`  genitore      ${PARENT.email} (figlio senza ruolo: ${child.name})`);
   console.log(`  famiglia      ${PARENT2.email}, ${ADULT_CHILD.email} (stessa famiglia)`);
+  console.log(
+    `  figli+account ${ADULT_CHILD.email} (squadra sull'account), ${LINKED_CHILD.email} (squadra ancora sulla scheda)`
+  );
   console.log(`  atleta        ${ATHLETE.email} (2 iscrizioni anonime da collegare in /profilo)`);
   console.log(`  allenamento   /allenamento/${open.dateSlug}`);
   console.log(`  partite       ${MATCHES.length} contro avversarie "[UX]", squadra ${team.name}`);
@@ -401,7 +460,7 @@ async function clean() {
       OR: [
         { sessionId: { in: trainingIds } },
         { userId: { in: userIds } },
-        { childId: { in: [CHILD_ID, ADULT_CHILD_ID] } },
+        { childId: { in: UX_CHILD_IDS } },
         { anonymousEmail: { endsWith: UX_EMAIL_DOMAIN } },
       ],
     },
@@ -421,7 +480,7 @@ async function clean() {
     },
   });
   const children = await prisma.child.deleteMany({
-    where: { id: { in: [CHILD_ID, ADULT_CHILD_ID] } },
+    where: { id: { in: UX_CHILD_IDS } },
   });
   const events = await prisma.event.deleteMany({
     where: { OR: [{ id: EVENT_ID }, { title: { startsWith: UX_MARKER } }] },

@@ -59,7 +59,7 @@ Nella lista, un figlio condiviso mostra "Gestito anche da …" (`otherGuardians`
 `LinkRequest.childId` è facoltativo e distingue due casi:
 
 - **`childId` null**: il genitore aggiunge un figlio che ha già un account (`POST /api/link-requests`). All'accettazione nasce la scheda `Child` legata all'account: dati dal profilo, genitore come primo tutore, **senza slug**, `parentalConsentAt` = data della richiesta. È lo stesso stato di `link-account` dello staff.
-- **`childId` valorizzato**: una scheda creata a mano esiste già e il figlio si è fatto un account dopo (dialog "Collega account", `PATCH /api/children/[id]` con `linkEmail`/`linkUserId`). All'accettazione `Child.userId` = id del figlio.
+- **`childId` valorizzato**: una scheda creata a mano esiste già e il figlio si è fatto un account dopo (dialog "Collega account", `PATCH /api/children/[id]` con `linkEmail`/`linkUserId`). All'accettazione `Child.userId` = id del figlio e lo storico sportivo della scheda passa all'account (vedi sotto, "Dal collegamento l'atleta è l'account").
 
 In entrambi i casi:
 
@@ -70,7 +70,30 @@ In entrambi i casi:
 
 ### Collegamento fatto dallo staff
 
-Nella scheda del figlio in `/admin/utenti` la sezione **Account** ("Collega a un account") lega la scheda all'account che il ragazzo si è fatto dopo, senza richiesta da accettare: `PUT /api/admin/children/[childId]/account` (allenatore o admin). L'account in attesa diventa Atleta e prende dalla scheda ruolo Baskin, genere e data di nascita **solo dove non ne ha di suoi**; dove account e scheda hanno la stessa iscrizione o la stessa squadra resta la riga della scheda; le richieste in attesa su quella scheda si chiudono. Lo storico non si sposta e lo slug della scheda resta. Dopo il collegamento la persona esce dai "Figli senza account" e si ritrova come account: nella sua scheda la sezione **Scheda figlio collegata** permette di scollegare (`DELETE`, rimedio a un'identità sbagliata: non ripristina ruolo e dati copiati). Ragazzo e genitori ricevono una notifica in-app; audit `LINK_CHILD_ACCOUNT` / `UNLINK_CHILD_ACCOUNT`.
+Nella scheda del figlio in `/admin/utenti` la sezione **Account** ("Collega a un account") lega la scheda all'account che il ragazzo si è fatto dopo, senza richiesta da accettare: `PUT /api/admin/children/[childId]/account` (allenatore o admin). L'account in attesa diventa Atleta e prende dalla scheda ruolo Baskin, genere, data di nascita, altezza e stato **solo dove non ne ha di suoi**; le richieste in attesa su quella scheda si chiudono. Dopo il collegamento la persona esce dai "Figli senza account" e si ritrova come account: nella sua scheda la sezione **Scheda figlio collegata** permette di scollegare (`DELETE`). Ragazzo e genitori ricevono una notifica in-app; audit `LINK_CHILD_ACCOUNT` / `UNLINK_CHILD_ACCOUNT`.
+
+### Dal collegamento l'atleta è l'account
+
+Quando una scheda con dello storico viene legata a un account (dallo staff o con la richiesta accettata), **tutto lo storico sportivo passa all'account**: squadre, convocazioni, disponibilità, statistiche, MVP, traguardi, iscrizioni agli allenamenti, storico del ruolo e del livello, e gli snapshot delle partitelle (`rostersSnapshot`), poi il livello si ricalcola. Lo fa `moveChildHistoryToUser` in `@/lib/childHistory`, in una transazione. La scheda resta come solo legame con i genitori, vuota come quelle che nascono già collegate: perde lo slug (che passa all'account se è libero, così i link già condivisi continuano a funzionare) e il livello.
+
+- Dove account e scheda hanno la stessa riga (stesso allenamento, stessa partita, stessa stagione di squadra, stesso traguardo) resta quella della scheda.
+- Le risposte agli eventi **non** si spostano: lì la riga canonica di chi ha scheda e account è quella della scheda (`@/lib/eventRsvp`).
+- **Non si annulla.** Scollegare non riporta indietro lo storico: resta all'account e la scheda torna "senza account", vuota. Per questo la conferma del collegamento lo dice chiaro.
+- Collegamenti fatti prima di questa regola: `npx tsx prisma/scripts/migrate-linked-children.ts` (prova) e poi `--apply`. Ripetere il `PUT` sullo stesso account fa lo stesso per una scheda sola.
+
+### I genitori continuano a gestire tutto (`@/lib/person`)
+
+Lo storico sta sull'account, ma **i genitori agiscono sull'account passando dalla scheda**: il ragazzo dal suo account e i genitori dal loro vedono e fanno le stesse cose, sugli stessi dati. Vale per le due forme di "figlio con account" (scheda prima, oppure account prima e scheda nata collegata). Punto per punto:
+
+- **Disponibilità alle partite** (`myAvailabilities.ts`, `PUT /api/matches/[matchId]/availability`): il genitore vede le partite del figlio (squadra letta da account e scheda) e risponde per lui. La risposta è una riga sola, sull'account: la cambia chi risponde per ultimo e la vedono tutti. Lo staff la legge su entrambe le chiavi (`callupContext.ts`).
+- **Iscrizioni agli allenamenti** (`POST /api/registrations`): l'iscrizione fatta dal genitore va sull'account (`userId`), con ruolo e squadra dell'account. `?mine=1`, la card "prossima cosa da fare" e il blocco allenamento del profilo la riconoscono come iscrizione del figlio; il genitore la può annullare.
+- **Notifiche**: tutto ciò che arriva all'account di un ragazzo arriva anche ai genitori della sua scheda. Ogni invio che parte da un elenco di account passa da `withGuardians` (avvisi di squadra e di ruolo, squadre dell'allenamento, statistiche, promemoria disponibilità, allenamenti riservati); i traguardi arrivano al ragazzo in seconda persona e ai genitori in terza. Ognuno spegne ciò che non vuole dalle proprie preferenze.
+- **Profilo del genitore**: per un figlio con account ruolo, squadra, dati e traguardi si leggono dall'account. I dati non li modifica il genitore: li cambia il ragazzo dal suo profilo, o lo staff (`PATCH /api/children/[id]` risponde 403).
+- **Eliminazioni**: eliminare la scheda (dal profilo del genitore, o perché il genitore elimina il proprio account) toglie solo il legame. Se alla scheda era rimasto dello storico, passa prima all'account.
+
+In lettura si guardano sempre tutte e due le chiavi (`personRows`), così una scheda collegata prima di questa regola non resta a metà finché non gira lo script.
+
+**Una persona, una voce in rosa.** L'API dei membri (`POST /api/competitive-teams/[teamId]/members`) passa da `rosterIdentity` (`@/lib/rosterIdentity`): non crea un'appartenenza se l'altra identità della stessa persona è già in rosa. Finché una scheda collegata ha ancora dello storico (prima dello script) l'appartenenza va sulla scheda, e `/admin/utenti` mostra squadra e iscrizioni della scheda sulla riga dell'account.
 
 ### Account doppio per un'email sbagliata ("Unisci")
 

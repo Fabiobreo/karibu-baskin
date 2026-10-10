@@ -104,6 +104,20 @@ describe("sessionAudience", () => {
     expect(ids).toEqual(["p-in", "child-account"]);
   });
 
+  it("account con una scheda figlio: l'avviso arriva anche ai suoi genitori", () => {
+    const restrictions = { allowedRoles: [], restrictTeamId: "t1", openRoles: [] };
+    const ids = sessionAudience(
+      restrictions,
+      [
+        user("kid", { inRestrictedTeam: true, hasAnyTeam: true, guardianIds: ["mamma", "papà"] }),
+        // In un'altra squadra: non lo riceve lui e nemmeno i suoi genitori.
+        user("altro", { inRestrictedTeam: false, hasAnyTeam: true, guardianIds: ["zio"] }),
+      ],
+      []
+    );
+    expect(ids?.sort()).toEqual(["kid", "mamma", "papà"]);
+  });
+
   it("un genitore con due figli ammessi compare una volta sola", () => {
     const r = { ...open, allowedRoles: [1] };
     const ids = sessionAudience(r, [], [child("p"), child("p")]);

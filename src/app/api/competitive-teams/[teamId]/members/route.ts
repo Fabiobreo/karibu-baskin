@@ -6,6 +6,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { inBackground } from "@/lib/background";
+import { rosterIdentity } from "@/lib/rosterIdentity";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -42,19 +43,24 @@ export async function POST(req: Request, { params }: Params) {
       { status: 400 }
     );
   }
+  // Account e scheda figlio collegata sono la stessa persona: in rosa ci sta
+  // una volta sola, con l'identità che ha lo storico (vedi rosterIdentity).
+  const person = await rosterIdentity(body);
+  const samePerson = [
+    ...(person.userId ? [{ userId: person.userId }] : []),
+    ...(person.childId ? [{ childId: person.childId }] : []),
+  ];
   const existing = await prisma.teamMembership.findFirst({
-    where: {
-      team: { season: targetTeam.season },
-      teamId: { not: teamId },
-      ...(body.userId ? { userId: body.userId } : {}),
-      ...(body.childId ? { childId: body.childId } : {}),
-    },
+    where: { team: { season: targetTeam.season }, OR: samePerson },
     include: { team: { select: { name: true } } },
   });
   if (existing) {
     return NextResponse.json(
       {
-        error: `Già in rosa con "${existing.team.name}" nella stessa stagione (${targetTeam.season})`,
+        error:
+          existing.teamId === teamId
+            ? "È già in questa rosa"
+            : `Già in rosa con "${existing.team.name}" nella stessa stagione (${targetTeam.season})`,
       },
       { status: 409 }
     );
@@ -63,8 +69,8 @@ export async function POST(req: Request, { params }: Params) {
   const membership = await prisma.teamMembership.create({
     data: {
       teamId,
-      userId: body.userId ?? null,
-      childId: body.childId ?? null,
+      userId: person.memberAs === "user" ? person.userId : null,
+      childId: person.memberAs === "child" ? person.childId : null,
       isCaptain: body.isCaptain ?? false,
     },
     include: {
