@@ -25,21 +25,41 @@ import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import OpposingTeamEditDialog, {
   type OpposingTeamEditable,
 } from "@/components/teams/OpposingTeamEditDialog";
+import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
+import {
+  hasOpponentSheet,
+  strengthFromMu,
+  OPPONENT_STRENGTH_LABELS,
+  type OpponentMatchNote,
+  type OpponentSheet,
+} from "@/lib/matches/opponentSheet";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
-type OpposingTeam = OpposingTeamEditable;
+// Una squadra appena creata non ha ancora la scheda dello staff.
+type OpposingTeam = OpposingTeamEditable & Partial<OpponentSheet>;
+
+/** La forza complessiva in una parola, o cosa manca. */
+function strengthText(o: OpposingTeam): string {
+  const strength = strengthFromMu(o.ratingMu);
+  if (strength) return OPPONENT_STRENGTH_LABELS[strength];
+  return hasOpponentSheet(o) ? "Non impostata" : "Da valutare";
+}
 
 interface Props {
   initialOpponents: OpposingTeam[];
+  /** Note di partita per avversaria: il diario che si rilegge nella scheda. */
+  matchNotes: Record<string, OpponentMatchNote[]>;
 }
 
-export default function AdminAvversarieClient({ initialOpponents }: Props) {
+export default function AdminAvversarieClient({ initialOpponents, matchNotes }: Props) {
   const [opponents, setOpponents] = useState(initialOpponents);
   const [form, setForm] = useState({ name: "", city: "" });
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useRowsPerPage("opponents", [10, 25, 50], 25);
   const [editTeam, setEditTeam] = useState<OpposingTeam | null>(null);
+  const [sheetTeamId, setSheetTeamId] = useState<string | null>(null);
+  const sheetTeam = sheetTeamId ? opponents.find((o) => o.id === sheetTeamId) : undefined;
   const { showToast } = useToast();
   // Dopo un'eliminazione il focus va sull'intestazione della lista: la riga non c'è più.
   const listHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -137,6 +157,14 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
                   >
                     Città
                   </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: FONT_WEIGHT.semibold,
+                      display: { xs: "none", sm: "table-cell" },
+                    }}
+                  >
+                    Forza
+                  </TableCell>
                   <TableCell align="right">
                     <Box component="span" sx={visuallyHidden}>
                       Azioni
@@ -167,12 +195,23 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
                         {o.city ?? "—"}
                       </Typography>
                     </TableCell>
+                    <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {strengthText(o)}
+                      </Typography>
+                    </TableCell>
                     <TableCell align="right">
                       <RowActions
                         subject={o.name}
                         primary={{ label: "Modifica", onClick: () => setEditTeam(o) }}
-                        items={
-                          o.slug
+                        items={[
+                          {
+                            label: hasOpponentSheet(o)
+                              ? "Modifica scheda avversario"
+                              : "Scheda avversario",
+                            onClick: () => setSheetTeamId(o.id),
+                          },
+                          ...(o.slug
                             ? [
                                 {
                                   label: "Pagina pubblica",
@@ -180,8 +219,8 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
                                   external: true,
                                 },
                               ]
-                            : []
-                        }
+                            : []),
+                        ]}
                         onDelete={() => handleDelete(o.id)}
                         deleteLabel="Elimina squadra…"
                         deleteConfirm={{
@@ -227,6 +266,26 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
           showToast({ message: "Squadra aggiornata", severity: "success" });
         }}
       />
+
+      {sheetTeam && (
+        <OpponentProfileDialog
+          open
+          onClose={() => setSheetTeamId(null)}
+          opponentId={sheetTeam.id}
+          opponentName={sheetTeam.name}
+          sheet={{
+            ratingMu: sheetTeam.ratingMu ?? null,
+            scoutingProfile: sheetTeam.scoutingProfile ?? null,
+            scoutingUpdatedAt: sheetTeam.scoutingUpdatedAt ?? null,
+          }}
+          matchNotes={matchNotes[sheetTeam.id]}
+          onSaved={(sheet) =>
+            setOpponents((prev) =>
+              prev.map((o) => (o.id === sheetTeam.id ? { ...o, ...sheet } : o))
+            )
+          }
+        />
+      )}
     </Box>
   );
 }

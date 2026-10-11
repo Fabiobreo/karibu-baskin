@@ -1,8 +1,8 @@
 "use client";
 
 import InlineError from "@/components/common/InlineError";
-import { useMemo, useState } from "react";
-import { Box, Button } from "@mui/material";
+import { useMemo, useRef, useState } from "react";
+import { Box, Button, Typography } from "@mui/material";
 import PageHeader from "@/components/common/PageHeader";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { useRouter } from "next/navigation";
@@ -25,6 +25,29 @@ import ConvocazioniTable, {
 import ConvocazioniUnavailable from "@/components/matches/convocazioni/ConvocazioniUnavailable";
 import ConvocazioniLoanDialog from "@/components/matches/convocazioni/ConvocazioniLoanDialog";
 import { readError } from "@/lib/fetchJson";
+import OpponentBriefing, {
+  type OpponentPreviousMatch,
+} from "@/components/matches/convocazioni/OpponentBriefing";
+import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
+import { roleHints, type RoleHint } from "@/lib/matches/opponentBriefing";
+import type {
+  OpponentMatchNote,
+  OpponentSheet,
+  OpponentSheetMatch,
+} from "@/lib/matches/opponentSheet";
+
+/** L'avversaria in anagrafica di questa partita, con la sua scheda (solo staff). */
+export interface ConvocazioniOpponent {
+  id: string;
+  name: string;
+  sheet: OpponentSheet;
+  /** Note delle partite contro di lei: il diario della scheda. */
+  matchNotes: OpponentMatchNote[];
+  /** L'ultima partita giocata contro di lei, esclusa questa. */
+  previous: OpponentPreviousMatch | null;
+  /** Questa partita, per scriverne la nota una volta iniziata. */
+  match: Omit<OpponentSheetMatch, "note">;
+}
 
 interface Props {
   matchId: string;
@@ -36,7 +59,8 @@ interface Props {
   matchStarted: boolean;
   windowEligibleSessions: number;
   teams: TeamCallupContext[];
-  opponentMu?: number | null;
+  /** Assente nelle amichevoli interne e contro un'avversaria fuori anagrafica. */
+  opponent?: ConvocazioniOpponent | null;
   loanPool?: LoanCandidate[];
 }
 
@@ -60,7 +84,7 @@ export default function ConvocazioniClient({
   matchStarted,
   windowEligibleSessions,
   teams,
-  opponentMu = null,
+  opponent = null,
   loanPool = [],
 }: Props) {
   const router = useRouter();
@@ -72,6 +96,14 @@ export default function ConvocazioniClient({
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [loanDialogOpen, setLoanDialogOpen] = useState(false);
+  // La scheda dell'avversaria si può compilare da qui: lo stato segue il salvataggio.
+  const [sheet, setSheet] = useState<OpponentSheet | null>(opponent?.sheet ?? null);
+  const [matchNotes, setMatchNotes] = useState<OpponentMatchNote[]>(opponent?.matchNotes ?? []);
+  const [sheetDialogOpen, setSheetDialogOpen] = useState(false);
+  // Ruolo che un suggerimento ha chiesto di vedere in ordine di livello stimato.
+  const [levelOrderRole, setLevelOrderRole] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const opponentMu = sheet?.ratingMu ?? null;
   // Prestiti aggiunti manualmente, per squadra (id squadra → righe candidato).
   const [loanRowsByTeam, setLoanRowsByTeam] = useState<Map<string, ConvocazioneStatRow[]>>(
     new Map()
@@ -143,8 +175,16 @@ export default function ConvocazioniClient({
       a.candidate.name.localeCompare(b.candidate.name);
     const copy: ConvocazioneStatRow[] = [...filteredAvailable];
     copy.sort((a, b) => {
-      // Nessuna colonna scelta: per ruolo, l'ordine di partenza.
+      // Nessuna colonna scelta: per ruolo, l'ordine di partenza. Arrivando da
+      // un suggerimento sul livello, il ruolo scelto va dal livello stimato più
+      // alto (chi non è ancora valutato in fondo).
       if (!sort) {
+        if (levelOrderRole !== null && roleFilter === levelOrderRole) {
+          return (
+            (b.candidate.ratingMu ?? Number.NEGATIVE_INFINITY) -
+              (a.candidate.ratingMu ?? Number.NEGATIVE_INFINITY) || byName(a, b)
+          );
+        }
         return (a.candidate.sportRole ?? 99) - (b.candidate.sportRole ?? 99) || byName(a, b);
       }
       let cmp = 0;
@@ -172,7 +212,7 @@ export default function ConvocazioniClient({
       return (sort.dir === "asc" ? cmp : -cmp) || byName(a, b);
     });
     return copy;
-  }, [filteredAvailable, sort]);
+  }, [filteredAvailable, sort, levelOrderRole, roleFilter]);
 
   // Tre tocchi sulla stessa intestazione: primo verso, verso opposto, di nuovo
   // per ruolo (che non ha una colonna a cui tornare).
@@ -202,6 +242,41 @@ export default function ConvocazioniClient({
     return activeStats.filter((s) => isSelected(s)).map((s) => s.candidate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStats, selectionByTeam, activeIndex]);
+
+  // Suggerimenti per ruolo dalla scheda dell'avversaria: solo prima di giocare,
+  // quando c'è ancora da scegliere chi convocare.
+  const hints = useMemo<RoleHint[]>(() => {
+    if (!sheet || matchStarted) return [];
+    return roleHints(
+      sheet.scoutingProfile,
+      // Un prestito non convocato resta fuori: le sue convocazioni contate qui
+      // non sono quelle vere, e la disponibilità non gli è stata chiesta.
+      activeStats
+        .filter((s) => !s.loanFrom || isSelected(s))
+        .map((s) => ({
+          sportRole: s.candidate.sportRole,
+          ratingMu: s.candidate.ratingMu,
+          seasonCallups: s.seasonCallups,
+          availability: s.availability,
+          selected: isSelected(s),
+        }))
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheet, matchStarted, activeStats, selectionByTeam, activeIndex]);
+
+  // Un suggerimento porta all'elenco di quel ruolo: per livello stimato se
+  // l'avversaria è forte, da chi ha giocato meno se è debole.
+  function handleHint(hint: RoleHint) {
+    setRoleFilter(hint.role);
+    if (hint.kind === "rotation") {
+      setSort({ col: "seasonCallups", dir: "asc" });
+      setLevelOrderRole(null);
+    } else {
+      setSort(null);
+      setLevelOrderRole(hint.role);
+    }
+    listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   // Errore del salvataggio: sotto la barra con "Salva", finche' non si
   // riprova o si chiude (UX-25).
@@ -270,6 +345,22 @@ export default function ConvocazioniClient({
         }
       />
 
+      {opponent && sheet && (
+        <OpponentBriefing
+          opponentName={opponent.name}
+          sheet={sheet}
+          hints={hints}
+          onHint={handleHint}
+          onEdit={() => setSheetDialogOpen(true)}
+          latestNote={
+            [...matchNotes].sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            )[0]
+          }
+          previous={opponent.previous}
+        />
+      )}
+
       {/* Tab squadra (solo se interno con 2 squadre) */}
       {isMulti && (
         <ConvocazioniTeamTabs
@@ -301,7 +392,21 @@ export default function ConvocazioniClient({
         />
       )}
 
-      <ConvocazioniFilters roleFilter={roleFilter} onRoleFilterChange={setRoleFilter} />
+      <Box ref={listRef} sx={{ scrollMarginTop: 16 }}>
+        <ConvocazioniFilters
+          roleFilter={roleFilter}
+          onRoleFilterChange={(role) => {
+            setRoleFilter(role);
+            setLevelOrderRole(null);
+          }}
+        />
+        {!sort && levelOrderRole !== null && roleFilter === levelOrderRole && (
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
+            Ruolo {levelOrderRole} in ordine di livello stimato, dal più alto. Chi non è ancora
+            valutato è in fondo.
+          </Typography>
+        )}
+      </Box>
 
       {loanPool.length > 0 && (
         <Box sx={{ mb: 1.5 }}>
@@ -324,6 +429,7 @@ export default function ConvocazioniClient({
         isSelected={isSelected}
         selectedElsewhere={isMulti ? selectedElsewhere : undefined}
         onToggle={toggle}
+        showNoAnswer={!matchStarted}
       />
 
       <ConvocazioniUnavailable rows={filteredUnavailable} />
@@ -335,6 +441,37 @@ export default function ConvocazioniClient({
         excludeKeys={activeExcludeKeys}
         onAdd={handleAddLoan}
       />
+
+      {opponent && sheet && sheetDialogOpen && (
+        <OpponentProfileDialog
+          open
+          onClose={() => setSheetDialogOpen(false)}
+          opponentId={opponent.id}
+          opponentName={opponent.name}
+          sheet={sheet}
+          onSaved={(saved) => {
+            setSheet(saved);
+            // La difficoltà stimata in cima la calcola il server.
+            router.refresh();
+          }}
+          // Prima di giocare c'è solo la scheda: la nota è di una partita iniziata.
+          match={
+            matchStarted
+              ? {
+                  ...opponent.match,
+                  note: matchNotes.find((n) => n.matchId === matchId)?.note ?? null,
+                }
+              : null
+          }
+          matchNotes={matchNotes}
+          onMatchNoteSaved={(id, note) =>
+            setMatchNotes((prev) => [
+              ...prev.filter((n) => n.matchId !== id),
+              ...(note ? [{ ...opponent.match, note }] : []),
+            ])
+          }
+        />
+      )}
 
       {/* Analisi formazione */}
       <LineupOptimizerSection selectedCandidates={selectedCandidates} opponentMu={opponentMu} />

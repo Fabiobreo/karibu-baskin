@@ -6,6 +6,8 @@ import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
 import type { Metadata } from "next";
 import { requireAdminPage } from "@/lib/adminAccess";
+import { OPPONENT_SHEET_SELECT } from "@/lib/matches/opponentSheet";
+import type { OpponentProfile } from "@/lib/schemas/match";
 
 export const metadata: Metadata = { title: "Partite | Admin" };
 export const revalidate = 30;
@@ -24,18 +26,20 @@ export default async function AdminPartitePage() {
     }),
     prisma.opposingTeam.findMany({
       orderBy: { name: "asc" },
-      select: { id: true, name: true, city: true },
+      select: { id: true, name: true, city: true, ...OPPONENT_SHEET_SELECT },
     }),
     prisma.match.findMany({
       orderBy: { date: "desc" },
+      // Le vecchie schede compilate sulla partita non servono alla lista.
+      omit: { opponentProfile: true },
       include: {
         team: { select: { id: true, name: true, season: true, color: true } },
-        opponent: { select: { id: true, name: true, city: true, ratingMu: true } },
+        opponent: { select: { id: true, name: true, city: true } },
         opponentTeam: { select: { id: true, name: true, color: true } },
         group: { select: { id: true, name: true } },
         _count: { select: { playerStats: true, callups: true } },
+        opponentNote: { select: { note: true } },
       },
-      // opponentProfile è incluso automaticamente (non è una relazione, è un campo Json)
     }),
     prisma.group.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
@@ -84,15 +88,20 @@ export default async function AdminPartitePage() {
   const coverages: Record<string, MatchCoverage> = {};
   for (const [id, cov] of coverageMap) coverages[id] = cov;
 
-  // Il livello stimato dell'avversaria e la sua scheda sono dello staff: a chi
+  // Il livello stimato dell'avversaria, la sua scheda e le note di partita sono dello staff: a chi
   // legge soltanto non arrivano nemmeno nel payload.
-  const visibleMatches = readOnly
-    ? matches.map((m) => ({
-        ...m,
-        opponentProfile: null,
-        opponent: m.opponent && { ...m.opponent, ratingMu: null },
-      }))
-    : matches;
+  const matchesForClient = readOnly ? matches.map((m) => ({ ...m, opponentNote: null })) : matches;
+  const opponentsForClient = opposingTeams.map(
+    ({ ratingMu, scoutingProfile, scoutingUpdatedAt, ...team }) =>
+      readOnly
+        ? team
+        : {
+            ...team,
+            ratingMu,
+            scoutingProfile: scoutingProfile as OpponentProfile,
+            scoutingUpdatedAt,
+          }
+  );
 
   return (
     // L'intestazione la disegna il client: "Nuova partita" apre un suo dialog
@@ -106,8 +115,8 @@ export default async function AdminPartitePage() {
         breadcrumb: [{ label: "Dashboard", href: "/admin" }, { label: "Partite" }],
       }}
       teams={teams}
-      opposingTeams={opposingTeams}
-      matches={visibleMatches}
+      opposingTeams={opponentsForClient}
+      matches={matchesForClient}
       groups={groupsForForm}
       groupMatches={groupMatches}
       coverages={coverages}

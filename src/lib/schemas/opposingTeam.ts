@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { OpponentProfileSchema } from "./match";
 
 const OpposingTeamBaseSchema = z.object({
   city: z.string().max(200).nullable().optional(),
@@ -22,4 +23,6 @@ export const OpposingTeamUpdateSchema = OpposingTeamBaseSchema.extend({
   name: z.string().min(1, "Il nome non può essere vuoto").max(200).optional(),
   /** Stima TrueSkill per-giocatore (μ medio). null = azzera la stima. */
   ratingMu: z.number().min(0).max(100).nullable().optional(),
+  /** Scheda dello staff: valutazione per ruolo e nota. null = svuota la scheda. */
+  scoutingProfile: OpponentProfileSchema.optional(),
 });

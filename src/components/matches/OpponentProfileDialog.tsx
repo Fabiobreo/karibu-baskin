@@ -26,7 +26,22 @@ import type {
   OpponentStrength,
   OpponentPhysicality,
 } from "@/lib/schemas/match";
-import { OPPONENT_MU_PRESETS } from "@/lib/matches/matchQuality";
+import {
+  buildScoutingProfile,
+  muFromStrength,
+  playerNotesError,
+  strengthFromMu,
+  OPPONENT_STRENGTH_LABELS as STRENGTH_LABELS,
+  type OpponentMatchNote,
+  type OpponentSheet,
+  type OpponentSheetMatch,
+} from "@/lib/matches/opponentSheet";
+import OpponentPlayerNotes from "@/components/matches/OpponentPlayerNotes";
+import OpponentMatchNoteField from "@/components/matches/OpponentMatchNoteField";
+import OpponentMatchNoteHistory from "@/components/matches/OpponentMatchNoteHistory";
+import { readError } from "@/lib/fetchJson";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -37,12 +52,6 @@ const ROLE_LABELS: Record<number, string> = {
   3: "Ruolo 3",
   4: "Ruolo 4",
   5: "Ruolo 5",
-};
-
-const STRENGTH_LABELS: Record<OpponentStrength, string> = {
-  WEAK: "Debole",
-  MEDIUM: "Media",
-  STRONG: "Forte",
 };
 
 const PHYSICALITY_LABELS: Record<OpponentPhysicality, string> = {
@@ -63,41 +72,28 @@ const PHYSICALITY_COLORS: Record<OpponentPhysicality, "success" | "warning" | "e
   HIGH: "error",
 };
 
-/** Mappa preset nome → μ per-giocatore. */
-const STRENGTH_PRESET_LABELS: Record<string, string> = {
-  WEAK: "Debole",
-  MEDIUM: "Media",
-  STRONG: "Forte",
-};
-const STRENGTH_PRESET_COLORS: Record<string, "success" | "warning" | "error"> = {
-  WEAK: "success",
-  MEDIUM: "warning",
-  STRONG: "error",
-};
-
-/** Converti un μ numerico nel preset più vicino (WEAK/MEDIUM/STRONG/null). */
-function muToPreset(mu: number | null | undefined): string | null {
-  if (mu == null) return null;
-  const diffs = Object.entries(OPPONENT_MU_PRESETS).map(([k, v]) => ({
-    key: k,
-    diff: Math.abs(mu - v),
-  }));
-  diffs.sort((a, b) => a.diff - b.diff);
-  return diffs[0]?.key ?? null;
-}
-
 interface OpponentProfileDialogProps {
   open: boolean;
   onClose: () => void;
-  matchId: string;
-  /** ID della squadra avversaria (OpposingTeam) — per aggiornarne il ratingMu. */
+  /** ID della squadra avversaria (OpposingTeam): la scheda si salva lì. */
   opponentId: string;
   opponentName: string;
-  /** μ attuale dell'avversario (null = non impostato). */
-  opponentRatingMu: number | null;
-  /** Profilo corrente (null se non ancora compilato). */
-  currentProfile: OpponentProfile | null;
-  onSaved: (profile: OpponentProfile, newOpponentMu: number | null) => void;
+  /** La scheda com'è ora (campi vuoti se non è mai stata compilata). */
+  sheet: OpponentSheet;
+  onSaved: (sheet: OpponentSheet) => void;
+  /**
+   * La partita da cui si è aperta la scheda, se è già iniziata: in cima c'è la
+   * sua nota. Senza (da `/admin/avversarie`, o prima di giocare) solo la scheda.
+   */
+  match?: OpponentSheetMatch | null;
+  /** Le note delle partite contro questa avversaria: il diario della scheda. */
+  matchNotes?: OpponentMatchNote[];
+  onMatchNoteSaved?: (matchId: string, note: string | null) => void;
+}
+
+/** La scheda com'è salvata, nella stessa forma in cui la costruisce il modulo. */
+function sheetSnapshot(profile: OpponentProfile, strength: OpponentStrength | null): string {
+  return JSON.stringify([strength, profile]);
 }
 
 function emptyCategoryAssessment(): CategoryAssessment {
@@ -109,31 +105,41 @@ function parseProfile(current: OpponentProfile | null): Record<string, CategoryA
   return { ...current.categories };
 }
 
+/**
+ * Scheda di un'avversaria: forza complessiva, valutazione per ruolo e nota.
+ * Sta sulla squadra, quindi si apre da `/admin/avversarie` e da qualunque
+ * partita contro di lei, giocata o no. Aperta da una partita giocata, in cima
+ * c'è la nota di quella partita; la scheda si salva solo se la si è toccata,
+ * così "aggiornata il" dice davvero quando è cambiata.
+ */
 export default function OpponentProfileDialog({
   open,
   onClose,
-  matchId,
   opponentId,
   opponentName,
-  opponentRatingMu,
-  currentProfile,
+  sheet,
   onSaved,
+  match = null,
+  matchNotes = [],
+  onMatchNoteSaved,
 }: OpponentProfileDialogProps) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Record<string, CategoryAssessment>>(() =>
-    parseProfile(currentProfile)
+    parseProfile(sheet.scoutingProfile)
   );
-  const [notes, setNotes] = useState(currentProfile?.notes ?? "");
-  const [strengthPreset, setStrengthPreset] = useState<string | null>(() =>
-    muToPreset(opponentRatingMu)
+  const [notes, setNotes] = useState(sheet.scoutingProfile?.notes ?? "");
+  const [strengthPreset, setStrengthPreset] = useState<OpponentStrength | null>(() =>
+    strengthFromMu(sheet.ratingMu)
   );
+  const [matchNote, setMatchNote] = useState(match?.note ?? "");
 
-  // Reset lo stato quando il dialog si apre (o cambia partita)
+  // Reset lo stato quando il dialog si apre (o cambia avversaria)
   const handleOpen = () => {
-    setCategories(parseProfile(currentProfile));
-    setNotes(currentProfile?.notes ?? "");
-    setStrengthPreset(muToPreset(opponentRatingMu));
+    setCategories(parseProfile(sheet.scoutingProfile));
+    setNotes(sheet.scoutingProfile?.notes ?? "");
+    setStrengthPreset(strengthFromMu(sheet.ratingMu));
+    setMatchNote(match?.note ?? "");
   };
 
   function toggleCategory(role: number, enabled: boolean) {
@@ -162,39 +168,51 @@ export default function OpponentProfileDialog({
   async function handleSave() {
     setLoading(true);
     try {
-      const profile: OpponentProfile =
-        Object.keys(categories).length === 0
-          ? null
-          : {
-              categories,
-              notes: notes.trim() || undefined,
-            };
+      const playersError = playerNotesError(categories);
+      if (playersError) throw new Error(playersError);
+      const scoutingProfile = buildScoutingProfile(categories, notes);
+      const before = buildScoutingProfile(
+        parseProfile(sheet.scoutingProfile),
+        sheet.scoutingProfile?.notes ?? ""
+      );
+      const sheetChanged =
+        sheetSnapshot(scoutingProfile, strengthPreset) !==
+        sheetSnapshot(before, strengthFromMu(sheet.ratingMu));
+      const noteChanged = !!match && matchNote.trim() !== (match.note ?? "");
 
-      const newMu = strengthPreset ? (OPPONENT_MU_PRESETS[strengthPreset] ?? null) : null;
-
-      // Salva profilo partita e rating avversario in parallelo
-      const [matchRes, teamRes] = await Promise.all([
-        fetch(`/api/matches/${matchId}`, {
+      // Prima la nota della partita: se poi la scheda non si salva, il modulo
+      // resta aperto e la nota è già al sicuro.
+      if (match && noteChanged) {
+        const res = await fetch(`/api/matches/${match.matchId}/opponent-note`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ opponentProfile: profile }),
-        }),
-        fetch(`/api/opposing-teams/${opponentId}`, {
+          body: JSON.stringify({ note: matchNote }),
+        });
+        if (!res.ok) throw new Error(await readError(res));
+        const saved = (await res.json()) as { note: string | null };
+        onMatchNoteSaved?.(match.matchId, saved.note);
+      }
+      if (sheetChanged) {
+        const ratingMu = muFromStrength(strengthPreset);
+        const res = await fetch(`/api/opposing-teams/${opponentId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ratingMu: newMu }),
-        }),
-      ]);
-      if (!matchRes.ok) {
-        const err = await matchRes.json().catch(() => ({}));
-        throw new Error(err.error ?? "Errore nel salvataggio del profilo");
+          body: JSON.stringify({ ratingMu, scoutingProfile }),
+        });
+        if (!res.ok) throw new Error(await readError(res));
+        const saved = (await res.json()) as { scoutingUpdatedAt: string | null };
+        onSaved({ ratingMu, scoutingProfile, scoutingUpdatedAt: saved.scoutingUpdatedAt });
       }
-      if (!teamRes.ok) {
-        const err = await teamRes.json().catch(() => ({}));
-        throw new Error(err.error ?? "Errore nel salvataggio della forza stimata");
+      if (sheetChanged || noteChanged) {
+        showToast({
+          message: !sheetChanged
+            ? "Nota della partita salvata"
+            : noteChanged
+              ? "Scheda e nota della partita salvate"
+              : "Scheda avversario salvata",
+          severity: "success",
+        });
       }
-      onSaved(profile, newMu);
-      showToast({ message: "Profilo avversario salvato", severity: "success" });
       onClose();
     } catch (err) {
       showToast({
@@ -219,16 +237,22 @@ export default function OpponentProfileDialog({
           <SportsMartialArtsIcon color="primary" />
           <Box>
             <Typography variant="h6" component="span">
-              Profila avversario
+              Scheda avversario
             </Typography>
             <Typography variant="body2" color="text.secondary" display="block">
               {opponentName}
+              {sheet.scoutingUpdatedAt &&
+                ` · aggiornata il ${format(new Date(sheet.scoutingUpdatedAt), "d MMM yyyy", { locale: it })}`}
             </Typography>
           </Box>
         </Stack>
       </DialogTitle>
 
       <DialogContent dividers>
+        {match && (
+          <OpponentMatchNoteField match={match} value={matchNote} onChange={setMatchNote} />
+        )}
+
         {/* Sezione forza complessiva stimata → aggiorna OpposingTeam.ratingMu */}
         <Box
           sx={{
@@ -259,10 +283,10 @@ export default function OpponentProfileDialog({
               <ToggleButton
                 key={preset}
                 value={preset}
-                color={strengthPreset === preset ? STRENGTH_PRESET_COLORS[preset] : undefined}
+                color={strengthPreset === preset ? STRENGTH_COLORS[preset] : undefined}
                 sx={{ px: 2, fontSize: TYPE_SCALE.xs }}
               >
-                {STRENGTH_PRESET_LABELS[preset]}
+                {STRENGTH_LABELS[preset]}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
@@ -277,8 +301,9 @@ export default function OpponentProfileDialog({
         <Divider sx={{ mb: 2 }} />
 
         <Typography variant="body2" color="text.secondary" mb={2}>
-          Seleziona le categorie avversarie presenti e valuta la loro forza e fisicità. Lascia
-          deselezionata una categoria se non aveva giocatori.
+          Scegli i ruoli che l&apos;avversaria schiera e valuta forza e fisicità di ciascuno. Vale
+          anche un&apos;impressione da fuori, senza averci giocato. Lascia spento un ruolo se non ha
+          giocatori o non sai ancora valutarlo.
         </Typography>
 
         <Stack gap={2}>
@@ -297,7 +322,7 @@ export default function OpponentProfileDialog({
                   />
                   {!isActive && (
                     <Typography variant="caption" color="text.secondary">
-                      nessun giocatore
+                      non valutato
                     </Typography>
                   )}
                 </Stack>
@@ -355,6 +380,12 @@ export default function OpponentProfileDialog({
                         ))}
                       </ToggleButtonGroup>
                     </Stack>
+
+                    <OpponentPlayerNotes
+                      role={role}
+                      players={assessment.players ?? []}
+                      onChange={(players) => setField(role, "players", players)}
+                    />
                   </Box>
                 )}
 
@@ -365,7 +396,7 @@ export default function OpponentProfileDialog({
         </Stack>
 
         <TextField
-          label="Note (opzionale)"
+          label="Note sulla squadra (opzionale)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           multiline
@@ -374,6 +405,11 @@ export default function OpponentProfileDialog({
           inputProps={{ maxLength: 500 }}
           sx={{ mt: 3 }}
           placeholder="Es. forte in area, attacca da sinistra…"
+        />
+
+        <OpponentMatchNoteHistory
+          notes={matchNotes.filter((n) => n.matchId !== match?.matchId)}
+          others={!!match}
         />
       </DialogContent>
 
@@ -387,7 +423,7 @@ export default function OpponentProfileDialog({
           disabled={loading}
           startIcon={loading ? <CircularProgress size={16} /> : undefined}
         >
-          Salva profilo
+          Salva
         </Button>
       </DialogActions>
     </Dialog>

@@ -428,6 +428,13 @@ model OpposingTeam {
   ratingMu    Float?
   ratingSigma Float?
 
+  // Scheda dell'avversaria, solo per lo staff: valutazione per ruolo e nota.
+  // Si compila quando si vuole, anche senza averci mai giocato.
+  // Struttura: { categories: { "1": { strength: "WEAK"|"MEDIUM"|"STRONG", physicality: "LOW"|"MEDIUM"|"HIGH" }, ... }, notes?: string }
+  scoutingProfile   Json?
+  // Ultima volta che lo staff ha salvato la scheda (forza complessiva compresa).
+  scoutingUpdatedAt DateTime?
+
   matches          Match[]
   homeGroupMatches GroupMatch[] @relation("GroupMatchHome")
   awayGroupMatches GroupMatch[] @relation("GroupMatchAway")
@@ -536,9 +543,15 @@ model Match {
   // con < roster minimo). Usato per garantire idempotenza del cron.
   callupReminderSentAt DateTime?
 
-  // Profilo avversario (Fase 3): valutazione post-partita per categoria.
+  // Vecchia scheda avversario compilata dopo la partita. La valutazione ora sta
+  // sull'avversaria (OpposingTeam.scoutingProfile) e la nota di quella partita
+  // in MatchOpponentNote. Nessuna schermata la legge né la scrive più.
   // Struttura: { categories: { "1": { strength: "WEAK"|"MEDIUM"|"STRONG", physicality: "LOW"|"MEDIUM"|"HIGH" }, ... }, notes?: string }
   opponentProfile Json?
+
+  // Nota dello staff sull'avversaria in questa partita. In una tabella a parte:
+  // una riga di Match letta intera non la porta mai con sé.
+  opponentNote MatchOpponentNote?
 
   team           CompetitiveTeam     @relation("MatchTeam", fields: [teamId], references: [id], onDelete: Cascade)
   opponent       OpposingTeam?       @relation(fields: [opponentId], references: [id])
@@ -554,6 +567,17 @@ model Match {
   @@index([opponentTeamId])
   @@index([groupId])
   @@map("OfficialMatch")
+}
+
+// Nota dello staff sull'avversaria in una partita giocata ("mancava il loro 5
+// titolare"). È il diario della scheda dell'avversaria: si rilegge lì, in
+// ordine di data. Solo per lo staff, mai in una lettura pubblica.
+model MatchOpponentNote {
+  matchId   String   @id
+  note      String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }
 
 // ── Convocati per partita ─────────────────────────────────────────────────────

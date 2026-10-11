@@ -102,6 +102,7 @@ async function getTeam(season: string, slug: string) {
       },
       matches: {
         orderBy: { date: "asc" },
+        omit: { opponentProfile: true },
         include: {
           opponent: { select: { id: true, name: true, city: true, imageUrl: true } },
           opponentTeam: { select: { id: true, name: true, color: true, season: true } },
@@ -124,6 +125,7 @@ async function getTeam(season: string, slug: string) {
       // (amichevoli tra le nostre squadre): le includiamo e le specchiamo a runtime.
       opponentInMatches: {
         orderBy: { date: "asc" },
+        omit: { opponentProfile: true },
         include: {
           team: { select: { id: true, name: true, color: true, season: true } },
           opponent: { select: { id: true, name: true, city: true, imageUrl: true } },

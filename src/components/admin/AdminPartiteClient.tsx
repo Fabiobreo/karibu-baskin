@@ -49,7 +49,12 @@ import MatchResultDialog, {
 } from "@/components/matches/MatchResultDialog";
 import GroupMatchInlineScore from "@/components/teams/GroupMatchInlineScore";
 import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
-import type { OpponentProfile } from "@/lib/schemas/match";
+import {
+  hasOpponentSheet,
+  isMatchNoteDue,
+  type OpponentMatchNote,
+  type OpponentSheet,
+} from "@/lib/matches/opponentSheet";
 import TeamChip from "@/components/teams/TeamChip";
 import MatchRowActions from "@/components/admin/MatchRowActions";
 import type { MatchRowActionKey } from "@/lib/matches/adminRowAction";
@@ -58,7 +63,9 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import PageHeader, { type BreadcrumbItem } from "@/components/common/PageHeader";
 
 type Team = MatchFormTeam;
-type OpposingTeam = MatchFormOpposingTeam & { ratingMu?: number | null };
+// La scheda dell'avversaria arriva con l'anagrafica (non con le partite): è una
+// sola per squadra, qualunque sia la riga da cui la si apre.
+type OpposingTeam = MatchFormOpposingTeam & Partial<OpponentSheet>;
 type Group = MatchFormGroup;
 
 type Match = {
@@ -78,12 +85,13 @@ type Match = {
   matchday: number | null;
   groupId: string | null;
   team: Team;
-  opponent: OpposingTeam | null;
+  opponent: MatchFormOpposingTeam | null;
   opponentTeam?: { id: string; name: string; color: string | null } | null;
   group: { id: string; name: string } | null;
   _count: { playerStats: number; callups: number };
   slug?: string | null;
-  opponentProfile?: unknown; // Prisma.JsonValue — castato a OpponentProfile dove serve
+  /** Nota dello staff sull'avversaria in questa partita (mai a chi legge soltanto). */
+  opponentNote?: { note: string } | null;
 };
 
 type GroupMatch = {
@@ -120,6 +128,10 @@ type Props = {
 // Le righe stanno quattro componenti più in basso: la sola lettura ci arriva da
 // qui, senza passare di mano in mano come `isAdmin`.
 const ReadOnlyContext = createContext(false);
+// Stessa strada per sapere quali avversarie hanno già una scheda compilata.
+const OpponentsWithSheetContext = createContext<ReadonlySet<string>>(new Set());
+// L'istante di riferimento della pagina, per le regole che guardano l'età della partita.
+const NowContext = createContext(0);
 
 const RESULT_LABELS: Record<MatchResult, string> = {
   WIN: "Vittoria",
@@ -344,6 +356,8 @@ function RowActions({
     profile: () => onProfile(m),
   };
   const readOnly = useContext(ReadOnlyContext);
+  const withSheet = useContext(OpponentsWithSheetContext);
+  const now = useContext(NowContext);
   return (
     <MatchRowActions
       state={{
@@ -353,7 +367,16 @@ function RowActions({
         callups: m._count.callups,
         isInternal: !!m.opponentTeam,
         hasOpponent: !!m.opponentId,
-        hasProfile: !!m.opponentProfile,
+        hasProfile: !!m.opponentId && withSheet.has(m.opponentId),
+        noteDue: isMatchNoteDue(
+          {
+            date: m.date,
+            hasResult: m.ourScore !== null,
+            hasOpponent: !!m.opponentId,
+            hasNote: !!m.opponentNote,
+          },
+          now
+        ),
         isAdmin,
         readOnly,
       }}
@@ -424,7 +447,13 @@ export default function AdminPartiteClient({
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [resultMatch, setResultMatch] = useState<Match | null>(null);
-  const [profileMatch, setProfileMatch] = useState<Match | null>(null);
+  // La scheda è dell'avversaria; la partita da cui la si apre serve solo per la
+  // sua nota, se è già iniziata.
+  const [profileTarget, setProfileTarget] = useState<{
+    opponentId: string;
+    matchId: string;
+  } | null>(null);
+  const profileOpponentId = profileTarget?.opponentId ?? null;
   const [tab, setTab] = useState<TabKey>("LEAGUE");
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useRowsPerPage("matches", [10, 25, 50], 25);
@@ -496,17 +525,18 @@ export default function AdminPartiteClient({
 
   function handleSaved(saved: MatchFormMatch, isEdit: boolean) {
     if (isEdit) {
-      // La risposta della PUT non porta né i conteggi né il livello
-      // dell'avversaria: restano quelli della riga.
+      // La risposta della PUT non porta i conteggi né la nota sull'avversaria:
+      // restano quelli della riga (la nota solo se l'avversaria è la stessa).
       setMatches((prev) =>
-        prev.map((m) => {
-          if (m.id !== saved.id) return m;
-          const next = { ...saved, _count: m._count } as Match;
-          if (next.opponent && m.opponent && next.opponent.id === m.opponent.id) {
-            next.opponent = { ...next.opponent, ratingMu: m.opponent.ratingMu };
-          }
-          return next;
-        })
+        prev.map((m) =>
+          m.id === saved.id
+            ? ({
+                ...saved,
+                _count: m._count,
+                opponentNote: saved.opponentId === m.opponentId ? m.opponentNote : null,
+              } as Match)
+            : m
+        )
       );
       setMatchDialog(false);
       router.refresh();
@@ -528,18 +558,44 @@ export default function AdminPartiteClient({
     setGroupMatches((prev) => prev.map((g) => (g.id === gmId ? { ...g, ...fields } : g)));
   }
 
-  function handleProfileSaved(profile: OpponentProfile, newOpponentMu: number | null) {
-    if (!profileMatch) return;
-    setMatches((prev) =>
-      prev.map((m) =>
-        m.id === profileMatch.id
-          ? {
-              ...m,
-              opponentProfile: profile,
-              opponent: m.opponent ? { ...m.opponent, ratingMu: newOpponentMu } : null,
-            }
-          : m
+  function openProfile(m: Match) {
+    if (m.opponentId) setProfileTarget({ opponentId: m.opponentId, matchId: m.id });
+  }
+
+  function handleProfileSaved(sheet: OpponentSheet) {
+    if (!profileOpponentId) return;
+    setOpponents((prev) => prev.map((o) => (o.id === profileOpponentId ? { ...o, ...sheet } : o)));
+  }
+
+  const opponentsWithSheet = useMemo(
+    () => new Set(opponents.filter(hasOpponentSheet).map((o) => o.id)),
+    [opponents]
+  );
+  const profileOpponent = profileOpponentId
+    ? opponents.find((o) => o.id === profileOpponentId)
+    : undefined;
+  const profileMatch = profileTarget && matches.find((m) => m.id === profileTarget.matchId);
+  // Il diario della scheda: le note delle partite contro questa avversaria.
+  const profileMatchNotes: OpponentMatchNote[] = profileOpponentId
+    ? matches.flatMap((m) =>
+        m.opponentId === profileOpponentId && m.opponentNote
+          ? [
+              {
+                matchId: m.id,
+                date: m.date,
+                teamName: m.team.name,
+                ourScore: m.ourScore,
+                theirScore: m.theirScore,
+                note: m.opponentNote.note,
+              },
+            ]
+          : []
       )
+    : [];
+
+  function handleMatchNoteSaved(matchId: string, note: string | null) {
+    setMatches((prev) =>
+      prev.map((m) => (m.id === matchId ? { ...m, opponentNote: note ? { note } : null } : m))
     );
   }
 
@@ -553,147 +609,168 @@ export default function AdminPartiteClient({
 
   return (
     <ReadOnlyContext.Provider value={readOnly}>
-      <Box>
-        <PageHeader
-          {...header}
-          titleRef={titleRef}
-          action={
-            // Creare una partita e' dell'admin; senza squadre il bottone resta spento.
-            isAdmin ? (
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={openCreate}
-                disabled={teams.length === 0}
-              >
-                Nuova partita
-              </Button>
-            ) : undefined
-          }
-        />
-        {matchesWithShortfall.length > 0 && (
-          <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
-            <AlertTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
-              Copertura ruoli insufficiente in {matchesWithShortfall.length} partit
-              {matchesWithShortfall.length === 1 ? "a" : "e"}
-            </AlertTitle>
-            <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-              {matchesWithShortfall.slice(0, 5).map((m) => {
-                const cov = coverages[m.id]!;
-                const detail = cov.perGroup
-                  .filter((r) => r.shortfall > 0)
-                  .map((r) => `${r.label}: ${r.available}/${r.required}`)
-                  .join(" · ");
-                return (
-                  <Typography key={m.id} variant="body2">
-                    <strong>{format(new Date(m.date), "d MMM", { locale: it })}</strong> vs{" "}
-                    {m.opponent?.name ?? m.opponentTeam?.name ?? "—"} — {detail}
-                  </Typography>
-                );
-              })}
-              {matchesWithShortfall.length > 5 && (
-                <Typography variant="caption" color="text.secondary">
-                  + altre {matchesWithShortfall.length - 5}
-                </Typography>
-              )}
-            </Stack>
-          </Alert>
-        )}
-
-        <Tabs
-          value={tab}
-          onChange={(_, v) => {
-            setTab(v);
-            setPage(0);
-          }}
-          sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}
-        >
-          {(Object.keys(TAB_LABELS) as TabKey[]).map((k) => (
-            <Tab
-              key={k}
-              value={k}
-              label={`${TAB_LABELS[k]} (${matches.filter((m) => m.matchType === k).length})`}
+      <OpponentsWithSheetContext.Provider value={opponentsWithSheet}>
+        <NowContext.Provider value={now}>
+          <Box>
+            <PageHeader
+              {...header}
+              titleRef={titleRef}
+              action={
+                // Creare una partita e' dell'admin; senza squadre il bottone resta spento.
+                isAdmin ? (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={openCreate}
+                    disabled={teams.length === 0}
+                  >
+                    Nuova partita
+                  </Button>
+                ) : undefined
+              }
             />
-          ))}
-        </Tabs>
+            {matchesWithShortfall.length > 0 && (
+              <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
+                <AlertTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+                  Copertura ruoli insufficiente in {matchesWithShortfall.length} partit
+                  {matchesWithShortfall.length === 1 ? "a" : "e"}
+                </AlertTitle>
+                <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                  {matchesWithShortfall.slice(0, 5).map((m) => {
+                    const cov = coverages[m.id]!;
+                    const detail = cov.perGroup
+                      .filter((r) => r.shortfall > 0)
+                      .map((r) => `${r.label}: ${r.available}/${r.required}`)
+                      .join(" · ");
+                    return (
+                      <Typography key={m.id} variant="body2">
+                        <strong>{format(new Date(m.date), "d MMM", { locale: it })}</strong> vs{" "}
+                        {m.opponent?.name ?? m.opponentTeam?.name ?? "—"} — {detail}
+                      </Typography>
+                    );
+                  })}
+                  {matchesWithShortfall.length > 5 && (
+                    <Typography variant="caption" color="text.secondary">
+                      + altre {matchesWithShortfall.length - 5}
+                    </Typography>
+                  )}
+                </Stack>
+              </Alert>
+            )}
 
-        {matches.length === 0 ? (
-          <EmptyState onCreate={openCreate} disabled={teams.length === 0} canCreate={isAdmin} />
-        ) : tab === "LEAGUE" ? (
-          <LeagueView
-            matches={filteredMatches}
-            groupMatches={groupMatches}
-            coverages={coverages}
-            now={now}
-            isAdmin={isAdmin}
-            onResult={(m) => setResultMatch(m)}
-            onEdit={openEdit}
-            onDelete={handleDeleteMatch}
-            onProfile={(m) => setProfileMatch(m)}
-            onGroupMatchSaved={handleGroupMatchSaved}
-          />
-        ) : (
-          <FlatView
-            matches={filteredMatches}
-            coverages={coverages}
-            page={page}
-            rpp={rpp}
-            setPage={setPage}
-            setRpp={setRpp}
-            now={now}
-            isAdmin={isAdmin}
-            onResult={(m) => setResultMatch(m)}
-            onEdit={openEdit}
-            onDelete={handleDeleteMatch}
-            onProfile={(m) => setProfileMatch(m)}
-          />
-        )}
+            <Tabs
+              value={tab}
+              onChange={(_, v) => {
+                setTab(v);
+                setPage(0);
+              }}
+              sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}
+            >
+              {(Object.keys(TAB_LABELS) as TabKey[]).map((k) => (
+                <Tab
+                  key={k}
+                  value={k}
+                  label={`${TAB_LABELS[k]} (${matches.filter((m) => m.matchType === k).length})`}
+                />
+              ))}
+            </Tabs>
 
-        {resultMatch && (
-          <MatchResultDialog
-            open={!!resultMatch}
-            onClose={() => setResultMatch(null)}
-            matchId={resultMatch.id}
-            matchLabel={`${resultMatch.team.name} vs ${resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"} del ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
-            ourTeamName={resultMatch.team.name}
-            theirTeamName={
-              resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"
-            }
-            initialOurScore={resultMatch.ourScore}
-            initialTheirScore={resultMatch.theirScore}
-            initialResult={resultMatch.result}
-            onSaved={handleResultSaved}
-          />
-        )}
+            {matches.length === 0 ? (
+              <EmptyState onCreate={openCreate} disabled={teams.length === 0} canCreate={isAdmin} />
+            ) : tab === "LEAGUE" ? (
+              <LeagueView
+                matches={filteredMatches}
+                groupMatches={groupMatches}
+                coverages={coverages}
+                now={now}
+                isAdmin={isAdmin}
+                onResult={(m) => setResultMatch(m)}
+                onEdit={openEdit}
+                onDelete={handleDeleteMatch}
+                onProfile={openProfile}
+                onGroupMatchSaved={handleGroupMatchSaved}
+              />
+            ) : (
+              <FlatView
+                matches={filteredMatches}
+                coverages={coverages}
+                page={page}
+                rpp={rpp}
+                setPage={setPage}
+                setRpp={setRpp}
+                now={now}
+                isAdmin={isAdmin}
+                onResult={(m) => setResultMatch(m)}
+                onEdit={openEdit}
+                onDelete={handleDeleteMatch}
+                onProfile={openProfile}
+              />
+            )}
 
-        <MatchFormDialog
-          open={matchDialog}
-          onClose={() => setMatchDialog(false)}
-          editMatch={editMatch}
-          teams={teams}
-          opponents={opponents}
-          groups={groups}
-          onOpponentCreated={(opp) =>
-            setOpponents((prev) => [...prev, opp].sort((a, b) => a.name.localeCompare(b.name)))
-          }
-          onSaved={(saved, isEdit) => handleSaved(saved as Match, isEdit)}
-        />
+            {resultMatch && (
+              <MatchResultDialog
+                open={!!resultMatch}
+                onClose={() => setResultMatch(null)}
+                matchId={resultMatch.id}
+                matchLabel={`${resultMatch.team.name} vs ${resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"} del ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
+                ourTeamName={resultMatch.team.name}
+                theirTeamName={
+                  resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"
+                }
+                initialOurScore={resultMatch.ourScore}
+                initialTheirScore={resultMatch.theirScore}
+                initialResult={resultMatch.result}
+                onSaved={handleResultSaved}
+              />
+            )}
 
-        {profileMatch && profileMatch.opponentId && (
-          <OpponentProfileDialog
-            open={!!profileMatch}
-            onClose={() => setProfileMatch(null)}
-            matchId={profileMatch.id}
-            opponentId={profileMatch.opponentId}
-            opponentName={profileMatch.opponent?.name ?? "Avversario"}
-            opponentRatingMu={profileMatch.opponent?.ratingMu ?? null}
-            currentProfile={(profileMatch.opponentProfile as OpponentProfile) ?? null}
-            onSaved={handleProfileSaved}
-          />
-        )}
+            <MatchFormDialog
+              open={matchDialog}
+              onClose={() => setMatchDialog(false)}
+              editMatch={editMatch}
+              teams={teams}
+              opponents={opponents}
+              groups={groups}
+              onOpponentCreated={(opp) =>
+                setOpponents((prev) => [...prev, opp].sort((a, b) => a.name.localeCompare(b.name)))
+              }
+              onSaved={(saved, isEdit) => handleSaved(saved as Match, isEdit)}
+            />
 
-        {ConfirmDialog}
-      </Box>
+            {profileOpponent && (
+              <OpponentProfileDialog
+                open
+                onClose={() => setProfileTarget(null)}
+                opponentId={profileOpponent.id}
+                opponentName={profileOpponent.name}
+                sheet={{
+                  ratingMu: profileOpponent.ratingMu ?? null,
+                  scoutingProfile: profileOpponent.scoutingProfile ?? null,
+                  scoutingUpdatedAt: profileOpponent.scoutingUpdatedAt ?? null,
+                }}
+                onSaved={handleProfileSaved}
+                // Prima di giocare c'è solo la scheda: la nota è di una partita iniziata.
+                match={
+                  profileMatch && !isUpcoming(profileMatch, now)
+                    ? {
+                        matchId: profileMatch.id,
+                        date: profileMatch.date,
+                        teamName: profileMatch.team.name,
+                        ourScore: profileMatch.ourScore,
+                        theirScore: profileMatch.theirScore,
+                        note: profileMatch.opponentNote?.note ?? null,
+                      }
+                    : null
+                }
+                matchNotes={profileMatchNotes}
+                onMatchNoteSaved={handleMatchNoteSaved}
+              />
+            )}
+
+            {ConfirmDialog}
+          </Box>
+        </NowContext.Provider>
+      </OpponentsWithSheetContext.Provider>
     </ReadOnlyContext.Provider>
   );
 }

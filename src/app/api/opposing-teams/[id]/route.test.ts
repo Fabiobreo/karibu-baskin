@@ -26,6 +26,8 @@ vi.mock("@/lib/audit", () => ({
 }));
 
 import { PUT, DELETE } from "./route";
+import { logAudit } from "@/lib/audit";
+import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { Prisma } from "@prisma/client";
@@ -109,6 +111,135 @@ describe("PUT /api/opposing-teams/[id]", () => {
     expect("name" in updateData).toBe(false);
     expect("city" in updateData).toBe(false);
     expect(updateData.notes).toBe("Squadra forte");
+    // L'anagrafica non tocca la scheda dello staff, né la sua data.
+    expect("scoutingProfile" in updateData).toBe(false);
+    expect("scoutingUpdatedAt" in updateData).toBe(false);
+  });
+
+  const putSheet = (body: unknown) =>
+    PUT(
+      new Request("http://localhost/api/opposing-teams/opp-1", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+      makeParams("opp-1")
+    );
+
+  it("salva la scheda (forza e valutazione per ruolo) e ne aggiorna la data", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    const scoutingProfile = {
+      categories: {
+        "5": {
+          strength: "STRONG",
+          physicality: "HIGH",
+          players: [{ number: "14", initials: "T.C.", note: "Cerca il contatto" }],
+        },
+      },
+      notes: "Pressano a tutto campo",
+    };
+    const res = await putSheet({ ratingMu: 32.5, scoutingProfile });
+    expect(res.status).toBe(200);
+    const updateData = p.opposingTeam.update.mock.calls[0][0].data;
+    expect(updateData.ratingMu).toBe(32.5);
+    expect(updateData.scoutingProfile).toEqual(scoutingProfile);
+    expect(updateData.scoutingUpdatedAt).toBeInstanceOf(Date);
+  });
+
+  it("la scheda ha la sua voce nel registro, senza i testi delle note", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    (auth as Mock).mockResolvedValue({ user: { id: "coach-1" } });
+    p.opposingTeam.findUnique.mockResolvedValueOnce({
+      name: "Basket Vicenza",
+      ratingMu: null,
+      scoutingProfile: null,
+    });
+    const scoutingProfile = {
+      categories: {
+        "4": {
+          strength: "STRONG",
+          physicality: "HIGH",
+          players: [{ number: "14", initials: "T.C.", note: "Cerca il contatto" }],
+        },
+      },
+      notes: "Pressano a tutto campo",
+    };
+    p.opposingTeam.update.mockResolvedValueOnce({ ...baseTeam, ratingMu: 32.5, scoutingProfile });
+    await putSheet({ ratingMu: 32.5, scoutingProfile });
+
+    // Solo la scheda: nessuna "modifica squadra" vuota accanto.
+    const calls = (logAudit as Mock).mock.calls.map((c) => c[0]);
+    expect(calls.map((c) => c.action)).toEqual(["UPDATE_OPPONENT_SHEET"]);
+    expect(calls[0]).toMatchObject({
+      actorId: "coach-1",
+      targetType: "OpposingTeam",
+      targetId: "opp-1",
+      before: { forza: "Non impostata", ruoli: {}, giocatoriSegnalati: 0, notaSullaSquadra: false },
+      after: {
+        forza: "Forte",
+        ruoli: { "4": "Forte, fisicità alta" },
+        giocatoriSegnalati: 1,
+        notaSullaSquadra: true,
+      },
+    });
+    const logged = JSON.stringify(calls[0]);
+    expect(logged).not.toContain("Cerca il contatto");
+    expect(logged).not.toContain("T.C.");
+    expect(logged).not.toContain("Pressano");
+  });
+
+  it("l'anagrafica resta una voce a parte", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    (auth as Mock).mockResolvedValue({ user: { id: "coach-1" } });
+    await putSheet({ city: "Vicenza" });
+    expect((logAudit as Mock).mock.calls.map((c) => c[0].action)).toEqual(["UPDATE_OPPOSING_TEAM"]);
+  });
+
+  it("una scheda svuotata torna null sul DB, non un JSON null", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    await putSheet({ ratingMu: null, scoutingProfile: null });
+    const updateData = p.opposingTeam.update.mock.calls[0][0].data;
+    expect(updateData.ratingMu).toBeNull();
+    expect(updateData.scoutingProfile).toBe(Prisma.DbNull);
+    expect(updateData.scoutingUpdatedAt).toBeInstanceOf(Date);
+  });
+
+  it("rifiuta una scheda con un ruolo o un valore che non esiste", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    const bad = [
+      { categories: { "6": { strength: "STRONG", physicality: "HIGH" } } },
+      { categories: { "5": { strength: "ENORME", physicality: "HIGH" } } },
+      // Giocatori segnalati: mai un nome intero, mai una nota senza di chi si parla.
+      {
+        categories: {
+          "4": {
+            strength: "STRONG",
+            physicality: "HIGH",
+            players: [{ initials: "Tizio Caio", note: "Provoca" }],
+          },
+        },
+      },
+      {
+        categories: {
+          "4": { strength: "STRONG", physicality: "HIGH", players: [{ note: "Provoca" }] },
+        },
+      },
+    ];
+    for (const scoutingProfile of bad) {
+      expect((await putSheet({ scoutingProfile })).status).toBe(400);
+    }
+    expect(p.opposingTeam.update).not.toHaveBeenCalled();
+  });
+
+  it("restituisce 404 se la squadra non esiste più", async () => {
+    mockIsStaff.mockResolvedValue(true);
+    p.opposingTeam.update.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("Record not found", {
+        code: "P2025",
+        clientVersion: "test",
+      })
+    );
+    expect((await putSheet({ ratingMu: 25 })).status).toBe(404);
   });
 });
 

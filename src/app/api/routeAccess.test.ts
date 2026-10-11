@@ -110,6 +110,7 @@ const FORBIDDEN_IN_PUBLIC = [
   /\bratingSigma\b/,
   /\brostersSnapshot:\s*true/,
   /\bopponentProfile:\s*true/,
+  /\bscoutingProfile:\s*true/,
   /\bnotifPrefs\b/,
 ];
 
@@ -126,7 +127,8 @@ const SAFE_FULL_ROW_MODELS = new Set([
   "eventOption",
   "competitiveTeam",
   "group",
-  "opposingTeam",
+  // `opposingTeam` no: porta la scheda dello staff (forza stimata, valutazione
+  // per ruolo). Le letture pubbliche usano `omit: OPPONENT_SHEET_OMIT`.
   "post",
   // Numeri di gioco e riferimenti ai giocatori; i minori li filtra publicSubjects.
   "playerMatchStats",

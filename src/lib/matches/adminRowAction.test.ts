@@ -57,6 +57,22 @@ describe("matchPrimaryAction", () => {
     );
   });
 
+  it("finito il resto, propone la nota sull'avversaria finché la partita è recente", () => {
+    const done = state({ upcoming: false, hasResult: true, hasStats: true, noteDue: true });
+    expect(matchPrimaryAction(done)).toEqual({
+      key: "profile",
+      label: "Nota sull'avversaria",
+      emphasis: "outlined",
+    });
+    // Le statistiche restano raggiungibili dal menu, la scheda non si ripete.
+    expect(keys(done)).toEqual(["callups", "result", "stats", "edit", "public", "delete"]);
+    // Prima vengono risultato e statistiche.
+    expect(matchPrimaryAction({ ...done, hasStats: false }).key).toBe("stats");
+    expect(matchPrimaryAction({ ...done, hasResult: false, hasStats: false }).key).toBe("result");
+    // Un'amichevole interna non ha un'avversaria con una scheda.
+    expect(matchPrimaryAction({ ...done, hasOpponent: false }).key).toBe("stats");
+  });
+
   it("all'allenatore resta sempre la convocazione, l'unica cosa che può salvare", () => {
     const coach = state({ isAdmin: false, upcoming: false, callups: 9 });
     expect(matchPrimaryAction(coach).key).toBe("callups");
@@ -73,7 +89,7 @@ describe("matchMenuActions", () => {
   });
 
   it("partita futura: niente risultato né statistiche", () => {
-    expect(keys(base)).toEqual(["edit", "public", "delete"]);
+    expect(keys(base)).toEqual(["profile", "edit", "public", "delete"]);
   });
 
   it("partita completa: tutto, con Elimina per ultima", () => {
@@ -84,17 +100,24 @@ describe("matchMenuActions", () => {
     );
   });
 
-  it("la scheda avversario c'è solo con un risultato e un'avversaria in anagrafica", () => {
-    expect(keys(state({ upcoming: false, hasResult: true, hasOpponent: false }))).not.toContain(
-      "profile"
-    );
-    expect(keys(state({ upcoming: false }))).not.toContain("profile");
+  it("la scheda avversario c'è con un'avversaria in anagrafica, anche prima di giocare", () => {
+    expect(keys(base)).toContain("profile");
+    expect(keys(state({ upcoming: false }))).toContain("profile");
+    expect(keys(state({ upcoming: false, hasResult: true }))).toContain("profile");
+    expect(keys(state({ hasOpponent: false }))).not.toContain("profile");
+    expect(keys(state({ isInternal: true, hasOpponent: false }))).not.toContain("profile");
+  });
+
+  it("la voce dice se la scheda è già compilata", () => {
+    const label = (s: MatchRowState) => matchMenuActions(s).find((a) => a.key === "profile")?.label;
+    expect(label(base)).toBe("Scheda avversario");
+    expect(label(state({ hasProfile: true }))).toBe("Modifica scheda avversario");
   });
 
   it("l'allenatore vede solo ciò che può fare", () => {
     expect(
       keys(state({ isAdmin: false, upcoming: false, hasResult: true, hasStats: true }))
-    ).toEqual(["public"]);
+    ).toEqual(["profile", "public"]);
   });
 });
 

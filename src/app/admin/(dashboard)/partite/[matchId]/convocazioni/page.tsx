@@ -7,7 +7,11 @@ import {
   WINDOW_DAYS_FOR_PRESENCES,
 } from "@/lib/matches/callupContext";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
-import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
+import ConvocazioniClient, {
+  type ConvocazioniOpponent,
+} from "@/components/matches/ConvocazioniClient";
+import { OPPONENT_SHEET_SELECT } from "@/lib/matches/opponentSheet";
+import type { OpponentProfile } from "@/lib/schemas/match";
 import MatchQualitySection from "@/components/matches/MatchQualitySection";
 import { computeMatchQuality } from "@/lib/matches/matchQuality";
 import { hasStarted } from "@/lib/matches/matchPhase";
@@ -26,7 +30,7 @@ export default async function ConvocazioniPage({ params }: Params) {
     where: { id: matchId },
     include: {
       team: { select: { id: true, name: true, season: true, color: true, isMixed: true } },
-      opponent: { select: { id: true, name: true, ratingMu: true } },
+      opponent: { select: { id: true, name: true, ...OPPONENT_SHEET_SELECT } },
       opponentTeam: {
         select: { id: true, name: true, season: true, color: true, isMixed: true },
       },
@@ -95,6 +99,80 @@ export default async function ConvocazioniPage({ params }: Params) {
 
   const opponentLabel = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
 
+  // Il riquadro "Avversaria": scheda, note delle partite e ultimo precedente.
+  // Solo contro un'avversaria in anagrafica (la pagina è già riservata allo staff).
+  const [opponentNotes, previousMatch] = match.opponent
+    ? await Promise.all([
+        prisma.matchOpponentNote.findMany({
+          where: { match: { opponentId: match.opponent.id } },
+          select: {
+            matchId: true,
+            note: true,
+            match: {
+              select: {
+                date: true,
+                ourScore: true,
+                theirScore: true,
+                team: { select: { name: true } },
+              },
+            },
+          },
+        }),
+        prisma.match.findFirst({
+          where: {
+            opponentId: match.opponent.id,
+            id: { not: matchId },
+            // Un precedente viene prima: aprendo una partita vecchia non vale una giocata dopo.
+            date: { lt: match.date },
+            ourScore: { not: null },
+            theirScore: { not: null },
+          },
+          orderBy: { date: "desc" },
+          select: {
+            date: true,
+            ourScore: true,
+            theirScore: true,
+            team: { select: { name: true } },
+          },
+        }),
+      ])
+    : [[], null];
+  const opponent: ConvocazioniOpponent | null = match.opponent
+    ? {
+        id: match.opponent.id,
+        name: match.opponent.name,
+        sheet: {
+          ratingMu: match.opponent.ratingMu,
+          scoutingProfile: match.opponent.scoutingProfile as OpponentProfile,
+          scoutingUpdatedAt: match.opponent.scoutingUpdatedAt,
+        },
+        matchNotes: opponentNotes.map((n) => ({
+          matchId: n.matchId,
+          note: n.note,
+          date: n.match.date,
+          teamName: n.match.team.name,
+          ourScore: n.match.ourScore,
+          theirScore: n.match.theirScore,
+        })),
+        previous:
+          previousMatch && previousMatch.ourScore !== null && previousMatch.theirScore !== null
+            ? {
+                date: previousMatch.date,
+                teamName: previousMatch.team.name,
+                ourScore: previousMatch.ourScore,
+                theirScore: previousMatch.theirScore,
+              }
+            : null,
+        match: {
+          matchId,
+          date: match.date,
+          teamName: match.team.name,
+          ourScore: match.ourScore,
+          theirScore: match.theirScore,
+        },
+      }
+    : null;
+
   return (
     <>
       {matchQuality && match.opponent?.name && (
@@ -110,7 +188,7 @@ export default async function ConvocazioniPage({ params }: Params) {
         matchStarted={hasStarted(match.date, now.getTime())}
         windowEligibleSessions={windowEligibleSessions}
         teams={awayContext ? [homeContext, awayContext] : [homeContext]}
-        opponentMu={match.opponent?.ratingMu ?? null}
+        opponent={opponent}
         loanPool={loanPool}
       />
     </>

@@ -315,6 +315,15 @@ export async function PUT(req: Request, { params }: Params) {
     );
   }
 
+  // La nota dello staff parlava dell'avversaria di prima: con un'altra avversaria
+  // (o un'amichevole interna) finirebbe nel diario della squadra sbagliata.
+  if ((finalOpponentId ?? null) !== previous.opponentId) {
+    // La partita è già salvata: se questo non riesce non la si fa fallire.
+    await prisma.matchOpponentNote
+      .deleteMany({ where: { matchId } })
+      .catch((err: unknown) => console.error("[matches] delete opponent note", err));
+  }
+
   // Le convocazioni della vecchia squadra passano alla nuova (i record senza
   // teamId valgono già per match.teamId), ricalcolando chi è in prestito:
   // senza, resterebbero agganciate a una squadra che non gioca più la partita.

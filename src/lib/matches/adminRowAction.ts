@@ -4,9 +4,9 @@
  * aveva cinque icone senza nome, uguali per una partita di domani e per una di
  * sei mesi fa.
  *
- * Chi guarda conta: convocare lo fa anche l'allenatore, mentre risultato,
- * statistiche, scheda avversario, modifica ed eliminazione sono dell'admin
- * (così dicono le API). Un'azione che darebbe errore non si mostra.
+ * Chi guarda conta: convocare e compilare la scheda dell'avversaria lo fa anche
+ * l'allenatore, mentre risultato, statistiche, modifica ed eliminazione sono
+ * dell'admin (così dicono le API). Un'azione che darebbe errore non si mostra.
  */
 export type MatchRowActionKey =
   | "callups"
@@ -38,8 +38,13 @@ export interface MatchRowState {
   isInternal: boolean;
   /** L'avversaria è una squadra dell'anagrafica (ha una scheda). */
   hasOpponent: boolean;
-  /** La scheda avversario è già compilata. */
+  /** La scheda dell'avversaria ha già qualcosa di compilato. */
   hasProfile: boolean;
+  /**
+   * La partita è finita da poco e manca la nota sull'avversaria
+   * (`isMatchNoteDue`): finito il resto, la riga la propone.
+   */
+  noteDue?: boolean;
   isAdmin: boolean;
   /**
    * Dirigente: guarda soltanto. Nessuna azione di gestione (nemmeno le
@@ -75,6 +80,10 @@ export function matchPrimaryAction(state: MatchRowState): MatchRowPrimaryAction 
   if (!state.hasStats) {
     return { key: "stats", label: "Inserisci statistiche", emphasis: "outlined" };
   }
+  // Risultato e statistiche ci sono: resta da dire com'era l'avversaria.
+  if (state.noteDue && state.hasOpponent) {
+    return { key: "profile", label: "Nota sull'avversaria", emphasis: "outlined" };
+  }
   return { key: "stats", label: "Statistiche", emphasis: "text" };
 }
 
@@ -83,22 +92,21 @@ export function matchMenuActions(state: MatchRowState): MatchRowAction[] {
   if (state.readOnly) return [];
   const primary = matchPrimaryAction(state).key;
   const items: MatchRowAction[] = [{ key: "callups", label: callupsLabel(state) }];
-  if (state.isAdmin) {
-    if (!state.upcoming) {
-      items.push({
-        key: "result",
-        label: state.hasResult ? "Modifica risultato" : "Inserisci risultato",
-      });
-      items.push({ key: "stats", label: "Statistiche giocatori" });
-    }
-    if (state.hasResult && state.hasOpponent) {
-      items.push({
-        key: "profile",
-        label: state.hasProfile ? "Modifica scheda avversario" : "Scheda avversario",
-      });
-    }
-    items.push({ key: "edit", label: "Modifica partita" });
+  if (state.isAdmin && !state.upcoming) {
+    items.push({
+      key: "result",
+      label: state.hasResult ? "Modifica risultato" : "Inserisci risultato",
+    });
+    items.push({ key: "stats", label: "Statistiche giocatori" });
   }
+  // La scheda è dell'avversaria, non della partita: c'è anche prima di giocare.
+  if (state.hasOpponent) {
+    items.push({
+      key: "profile",
+      label: state.hasProfile ? "Modifica scheda avversario" : "Scheda avversario",
+    });
+  }
+  if (state.isAdmin) items.push({ key: "edit", label: "Modifica partita" });
   items.push({ key: "public", label: "Pagina pubblica" });
   if (state.isAdmin) items.push({ key: "delete", label: "Elimina partita…" });
   return items.filter((i) => i.key !== primary);

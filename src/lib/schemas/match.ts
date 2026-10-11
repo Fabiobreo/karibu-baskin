@@ -17,15 +17,49 @@ export type OpponentStrength = (typeof OPPONENT_STRENGTH_VALUES)[number];
 export const OPPONENT_PHYSICALITY_VALUES = ["LOW", "MEDIUM", "HIGH"] as const;
 export type OpponentPhysicality = (typeof OPPONENT_PHYSICALITY_VALUES)[number];
 
+/** Quanti giocatori si possono segnalare in un ruolo. */
+export const OPPONENT_PLAYER_NOTES_MAX = 8;
+export const OPPONENT_PLAYER_NOTE_MAX_LENGTH = 300;
+
+/**
+ * Un giocatore avversario da segnalare, dentro un ruolo. Si riconosce dal
+ * numero di maglia e dalle iniziali: mai il nome intero, sono persone di altre
+ * società (anche minori) che non sanno di questa scheda. Per questo le iniziali
+ * sono al massimo 4 lettere.
+ */
+export const OpponentPlayerNoteSchema = z
+  .object({
+    number: z
+      .string()
+      .regex(/^\d{1,3}$/, "Numero di maglia non valido")
+      .optional(),
+    initials: z
+      .string()
+      .regex(/^[\p{L}.]{1,4}$/u, "Solo le iniziali, al massimo 4 lettere")
+      .optional(),
+    note: z
+      .string()
+      .trim()
+      .min(1, "Scrivi una nota per ogni giocatore segnalato")
+      .max(OPPONENT_PLAYER_NOTE_MAX_LENGTH),
+  })
+  .refine((p) => !!p.number || !!p.initials, {
+    message: "Indica il numero di maglia o le iniziali del giocatore",
+  });
+export type OpponentPlayerNote = z.infer<typeof OpponentPlayerNoteSchema>;
+
 /** Schema di una singola valutazione per categoria avversaria. */
 export const CategoryAssessmentSchema = z.object({
   strength: z.enum(OPPONENT_STRENGTH_VALUES),
   physicality: z.enum(OPPONENT_PHYSICALITY_VALUES),
+  players: z.array(OpponentPlayerNoteSchema).max(OPPONENT_PLAYER_NOTES_MAX).optional(),
 });
 export type CategoryAssessment = z.infer<typeof CategoryAssessmentSchema>;
 
 /**
- * Profilo dell'avversario compilato post-partita ("3 click per categoria").
+ * Scheda dell'avversaria: valutazione per ruolo e nota. Sta sulla squadra
+ * (`OpposingTeam.scoutingProfile`); le partite conservano le schede compilate
+ * quando la valutazione si faceva dopo ogni partita.
  * Chiavi del dict = ruolo Baskin come stringa ("1"…"5").
  */
 export const OpponentProfileSchema = z
@@ -35,6 +69,13 @@ export const OpponentProfileSchema = z
   })
   .nullable();
 export type OpponentProfile = z.infer<typeof OpponentProfileSchema>;
+
+export const MATCH_OPPONENT_NOTE_MAX_LENGTH = 1000;
+
+/** Nota dello staff sull'avversaria in una partita giocata. null o vuota = toglie la nota. */
+export const MatchOpponentNoteSchema = z.object({
+  note: z.string().max(MATCH_OPPONENT_NOTE_MAX_LENGTH).nullable(),
+});
 
 const MatchBaseSchema = z.object({
   isHome: z.boolean().optional(),

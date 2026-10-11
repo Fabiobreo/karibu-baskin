@@ -12,6 +12,7 @@ vi.mock("@/lib/db", () => ({
     competitiveTeam: { findUnique: vi.fn() },
     opposingTeam: { findUnique: vi.fn() },
     matchCallup: { findMany: vi.fn(), update: vi.fn() },
+    matchOpponentNote: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
     playerMatchStats: { findMany: vi.fn().mockResolvedValue([]) },
     $transaction: vi.fn(),
   },

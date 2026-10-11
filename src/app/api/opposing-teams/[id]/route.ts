@@ -8,6 +8,7 @@ import { logAudit } from "@/lib/audit";
 import { generateOpposingTeamSlug } from "@/lib/slugUtils";
 import { deleteImage } from "@/lib/blob";
 import { inBackground } from "@/lib/background";
+import { sheetAuditSummary } from "@/lib/matches/opponentSheet";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -30,42 +31,98 @@ export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
   const before = await prisma.opposingTeam.findUnique({
     where: { id },
-    select: { name: true, city: true, notes: true, slug: true, imageUrl: true },
+    select: {
+      name: true,
+      city: true,
+      notes: true,
+      slug: true,
+      imageUrl: true,
+      ratingMu: true,
+      scoutingProfile: true,
+    },
   });
   let newSlug: string | undefined;
   if (body.name !== undefined && body.name.trim() !== before?.name) {
     const generated = await generateOpposingTeamSlug(body.name);
     if (generated) newSlug = generated;
   }
-  const team = await prisma.opposingTeam.update({
-    where: { id },
-    data: {
-      ...(body.name !== undefined && { name: body.name.trim() }),
-      ...(newSlug !== undefined && { slug: newSlug }),
-      ...(body.city !== undefined && { city: body.city?.trim() || null }),
-      ...(body.address !== undefined && { address: body.address?.trim() || null }),
-      ...(body.website !== undefined && { website: body.website?.trim() || null }),
-      ...(body.colors !== undefined && { colors: body.colors?.trim() || null }),
-      ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
-      ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl || null }),
-      ...("ratingMu" in body && { ratingMu: body.ratingMu ?? null }),
-    },
-  });
+  // La scheda dello staff: forza complessiva e valutazione per ruolo. Salvarne
+  // una parte aggiorna la data, che dice quanto è vecchia la valutazione.
+  const sheetTouched = "ratingMu" in body || body.scoutingProfile !== undefined;
+  const team = await prisma.opposingTeam
+    .update({
+      where: { id },
+      data: {
+        ...(body.name !== undefined && { name: body.name.trim() }),
+        ...(newSlug !== undefined && { slug: newSlug }),
+        ...(body.city !== undefined && { city: body.city?.trim() || null }),
+        ...(body.address !== undefined && { address: body.address?.trim() || null }),
+        ...(body.website !== undefined && { website: body.website?.trim() || null }),
+        ...(body.colors !== undefined && { colors: body.colors?.trim() || null }),
+        ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
+        ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl || null }),
+        ...("ratingMu" in body && { ratingMu: body.ratingMu ?? null }),
+        ...(body.scoutingProfile !== undefined && {
+          scoutingProfile:
+            body.scoutingProfile !== null
+              ? (body.scoutingProfile as Prisma.InputJsonValue)
+              : Prisma.DbNull,
+        }),
+        ...(sheetTouched && { scoutingUpdatedAt: new Date() }),
+      },
+    })
+    .catch((err: unknown) => {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") return null;
+      throw err;
+    });
+  if (!team) {
+    return NextResponse.json({ error: "Squadra avversaria non trovata" }, { status: 404 });
+  }
   // Se l'immagine è stata sostituita o rimossa, elimina il vecchio blob.
   if (body.imageUrl !== undefined && before?.imageUrl && before.imageUrl !== team.imageUrl) {
     inBackground(deleteImage(before.imageUrl), "blob delete old opposing team image");
   }
-  if (authSession?.user?.id) {
+  // Due voci distinte nel registro: l'anagrafica e la scheda dello staff. Chi
+  // salva solo la scheda (il suo modulo) non lascia una "modifica squadra" vuota.
+  const registryTouched =
+    body.name !== undefined ||
+    body.city !== undefined ||
+    body.address !== undefined ||
+    body.website !== undefined ||
+    body.colors !== undefined ||
+    body.notes !== undefined ||
+    body.imageUrl !== undefined;
+  const actorId = authSession?.user?.id;
+  if (actorId && registryTouched) {
     inBackground(
       logAudit({
-        actorId: authSession.user.id,
+        actorId,
         action: "UPDATE_OPPOSING_TEAM",
         targetType: "OpposingTeam",
         targetId: id,
-        before,
+        before: before && {
+          name: before.name,
+          city: before.city,
+          notes: before.notes,
+          slug: before.slug,
+          imageUrl: before.imageUrl,
+        },
         after: { name: team.name, city: team.city, notes: team.notes },
       }),
       "audit update opposing team"
+    );
+  }
+  if (actorId && sheetTouched) {
+    inBackground(
+      logAudit({
+        actorId,
+        action: "UPDATE_OPPONENT_SHEET",
+        targetType: "OpposingTeam",
+        targetId: id,
+        before: before && sheetAuditSummary(before),
+        after: sheetAuditSummary(team),
+      }),
+      "audit update opponent sheet"
     );
   }
   return NextResponse.json(team);

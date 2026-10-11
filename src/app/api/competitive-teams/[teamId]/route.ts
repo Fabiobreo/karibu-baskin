@@ -53,6 +53,8 @@ export async function GET(req: Request, { params }: Params) {
       },
       matches: {
         orderBy: { date: "desc" },
+        // La vecchia scheda avversario (con le note dello staff) non esce.
+        omit: { opponentProfile: true },
         include: {
           opponent: { select: { id: true, name: true, city: true } },
         },

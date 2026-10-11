@@ -27,6 +27,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       },
       matches: {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
+        // La vecchia scheda avversario (con le note dello staff) non esce.
+        omit: { opponentProfile: true },
         include: {
           opponent: { select: { id: true, name: true, slug: true, city: true } },
         },

@@ -7,13 +7,17 @@ import { logAudit } from "@/lib/audit";
 import { generateOpposingTeamSlug } from "@/lib/slugUtils";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { inBackground } from "@/lib/background";
+import { OPPONENT_SHEET_OMIT } from "@/lib/matches/opponentSheet";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-opposing-teams", 30, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
 
+  // Lettura pubblica: la scheda dello staff (forza stimata, valutazione per
+  // ruolo) e le note libere dell'anagrafica non escono.
   const teams = await prisma.opposingTeam.findMany({
     orderBy: { name: "asc" },
+    omit: { ...OPPONENT_SHEET_OMIT, notes: true },
     include: { _count: { select: { matches: true } } },
   });
   return NextResponse.json(teams);

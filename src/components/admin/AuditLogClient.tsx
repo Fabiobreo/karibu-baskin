@@ -110,6 +110,8 @@ const ACTION_LABELS: Record<string, string> = {
   DELETE_GROUP: "Eliminazione girone",
   CREATE_OPPOSING_TEAM: "Creazione squadra avversaria",
   UPDATE_OPPOSING_TEAM: "Modifica squadra avversaria",
+  UPDATE_OPPONENT_SHEET: "Modifica scheda avversario",
+  UPDATE_OPPONENT_NOTE: "Nota sull'avversaria in una partita",
   DELETE_OPPOSING_TEAM: "Eliminazione squadra avversaria",
   DELETE_REGISTRATION: "Eliminazione iscrizione (staff)",
   ADD_REGISTRATION: "Iscrizione aggiunta (staff)",

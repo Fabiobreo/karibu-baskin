@@ -54,6 +54,7 @@ export default function ConvocazioniTable({
   isSelected,
   selectedElsewhere,
   onToggle,
+  showNoAnswer = false,
 }: {
   rows: ConvocazioneStatRow[];
   roleFilter: number | null;
@@ -64,6 +65,11 @@ export default function ConvocazioniTable({
   /** Amichevole interna: squadra per cui il giocatore è già convocato (selezionarlo lo sposta). */
   selectedElsewhere?: (row: ConvocazioneStatRow) => string | null;
   onToggle: (row: ConvocazioneStatRow) => void;
+  /**
+   * Prima della partita: chi non ha risposto alla disponibilità lo dice in
+   * riga, così non si scambia per uno che c'è. A partita iniziata non serve.
+   */
+  showNoAnswer?: boolean;
 }) {
   if (rows.length === 0) {
     return (
@@ -222,6 +228,15 @@ export default function ConvocazioniTable({
                                 fontSize: TYPE_SCALE.xs,
                                 height: 20,
                               }}
+                            />
+                          )}
+                          {showNoAnswer && row.availability === null && !row.loanFrom && (
+                            // Neutro: non è un no, è una risposta che manca.
+                            <Chip
+                              label="Non ha risposto"
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontSize: TYPE_SCALE.xs, height: 20, color: "text.secondary" }}
                             />
                           )}
                           {row.loanFrom && (

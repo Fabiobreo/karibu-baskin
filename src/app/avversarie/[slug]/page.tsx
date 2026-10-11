@@ -25,6 +25,7 @@ import Link from "next/link";
 import EntityHero, { HeroMeta } from "@/components/common/EntityHero";
 import OpponentCrest from "@/components/teams/OpponentCrest";
 import { mapsSearchUrl, matchLocation } from "@/lib/clubVenue";
+import { OPPONENT_SHEET_OMIT } from "@/lib/matches/opponentSheet";
 import { LIVE_WINDOW_MS } from "@/lib/matches/matchPhase";
 import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import type { Metadata } from "next";
@@ -77,6 +78,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
       getCurrentSeasonLabel(),
       prisma.opposingTeam.findUnique({
         where: { slug },
+        omit: OPPONENT_SHEET_OMIT,
         include: {
           matches: {
             orderBy: { date: "desc" },
