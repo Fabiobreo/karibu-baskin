@@ -46,7 +46,7 @@
     "tomorrow": "Tomorrow",
     "daysAway": "In {count} days",
     "retry": "Try again",
-    "networkError": "No connection. Check your internet and try again.",
+    "networkError": "You are offline. Try again when you are back online.",
     "saveError": "Could not save. Please try again.",
     "deleteError": "Could not delete. Please try again.",
     "genericError": "Something went wrong. Please try again.",
@@ -103,7 +103,8 @@
     "activationError": "Notifications not turned on. Please try again.",
     "vapidError": "Notifications are not working right now. Please try again later.",
     "inAppTitle": "In-app notifications",
-    "inAppDesc": "Control which types of notifications appear in the notification center."
+    "inAppDesc": "Control which types of notifications appear in the notification center.",
+    "prefSaveError": "Preference not saved. Please try again."
   },
   "share": {
     "share": "Share",
@@ -317,8 +318,8 @@
     "openExternal": "Or open it in Google Maps"
   },
   "offline": {
-    "banner": "You are offline. You are seeing the data from last time.",
-    "reconnected": "Connection restored"
+    "banner": "You are offline. Pages you already opened stay visible; saving needs a connection.",
+    "reconnected": "Back online"
   },
   "errors": {
     "retry": "Try again",
@@ -377,8 +378,6 @@
     "manageCallups": "Manage call-ups",
     "topScorers": "Top scorers",
     "pointsUnit": "points",
-    "membersOnly": "Members only",
-    "callupsRestricted": "Only members can see the call-ups. Sign in to see them.",
     "noCallups": "No call-ups",
     "callupsUnavailable": "The call-up list is not yet available for this match.",
     "roleWithCount": "Role {role} · {count, plural, one {# player} other {# players}}",
@@ -434,9 +433,7 @@
       "cityOnly": "{city}, address to be confirmed",
       "openInMaps": "{place}, open in Google Maps (new tab)",
       "addToCalendar": "Add to calendar",
-      "subscribe": "Or follow the whole club calendar",
-      "callupsMembersOnly": "Call-ups are visible to club members.",
-      "login": "Sign in"
+      "subscribe": "Or follow the whole club calendar"
     }
   },
   "teams": {
@@ -840,7 +837,27 @@
     "eventPresence": "Attending the event",
     "missingSelf": "Some of your answers are missing.",
     "missingFor": "Some answers are missing for {name}.",
-    "guestNothing": "{name} isn't coming to the event or the extras: remove them from the ⋮ menu."
+    "guestNothing": "{name} isn't coming to the event or the extras: remove them from the ⋮ menu.",
+    "responses": {
+      "title": "Responses",
+      "whoSees": "Visible to staff and club directors.",
+      "totalGoing": "{count} going",
+      "totalNotGoing": "{count} not going",
+      "totalMaybe": "{count} maybe",
+      "totalGuests": "{count, plural, one {# guest} other {# guests}}",
+      "extraCount": "{label}: {count}",
+      "statusGoing": "Going",
+      "statusMaybe": "Maybe",
+      "statusNotGoing": "Not going",
+      "statusExtrasOnly": "Extras only",
+      "guestOf": "Guest of {name}",
+      "child": "Child",
+      "respondedBy": "Answered by {name}",
+      "unnamedGuest": "Unnamed guest",
+      "possibleDuplicate": "Maybe the same person as another row",
+      "none": "No responses yet.",
+      "csv": "Download CSV"
+    }
   },
   "search": {
     "open": "Search",
@@ -1034,7 +1051,10 @@
     "title": "We may already know you. Have you trained with us before?",
     "found": "We found {count, plural, one {one training session} other {# training sessions}} that someone with your same name signed up for. Select the ones that were really you:",
     "linkSelected": "Link selected ({count})",
-    "notMe": "It wasn't me"
+    "notMe": "It wasn't me",
+    "successMergedOnly": "Done! You were already signed up with your account: {count, plural, one {we removed the duplicate} other {we removed the # duplicates}}.",
+    "mergedNote": "{count, plural, one {One training session was listed twice: we removed the duplicate.} other {# training sessions were listed twice: we removed the duplicates.}}",
+    "error": "Linking failed. Please try again."
   },
   "poll": {
     "badge": "Poll",
@@ -1092,9 +1112,7 @@
       "followInstagram": "Follow us on Instagram",
       "albumsTitle": "Albums",
       "albumCount": "{count, plural, one {# photo} other {# photos}}",
-      "albumMembersOnly": "Members only",
-      "albumsMoreForMembers": "More albums are visible to club members.",
-      "albumsLogin": "Sign in",
+      "albumMembersOnly": "Karibu only",
       "albumBreadcrumb": "Gallery",
       "albumOpenDrive": "Open in Drive",
       "albumDownloadAll": "Download all from Drive",
@@ -1107,9 +1125,6 @@
       "albumLinkedEvent": "Event: {title}",
       "albumLinkedMatch": "Match: {title}",
       "albumOtherFiles": "{count, plural, one {The folder also has # other file} other {The folder also has # other files}} (videos or subfolders).",
-      "albumLockedTitle": "This album is for club members",
-      "albumLockedAnon": "If you are a member, sign in to see the photos.",
-      "albumLockedGuest": "You will see it once the staff confirms your account.",
       "albumNotFound": "Album not found",
       "albumNotFoundDesc": "This album does not exist or has been removed.",
       "albumDescription": "Photos from {title}, Karibu Baskin.",
@@ -1410,6 +1425,8 @@
     "comingSoon": "Coming soon",
     "registrationsClosed": "Sign-ups closed",
     "myTeam": "Your team",
+    "teamOf": "{name}'s team",
+    "familyTeam": "{name} · {team}",
     "notFound": "Training session not found.",
     "registrationsClosedDesc": "Sign-ups are closed.",
     "registrationsNotOpenDesc": "Sign-ups are not open yet. We will let you know when they open.",
@@ -1519,19 +1536,15 @@
     "onlyRoles": "{count, plural, one {Role {roles} only} other {Roles {roles} only}}",
     "rosterLoadError": "Could not load who signed up.",
     "teamsLoadError": "Could not load the teams.",
-    "rosterPrivateShort": "Only Karibu members can see the names",
-    "rosterPrivateCta": "Sign in",
     "rosterUnregisteredSelf": "Sign-up cancelled",
     "rosterUnregisteredOther": "{name}'s sign-up cancelled",
     "rosterUndo": "Undo",
     "attendanceUpdateError": "Attendance not saved. Please try again.",
     "attendanceAutoError": "Attendance could not be marked automatically. Please mark it by hand.",
-    "teamsPrivate": "Only Karibu members can see the teams for this training session.",
     "homeNoneSoon": "No training sessions scheduled in the coming weeks. Want to give it a try? Write to us and we will let you know when we start again.",
     "homeNoneSoonCta": "Come and try",
     "homeNoneSoonMember": "No training sessions scheduled in the coming weeks: we will let you know when sign-ups open.",
     "homeSeeCalendar": "See the calendar",
-    "teamsPrivateGuest": "The teams for this session are visible to Karibu members.",
     "ownNameHelper": "We will also save it to your profile.",
     "manageRoster": "Manage",
     "removeRegistrationOf": "Remove {name}'s sign-up",
@@ -1551,7 +1564,8 @@
     "seasonSummaryMine": "{total, plural, one {# session} other {# sessions}} this season, you came to {attended}",
     "showMore": "Show {count} more",
     "nonePastSeason": "No finished sessions this season.",
-    "seasonsLabel": "Season"
+    "seasonsLabel": "Season",
+    "familyTeamSelf": "You · {team}"
   },
   "home": {
     "heroSubtitle": "Sport for everyone. Let's train together, without distinctions.",
@@ -1649,5 +1663,30 @@
     "affiliation": "Affiliation",
     "venue": "Where we are",
     "contactCta": "Contacts"
+  },
+  "membersOnly": {
+    "title": "Karibu only",
+    "anonymous": "Only Karibu athletes, families and staff can see {what}.",
+    "askLogin": "Part of Karibu?",
+    "login": "Sign in",
+    "guest": "You will see {what} once the staff confirms your account.",
+    "what": {
+      "names": "the names",
+      "teams": "the teams",
+      "callups": "the call-ups",
+      "albums": "the other albums",
+      "photos": "the photos in this album"
+    }
+  },
+  "imageUploader": {
+    "tooLarge": "The file is larger than 5 MB.",
+    "badFormat": "Unsupported format. Use JPEG, PNG or WebP.",
+    "uploaded": "Image uploaded",
+    "uploadError": "Upload failed. Please try again.",
+    "change": "Change image",
+    "remove": "Remove image",
+    "removeConfirm": "Remove this image? This cannot be undone.",
+    "cancel": "Cancel",
+    "removeAction": "Remove"
   }
 }

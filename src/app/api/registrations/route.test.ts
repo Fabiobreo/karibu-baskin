@@ -8,6 +8,7 @@ vi.mock("@/lib/db", () => {
     findFirst: vi.fn(),
     findMany: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
     updateMany: vi.fn(),
     deleteMany: vi.fn(),
   };
@@ -55,6 +56,7 @@ type PrismaMock = {
     findFirst: Mock;
     findMany: Mock;
     create: Mock;
+    update: Mock;
     updateMany: Mock;
     deleteMany: Mock;
   };
@@ -89,6 +91,14 @@ function makePost(body: unknown): NextRequest {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+}
+
+/** Iscrizione anonima con lo stesso nome allo stesso allenamento (la cerca `anonymousTwin`). */
+function withAnonymousTwin(twin: { id: string; note: string | null }) {
+  p.registration.findFirst.mockImplementation(({ where }: { where: Record<string, unknown> }) =>
+    Promise.resolve(where.userId === null && where.childId === null ? twin : null)
+  );
+  p.registration.update.mockResolvedValue({ id: twin.id });
 }
 
 describe("POST /api/registrations", () => {
@@ -190,6 +200,18 @@ describe("POST /api/registrations", () => {
       expect(res.status).toBe(409);
     });
 
+    it("cerca il nome solo fra le iscrizioni anonime", async () => {
+      await POST(makePost({ sessionId: "sess-1", role: 3, name: " Mario " }));
+      // Guardare anche gli iscritti con un account direbbe a chiunque se una
+      // persona (anche minore) è iscritta.
+      expect(p.registration.findFirst.mock.calls[0][0].where).toEqual({
+        sessionId: "sess-1",
+        name: { equals: "Mario", mode: "insensitive" },
+        userId: null,
+        childId: null,
+      });
+    });
+
     it("restituisce 403 se il ruolo non è tra quelli ammessi", async () => {
       p.trainingSession.findUnique.mockResolvedValue({
         ...baseSession,
@@ -219,6 +241,7 @@ describe("POST /api/registrations", () => {
       mockAuth.mockResolvedValue({ user: { id: "user-1", appRole: "ATHLETE" } });
       p.user.findUnique.mockResolvedValue({
         name: "Fabio",
+        email: "Fabio@Example.com",
         appRole: "ATHLETE",
         sportRole: 3,
         sportRoleSuggested: null,
@@ -231,6 +254,45 @@ describe("POST /api/registrations", () => {
       const data = p.registration.create.mock.calls[0][0].data;
       expect(data.userId).toBe("user-1");
       expect(data.name).toBe("Fabio");
+    });
+
+    it("riprende la propria iscrizione anonima invece di crearne una seconda", async () => {
+      withAnonymousTwin({ id: "anon-1", note: "Esco prima" });
+      const res = await POST(makePost({ sessionId: "sess-1", role: 3 }));
+      expect(res.status).toBe(201);
+      expect(p.registration.create).not.toHaveBeenCalled();
+      expect(p.registration.update).toHaveBeenCalledWith({
+        where: { id: "anon-1" },
+        data: {
+          name: "Fabio",
+          role: 3,
+          userId: "user-1",
+          registeredAsCoach: false,
+          note: "Esco prima",
+          anonymousEmail: null,
+        },
+        select: expect.not.objectContaining({ anonymousEmail: true }),
+      });
+      // La cerca con l'email dell'account, non solo col nome.
+      const twinQuery = p.registration.findFirst.mock.calls
+        .map((call) => call[0] as { where: Record<string, unknown> })
+        .find((q) => q.where.userId === null);
+      expect(twinQuery?.where.anonymousEmail).toEqual({ in: ["fabio@example.com"] });
+    });
+
+    it("senza email non riprende niente: crea una riga nuova", async () => {
+      p.user.findUnique.mockResolvedValue({
+        name: "Fabio",
+        email: null,
+        appRole: "ATHLETE",
+        sportRole: 3,
+        sportRoleSuggested: null,
+      });
+      withAnonymousTwin({ id: "anon-1", note: null });
+      const res = await POST(makePost({ sessionId: "sess-1", role: 3 }));
+      expect(res.status).toBe(201);
+      expect(p.registration.update).not.toHaveBeenCalled();
+      expect(p.registration.create).toHaveBeenCalled();
     });
 
     it("restituisce 409 se l'utente è già iscritto", async () => {
@@ -326,7 +388,7 @@ describe("POST /api/registrations", () => {
         sportRole: 3,
         userId: null,
       });
-      p.user.findUnique.mockResolvedValue({ appRole: "PARENT" });
+      p.user.findUnique.mockResolvedValue({ appRole: "PARENT", email: "paola@example.com" });
       // parent-1 è genitore di child-1 (ChildGuardian)
       p.childGuardian.findUnique.mockResolvedValue({ childId: "child-1" });
     });
@@ -415,6 +477,26 @@ describe("POST /api/registrations", () => {
       expect(data.role).toBe(4);
       expect(data.name).toBe("Luca Rossi");
       expect(p.child.update).not.toHaveBeenCalled();
+    });
+
+    it("riprende l'iscrizione anonima del figlio fatta prima dell'accesso", async () => {
+      withAnonymousTwin({ id: "anon-luca", note: null });
+      const res = await POST(
+        makePost({ sessionId: "sess-1", role: 3, childId: "child-1", note: "Arriva tardi" })
+      );
+      expect(res.status).toBe(201);
+      expect(p.registration.create).not.toHaveBeenCalled();
+      expect(p.registration.update).toHaveBeenCalledWith({
+        where: { id: "anon-luca" },
+        data: {
+          name: "Luca",
+          childId: "child-1",
+          role: 3,
+          note: "Arriva tardi",
+          anonymousEmail: null,
+        },
+        select: expect.any(Object),
+      });
     });
 
     it("salva il ruolo proposto sul figlio se non ha ruolo confermato", async () => {
@@ -673,6 +755,8 @@ describe("GET /api/registrations · ospiti", () => {
       sessionId: "sess-1",
       OR: [
         { userId: "g1" },
+        // La propria scheda figlio collegata.
+        { child: { userId: "g1" } },
         { child: { guardians: { some: { userId: "g1" } } } },
         // I figli con un account: la loro iscrizione sta sull'account.
         { user: { childAccount: { guardians: { some: { userId: "g1" } } } } },

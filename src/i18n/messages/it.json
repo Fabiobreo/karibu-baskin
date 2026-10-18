@@ -46,7 +46,7 @@
     "tomorrow": "Domani",
     "daysAway": "Tra {count} giorni",
     "retry": "Riprova",
-    "networkError": "Connessione assente. Controlla internet e riprova.",
+    "networkError": "Sei senza connessione. Riprova quando torna la rete.",
     "saveError": "Non è stato possibile salvare. Riprova.",
     "deleteError": "Non è stato possibile eliminare. Riprova.",
     "genericError": "Qualcosa non ha funzionato. Riprova.",
@@ -103,7 +103,8 @@
     "activationError": "Notifiche non attivate. Riprova.",
     "vapidError": "Le notifiche non funzionano in questo momento. Riprova più tardi.",
     "inAppTitle": "Notifiche nell'app",
-    "inAppDesc": "Controlla quali tipi di notifiche appaiono nel centro notifiche."
+    "inAppDesc": "Controlla quali tipi di notifiche appaiono nel centro notifiche.",
+    "prefSaveError": "Preferenza non salvata. Riprova."
   },
   "share": {
     "share": "Condividi",
@@ -317,8 +318,8 @@
     "openExternal": "Oppure aprila in Google Maps"
   },
   "offline": {
-    "banner": "Sei senza connessione. Vedi i dati dell'ultima volta.",
-    "reconnected": "Connessione ripristinata"
+    "banner": "Sei senza connessione. Le pagine già aperte restano visibili; per salvare serve la rete.",
+    "reconnected": "Connessione tornata"
   },
   "errors": {
     "retry": "Riprova",
@@ -377,8 +378,6 @@
     "manageCallups": "Gestisci convocati",
     "topScorers": "Top marcatori",
     "pointsUnit": "punti",
-    "membersOnly": "Solo per i tesserati",
-    "callupsRestricted": "Solo i tesserati vedono i convocati. Accedi per vederli.",
     "noCallups": "Nessun convocato",
     "callupsUnavailable": "La lista convocati non è ancora disponibile per questa partita.",
     "roleWithCount": "Ruolo {role} · {count, plural, one {# giocatore} other {# giocatori}}",
@@ -434,9 +433,7 @@
       "cityOnly": "{city}, indirizzo da confermare",
       "openInMaps": "{place}, apri in Google Maps (nuova scheda)",
       "addToCalendar": "Aggiungi al calendario",
-      "subscribe": "Oppure segui tutto il calendario del club",
-      "callupsMembersOnly": "I convocati li vedono i tesserati.",
-      "login": "Accedi"
+      "subscribe": "Oppure segui tutto il calendario del club"
     }
   },
   "teams": {
@@ -840,7 +837,27 @@
     "eventPresence": "Presenza all'evento",
     "missingSelf": "Mancano delle tue risposte.",
     "missingFor": "Mancano delle risposte per {name}.",
-    "guestNothing": "{name} non viene né all'evento né agli extra: toglilo dal menu ⋮."
+    "guestNothing": "{name} non viene né all'evento né agli extra: toglilo dal menu ⋮.",
+    "responses": {
+      "title": "Risposte",
+      "whoSees": "Le vedono lo staff e la direzione.",
+      "totalGoing": "{count} ci saranno",
+      "totalNotGoing": "{count} non ci saranno",
+      "totalMaybe": "{count} forse",
+      "totalGuests": "{count, plural, one {# esterno} other {# esterni}}",
+      "extraCount": "{label}: {count}",
+      "statusGoing": "Ci sarò",
+      "statusMaybe": "Forse",
+      "statusNotGoing": "Non ci sarò",
+      "statusExtrasOnly": "Solo agli extra",
+      "guestOf": "Esterno di {name}",
+      "child": "Figlio",
+      "respondedBy": "Risposto da {name}",
+      "unnamedGuest": "Esterno senza nome",
+      "possibleDuplicate": "Forse è la stessa persona di un'altra riga",
+      "none": "Ancora nessuna risposta.",
+      "csv": "Scarica CSV"
+    }
   },
   "search": {
     "open": "Cerca",
@@ -1034,7 +1051,10 @@
     "title": "Forse ti conosciamo già. Hai già fatto allenamenti con noi?",
     "found": "Abbiamo trovato {count, plural, one {un allenamento} other {# allenamenti}} a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero tu:",
     "linkSelected": "Collega selezionati ({count})",
-    "notMe": "Non ero io"
+    "notMe": "Non ero io",
+    "successMergedOnly": "Fatto! Eri già iscritto con il tuo account: {count, plural, one {abbiamo tolto il doppione} other {abbiamo tolto i # doppioni}}.",
+    "mergedNote": "{count, plural, one {Un allenamento era doppio: abbiamo tolto il doppione.} other {# allenamenti erano doppi: abbiamo tolto i doppioni.}}",
+    "error": "Collegamento non riuscito. Riprova."
   },
   "poll": {
     "badge": "Sondaggio",
@@ -1092,9 +1112,7 @@
       "followInstagram": "Seguici su Instagram",
       "albumsTitle": "Album",
       "albumCount": "{count} foto",
-      "albumMembersOnly": "Solo tesserati",
-      "albumsMoreForMembers": "Altri album sono visibili ai tesserati.",
-      "albumsLogin": "Accedi",
+      "albumMembersOnly": "Riservato al Karibu",
       "albumBreadcrumb": "Gallery",
       "albumOpenDrive": "Apri su Drive",
       "albumDownloadAll": "Scarica tutto da Drive",
@@ -1107,9 +1125,6 @@
       "albumLinkedEvent": "Evento: {title}",
       "albumLinkedMatch": "Partita: {title}",
       "albumOtherFiles": "{count, plural, one {Nella cartella c'è anche # altro file} other {Nella cartella ci sono anche # altri file}} (video o sottocartelle).",
-      "albumLockedTitle": "Questo album è per i tesserati",
-      "albumLockedAnon": "Se sei un tesserato, accedi per vedere le foto.",
-      "albumLockedGuest": "Lo vedrai quando lo staff conferma il tuo account.",
       "albumNotFound": "Album non trovato",
       "albumNotFoundDesc": "Questo album non esiste o è stato rimosso.",
       "albumDescription": "Le foto di {title}, Karibu Baskin.",
@@ -1410,6 +1425,8 @@
     "comingSoon": "In arrivo",
     "registrationsClosed": "Iscrizioni chiuse",
     "myTeam": "La tua squadra",
+    "teamOf": "La squadra di {name}",
+    "familyTeam": "{name} · {team}",
     "notFound": "Allenamento non trovato.",
     "registrationsClosedDesc": "Le iscrizioni sono chiuse.",
     "registrationsNotOpenDesc": "Le iscrizioni non sono ancora aperte. Ti mandiamo un avviso quando si aprono.",
@@ -1519,19 +1536,15 @@
     "onlyRoles": "{count, plural, one {Solo ruolo {roles}} other {Solo ruoli {roles}}}",
     "rosterLoadError": "Non è stato possibile caricare gli iscritti.",
     "teamsLoadError": "Non è stato possibile caricare le squadre.",
-    "rosterPrivateShort": "I nomi li vedono solo i tesserati del Karibu",
-    "rosterPrivateCta": "Accedi",
     "rosterUnregisteredSelf": "Iscrizione annullata",
     "rosterUnregisteredOther": "Iscrizione di {name} annullata",
     "rosterUndo": "Annulla",
     "attendanceUpdateError": "Presenza non salvata. Riprova.",
     "attendanceAutoError": "Non è stato possibile segnare le presenze in automatico. Segna le presenze a mano.",
-    "teamsPrivate": "Le squadre di questo allenamento le vedono solo i tesserati del Karibu.",
     "homeNoneSoon": "Nessun allenamento in programma nelle prossime settimane. Vuoi venire a provare? Scrivici e ti diciamo quando si riparte.",
     "homeNoneSoonCta": "Vieni a provare",
     "homeNoneSoonMember": "Nessun allenamento in programma nelle prossime settimane: ti avvisiamo quando si aprono le iscrizioni.",
     "homeSeeCalendar": "Vedi il calendario",
-    "teamsPrivateGuest": "Le squadre di questo allenamento sono visibili ai tesserati del Karibu.",
     "ownNameHelper": "Lo salviamo anche nel tuo profilo.",
     "manageRoster": "Gestisci",
     "removeRegistrationOf": "Rimuovi l'iscrizione di {name}",
@@ -1551,7 +1564,8 @@
     "seasonSummaryMine": "{total, plural, one {# allenamento} other {# allenamenti}} in questa stagione, tu c'eri a {attended}",
     "showMore": "Mostra altri {count}",
     "nonePastSeason": "Nessun allenamento concluso in questa stagione.",
-    "seasonsLabel": "Stagione"
+    "seasonsLabel": "Stagione",
+    "familyTeamSelf": "Tu · {team}"
   },
   "home": {
     "heroSubtitle": "Sport per tutti. Alleniamoci insieme, senza distinzioni.",
@@ -1649,5 +1663,30 @@
     "affiliation": "Affiliazione",
     "venue": "Dove siamo",
     "contactCta": "Contatti"
+  },
+  "membersOnly": {
+    "title": "Riservato al Karibu",
+    "anonymous": "Solo atleti, famiglie e staff del Karibu vedono {what}.",
+    "askLogin": "Fai parte del Karibu?",
+    "login": "Accedi",
+    "guest": "Vedrai {what} appena lo staff conferma il tuo account.",
+    "what": {
+      "names": "i nomi",
+      "teams": "le squadre",
+      "callups": "i convocati",
+      "albums": "gli altri album",
+      "photos": "le foto di questo album"
+    }
+  },
+  "imageUploader": {
+    "tooLarge": "Il file supera il limite di 5 MB.",
+    "badFormat": "Formato non supportato. Usa JPEG, PNG o WebP.",
+    "uploaded": "Immagine caricata",
+    "uploadError": "Caricamento non riuscito. Riprova.",
+    "change": "Cambia immagine",
+    "remove": "Rimuovi immagine",
+    "removeConfirm": "Vuoi rimuovere questa immagine? Non si può annullare.",
+    "cancel": "Annulla",
+    "removeAction": "Rimuovi"
   }
 }

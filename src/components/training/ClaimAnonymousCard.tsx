@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Alert,
   Paper,
   Box,
   Typography,
@@ -11,13 +12,12 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import WavingHandIcon from "@mui/icons-material/WavingHand";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { useToast } from "@/context/ToastContext";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type Registration = {
@@ -32,39 +32,13 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
   const router = useRouter();
   const t = useTranslations("claim");
   const dateLocale = useActiveDateLocale();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [answered, setAnswered] = useState<"yes" | "no" | null>(null);
-  const [claimed, setClaimed] = useState(0);
+  const [dismissed, setDismissed] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  if (answered === "no") return null;
-
-  if (answered === "yes") {
-    return (
-      <Paper
-        elevation={0}
-        variant="outlined"
-        sx={(theme) => ({
-          p: 2.5,
-          mb: 3,
-          borderColor: "success.main",
-          bgcolor: alpha(theme.palette.success.main, 0.08),
-        })}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <CheckCircleIcon color="success" />
-          <Box>
-            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} color="success.dark">
-              {t("successTitle", { count: claimed })}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {t("successNote")}
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-    );
-  }
+  if (dismissed) return null;
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -77,17 +51,40 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
 
   function handleClaim() {
     if (selected.size === 0) return;
+    setFailed(false);
     startTransition(async () => {
-      const res = await fetch("/api/registrations/claim", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [...selected] }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { claimed: number };
-        setClaimed(data.claimed);
-        setAnswered("yes");
+      try {
+        const res = await fetch("/api/registrations/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: [...selected] }),
+        });
+        // Prima un errore non diceva niente: la card restava com'era e
+        // sembrava che il tocco non fosse arrivato.
+        if (!res.ok) throw new Error(String(res.status));
+        const { claimed, merged = 0 } = (await res.json()) as {
+          claimed: number;
+          merged?: number;
+        };
+        // Un avviso, non un messaggio nella card: il profilo si ricarica e la
+        // card sparisce (o resta con le sole iscrizioni non scelte), quindi
+        // un messaggio dentro la card non si vedeva mai.
+        showToast({
+          severity: "success",
+          message: [
+            claimed > 0
+              ? t("successTitle", { count: claimed })
+              : t("successMergedOnly", { count: merged }),
+            claimed > 0 && merged > 0 ? t("mergedNote", { count: merged }) : null,
+            t("successNote"),
+          ]
+            .filter(Boolean)
+            .join(" "),
+        });
+        setSelected(new Set());
         router.refresh();
+      } catch {
+        setFailed(true);
       }
     });
   }
@@ -141,6 +138,11 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
               />
             ))}
           </Stack>
+          {failed && (
+            <Alert severity="error" sx={{ mb: 1.5 }}>
+              {t("error")}
+            </Alert>
+          )}
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
             <Button
               variant="contained"
@@ -154,7 +156,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
             <Button
               variant="outlined"
               size="small"
-              onClick={() => setAnswered("no")}
+              onClick={() => setDismissed(true)}
               disabled={isPending}
             >
               {t("notMe")}

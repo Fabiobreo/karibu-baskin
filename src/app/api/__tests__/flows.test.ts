@@ -11,7 +11,13 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/db", () => ({
   prisma: {
     $transaction: vi.fn(),
-    registration: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), updateMany: vi.fn() },
+    registration: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+    },
     trainingSession: { findUnique: vi.fn(), update: vi.fn() },
     child: { findUnique: vi.fn(), update: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
@@ -33,8 +39,8 @@ vi.mock("@/lib/authjs", () => ({ auth: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/lib/childHistory", () => ({
   moveChildHistoryToUser: vi.fn().mockResolvedValue({}),
 }));
-vi.mock("@/lib/rating/ratingEngine", () => ({
-  recomputeRatings: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(true),
@@ -63,7 +69,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
   $transaction: Mock;
-  registration: { findMany: Mock; findFirst: Mock; create: Mock; updateMany: Mock };
+  registration: { findMany: Mock; findFirst: Mock; create: Mock; update: Mock; updateMany: Mock };
   trainingSession: { findUnique: Mock; update: Mock };
   child: { findUnique: Mock; update: Mock };
   user: { findUnique: Mock; update: Mock };
@@ -125,8 +131,12 @@ describe("Flow: iscrizione anonima → claim", () => {
 
     // Step 2: claim da utente autenticato con lo stesso nome
     mockAuth.mockResolvedValue({ user: { id: userId, name: anonName } });
-    p.registration.findMany.mockResolvedValue([{ id: "reg-anon-1" }]);
-    p.registration.updateMany.mockResolvedValue({ count: 1 });
+    p.$transaction.mockImplementation((fn: (tx: typeof p) => Promise<unknown>) => fn(p));
+    p.child.findUnique.mockResolvedValue(null);
+    // Prima le anonime con quel nome, poi le iscrizioni dell'account negli stessi allenamenti.
+    p.registration.findMany
+      .mockResolvedValueOnce([{ id: "reg-anon-1", sessionId, attended: null, note: null }])
+      .mockResolvedValueOnce([]);
 
     const claimReq = new NextRequest("http://localhost/api/registrations/claim", {
       method: "POST",
@@ -138,9 +148,10 @@ describe("Flow: iscrizione anonima → claim", () => {
     const json = await claimRes.json();
     expect(json.claimed).toBe(1);
     // Il claim imposta userId sull'iscrizione
-    expect(p.registration.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { userId } })
-    );
+    expect(p.registration.update).toHaveBeenCalledWith({
+      where: { id: "reg-anon-1" },
+      data: { userId },
+    });
   });
 });
 

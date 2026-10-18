@@ -271,6 +271,11 @@ export default async function ProfiloPage({
           userId: null,
           childId: null,
           name: { equals: user.name.trim(), mode: "insensitive" },
+          // Stessa regola del collegamento: un'email lasciata deve essere la sua.
+          OR: [
+            { anonymousEmail: null },
+            ...(user.email ? [{ anonymousEmail: user.email.trim().toLowerCase() }] : []),
+          ],
         },
         orderBy: { createdAt: "desc" },
         select: {

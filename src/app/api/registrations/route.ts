@@ -13,7 +13,7 @@ import { logAudit } from "@/lib/audit";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { isGuardian } from "@/lib/guardians";
 import { personRows } from "@/lib/person";
-import { guardianOf } from "@/lib/guardians";
+import { familyRegistrationWhere } from "@/lib/guardians";
 import { inBackground } from "@/lib/background";
 
 /**
@@ -50,16 +50,7 @@ export async function GET(req: NextRequest) {
     const userId = authSession.user.id;
     if (!userId) return NextResponse.json([]);
     const mine = await prisma.registration.findMany({
-      where: {
-        sessionId,
-        // Proprie, dei figli, e dei figli con un account: la loro iscrizione
-        // sta sull'account anche quando l'ha fatta il genitore (@/lib/person).
-        OR: [
-          { userId },
-          { child: guardianOf(userId) },
-          { user: { childAccount: guardianOf(userId) } },
-        ],
-      },
+      where: { sessionId, ...familyRegistrationWhere(userId) },
       orderBy: { createdAt: "asc" },
       select: { id: true, name: true, userId: true, childId: true, registeredAsCoach: true },
     });
@@ -95,6 +86,55 @@ export async function GET(req: NextRequest) {
     }))
   );
 }
+
+/**
+ * Iscrizione anonima allo stesso allenamento della stessa persona, fatta prima
+ * di accedere: chi si iscrive con l'account la riprende (stesso id: presenza e
+ * posto in squadra restano) invece di creare un doppione.
+ *
+ * Non basta il nome, che chiunque può darsi: l'email lasciata nell'iscrizione
+ * anonima deve essere quella dell'account (o del genitore, per un figlio).
+ * Senza email non si riprende niente in automatico: resta il collegamento dal
+ * profilo, dove la persona conferma che era lei.
+ */
+function anonymousTwin(
+  tx: Prisma.TransactionClient,
+  sessionId: string,
+  names: string[],
+  emails: (string | null | undefined)[]
+) {
+  const wanted = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
+  const mails = [
+    ...new Set(emails.map((e) => e?.trim().toLowerCase()).filter((e): e is string => !!e)),
+  ];
+  if (wanted.length === 0 || mails.length === 0) return Promise.resolve(null);
+  return tx.registration.findFirst({
+    where: {
+      sessionId,
+      userId: null,
+      childId: null,
+      anonymousEmail: { in: mails },
+      OR: wanted.map((n) => ({ name: { equals: n, mode: "insensitive" as const } })),
+    },
+    select: { id: true, note: true },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+/**
+ * Quello che la POST restituisce: mai la riga intera, che per un'iscrizione
+ * ripresa porterebbe con sé email e nota anonime (dati per lo staff).
+ */
+const REGISTRATION_RESPONSE = {
+  id: true,
+  sessionId: true,
+  name: true,
+  role: true,
+  userId: true,
+  childId: true,
+  registeredAsCoach: true,
+  createdAt: true,
+} as const;
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
@@ -202,7 +242,7 @@ export async function POST(req: NextRequest) {
     const account = child.userId
       ? await prisma.user.findUnique({
           where: { id: child.userId },
-          select: { id: true, name: true, sportRole: true },
+          select: { id: true, name: true, sportRole: true, email: true },
         })
       : null;
 
@@ -212,7 +252,7 @@ export async function POST(req: NextRequest) {
     // Controllo restrizioni
     const parent = await prisma.user.findUnique({
       where: { id: userId },
-      select: { appRole: true },
+      select: { appRole: true, email: true },
     });
     if (parent?.appRole !== "COACH" && parent?.appRole !== "ADMIN") {
       let isInRestrictedTeam = false;
@@ -249,18 +289,34 @@ export async function POST(req: NextRequest) {
 
     try {
       const registration = await prisma.$transaction(async (tx) => {
+        // Iscritto prima da anonimo (dal genitore senza accesso, o da solo):
+        // si riprende quella riga invece di farne una seconda.
+        const twin = await anonymousTwin(
+          tx,
+          sessionId,
+          [child.name, account?.name ?? ""],
+          [parent?.email, account?.email]
+        );
+        const save = (data: { name: string; userId?: string; childId?: string }) =>
+          twin
+            ? tx.registration.update({
+                where: { id: twin.id },
+                data: {
+                  ...data,
+                  role: effectiveRole,
+                  note: trimmedNote ?? twin.note,
+                  anonymousEmail: null,
+                },
+                select: REGISTRATION_RESPONSE,
+              })
+            : tx.registration.create({
+                data: { ...data, sessionId, role: effectiveRole, note: trimmedNote },
+                select: REGISTRATION_RESPONSE,
+              });
         if (account) {
           // L'iscrizione va sull'account: presenze, squadre e partitelle del
           // ragazzo restano in un posto solo.
-          return tx.registration.create({
-            data: {
-              sessionId,
-              name: account.name?.trim() || child.name,
-              role: effectiveRole,
-              userId: account.id,
-              note: trimmedNote,
-            },
-          });
+          return save({ name: account.name?.trim() || child.name, userId: account.id });
         }
         // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
         if (!child.sportRole) {
@@ -269,9 +325,7 @@ export async function POST(req: NextRequest) {
             data: { sportRole: role, sportRoleVariant: roleVariant ?? null },
           });
         }
-        return tx.registration.create({
-          data: { sessionId, name: child.name, role: effectiveRole, childId, note: trimmedNote },
-        });
+        return save({ name: child.name, childId });
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
@@ -289,7 +343,7 @@ export async function POST(req: NextRequest) {
   if (userId) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, appRole: true, sportRole: true, sportRoleSuggested: true },
+      select: { name: true, email: true, appRole: true, sportRole: true, sportRoleSuggested: true },
     });
 
     if (!user) {
@@ -369,15 +423,23 @@ export async function POST(req: NextRequest) {
             data: { sportRoleSuggested: role, sportRoleSuggestedVariant: roleVariant ?? null },
           });
         }
+        const data = {
+          name: name.slice(0, 60),
+          role,
+          userId,
+          registeredAsCoach: asCoach,
+        };
+        const twin = await anonymousTwin(tx, sessionId, [name], [user.email]);
+        if (twin) {
+          return tx.registration.update({
+            where: { id: twin.id },
+            data: { ...data, note: trimmedNote ?? twin.note, anonymousEmail: null },
+            select: REGISTRATION_RESPONSE,
+          });
+        }
         return tx.registration.create({
-          data: {
-            sessionId,
-            name: name.slice(0, 60),
-            role,
-            userId,
-            note: trimmedNote,
-            registeredAsCoach: asCoach,
-          },
+          data: { ...data, sessionId, note: trimmedNote },
+          select: REGISTRATION_RESPONSE,
         });
       });
       return NextResponse.json(registration, { status: 201 });
@@ -419,6 +481,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Solo contro altre iscrizioni anonime: guardare anche gli iscritti con un
+  // account direbbe a chiunque se una persona (anche minore) è iscritta.
+  // L'eventuale doppione con un account si risolve col collegamento dal profilo.
   const existing = await prisma.registration.findFirst({
     where: {
       sessionId,
@@ -426,6 +491,7 @@ export async function POST(req: NextRequest) {
       userId: null,
       childId: null,
     },
+    select: { id: true },
   });
   if (existing) {
     return NextResponse.json(
@@ -439,6 +505,7 @@ export async function POST(req: NextRequest) {
   try {
     const registration = await prisma.registration.create({
       data: { sessionId, name: trimmedName, role, note: trimmedNote, anonymousEmail: trimmedEmail },
+      select: REGISTRATION_RESPONSE,
     });
     return NextResponse.json(registration, { status: 201 });
   } catch (err: unknown) {
