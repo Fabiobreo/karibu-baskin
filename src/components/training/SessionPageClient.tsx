@@ -21,8 +21,9 @@ import CloseRegistrationsAlert from "@/components/training/CloseRegistrationsAle
 import TeamsHeader from "@/components/training/TeamsHeader";
 import SectionErrorBoundary from "@/components/common/SectionErrorBoundary";
 import ManageParticipantsDialog from "@/components/admin/ManageParticipantsDialog";
-import { TEAM_META, bibFill } from "@/lib/constants";
-import { alpha } from "@mui/material/styles";
+import { familyTeams } from "@/lib/trainingTeams";
+import { bibSurfaceSx } from "@/lib/bib";
+import { firstName } from "@/components/training/FamilyTeamChips";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { hasRole, isMemberRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
@@ -32,6 +33,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 export interface Session {
   id: string;
   title: string;
@@ -80,6 +82,9 @@ export default function SessionPageClient({
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
   const [parentChildren, setParentChildren] = useState<ChildInfo[]>([]);
+  // Finché i figli non sono arrivati non si sa se qualcuno deve ancora
+  // iscriversi: niente cambio di vista nel frattempo.
+  const [childrenLoaded, setChildrenLoaded] = useState(false);
 
   const fetcher = useCallback(
     (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject())),
@@ -121,10 +126,12 @@ export default function SessionPageClient({
   // `registrations = []` come default è comodo ma pericoloso: quando la lettura
   // fallisce, la lista vuota viene resa come "nessun iscritto", che è
   // un'affermazione diversa da "non lo so" e porta lo staff a conclusioni
-  // sbagliate. `isError` viaggia fino al roster per tenerli distinti.
+  // sbagliate. L'errore viaggia fino al roster per tenerli distinti. È
+  // `isLoadingError`, non `isError`: senza rete il controllo ogni 30 secondi
+  // fallisce, e la lista già a schermo non deve sparire (resta quella di prima).
   const {
     data: registrations = [],
-    isError: registrationsFailed,
+    isLoadingError: registrationsFailed,
     isPending: registrationsPending,
     refetch: refetchRegistrations,
   } = useQuery<Registration[]>({
@@ -164,7 +171,7 @@ export default function SessionPageClient({
   const {
     data: teamsRaw,
     isLoading: teamsLoading,
-    isError: teamsFailed,
+    isLoadingError: teamsFailed,
     refetch: refetchTeams,
   } = useQuery<TeamsData>({
     queryKey: teamsQueryKey,
@@ -199,14 +206,19 @@ export default function SessionPageClient({
       .then((res) => (res.ok ? res.json() : null))
       .then((data: CurrentUser | null) => {
         setCurrentUser(data);
-        if (data?.appRole === "PARENT") {
-          fetch("/api/users/me/children")
-            .then((r) => (r.ok ? r.json() : []))
-            .then((kids: ChildInfo[]) => setParentChildren(kids))
-            .catch(() => {});
-        }
+        if (!data) return setChildrenLoaded(true);
+        // Per ogni ruolo, non solo i genitori: anche un dirigente, un
+        // allenatore o un atleta possono avere figli da iscrivere.
+        fetch("/api/users/me/children")
+          .then((r) => (r.ok ? r.json() : []))
+          .then((kids: ChildInfo[]) => setParentChildren(kids))
+          .catch(() => {})
+          .finally(() => setChildrenLoaded(true));
       })
-      .catch(() => setCurrentUser(null));
+      .catch(() => {
+        setCurrentUser(null);
+        setChildrenLoaded(true);
+      });
   }, []);
 
   const sessionId = realSessionId || sessionParam;
@@ -285,8 +297,8 @@ export default function SessionPageClient({
       } else {
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setRemovingTeams(false);
     }
@@ -296,32 +308,42 @@ export default function SessionPageClient({
     registrations.filter((r) => r.userSlug).map((r) => [r.id, r.userSlug!])
   );
 
-  const myRegistration = currentUser
-    ? registrations.find(
-        (r) =>
-          r.userId === currentUser.id ||
-          (currentUser.linkedChildId && r.childId === currentUser.linkedChildId)
-      )
-    : null;
-  const myTeam =
-    myRegistration && teams
-      ? (TEAM_META.find((t) => {
-          const list = t.key === "teamC" ? teams.teamC : teams[t.key];
-          return list?.some((a) => a.id === myRegistration.id);
-        }) ?? null)
-      : null;
-  const hasUnregisteredChildren =
-    currentUser?.appRole === "PARENT" &&
-    parentChildren.some(
-      (c) =>
-        !registrations.some((r) => r.childId === c.id || (c.userId ? r.userId === c.userId : false))
-    );
-  const teamFirstLayout = !!myTeam && !hasUnregisteredChildren;
+  // In che squadra sono chi guarda e i suoi figli: le iscrizioni "di
+  // famiglia" (`mine`) arrivano anche a chi non vede la rosa. Prima si
+  // guardava solo l'iscrizione propria, e un genitore non sapeva in che
+  // squadra era il figlio.
+  const isSelf = (r: { userId: string | null; childId: string | null }) =>
+    !!currentUser &&
+    (r.userId === currentUser.id ||
+      (!!currentUser.linkedChildId && r.childId === currentUser.linkedChildId));
+  const myTeams = familyTeams(
+    mine
+      .filter((r) => !r.registeredAsCoach)
+      .map((r) => ({ id: r.id, name: r.name, self: isSelf(r) })),
+    teams
+  );
+  const selfRegistered = mine.some(isSelf);
+  // Chi non gioca (genitore o dirigente senza ruolo Baskin) non ha niente da
+  // iscrivere per sé: come la card "prossima cosa da fare" (`nextAction`).
+  const selfCanRegister =
+    !!currentUser &&
+    ((currentUser.appRole !== "PARENT" && currentUser.appRole !== "DIRECTOR") ||
+      currentUser.sportRole != null);
+  const hasUnregisteredChildren = parentChildren.some(
+    (c) => !mine.some((r) => r.childId === c.id || (c.userId ? r.userId === c.userId : false))
+  );
+  // Le squadre in cima solo se nessuno della famiglia deve ancora iscriversi:
+  // il layout a squadre nasconde il modulo. Mai per lo staff, che nel modulo ha
+  // anche "Apri/Chiudi iscrizioni" e l'iscrizione come allenatore.
+  const teamFirstLayout =
+    !isStaff &&
+    childrenLoaded &&
+    myTeams.length > 0 &&
+    !hasUnregisteredChildren &&
+    (selfRegistered || !selfCanRegister);
 
   const TEAM_KEYS = ["teamA", "teamB", "teamC"] as const;
-  const myTeamIndex = myTeam
-    ? Math.max(0, TEAM_KEYS.indexOf(myTeam.key as (typeof TEAM_KEYS)[number]))
-    : 0;
+  const myTeamIndex = myTeams[0] ? Math.max(0, TEAM_KEYS.indexOf(myTeams[0].key)) : 0;
 
   const rosterProps = {
     registrations,
@@ -337,6 +359,8 @@ export default function SessionPageClient({
     onRetry: () => void refetchRegistrations(),
     // `undefined` = ancora in caricamento, `null` = anonimo confermato.
     restricted: rosterRestriction,
+    // Con il modulo aperto l'invito ad accedere sta già lì: niente secondo "Accedi".
+    loginElsewhere: !isEnded && session?.registrationOpen !== false,
     loading: currentUser === undefined || (canSeeRoster && registrationsPending),
     totalCount: session?._count.registrations ?? 0,
     onManage: isStaff ? () => setManagingRoster(true) : undefined,
@@ -409,21 +433,23 @@ export default function SessionPageClient({
                   currentUserId={currentUser?.id ?? null}
                 />
               )}
-              {/* Banner "la tua squadra" */}
-              {myTeam && (
+              {/* Banner "la tua squadra", e uno per ogni figlio in squadra */}
+              {myTeams.map((ft) => (
                 <Paper
+                  key={ft.id}
                   elevation={0}
-                  sx={{
-                    p: { xs: 2, sm: 2.5 },
-                    borderRadius: RADIUS.lg,
-                    // Casacca (eccezione UX-29, col nome sotto): scurita quanto basta per
-                    // il testo bianco, poi sfumata.
-                    background: `linear-gradient(120deg, ${bibFill(myTeam.color)} 0%, ${alpha(bibFill(myTeam.color), 0.8)} 100%)`,
-                    color: "common.white",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
+                  sx={[
+                    {
+                      p: { xs: 2, sm: 2.5 },
+                      borderRadius: RADIUS.lg,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                    },
+                    // Casacca (eccezione UX-29, col nome sotto), col contorno
+                    // dove il nero sparirebbe nel tema scuro.
+                    bibSurfaceSx(ft.key),
+                  ]}
                 >
                   <GroupsIcon sx={{ fontSize: 36, opacity: 0.85, flexShrink: 0 }} />
                   <Box>
@@ -436,14 +462,14 @@ export default function SessionPageClient({
                         textTransform: "uppercase",
                       }}
                     >
-                      {t("myTeam")}
+                      {ft.self ? t("myTeam") : t("teamOf", { name: firstName(ft.name) })}
                     </Typography>
                     <Typography variant="h5" sx={{ lineHeight: 1.2 }}>
-                      {teamColorLabel(myTeam.key as "teamA" | "teamB" | "teamC")}
+                      {teamColorLabel(ft.key)}
                     </Typography>
                   </Box>
                 </Paper>
-              )}
+              ))}
 
               {/* ── Stato: terminato ── */}
               {isEnded ? (

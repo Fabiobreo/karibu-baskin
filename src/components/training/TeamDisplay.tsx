@@ -24,6 +24,8 @@ import Link from "next/link";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { ROLES, TEAM_META, bibFill, roleColorSx } from "@/lib/constants";
+import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
+import { bibDotSx, bibSurfaceSx } from "@/lib/bib";
 import { alpha } from "@mui/material/styles";
 import { readableOn } from "@/lib/colorUtils";
 import { useToast } from "@/context/ToastContext";
@@ -34,6 +36,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 /**
  * Colore della squadra come riempimento sotto un'etichetta bianca: l'arancio
  * #E65100 col bianco fa 3,78:1, quindi si scurisce quanto basta (UX-22).
@@ -178,24 +181,21 @@ export function MobileTeamTabs({
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    bgcolor: m.color,
-                    flexShrink: 0,
-                  }}
+                  sx={[
+                    { width: 10, height: 10, borderRadius: "50%", flexShrink: 0 },
+                    bibDotSx(m.key),
+                  ]}
                 />
                 <span>{teamColorLabel(m.key)}</span>
                 <Chip
                   label={allTeams[i].length}
                   size="small"
-                  sx={{
-                    height: 20,
-                    fontSize: TYPE_SCALE.xs,
-                    bgcolor: tab === i ? bibFill(m.color) : "action.selected",
-                    color: tab === i ? "common.white" : "text.secondary",
-                  }}
+                  sx={[
+                    { height: 20, fontSize: TYPE_SCALE.xs },
+                    tab === i
+                      ? bibSurfaceSx(m.key)
+                      : { bgcolor: "action.selected", color: "text.secondary" },
+                  ]}
                 />
               </Box>
             }
@@ -274,14 +274,10 @@ export function AlignedTeamGrid({
     cells.push(
       <Box
         key={`header-${i}`}
-        sx={{
-          px: 2,
-          py: 1.5,
-          backgroundColor: bibFill(m.color),
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-        }}
+        sx={[
+          { px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1 },
+          bibSurfaceSx(m.key),
+        ]}
       >
         <Typography component="h3" variant="h6" sx={{ color: "common.white" }}>
           {teamColorLabel(m.key)}
@@ -461,9 +457,9 @@ function TeamEditor({
         setLocalTeams(prevTeams);
         showToast({ message: "Errore nel salvataggio", severity: "error" });
       }
-    } catch {
+    } catch (err) {
       setLocalTeams(prevTeams);
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setSaving(false);
     }
@@ -572,14 +568,16 @@ function TeamEditor({
             <Paper key={key} variant="outlined" sx={{ overflow: "hidden" }}>
               {/* Header */}
               <Box
-                sx={{
-                  px: 2,
-                  py: 1,
-                  backgroundColor: bibFill(m.color),
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
+                sx={[
+                  {
+                    px: 2,
+                    py: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  },
+                  bibSurfaceSx(m.key),
+                ]}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography component="h3" variant="subtitle2" sx={{ color: "common.white" }}>
@@ -717,7 +715,7 @@ export default function TeamDisplay({
       }
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore di rete, riprova",
+        message: errorText(err, "Qualcosa non ha funzionato. Riprova."),
         severity: "error",
       });
     } finally {
@@ -749,8 +747,8 @@ export default function TeamDisplay({
       } else {
         showToast({ message: "Errore nella creazione", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setGenerating(false);
     }
@@ -773,14 +771,7 @@ export default function TeamDisplay({
   if (restricted) {
     return (
       <Box sx={{ py: 3, px: 3, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {restricted === "guest" ? t("teamsPrivateGuest") : t("teamsPrivate")}
-        </Typography>
-        {restricted === "anonymous" && (
-          <Button href="/login" size="small" variant="outlined">
-            {t("rosterPrivateCta")}
-          </Button>
-        )}
+        <MembersOnlyNotice viewer={restricted} what="teams" />
       </Box>
     );
   }

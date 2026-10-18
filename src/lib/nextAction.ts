@@ -2,6 +2,8 @@ import { cache } from "react";
 import { splitOwnChild } from "@/lib/registrationSubjects";
 import { prisma } from "@/lib/db";
 import { guardianOf } from "@/lib/guardians";
+import { familyTeams, type FamilyTeam } from "@/lib/trainingTeams";
+import { parseTeamsData } from "@/lib/schemas";
 import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
 import { checkRegistrationAllowed, type SessionRestrictions } from "@/lib/registrationRestrictions";
 
@@ -30,6 +32,8 @@ export type NextAction =
       session: ActionSession;
       /** chi e' iscritto, oltre a se' */ names: string[];
       self: boolean;
+      /** Squadre gia' fatte: in quale sta ciascuno (vuoto se non ci sono). */
+      teams?: FamilyTeam[];
     }
   | { kind: "allSet" };
 
@@ -64,7 +68,12 @@ export function pickNextAction(input: {
   pendingAvailabilities: number;
   subjects: Subject[];
   openSessions: OpenSession[];
-  registered: { session: ActionSession; names: string[]; self: boolean } | null;
+  registered: {
+    session: ActionSession;
+    names: string[];
+    self: boolean;
+    teams?: FamilyTeam[];
+  } | null;
 }): NextAction {
   if (input.pendingAvailabilities > 0) {
     return { kind: "availability", count: input.pendingAvailabilities };
@@ -189,6 +198,11 @@ export const loadNextAction = cache(async function loadNextAction(
     ],
   };
 
+  // Propria: sull'account o sulla propria scheda figlio collegata (è la stessa
+  // persona, non un figlio).
+  const isOwn = (r: { userId: string | null; childId: string | null }) =>
+    r.userId === userId || (!!own && r.childId === own.id);
+
   const sessionSelect = {
     id: true,
     dateSlug: true,
@@ -216,7 +230,11 @@ export const loadNextAction = cache(async function loadNextAction(
       orderBy: { date: "asc" },
       select: {
         ...sessionSelect,
-        registrations: { where: mine, select: { userId: true, name: true } },
+        teams: true,
+        registrations: {
+          where: mine,
+          select: { id: true, userId: true, childId: true, name: true },
+        },
       },
     }),
   ]);
@@ -256,8 +274,17 @@ export const loadNextAction = cache(async function loadNextAction(
     registered: nextRegistered
       ? {
           session: toAction(nextRegistered),
-          self: nextRegistered.registrations.some((r) => r.userId === userId),
-          names: nextRegistered.registrations.filter((r) => r.userId !== userId).map((r) => r.name),
+          self: nextRegistered.registrations.some(isOwn),
+          names: nextRegistered.registrations.filter((r) => !isOwn(r)).map((r) => r.name),
+          // Solo le squadre della famiglia: niente nomi di altri.
+          teams: familyTeams(
+            nextRegistered.registrations.map((r) => ({
+              id: r.id,
+              name: r.name,
+              self: isOwn(r),
+            })),
+            parseTeamsData(nextRegistered.teams)
+          ),
         }
       : null,
   });

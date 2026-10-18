@@ -17,6 +17,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CheckIcon from "@mui/icons-material/Check";
 import { TEAM_META, bibFill } from "@/lib/constants";
+import { bibDotSx, bibNeedsRing } from "@/lib/bib";
 import { alpha } from "@mui/material/styles";
 import { useToast } from "@/context/ToastContext";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -192,13 +193,10 @@ function MatchupSlot({
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: team1.color,
-                flexShrink: 0,
-              }}
+              sx={[
+                { width: 10, height: 10, borderRadius: "50%", flexShrink: 0 },
+                bibDotSx(team1.key),
+              ]}
             />
             <Typography
               variant="caption"
@@ -235,13 +233,10 @@ function MatchupSlot({
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: team2.color,
-                flexShrink: 0,
-              }}
+              sx={[
+                { width: 10, height: 10, borderRadius: "50%", flexShrink: 0 },
+                bibDotSx(team2.key),
+              ]}
             />
             <Typography
               variant="caption"
@@ -319,14 +314,16 @@ function MatchupSlot({
             <Chip
               label={`${team1Name}  ${s1}`}
               size="small"
-              sx={{
+              sx={(theme) => ({
                 bgcolor: winner === 1 ? bibFill(team1.color) : alpha(team1.color, 0.13),
                 color: winner === 1 ? "common.white" : "text.primary",
                 fontWeight: winner === 1 ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 border: "1px solid",
-                borderColor: team1.color,
+                borderColor: bibNeedsRing(team1.key, theme.palette.mode)
+                  ? theme.palette.border.control
+                  : team1.color,
                 fontSize: TYPE_SCALE.xs,
-              }}
+              })}
             />
             <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
               vs
@@ -334,14 +331,16 @@ function MatchupSlot({
             <Chip
               label={`${team2Name}  ${s2}`}
               size="small"
-              sx={{
+              sx={(theme) => ({
                 bgcolor: winner === 2 ? bibFill(team2.color) : alpha(team2.color, 0.13),
                 color: winner === 2 ? "common.white" : "text.primary",
                 fontWeight: winner === 2 ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 border: "1px solid",
-                borderColor: team2.color,
+                borderColor: bibNeedsRing(team2.key, theme.palette.mode)
+                  ? theme.palette.border.control
+                  : team2.color,
                 fontSize: TYPE_SCALE.xs,
-              }}
+              })}
             />
             {winner === 0 && (
               <Typography

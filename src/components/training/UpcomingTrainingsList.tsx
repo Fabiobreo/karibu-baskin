@@ -5,25 +5,22 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
-import { useEntityLabels } from "@/hooks/useEntityLabels";
 import TrainingListRow from "@/components/training/TrainingListRow";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { groupUpcoming, type UpcomingGroup } from "@/lib/trainingList";
-import { TEAM_META, bibFill } from "@/lib/constants";
+import { familyTeams, type FamilyRegistration } from "@/lib/trainingTeams";
+import type { FamilyRegsBySession } from "@/lib/familyRegistrations";
+import FamilyTeamChips from "@/components/training/FamilyTeamChips";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface UpcomingTrainingsListProps {
   sessions: SessionWithCount[];
   registeredSessionIds: Set<string>;
-  registrationIdBySession: Record<string, string>;
+  /** Iscrizioni proprie e dei figli per allenamento (squadra di ciascuno). */
+  familyRegsBySession: FamilyRegsBySession;
   isStaff: boolean;
-}
-
-function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | undefined) {
-  if (!teams || !registrationId) return null;
-  return TEAM_META.find((t) => teams[t.key]?.some((a) => a.id === registrationId)) ?? null;
 }
 
 export function capitalize(text: string): string {
@@ -34,30 +31,17 @@ export function capitalize(text: string): string {
 function RegistrationStatus({
   session: s,
   registered,
-  registrationId,
+  familyRegistrations = [],
 }: {
   session: SessionWithCount;
   registered: boolean;
-  registrationId: string | undefined;
+  familyRegistrations?: FamilyRegistration[];
 }) {
   const t = useTranslations("trainings");
-  const { teamColorLabel } = useEntityLabels();
-  const myTeam = registered ? findMyTeam(s.teams, registrationId) : null;
+  // La squadra di chi guarda e dei figli ("Neri", "Luca · Neri").
+  const myTeams = familyTeams(familyRegistrations, s.teams);
 
-  if (myTeam) {
-    return (
-      <Chip
-        label={teamColorLabel(myTeam.key)}
-        size="small"
-        // Casacca (eccezione UX-29, sempre col nome), scurita quanto basta
-        // per reggere l'etichetta bianca.
-        sx={{
-          bgcolor: bibFill(myTeam.color),
-          color: "common.white",
-        }}
-      />
-    );
-  }
+  if (myTeams.length > 0) return <FamilyTeamChips teams={myTeams} />;
   if (registered) {
     return (
       <Chip icon={<CheckCircleIcon />} label={t("rowRegistered")} size="small" color="success" />
@@ -128,7 +112,7 @@ export function useTrainingMeta() {
 export default function UpcomingTrainingsList({
   sessions,
   registeredSessionIds,
-  registrationIdBySession,
+  familyRegsBySession,
   isStaff,
 }: UpcomingTrainingsListProps) {
   const t = useTranslations("trainings");
@@ -161,7 +145,7 @@ export default function UpcomingTrainingsList({
                     <RegistrationStatus
                       session={s}
                       registered={registeredSessionIds.has(s.id)}
-                      registrationId={registrationIdBySession[s.id]}
+                      familyRegistrations={familyRegsBySession[s.id]}
                     />
                   }
                 />

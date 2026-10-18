@@ -19,7 +19,7 @@ const meta: Meta<typeof SessionCard> = {
   },
   args: {
     isRegistered: false,
-    myRegistrationId: null,
+    familyRegistrations: [],
     isStaff: false,
     hero: false,
     muted: false,
@@ -74,7 +74,7 @@ export const UtenteIscritto: Story = {
   args: {
     session: sessionFuture,
     isRegistered: true,
-    myRegistrationId: "reg-1",
+    familyRegistrations: [{ id: "reg-1", name: "Luca Rossi", self: true }],
   },
 };
 

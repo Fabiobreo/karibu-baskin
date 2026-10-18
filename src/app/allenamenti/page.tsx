@@ -17,6 +17,7 @@ import {
 } from "@/lib/trainingList";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { buildMetadata } from "@/lib/seo";
+import { loadFamilyRegistrations, selfRegisteredSessionIds } from "@/lib/familyRegistrations";
 
 export const metadata: Metadata = buildMetadata({
   title: "Allenamenti",
@@ -96,12 +97,8 @@ export default async function AllenamentiPage({
           _count: { _all: true },
         })
       : Promise.resolve([]),
-    userId && activeIds.length > 0
-      ? prisma.registration.findMany({
-          where: { userId, sessionId: { in: activeIds } },
-          select: { id: true, sessionId: true },
-        })
-      : Promise.resolve([]),
+    // Proprie e dei figli: un genitore vede in che squadra è il figlio.
+    userId ? loadFamilyRegistrations(userId, activeIds) : Promise.resolve({}),
     // "C'eri": iscritto e non segnato assente (chi non e' stato segnato conta).
     userId && pastIds.length > 0
       ? prisma.registration.findMany({
@@ -147,8 +144,8 @@ export default async function AllenamentiPage({
             seasons={seasons}
             season={season}
             attendedCount={userId ? mine.size : null}
-            registeredSessionIds={activeRegs.map((r) => r.sessionId)}
-            registrationIdBySession={Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]))}
+            registeredSessionIds={selfRegisteredSessionIds(activeRegs)}
+            familyRegsBySession={activeRegs}
             isStaff={isStaff}
           />
         </Box>

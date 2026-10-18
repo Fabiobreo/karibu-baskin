@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { withDbRetry } from "@/lib/dbRetry";
+import { loadFamilyRegistrations } from "@/lib/familyRegistrations";
 import { parseTeamsData } from "@/lib/schemas";
 import HomeSessionsSection from "@/components/training/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/training/SessionCard";
@@ -92,23 +93,17 @@ export default async function HomeSessions({
   const upcoming = sameDay ? [first, second] : first ? [first] : [];
 
   // Recupera le iscrizioni dell'utente per le sessioni visibili
-  let registrationIdBySession: Record<string, string> = {};
+  // Proprie e dei figli: un genitore vede in che squadra è il figlio.
   const visibleIds = [...inCorso, ...upcoming].map((s) => s.id);
-  if (userId && visibleIds.length > 0) {
-    const regs = await withDbRetry(() =>
-      prisma.registration.findMany({
-        where: { userId, sessionId: { in: visibleIds } },
-        select: { id: true, sessionId: true },
-      })
-    );
-    registrationIdBySession = Object.fromEntries(regs.map((r) => [r.sessionId, r.id]));
-  }
+  const familyRegsBySession = userId
+    ? await withDbRetry(() => loadFamilyRegistrations(userId, visibleIds))
+    : {};
 
   return (
     <HomeSessionsSection
       inCorso={inCorso}
       upcoming={upcoming}
-      registrationIdBySession={registrationIdBySession}
+      familyRegsBySession={familyRegsBySession}
       isStaff={isStaff}
       isMember={isMember}
       featuredAbove={featuredAbove}

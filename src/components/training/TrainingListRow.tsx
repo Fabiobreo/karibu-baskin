@@ -10,7 +10,8 @@ import TeamsModal from "@/components/training/TeamsModal";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-import { TEAM_META, bibFill } from "@/lib/constants";
+import { TEAM_META } from "@/lib/constants";
+import { bibDotSx } from "@/lib/bib";
 
 interface TrainingListRowProps {
   session: SessionWithCount;
@@ -178,14 +179,7 @@ export default function TrainingListRow({
                 {TEAM_META.filter((m) => s.teams?.[m.key]).map((m) => (
                   <Box
                     key={m.key}
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      bgcolor: bibFill(m.color),
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
+                    sx={[{ width: 12, height: 12, borderRadius: "50%" }, bibDotSx(m.key)]}
                   />
                 ))}
               </Box>

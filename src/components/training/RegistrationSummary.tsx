@@ -13,6 +13,8 @@ export interface MyRegistration {
   name: string;
   userId: string | null;
   childId: string | null;
+  /** Iscritto come allenatore: non sta in nessuna squadra. */
+  registeredAsCoach?: boolean;
 }
 
 interface RegistrationSummaryProps {

@@ -1,6 +1,7 @@
 "use client";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import FamilyTeamChips from "@/components/training/FamilyTeamChips";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
@@ -131,6 +132,11 @@ export default function NextActionCard({ action }: NextActionCardProps) {
               <Typography variant="body2" color="text.secondary">
                 {body}
               </Typography>
+            )}
+            {action.kind === "registered" && action.teams && action.teams.length > 0 && (
+              <Box sx={{ display: "flex", mt: 0.75 }}>
+                <FamilyTeamChips teams={action.teams} align="start" />
+              </Box>
             )}
             {session && (
               <Box sx={{ display: "flex", flexWrap: "wrap", columnGap: 2, rowGap: 0.5, mt: 0.5 }}>

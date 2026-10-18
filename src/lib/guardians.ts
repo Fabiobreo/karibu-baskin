@@ -17,6 +17,24 @@ export function guardianOf(userId: string): Prisma.ChildWhereInput {
   return { guardians: { some: { userId } } };
 }
 
+/**
+ * Le iscrizioni "di famiglia" di un utente: proprie, dei figli e dei figli con
+ * un account (la loro iscrizione sta sull'account anche quando l'ha fatta il
+ * genitore, @/lib/person). Le usano il riepilogo "Sei iscritto" e la squadra
+ * dei figli nelle liste.
+ */
+export function familyRegistrationWhere(userId: string): Prisma.RegistrationWhereInput {
+  return {
+    OR: [
+      { userId },
+      // La propria scheda figlio collegata: la stessa persona (@/lib/person).
+      { child: { userId } },
+      { child: guardianOf(userId) },
+      { user: { childAccount: guardianOf(userId) } },
+    ],
+  };
+}
+
 /** `userId` è uno dei genitori di `childId`? */
 export async function isGuardian(userId: string, childId: string): Promise<boolean> {
   const link = await prisma.childGuardian.findUnique({

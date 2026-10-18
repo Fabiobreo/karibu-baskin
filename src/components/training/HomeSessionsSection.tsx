@@ -6,18 +6,20 @@ import SessionCard, { type SessionWithCount } from "@/components/training/Sessio
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import type { FamilyRegsBySession } from "@/lib/familyRegistrations";
 
 export default function HomeSessionsSection({
   inCorso: initInCorso,
   upcoming: initUpcoming,
-  registrationIdBySession,
+  familyRegsBySession,
   isStaff,
   isMember = false,
   featuredAbove = false,
 }: {
   inCorso: SessionWithCount[];
   upcoming: SessionWithCount[];
-  registrationIdBySession: Record<string, string>;
+  /** Iscrizioni proprie e dei figli per allenamento (squadra di ciascuno). */
+  familyRegsBySession: FamilyRegsBySession;
   isStaff: boolean;
   /** Tesserato: niente inviti a "venire a provare" (UX-16). */
   isMember?: boolean;
@@ -50,8 +52,8 @@ export default function HomeSessionsSection({
                 <SessionCard
                   session={s}
                   live
-                  isRegistered={!!registrationIdBySession[s.id]}
-                  myRegistrationId={registrationIdBySession[s.id] ?? null}
+                  isRegistered={!!familyRegsBySession[s.id]?.some((r) => r.self)}
+                  familyRegistrations={familyRegsBySession[s.id]}
                   isStaff={isStaff}
                 />
               </Grid>
@@ -118,8 +120,8 @@ export default function HomeSessionsSection({
               <Grid key={s.id} size={{ xs: 12, sm: upcoming.length > 1 ? 6 : 12 }}>
                 <SessionHeroCard
                   session={s}
-                  isRegistered={!!registrationIdBySession[s.id]}
-                  myRegistrationId={registrationIdBySession[s.id] ?? null}
+                  isRegistered={!!familyRegsBySession[s.id]?.some((r) => r.self)}
+                  familyRegistrations={familyRegsBySession[s.id]}
                   isStaff={isStaff}
                 />
               </Grid>

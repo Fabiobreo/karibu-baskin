@@ -9,6 +9,7 @@ import EmptyState from "@/components/common/EmptyState";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import UpcomingTrainingsList from "@/components/training/UpcomingTrainingsList";
+import type { FamilyRegsBySession } from "@/lib/familyRegistrations";
 import PastTrainingsSection, {
   type PastTraining,
 } from "@/components/training/PastTrainingsSection";
@@ -23,7 +24,8 @@ interface AllenamentiClientProps {
   /** Allenamenti della stagione a cui chi guarda c'era; null senza accesso. */
   attendedCount: number | null;
   registeredSessionIds: string[];
-  registrationIdBySession?: Record<string, string>;
+  /** Iscrizioni proprie e dei figli per allenamento (squadra di ciascuno). */
+  familyRegsBySession?: FamilyRegsBySession;
   isStaff?: boolean;
 }
 
@@ -35,7 +37,7 @@ export default function AllenamentiClient({
   season,
   attendedCount,
   registeredSessionIds,
-  registrationIdBySession = {},
+  familyRegsBySession = {},
   isStaff = false,
 }: AllenamentiClientProps) {
   const t = useTranslations("trainings");
@@ -81,7 +83,7 @@ export default function AllenamentiClient({
                 session={s}
                 live
                 isRegistered={registeredSet.has(s.id)}
-                myRegistrationId={registrationIdBySession[s.id] ?? null}
+                familyRegistrations={familyRegsBySession[s.id]}
                 isStaff={isStaff}
               />
             ))}
@@ -116,7 +118,7 @@ export default function AllenamentiClient({
                   key={s.id}
                   session={s}
                   isRegistered={registeredSet.has(s.id)}
-                  myRegistrationId={registrationIdBySession[s.id] ?? null}
+                  familyRegistrations={familyRegsBySession[s.id]}
                   isStaff={isStaff}
                 />
               ))}
@@ -125,7 +127,7 @@ export default function AllenamentiClient({
               <UpcomingTrainingsList
                 sessions={restUpcoming}
                 registeredSessionIds={registeredSet}
-                registrationIdBySession={registrationIdBySession}
+                familyRegsBySession={familyRegsBySession}
                 isStaff={isStaff}
               />
             )}

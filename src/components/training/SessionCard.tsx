@@ -20,7 +20,10 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import TeamsModal from "@/components/training/TeamsModal";
-import { TEAM_META } from "@/lib/constants";
+import { familyTeams, type FamilyRegistration } from "@/lib/trainingTeams";
+import { bibStampSx } from "@/lib/bib";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
+import FamilyTeamChips, { firstName } from "@/components/training/FamilyTeamChips";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -80,13 +83,20 @@ function getStatusData(
   return { key: "daysAway", diffDays, variant: "outlined" };
 }
 
+/** Timbri delle casacche (inchiostro su fondo trasparente). */
+const STAMPS = {
+  teamA: "/stamps/arancioni.png",
+  teamB: "/stamps/neri.png",
+  teamC: "/stamps/bianchi.png",
+} as const;
+
 export default function SessionCard({
   session: s,
   hero = false,
   muted = false,
   live = false,
   isRegistered = false,
-  myRegistrationId = null,
+  familyRegistrations = [],
   isStaff = false,
   headingComponent = "h3",
 }: {
@@ -95,7 +105,8 @@ export default function SessionCard({
   muted?: boolean;
   live?: boolean;
   isRegistered?: boolean;
-  myRegistrationId?: string | null;
+  /** Iscrizioni di chi guarda e dei figli: dicono in che squadra è ciascuno. */
+  familyRegistrations?: FamilyRegistration[];
   isStaff?: boolean;
   /** Livello del titolo: h3 sotto una sezione (home), h2 dove la lista sta subito sotto l'h1. */
   headingComponent?: "h2" | "h3";
@@ -106,15 +117,18 @@ export default function SessionCard({
   const t = useTranslations("trainings");
   const tCommon = useTranslations("common");
   const tRoles = useTranslations("roles");
+  const { teamColorLabel } = useEntityLabels();
 
   const date = new Date(s.date);
   const endTime = s.endTime ? new Date(s.endTime) : null;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
   const hasTeams = !!s.teams;
-  const myTeam =
-    myRegistrationId && s.teams
-      ? (TEAM_META.find((tm) => s.teams![tm.key]?.some((a) => a.id === myRegistrationId)) ?? null)
-      : null;
+  const myTeams = familyTeams(familyRegistrations, s.teams);
+  const myTeam = myTeams.find((ft) => ft.self) ?? null;
+  // Il timbro dice la squadra di una persona sola; con un figlio in squadra
+  // il chip dice anche chi è ("Luca · Neri").
+  const stampTeam = myTeams.length === 1 ? myTeams[0] : null;
+  const showFamilyChips = myTeams.some((ft) => !ft.self);
   const statusData = getStatusData(date, endTime);
   const statusLabel =
     statusData.key === "daysAway"
@@ -339,6 +353,7 @@ export default function SessionCard({
                 {hero && countInfo}
               </Box>
 
+              {showFamilyChips && <FamilyTeamChips teams={myTeams} align="start" />}
               {hero ? (
                 // Da iscritto: la conferma in parole, con la stessa formula delle
                 // righe della lista ("Ci sei"). Verde = positivo, con l'icona.
@@ -445,7 +460,7 @@ export default function SessionCard({
                 <Button
                   // Un solo bottone pieno per card: se c'e' "Iscriviti", le
                   // squadre passano in secondo piano (UX-30).
-                  variant={myTeam || canSignUp ? "outlined" : "contained"}
+                  variant={myTeams.length > 0 || canSignUp ? "outlined" : "contained"}
                   startIcon={<SportsBasketballIcon />}
                   onClick={() => setTeamsOpen(true)}
                 >
@@ -463,7 +478,7 @@ export default function SessionCard({
           </Box>
 
           {/* Colonna stamp */}
-          {myTeam && !muted && (
+          {stampTeam && !muted && (
             <Box
               sx={{
                 alignSelf: "stretch",
@@ -476,11 +491,16 @@ export default function SessionCard({
                 pointerEvents: "none",
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/stamps/${myTeam.name.toLowerCase()}.png`}
-                alt={`Squadra ${myTeam.name}`}
-                style={{ height: "100%", width: "auto", display: "block", opacity: 0.5 }}
+              <Box
+                component="img"
+                src={STAMPS[stampTeam.key]}
+                alt={`${stampTeam.self ? t("myTeam") : t("teamOf", { name: firstName(stampTeam.name) })}: ${teamColorLabel(stampTeam.key)}`}
+                sx={[
+                  { height: "100%", width: "auto", display: "block" },
+                  // Il timbro dei Neri è inchiostro nero su fondo trasparente:
+                  // nel tema scuro diventa chiaro, altrimenti sparisce.
+                  bibStampSx(stampTeam.key),
+                ]}
               />
             </Box>
           )}
