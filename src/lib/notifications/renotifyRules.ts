@@ -18,3 +18,12 @@ export function canNotifyPost(publishedAt: string | Date | null, now: number): b
   if (!publishedAt) return false;
   return now - new Date(publishedAt).getTime() <= POST_RENOTIFY_MAX_AGE_MS;
 }
+
+/** "Avvisa i convocati": solo prima della partita e con almeno un convocato. */
+export function canNotifyCallups(
+  matchDate: string | Date,
+  callupCount: number,
+  now: number
+): boolean {
+  return callupCount > 0 && new Date(matchDate).getTime() > now;
+}

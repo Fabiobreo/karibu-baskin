@@ -1,13 +1,14 @@
 "use client";
 
-import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import CallupRow from "@/components/matches/CallupRow";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
+import RoleBadge from "@/components/common/RoleBadge";
+import { groupCallupsByRole } from "@/lib/matches/callupGroups";
 
 interface CallupsListSectionProps {
   callups: CallupWithStat[];
@@ -15,6 +16,18 @@ interface CallupsListSectionProps {
   hasScore: boolean;
   /** Colore salvato della squadra dei convocati: tinta degli avatar. */
   teamColor?: string | null;
+  /** Chi guarda e i suoi figli: le loro righe hanno l'etichetta "Tu" / "Famiglia". */
+  viewer?: CallupViewer;
+}
+
+/**
+ * Le chiavi di chi guarda: il suo account e quelli dei figli che ne hanno uno
+ * (la convocazione sta sull'account, @/lib/person), le schede dei figli.
+ */
+export interface CallupViewer {
+  userId: string | null;
+  familyUserIds: string[];
+  childIds: string[];
 }
 
 /**
@@ -28,6 +41,7 @@ export default function CallupsListSection({
   canSeeCallups,
   hasScore,
   teamColor = null,
+  viewer,
 }: CallupsListSectionProps) {
   const t = useTranslations("matches");
   // Chi ha già fatto l'accesso (account in attesa) non deve sentirsi dire "Accedi".
@@ -57,84 +71,78 @@ export default function CallupsListSection({
     );
   }
 
-  // Raggruppamento: convocati per ruolo vs senza ruolo
-  const byRole = new Map<number, CallupWithStat[]>();
-  const noRole: CallupWithStat[] = [];
+  // Per ruolo crescente; dentro un ruolo per punti se giocata, poi per nome.
+  const groups = groupCallupsByRole(callups, hasScore ? (c) => c.stat?.points ?? 0 : undefined);
 
-  for (const c of callups) {
-    const role = (c.user ?? c.child)?.sportRole ?? null;
-    if (!role) {
-      noRole.push(c);
-      continue;
-    }
-    if (!byRole.has(role)) byRole.set(role, []);
-    byRole.get(role)!.push(c);
-  }
+  const mineLabel = (c: CallupWithStat): string | null => {
+    if (!viewer) return null;
+    if (viewer.userId && c.userId === viewer.userId) return t("callupYou");
+    if (c.userId && viewer.familyUserIds.includes(c.userId)) return t("callupFamily");
+    if (c.childId && viewer.childIds.includes(c.childId)) return t("callupFamily");
+    return null;
+  };
 
-  // Ordine per ruolo crescente; dentro ogni ruolo: punti decrescenti se giocata, altrimenti nome
-  const sortedRoles = [1, 2, 3, 4, 5].filter((r) => byRole.has(r));
-  for (const r of sortedRoles) {
-    byRole
-      .get(r)!
-      .sort((a, b) =>
-        hasScore && (a.stat?.points ?? 0) !== (b.stat?.points ?? 0)
-          ? (b.stat?.points ?? 0) - (a.stat?.points ?? 0)
-          : ((a.user ?? a.child)?.name ?? "").localeCompare((b.user ?? b.child)?.name ?? "")
-      );
-  }
-
-  const groupLabelSx = {
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    fontSize: "0.75rem",
-    display: "block",
-    mb: 1,
-  } as const;
-
+  // Distinta: una card per ruolo, due affiancate da `md`; dentro, su telefono
+  // i giocatori stanno in due colonne, da `md` uno per riga.
   return (
-    <Stack spacing={3}>
-      {sortedRoles.map((role) => {
-        const list = byRole.get(role)!;
-        return (
-          <Box key={role}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <Typography
-                variant="caption"
-                fontWeight={FONT_WEIGHT.semibold}
-                sx={{ ...groupLabelSx, mb: 0, color: "text.secondary" }}
-              >
-                {t("roleWithCount", { role, count: list.length })}
-              </Typography>
-            </Box>
-            <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
-              <Stack divider={<Divider />}>
-                {list.map((c) => (
-                  <CallupRow key={c.id} c={c} hasScore={hasScore} teamColor={teamColor} />
-                ))}
-              </Stack>
-            </Paper>
-          </Box>
-        );
-      })}
-
-      {noRole.length > 0 && (
-        <Box>
-          <Typography
-            variant="caption"
-            fontWeight={FONT_WEIGHT.semibold}
-            sx={{ ...groupLabelSx, color: "text.secondary" }}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "repeat(2, minmax(0, 1fr))" },
+        gap: { xs: 1.5, md: 2 },
+        alignItems: "start",
+      }}
+    >
+      {groups.map(({ role, list }) => (
+        <Paper
+          key={role ?? "none"}
+          component="section"
+          aria-label={
+            role
+              ? t("roleWithCount", { role, count: list.length })
+              : t("unassignedRole", { count: list.length })
+          }
+          elevation={0}
+          variant="outlined"
+          sx={{ overflow: "hidden" }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              px: 1.5,
+              py: 1,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+            }}
           >
-            {t("unassignedRole", { count: noRole.length })}
-          </Typography>
-          <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
-            <Stack divider={<Divider />}>
-              {noRole.map((c) => (
-                <CallupRow key={c.id} c={c} hasScore={hasScore} teamColor={teamColor} />
-              ))}
-            </Stack>
-          </Paper>
-        </Box>
-      )}
-    </Stack>
+            {role && <RoleBadge role={role} />}
+            <Typography variant="body2" color="text.secondary" aria-hidden="true">
+              {role
+                ? t("playersCount", { count: list.length })
+                : t("unassignedRole", { count: list.length })}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "minmax(0, 1fr)" },
+              "& > * + *": { borderTop: { md: "1px solid" }, borderColor: { md: "divider" } },
+            }}
+          >
+            {list.map((c) => (
+              <CallupRow
+                key={c.id}
+                c={c}
+                hasScore={hasScore}
+                teamColor={teamColor}
+                mine={mineLabel(c)}
+              />
+            ))}
+          </Box>
+        </Paper>
+      ))}
+    </Box>
   );
 }

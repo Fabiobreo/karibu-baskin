@@ -5,9 +5,23 @@ import { ROLES, roleColorSx } from "@/lib/constants";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_CHIP_ON_PHONE } from "@/lib/touchTarget";
 
-/** Giocatori che hanno dichiarato "non disponibile": chip compatti per ruolo, non selezionabili. */
-export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneStatRow[] }) {
+interface ConvocazioniUnavailableProps {
+  rows: ConvocazioneStatRow[];
+  /**
+   * Tocco su un nome: lo staff segna la disponibilità al posto del giocatore
+   * (di solito gli ha detto a voce che c'è). La conferma la chiede il padre.
+   */
+  onPick?: (row: ConvocazioneStatRow) => void;
+}
+
+/**
+ * Giocatori che hanno dichiarato "non disponibile": chip compatti per ruolo.
+ * Non si convocano da qui: toccando un nome lo staff ne segna prima la
+ * disponibilità, così la risposta e la convocazione non si contraddicono.
+ */
+export default function ConvocazioniUnavailable({ rows, onPick }: ConvocazioniUnavailableProps) {
   if (rows.length === 0) return null;
 
   const chipSx = {
@@ -18,6 +32,12 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
     color: "text.secondary",
     border: (theme: Theme) => `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
     "& .MuiChip-label": { px: 1 },
+    ...(onPick && {
+      cursor: "pointer",
+      // Si tocca: bordo arancio al passaggio, come ogni elemento cliccabile.
+      "&:hover, &:focus-visible": { borderColor: "primary.main", color: "text.primary" },
+      ...TOUCH_CHIP_ON_PHONE,
+    }),
   };
 
   const noRole = rows.filter((row) => row.candidate.sportRole == null);
@@ -32,6 +52,11 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
       >
         Non disponibili ({rows.length})
       </Typography>
+      {onPick && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+          Qualcuno ti ha detto che invece c&apos;è? Tocca il nome e segna la sua disponibilità.
+        </Typography>
+      )}
       <Stack spacing={0.75}>
         {ROLES.map((r) => {
           const inRole = rows.filter((row) => row.candidate.sportRole === r);
@@ -57,6 +82,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                   label={row.candidate.name}
                   size="small"
                   sx={chipSx}
+                  {...(onPick && { onClick: () => onPick(row) })}
                 />
               ))}
             </Box>
@@ -87,6 +113,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                 label={row.candidate.name}
                 size="small"
                 sx={chipSx}
+                {...(onPick && { onClick: () => onPick(row) })}
               />
             ))}
           </Box>

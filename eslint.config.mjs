@@ -146,13 +146,14 @@ export default [
   {
     // Eccezioni alla scala delle dimensioni (UX-31): qui il testo non passa dal
     // tema MUI. Email (i client non gestiscono bene i rem), immagini a
-    // dimensione fissa (Open Graph, tabellino, squadre per html2canvas): i px
-    // sono quelli del disegno. I pesi invece restano sulla scala (FONT_WEIGHT).
+    // dimensione fissa (Open Graph, tabellino, squadre e convocati per
+    // html2canvas): i px sono quelli del disegno. I pesi invece restano sulla scala (FONT_WEIGHT).
     files: [
       "src/emails/**",
       "src/app/**/opengraph-image.tsx",
       "src/app/api/matches/[[]matchId]/tabellino/route.tsx",
       "src/components/training/ShareTeamsButton.tsx",
+      "src/components/matches/CallupsShareCard.tsx",
     ],
     rules: {
       "no-restricted-syntax": [

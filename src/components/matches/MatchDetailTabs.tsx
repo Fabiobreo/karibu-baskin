@@ -14,6 +14,9 @@ import type {
 } from "@/components/matches/matchDetailTypes";
 import MatchCallupsTab from "@/components/matches/tabs/MatchCallupsTab";
 import MatchStatsTab from "@/components/matches/tabs/MatchStatsTab";
+import CallupsActions from "@/components/matches/CallupsActions";
+import type { CallupsShareInfo } from "@/components/matches/CallupsShareCard";
+import type { CallupViewer } from "@/components/matches/sections/CallupsListSection";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
@@ -36,6 +39,11 @@ interface Props {
   opponentName: string;
   matchId: string;
   isStaff: boolean;
+  /** Testata dell'immagine dei convocati da condividere (solo staff). */
+  shareInfo?: CallupsShareInfo;
+  /** "Avvisa i convocati" possibile: partita non iniziata, almeno un convocato. */
+  canNotifyCallups?: boolean;
+  viewer?: CallupViewer;
 }
 
 /** Orchestratore dei tab della pagina partita: Convocati e Statistiche. */
@@ -52,6 +60,9 @@ export default function MatchDetailTabs({
   opponentName,
   matchId,
   isStaff,
+  shareInfo,
+  canNotifyCallups = false,
+  viewer,
 }: Props) {
   const t = useTranslations("matches");
   const hasStats = stats.length > 0;
@@ -93,6 +104,15 @@ export default function MatchDetailTabs({
   }));
 
   const callupsLabel = `${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`;
+  const actions =
+    isStaff && shareInfo ? (
+      <CallupsActions
+        matchId={matchId}
+        callups={callups}
+        shareInfo={shareInfo}
+        canNotify={canNotifyCallups}
+      />
+    ) : null;
   const callupsContent = (headingComponent?: "h3") => (
     <MatchCallupsTab
       callups={callupsWithStats}
@@ -105,8 +125,8 @@ export default function MatchDetailTabs({
       playersTeamColor={playersTeamColor}
       groupName={groupName}
       opponentName={opponentName}
-      matchId={matchId}
-      isStaff={isStaff}
+      actions={headingComponent ? undefined : actions}
+      viewer={viewer}
       headingComponent={headingComponent}
     />
   );
@@ -117,15 +137,27 @@ export default function MatchDetailTabs({
   if (!showStatsTab) {
     return (
       <Box component="section" aria-labelledby="match-callups-title">
-        <Typography
-          id="match-callups-title"
-          component="h2"
-          variant="h6"
-          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        {/* Titolo e azioni dello staff sulla stessa riga. */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
         >
-          <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} aria-hidden="true" />
-          {callupsLabel}
-        </Typography>
+          <Typography
+            id="match-callups-title"
+            component="h2"
+            variant="h6"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} aria-hidden="true" />
+            {callupsLabel}
+          </Typography>
+          {actions}
+        </Box>
         {callupsContent("h3")}
       </Box>
     );

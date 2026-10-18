@@ -1,10 +1,11 @@
 "use client";
 
-import { Box, Button, Divider } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import { useTranslations } from "next-intl";
+import type React from "react";
+import { Box, Divider } from "@mui/material";
 import TopScorersSection from "@/components/matches/sections/TopScorersSection";
-import CallupsListSection from "@/components/matches/sections/CallupsListSection";
+import CallupsListSection, {
+  type CallupViewer,
+} from "@/components/matches/sections/CallupsListSection";
 import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
 import StandingsSection from "@/components/matches/sections/StandingsSection";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
@@ -22,8 +23,12 @@ interface MatchCallupsTabProps {
   playersTeamColor?: string | null;
   groupName: string | null;
   opponentName: string;
-  matchId: string;
-  isStaff: boolean;
+  /**
+   * Azioni dello staff (Condividi, Avvisa, Gestisci), già pronte. Assenti
+   * quando le mette il titolo sopra (scheda unica) o per chi non è staff.
+   */
+  actions?: React.ReactNode;
+  viewer?: CallupViewer;
   /** Titoli di precedenti e classifica, quando la scheda ha un h2 sopra (scheda unica). */
   headingComponent?: "h3";
 }
@@ -40,11 +45,10 @@ export default function MatchCallupsTab({
   playersTeamColor = null,
   groupName,
   opponentName,
-  matchId,
-  isStaff,
+  actions,
+  viewer,
   headingComponent,
 }: MatchCallupsTabProps) {
-  const t = useTranslations("matches");
   // Top 3 marcatori (già ordinati per punti desc dalla query)
   const top3 = stats.slice(0, 3);
   const hasContext =
@@ -52,18 +56,7 @@ export default function MatchCallupsTab({
 
   return (
     <Box sx={{ pt: 3 }}>
-      {isStaff && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Button
-            href={`/admin/partite/${matchId}/convocazioni`}
-            variant="outlined"
-            size="small"
-            startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-          >
-            {t("manageCallups")}
-          </Button>
-        </Box>
-      )}
+      {actions && <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>{actions}</Box>}
 
       {hasScore && <TopScorersSection top3={top3} teamColor={playersTeamColor} />}
 
@@ -72,6 +65,7 @@ export default function MatchCallupsTab({
         canSeeCallups={canSeeCallups}
         hasScore={hasScore}
         teamColor={playersTeamColor}
+        viewer={viewer}
       />
 
       {hasContext && (

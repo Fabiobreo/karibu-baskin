@@ -543,6 +543,10 @@ model Match {
   // con < roster minimo). Usato per garantire idempotenza del cron.
   callupReminderSentAt DateTime?
 
+  // Ultimo "Avvisa i convocati" mandato a mano dallo staff (null = mai). Tiene
+  // dieci minuti fra due avvisi, come "Avvisa di nuovo" di eventi e news.
+  callupsNotifiedAt DateTime?
+
   // Vecchia scheda avversario compilata dopo la partita. La valutazione ora sta
   // sull'avversaria (OpposingTeam.scoutingProfile) e la nota di quella partita
   // in MatchOpponentNote. Nessuna schermata la legge né la scrive più.
@@ -636,13 +640,17 @@ model MatchMvp {
 // partita futura. Usato dai coach per le convocazioni.
 
 model MatchAvailability {
-  id        String   @id @default(cuid())
-  matchId   String
-  userId    String?
-  childId   String?
-  available Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  matchId    String
+  userId     String?
+  childId    String?
+  available  Boolean
+  // true se la risposta l'ha segnata lo staff ("Segna disponibile" nelle
+  // convocazioni), false se l'ha data la persona o un genitore. Chi l'ha fatto
+  // sta nel registro attività (SET_AVAILABILITY).
+  setByStaff Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   match Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
   user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -669,6 +677,8 @@ enum AppNotificationType {
   NEW_POLL // nuovo sondaggio (post con poll allegato)
   BADGE_UNLOCKED // traguardo/badge sbloccato da un giocatore
   NEW_EVENT // nuovo evento generico pubblicato
+  MATCH_CALLUP // convocato (o non più convocato) per una partita
+  MATCH_AVAILABILITY // disponibilità segnata dallo staff, o un convocato che dice di no
 }
 
 // Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione

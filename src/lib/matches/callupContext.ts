@@ -4,6 +4,7 @@
 // (2 squadre, una per lato del match).
 
 import { prisma } from "@/lib/db";
+import { loadAvailabilityLookup } from "@/lib/matches/availability";
 import { computeCandidateStats } from "@/lib/matches/callupStats";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import type {
@@ -27,6 +28,7 @@ export interface TeamCallupContext {
     seasonCallups: number;
     daysSinceLastCallup: number | null;
     availability: boolean | null; // true=disponibile, false=non disponibile, null=non risposto
+    availabilityByStaff: boolean; // la risposta l'ha segnata lo staff
     loanFrom?: string | null; // se valorizzato, è un prestito: nome della squadra di provenienza
     fromTeam?: string | null; // Karibu di stagione: squadra (o squadre) in cui il giocatore è tesserato
   }>;
@@ -293,50 +295,6 @@ export async function buildTeamCallupContext({
     childId: c.childId,
   }));
 
-  // Account e scheda figlio collegata sono una persona sola (@/lib/person): la
-  // risposta si legge su tutte e due le chiavi, quella dell'account per prima.
-  const linkedCards =
-    candidateUserIds.length > 0 || candidateChildIds.length > 0
-      ? await prisma.child.findMany({
-          where: {
-            OR: [{ userId: { in: candidateUserIds } }, { id: { in: candidateChildIds } }],
-            userId: { not: null },
-          },
-          select: { id: true, userId: true },
-        })
-      : [];
-  const cardOfAccount = new Map(linkedCards.map((c) => [c.userId!, c.id]));
-  const accountOfCard = new Map(linkedCards.map((c) => [c.id, c.userId!]));
-  const rowUserIds = [...new Set([...candidateUserIds, ...accountOfCard.values()])];
-  const rowChildIds = [...new Set([...candidateChildIds, ...cardOfAccount.values()])];
-
-  const availabilities =
-    rowUserIds.length > 0 || rowChildIds.length > 0
-      ? await prisma.matchAvailability.findMany({
-          where: {
-            matchId,
-            OR: [
-              rowUserIds.length > 0 ? { userId: { in: rowUserIds } } : null,
-              rowChildIds.length > 0 ? { childId: { in: rowChildIds } } : null,
-            ].filter((x): x is NonNullable<typeof x> => x !== null),
-          },
-          select: { userId: true, childId: true, available: true },
-        })
-      : [];
-
-  const rowByUserId = new Map<string, boolean>();
-  const rowByChildId = new Map<string, boolean>();
-  for (const a of availabilities) {
-    if (a.userId) rowByUserId.set(a.userId, a.available);
-    if (a.childId) rowByChildId.set(a.childId, a.available);
-  }
-  const availByUserId = {
-    get: (id: string) => rowByUserId.get(id) ?? rowByChildId.get(cardOfAccount.get(id) ?? ""),
-  };
-  const availByChildId = {
-    get: (id: string) => rowByUserId.get(accountOfCard.get(id) ?? "") ?? rowByChildId.get(id),
-  };
-
   const stats = computeCandidateStats({
     candidates,
     windowSessions: windowSessionsInput,
@@ -356,6 +314,14 @@ export async function buildTeamCallupContext({
   const loanChildIds = existingCallups
     .map((c) => c.childId)
     .filter((id): id is string => !!id && !memberChildIdSet.has(id));
+
+  // Account e scheda figlio collegata sono una persona sola (@/lib/person): la
+  // risposta si legge su tutte e due le chiavi, quella dell'account per prima.
+  const answers = await loadAvailabilityLookup(
+    matchId,
+    [...candidateUserIds, ...loanUserIds],
+    [...candidateChildIds, ...loanChildIds]
+  );
 
   const [loanUsers, loanChildren, loanMemberships] = await Promise.all([
     loanUserIds.length > 0
@@ -428,7 +394,8 @@ export async function buildTeamCallupContext({
       eligibleSessions: 0,
       seasonCallups: 0,
       daysSinceLastCallup: null,
-      availability: availByUserId.get(u.id) ?? null,
+      availability: answers.forUser(u.id)?.available ?? null,
+      availabilityByStaff: answers.forUser(u.id)?.setByStaff ?? false,
       loanFrom: loanTeamByUser.get(u.id) ?? "Prestito",
     })),
     ...loanChildren.map((c) => ({
@@ -450,7 +417,8 @@ export async function buildTeamCallupContext({
       eligibleSessions: 0,
       seasonCallups: 0,
       daysSinceLastCallup: null,
-      availability: availByChildId.get(c.id) ?? null,
+      availability: answers.forChild(c.id)?.available ?? null,
+      availabilityByStaff: answers.forChild(c.id)?.setByStaff ?? false,
       loanFrom: loanTeamByChild.get(c.id) ?? "Prestito",
     })),
   ];
@@ -469,11 +437,9 @@ export async function buildTeamCallupContext({
         eligibleSessions: s.eligibleSessions,
         seasonCallups: s.seasonCallups,
         daysSinceLastCallup: s.daysSinceLastCallup,
-        // Default: chi non ha risposto è considerato NON disponibile.
-        availability:
-          s.candidate.kind === "user"
-            ? (availByUserId.get(s.candidate.id) ?? false)
-            : (availByChildId.get(s.candidate.id) ?? false),
+        // null = non ha risposto: non è un no, si può convocare.
+        availability: answers.forPerson(personKey(s.candidate))?.available ?? null,
+        availabilityByStaff: answers.forPerson(personKey(s.candidate))?.setByStaff ?? false,
         loanFrom: null as string | null,
         fromTeam: fromTeamsByKey.get(`${s.candidate.kind}-${s.candidate.id}`)?.join(", ") ?? null,
       })),
@@ -484,6 +450,10 @@ export async function buildTeamCallupContext({
       .map((c) => c.childId)
       .filter((id): id is string => !!id),
   };
+}
+
+function personKey(c: { kind: "user" | "child"; id: string }) {
+  return c.kind === "user" ? { userId: c.id } : { childId: c.id };
 }
 
 export const WINDOW_DAYS_FOR_PRESENCES = WINDOW_DAYS;

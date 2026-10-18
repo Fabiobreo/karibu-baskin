@@ -8,6 +8,8 @@ import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 import { inBackground } from "@/lib/background";
 import { hasStarted } from "@/lib/matches/matchPhase";
+import { loadAvailabilityLookup } from "@/lib/matches/availability";
+import { notifyCallupChanges, type PlayerKey } from "@/lib/notifications/matchNotify";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -88,41 +90,42 @@ export async function PUT(req: Request, { params }: Params) {
   const loanLookup = await buildLoanLookup(matchId, effectiveTeamId);
   if (!loanLookup) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
 
-  // Non si possono convocare giocatori che hanno marcato "non disponibile".
-  // Chi non ha risposto è considerato non disponibile (default).
-  // Eccezione: i giocatori in prestito (non membri della squadra) possono essere
-  // aggiunti dallo staff anche senza conferma di disponibilità (override).
-  // A partita iniziata il controllo non c'è: lo staff registra chi ha giocato,
-  // e per le partite inserite a posteriori le disponibilità non esistono.
-  const checkUserIds = userIds.filter((id) => !isLoanParticipation(loanLookup, { userId: id }));
-  const checkChildIds = childIds.filter((id) => !isLoanParticipation(loanLookup, { childId: id }));
-  if (
-    !hasStarted(match.date, Date.now()) &&
-    (checkUserIds.length > 0 || checkChildIds.length > 0)
-  ) {
-    const availables = await prisma.matchAvailability.findMany({
-      where: {
-        matchId,
-        available: true,
-        OR: [
-          checkUserIds.length > 0 ? { userId: { in: checkUserIds } } : null,
-          checkChildIds.length > 0 ? { childId: { in: checkChildIds } } : null,
-        ].filter((x): x is NonNullable<typeof x> => x !== null),
-      },
-      select: { userId: true, childId: true },
-    });
-    const availableUserIds = new Set(
-      availables.map((a) => a.userId).filter((id): id is string => !!id)
+  // Tutti i convocati della partita prima del salvataggio, su entrambi i lati:
+  // dicono chi è nuovo (da controllare e da avvisare) e chi esce.
+  const beforeAll = await prisma.matchCallup.findMany({
+    where: { matchId },
+    select: { userId: true, childId: true, teamId: true },
+  });
+  const wasCalled = (p: { userId?: string; childId?: string }) =>
+    beforeAll.some((c) => (p.userId ? c.userId === p.userId : c.childId === p.childId));
+
+  const started = hasStarted(match.date, Date.now());
+
+  // Prima della partita non si convoca chi ha detto che non c'è: per farlo lo
+  // staff segna prima la sua disponibilità ("Segna disponibile"), così la
+  // risposta e la convocazione non si contraddicono. Chi non ha risposto si
+  // convoca: non rispondere non è un no, e la convocazione glielo fa sapere.
+  // Restano convocabili i prestiti (la disponibilità non gli è stata chiesta)
+  // e chi era già convocato e ha cambiato idea dopo: altrimenti un solo "no"
+  // impedirebbe di salvare tutta la squadra. A partita iniziata niente
+  // controllo: lo staff registra chi ha giocato, anche a posteriori.
+  if (!started) {
+    const checkUserIds = userIds.filter(
+      (id) => !isLoanParticipation(loanLookup, { userId: id }) && !wasCalled({ userId: id })
     );
-    const availableChildIds = new Set(
-      availables.map((a) => a.childId).filter((id): id is string => !!id)
+    const checkChildIds = childIds.filter(
+      (id) => !isLoanParticipation(loanLookup, { childId: id }) && !wasCalled({ childId: id })
     );
-    const blocked: string[] = [];
-    for (const id of checkUserIds) if (!availableUserIds.has(id)) blocked.push(id);
-    for (const id of checkChildIds) if (!availableChildIds.has(id)) blocked.push(id);
-    if (blocked.length > 0) {
+    const answers = await loadAvailabilityLookup(matchId, checkUserIds, checkChildIds);
+    const declined = [
+      ...checkUserIds.filter((id) => answers.forUser(id)?.available === false),
+      ...checkChildIds.filter((id) => answers.forChild(id)?.available === false),
+    ];
+    if (declined.length > 0) {
       return NextResponse.json(
-        { error: "Non puoi convocare giocatori non disponibili" },
+        {
+          error: "Fra i convocati c'è chi ha detto che non c'è: segna prima la sua disponibilità",
+        },
         { status: 400 }
       );
     }
@@ -202,6 +205,31 @@ export async function PUT(req: Request, { params }: Params) {
       }),
       "audit update callups"
     );
+  }
+
+  // Avvisi solo prima della partita: dopo, lo staff registra chi ha giocato.
+  // Entra chi non era convocato su nessun lato (passare da un lato all'altro
+  // di un'amichevole interna non è una convocazione nuova). Esce chi era su
+  // questo lato e non c'è più; nelle amichevoli interne no, perché il client
+  // salva un lato alla volta e chi cambia lato risulterebbe prima tolto.
+  if (!started) {
+    const added: PlayerKey[] = [
+      ...userIds.filter((id) => !wasCalled({ userId: id })).map((id) => ({ userId: id })),
+      ...childIds.filter((id) => !wasCalled({ childId: id })).map((id) => ({ childId: id })),
+    ];
+    const removed: PlayerKey[] = match.opponentTeamId
+      ? []
+      : [
+          ...before
+            .filter((c) => c.userId && !userIds.includes(c.userId))
+            .map((c) => ({ userId: c.userId })),
+          ...before
+            .filter((c) => !c.userId && c.childId && !childIds.includes(c.childId))
+            .map((c) => ({ childId: c.childId })),
+        ];
+    if (added.length > 0 || removed.length > 0) {
+      inBackground(notifyCallupChanges(matchId, added, removed), "notify callups");
+    }
   }
 
   return NextResponse.json({ ok: true, total: userIds.length + childIds.length });

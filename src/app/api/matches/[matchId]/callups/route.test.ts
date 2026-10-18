@@ -20,8 +20,15 @@ vi.mock("@/lib/db", () => ({
     matchAvailability: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    child: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     $transaction: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/notifications/matchNotify", () => ({
+  notifyCallupChanges: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
@@ -40,6 +47,7 @@ vi.mock("@/lib/audit", () => ({
 import { GET, PUT } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { notifyCallupChanges } from "@/lib/notifications/matchNotify";
 
 type PrismaMock = {
   matchCallup: { findMany: Mock; deleteMany: Mock; createMany: Mock };
@@ -49,6 +57,7 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
+const mockNotify = notifyCallupChanges as Mock;
 
 const makeParams = (matchId: string) =>
   ({ params: Promise.resolve({ matchId }) }) as { params: Promise<{ matchId: string }> };
@@ -217,19 +226,80 @@ describe("PUT /api/matches/[matchId]/callups", () => {
       p.matchAvailability.findMany.mockResolvedValue([]);
     });
 
-    it("partita futura: 400 se un giocatore non ha dato la disponibilità", async () => {
+    it("partita futura: chi non ha risposto si convoca, e riceve l'avviso", async () => {
       matchOn(new Date(Date.now() + 7 * DAY));
+      const res = await putCallups();
+      expect(res.status).toBe(200);
+      expect(p.$transaction).toHaveBeenCalledOnce();
+      expect(mockNotify).toHaveBeenCalledWith(
+        "match-1",
+        [{ userId: "user-1" }, { childId: "child-1" }],
+        []
+      );
+    });
+
+    it("partita futura: 400 se un giocatore nuovo ha detto di no", async () => {
+      matchOn(new Date(Date.now() + 7 * DAY));
+      p.matchAvailability.findMany.mockResolvedValue([
+        { userId: "user-1", childId: null, available: false, setByStaff: false },
+      ]);
       const res = await putCallups();
       expect(res.status).toBe(400);
       expect(p.$transaction).not.toHaveBeenCalled();
+      expect(mockNotify).not.toHaveBeenCalled();
     });
 
-    it("partita già giocata: salva senza guardare le disponibilità", async () => {
+    it("partita futura: chi era già convocato e poi ha detto di no non blocca il salvataggio", async () => {
+      matchOn(new Date(Date.now() + 7 * DAY));
+      p.matchCallup.findMany.mockResolvedValue([
+        { userId: "user-1", childId: null, teamId: "team-1" },
+      ]);
+      p.matchAvailability.findMany.mockResolvedValue([
+        { userId: "user-1", childId: null, available: false, setByStaff: false },
+      ]);
+      const res = await putCallups();
+      expect(res.status).toBe(200);
+      // Solo il nuovo viene avvisato.
+      expect(mockNotify).toHaveBeenCalledWith("match-1", [{ childId: "child-1" }], []);
+    });
+
+    it("partita futura: chi esce dalla lista riceve l'avviso", async () => {
+      matchOn(new Date(Date.now() + 7 * DAY));
+      p.matchCallup.findMany.mockResolvedValue([
+        { userId: "user-1", childId: null, teamId: "team-1" },
+        { userId: "user-9", childId: null, teamId: "team-1" },
+        { userId: null, childId: "child-1", teamId: "team-1" },
+      ]);
+      const res = await putCallups();
+      expect(res.status).toBe(200);
+      expect(mockNotify).toHaveBeenCalledWith("match-1", [], [{ userId: "user-9" }]);
+    });
+
+    it("amichevole interna: niente avviso di uscita né di nuova convocazione per chi cambia lato", async () => {
+      p.match.findUnique.mockResolvedValue({
+        teamId: "team-1",
+        opponentTeamId: "team-2",
+        date: new Date(Date.now() + 7 * DAY),
+        team: { id: "team-1", season: "2025-26", isMixed: false },
+        opponentTeam: { id: "team-2", season: "2025-26", isMixed: false },
+      });
+      // user-1 era sull'altro lato, user-9 su questo.
+      p.matchCallup.findMany.mockResolvedValue([
+        { userId: "user-1", childId: null, teamId: "team-2" },
+        { userId: "user-9", childId: null, teamId: "team-1" },
+      ]);
+      const res = await putCallups();
+      expect(res.status).toBe(200);
+      expect(mockNotify).toHaveBeenCalledWith("match-1", [{ childId: "child-1" }], []);
+    });
+
+    it("partita già giocata: salva senza guardare le disponibilità e senza avvisi", async () => {
       matchOn(new Date(Date.now() - 200 * DAY));
       const res = await putCallups();
       expect(res.status).toBe(200);
       expect(p.matchAvailability.findMany).not.toHaveBeenCalled();
       expect(p.$transaction).toHaveBeenCalledOnce();
+      expect(mockNotify).not.toHaveBeenCalled();
     });
   });
 

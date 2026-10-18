@@ -13,6 +13,7 @@ import { ROLES, TEAM_META } from "@/lib/constants";
 import { BRAND, HERO_TEXT, NEUTRAL, ROLE_COLORS } from "@/lib/palette";
 import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { shareElementAsImage, shareFileName } from "@/lib/shareImage";
 
 interface Props {
   teams: TeamsData;
@@ -43,35 +44,6 @@ function formatDateLine(
 const INK = NEUTRAL.light;
 
 /**
- * Crea l'immagine delle squadre dalla sorgente nascosta e la condivide (o la
- * scarica dove il browser non condivide file). `AbortError` = l'utente ha chiuso
- * il foglio di condivisione: non è un errore.
- */
-async function shareTeamsImage(source: HTMLElement, title: string, sessionTitle: string) {
-  const html2canvas = (await import("html2canvas")).default;
-  const canvas = await html2canvas(source, {
-    scale: 2,
-    backgroundColor: INK.paper,
-    logging: false,
-    useCORS: false,
-  });
-  const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/png")
-  );
-  const file = new File([blob], "squadre.png", { type: "image/png" });
-  if (navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ files: [file], title });
-  } else {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `squadre-${sessionTitle.replace(/\s+/g, "-").toLowerCase()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-}
-
-/**
  * "Condividi" con l'etichetta (UX-47): l'azione più frequente sulle squadre,
  * per tutti. L'immagine la disegna `TeamsShareCard`, fuori schermo.
  */
@@ -84,11 +56,10 @@ export default function ShareTeamsButton(props: Props) {
     if (!cardRef.current || loading) return;
     setLoading(true);
     try {
-      await shareTeamsImage(
-        cardRef.current,
-        tShare("teamsSubject", { title: props.sessionTitle }),
-        props.sessionTitle
-      );
+      await shareElementAsImage(cardRef.current, {
+        title: tShare("teamsSubject", { title: props.sessionTitle }),
+        fileName: shareFileName("squadre", props.sessionTitle),
+      });
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
         console.error("[share teams]", err);

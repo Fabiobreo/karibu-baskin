@@ -59,7 +59,9 @@ export default async function HomePage({
 
   const matchesBlock = (
     <Suspense fallback={<HomeSectionSkeleton variant="matches" />}>
-      <ProssimePartiteHome />
+      <ProssimePartiteHome
+        viewer={isMember && userId ? { id: userId, name: userSession?.user?.name ?? "" } : null}
+      />
     </Suspense>
   );
 

@@ -48,6 +48,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { canNotifyCallups } from "@/lib/notifications/renotifyRules";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -360,7 +361,10 @@ export default async function MatchDetailPage({ params }: Props) {
       .filter((e): e is MatchAvailabilityEntity => e !== null);
   }
 
-  const [prevMatchesRaw, ourGroupMatchesRaw, groupMatchesRaw, availabilityEntities] =
+  // Figli di chi guarda (e la sua scheda): nella distinta le loro righe hanno
+  // l'etichetta "Famiglia". Solo per i tesserati, che vedono i convocati.
+  const viewerId = viewerIsMember ? (session?.user?.id ?? null) : null;
+  const [prevMatchesRaw, ourGroupMatchesRaw, groupMatchesRaw, availabilityEntities, family] =
     await Promise.all([
       opponentWhere
         ? prisma.match.findMany({
@@ -401,7 +405,20 @@ export default async function MatchDetailPage({ params }: Props) {
           })
         : Promise.resolve([]),
       loadAvailabilityEntities(),
+      viewerId
+        ? prisma.child.findMany({
+            where: { OR: [guardianOf(viewerId), { userId: viewerId }] },
+            select: { id: true, userId: true },
+          })
+        : Promise.resolve([]),
     ]);
+  const callupViewer = viewerId
+    ? {
+        userId: viewerId,
+        familyUserIds: family.flatMap((c) => (c.userId && c.userId !== viewerId ? [c.userId] : [])),
+        childIds: family.map((c) => c.id),
+      }
+    : undefined;
 
   const groupStandings =
     match.groupId && ourGroupMatchesRaw.length > 0
@@ -903,6 +920,21 @@ export default async function MatchDetailPage({ params }: Props) {
               opponentName={opponentName}
               matchId={match.id}
               isStaff={isStaff}
+              viewer={callupViewer}
+              canNotifyCallups={isStaff && canNotifyCallups(match.date, callups.length, now)}
+              shareInfo={
+                isStaff
+                  ? {
+                      title: match.isHome
+                        ? `${match.team.name} vs ${opponentName}`
+                        : `${opponentName} vs ${match.team.name}`,
+                      when: formatRome(new Date(match.date), "EEEE d MMMM · HH:mm", {
+                        locale: dateLocale,
+                      }).replace(/^./, (c) => c.toUpperCase()),
+                      place: location.label ?? t("whereWhen.locationTbc"),
+                    }
+                  : undefined
+              }
             />
           )}
         </Box>

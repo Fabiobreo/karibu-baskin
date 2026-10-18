@@ -37,6 +37,9 @@ import type {
 } from "@/lib/matches/opponentSheet";
 
 import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { useNotifyCallups } from "@/hooks/useNotifyCallups";
+import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 /** L'avversaria in anagrafica di questa partita, con la sua scheda (solo staff). */
 export interface ConvocazioniOpponent {
   id: string;
@@ -63,6 +66,8 @@ interface Props {
   /** Assente nelle amichevoli interne e contro un'avversaria fuori anagrafica. */
   opponent?: ConvocazioniOpponent | null;
   loanPool?: LoanCandidate[];
+  /** Convocati già salvati: a loro va "Avvisa i convocati". */
+  savedCallupCount?: number;
 }
 
 /** Costruisce una riga candidato per un prestito (statistiche neutre). */
@@ -75,6 +80,7 @@ function loanToRow(lc: LoanCandidate): ConvocazioneStatRow {
     seasonCallups: 0,
     daysSinceLastCallup: null,
     availability: null,
+    availabilityByStaff: false,
     loanFrom: lc.teamName,
   };
 }
@@ -87,6 +93,7 @@ export default function ConvocazioniClient({
   teams,
   opponent = null,
   loanPool = [],
+  savedCallupCount = 0,
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -110,6 +117,13 @@ export default function ConvocazioniClient({
     new Map()
   );
 
+  // Disponibilità segnate dallo staff in questa pagina, finché il refresh non
+  // le porta dal server (chiave "kind-id").
+  const [staffAnswers, setStaffAnswers] = useState<Map<string, boolean>>(new Map());
+  const { openConfirm, ConfirmDialog } = useConfirmDialog();
+  const notify = useNotifyCallups(matchId, savedCallupCount);
+  const canNotify = !matchStarted && savedCallupCount > 0;
+
   const activeTeam = teams[activeIndex] ?? teams[0];
   const {
     selectionByTeam,
@@ -131,8 +145,11 @@ export default function ConvocazioniClient({
     const loans = (loanRowsByTeam.get(activeTeam.id) ?? []).filter(
       (r) => !baseKeys.has(`${r.candidate.kind}-${r.candidate.id}`)
     );
-    return [...base, ...loans];
-  }, [activeTeam.stats, activeTeam.id, loanRowsByTeam]);
+    return [...base, ...loans].map((r) => {
+      const answer = staffAnswers.get(`${r.candidate.kind}-${r.candidate.id}`);
+      return answer === undefined ? r : { ...r, availability: answer, availabilityByStaff: true };
+    });
+  }, [activeTeam.stats, activeTeam.id, loanRowsByTeam, staffAnswers]);
 
   // Chiavi già presenti tra i candidati attivi (per filtrare il pool prestiti)
   const activeExcludeKeys = useMemo(() => {
@@ -154,22 +171,60 @@ export default function ConvocazioniClient({
     toggle(row); // seleziona subito il prestito
   }
 
+  // In elenco: chi ha detto di sì, chi non ha risposto, e chi era già
+  // convocato prima di dire di no (va visto, per toglierlo). Gli altri "no"
+  // stanno sotto, in "Non disponibili".
   const filteredAvailable = useMemo(() => {
     return activeStats.filter(
       (s) =>
-        (matchStarted || s.availability !== false) &&
+        (matchStarted || s.availability !== false || isSelected(s)) &&
         (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
-  }, [activeStats, roleFilter, matchStarted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStats, roleFilter, matchStarted, selectionByTeam, activeIndex]);
 
   const filteredUnavailable = useMemo(() => {
     if (matchStarted) return [];
     return activeStats.filter(
       (s) =>
         s.availability === false &&
+        !isSelected(s) &&
         (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
-  }, [activeStats, roleFilter, matchStarted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStats, roleFilter, matchStarted, selectionByTeam, activeIndex]);
+
+  // "Segna disponibile": lo staff risponde al posto del giocatore, poi lo
+  // convoca. La famiglia riceve un avviso e può correggere.
+  async function markAvailable(row: ConvocazioneStatRow) {
+    const key = `${row.candidate.kind}-${row.candidate.id}`;
+    try {
+      const res = await fetch(`/api/matches/${matchId}/availability/staff`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: row.candidate.kind, id: row.candidate.id, available: true }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      setStaffAnswers((prev) => new Map(prev).set(key, true));
+      if (!isSelected(row) && selectedElsewhere(row) === null) toggle(row);
+      showToast({
+        message: `Disponibilità di ${row.candidate.name} segnata. Salva per confermare le convocazioni`,
+        severity: "success",
+      });
+      router.refresh();
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
+    }
+  }
+
+  function confirmMarkAvailable(row: ConvocazioneStatRow) {
+    openConfirm(
+      `${row.candidate.name} ha detto che non c'è`,
+      "Ti ha detto che invece ci sarà? Segno la sua disponibilità e il nome passa fra i selezionati. La famiglia riceve un avviso e può correggere la risposta.",
+      () => void markAvailable(row),
+      { confirmLabel: "Segna disponibile", confirmColor: "primary" }
+    );
+  }
 
   const sorted = useMemo(() => {
     const byName = (a: ConvocazioneStatRow, b: ConvocazioneStatRow) =>
@@ -313,7 +368,12 @@ export default function ConvocazioniClient({
         setSaveError(errors.join("; "));
         return;
       }
-      showToast({ message: `Salvati ${totalSelectedAll} convocati`, severity: "success" });
+      showToast({
+        message: matchStarted
+          ? `Salvati ${totalSelectedAll} convocati`
+          : `Salvati ${totalSelectedAll} convocati. Chi entra o esce dalla lista riceve un avviso`,
+        severity: "success",
+      });
       router.refresh();
     } catch (err) {
       setSaveError(errorText(err, GENERIC_ERROR_IT));
@@ -326,6 +386,18 @@ export default function ConvocazioniClient({
     <Box>
       <PageHeader
         title={matchLabel}
+        action={
+          canNotify ? (
+            <Button
+              variant="outlined"
+              onClick={notify.requestNotify}
+              disabled={notify.isPending}
+              startIcon={<NotificationsActiveOutlinedIcon />}
+            >
+              Avvisa i convocati
+            </Button>
+          ) : undefined
+        }
         breadcrumb={[
           { label: "Dashboard", href: "/admin" },
           { label: "Partite", href: "/admin/partite" },
@@ -433,7 +505,9 @@ export default function ConvocazioniClient({
         showNoAnswer={!matchStarted}
       />
 
-      <ConvocazioniUnavailable rows={filteredUnavailable} />
+      <ConvocazioniUnavailable rows={filteredUnavailable} onPick={confirmMarkAvailable} />
+      {ConfirmDialog}
+      {notify.ConfirmDialog}
 
       <ConvocazioniLoanDialog
         open={loanDialogOpen}

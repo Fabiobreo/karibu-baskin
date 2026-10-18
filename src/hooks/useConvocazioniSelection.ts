@@ -87,10 +87,14 @@ export function useConvocazioniSelection(
   }
 
   function selectAll() {
-    // "Tutti" seleziona solo i disponibili (esclude chi ha marcato Non
-    // disponibile) e non ruba all'altra squadra chi vi è già convocato.
+    // "Tutti" seleziona chi ha detto di esserci (più i prestiti già scelti, a
+    // cui la disponibilità non si chiede): chi non ha risposto si convoca uno
+    // per uno, sapendo che non ha confermato. Non ruba all'altra squadra chi
+    // vi è già convocato.
     const pickable = activeTeam.stats.filter(
-      (s) => (ignoreAvailability || s.availability !== false) && selectedElsewhere(s) === null
+      (s) =>
+        (ignoreAvailability || s.availability === true || !!s.loanFrom) &&
+        selectedElsewhere(s) === null
     );
     setSelectionByTeam((prev) => {
       const next = new Map(prev);

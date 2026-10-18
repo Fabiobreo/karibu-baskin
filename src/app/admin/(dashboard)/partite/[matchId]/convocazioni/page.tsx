@@ -190,6 +190,7 @@ export default async function ConvocazioniPage({ params }: Params) {
         teams={awayContext ? [homeContext, awayContext] : [homeContext]}
         opponent={opponent}
         loanPool={loanPool}
+        savedCallupCount={match.callups.length}
       />
     </>
   );

@@ -104,6 +104,7 @@ const ACTION_LABELS: Record<string, string> = {
   DELETE_TEAMS: "Reset squadre allenamento",
   CREATE_TRAINING_MATCH_RESULT: "Risultato partitella registrato",
   UPDATE_CALLUPS: "Aggiornamento convocazioni",
+  SET_AVAILABILITY: "Disponibilità segnata dallo staff",
   UPDATE_MATCH_STATS: "Aggiornamento statistiche partita",
   CREATE_GROUP: "Creazione girone",
   UPDATE_GROUP: "Modifica girone",

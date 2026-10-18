@@ -208,8 +208,9 @@ const GUIDE_IT: Guide = {
           steps: [
             "Prima di una partita lo staff chiede chi c'è. Rispondi da «Le mie disponibilità», nel profilo.",
             "Tocca «Sì» o «No» per ogni partita: la risposta si salva subito. Rispondi anche per i tuoi figli.",
-            "Se non rispondi, per lo staff non sei disponibile.",
-            "Poi lo staff sceglie i convocati. Li vedi nella pagina della partita.",
+            "Se non rispondi, lo staff non sa se ci sei: rispondi anche quando la risposta è no.",
+            "Poi lo staff sceglie i convocati. Quando entri nella lista, o ne esci, ti arriva un avviso. I convocati li vedi anche nella pagina della partita, e in home la partita ti dice se sei fra i convocati.",
+            "Se hai detto allo staff a voce che ci sei, può segnarlo al posto tuo: ti arriva un avviso, e la risposta la puoi sempre cambiare.",
             "Nella pagina della partita trovi «Dove e quando» e il bottone «Aggiungi al calendario».",
             "In «Partite» trovi anche risultati, classifiche e marcatori.",
           ],
@@ -464,8 +465,9 @@ const GUIDE_EN: Guide = {
           steps: [
             'Before a match the staff asks who can come. Answer from "My availabilities", in your profile.',
             'Tap "Yes" or "No" for each match: the answer is saved straight away. Answer for your children too.',
-            "If you do not answer, the staff counts you as not available.",
-            "Then the staff picks the squad. You see it on the match page.",
+            "If you do not answer, the staff does not know whether you can come: answer even when the answer is no.",
+            "Then the staff picks the squad. When you are added to the list, or taken off it, you get a notice. You also see the squad on the match page, and on the home page the match tells you if you're called up.",
+            "If you told the staff in person that you can come, they can mark it for you: you get a notice, and you can always change the answer.",
             'The match page shows "Where and when" and the "Add to calendar" button.',
             'Under "Matches" you also find results, standings and scorers.',
           ],

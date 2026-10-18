@@ -4,6 +4,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { prisma } from "@/lib/db";
 import { withDbRetry } from "@/lib/dbRetry";
 import ProssimePartiteCards from "./ProssimePartiteCards";
+import { loadHomeCallupStatus } from "@/lib/matches/homeCallupStatus";
 import { getTranslations } from "next-intl/server";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -11,7 +12,12 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 const DAYS_AHEAD = 14;
 const IMMINENT_HOURS = 48;
 
-export default async function ProssimePartiteHome() {
+interface ProssimePartiteHomeProps {
+  /** Tesserato che guarda: le card dicono se lui o un figlio è convocato. */
+  viewer?: { id: string; name: string } | null;
+}
+
+export default async function ProssimePartiteHome({ viewer = null }: ProssimePartiteHomeProps) {
   const now = new Date();
   const limit = new Date(now.getTime() + DAYS_AHEAD * 24 * 60 * 60 * 1000);
   const imminentLimit = new Date(now.getTime() + IMMINENT_HOURS * 60 * 60 * 1000);
@@ -39,9 +45,21 @@ export default async function ProssimePartiteHome() {
 
   if (matches.length === 0) return null;
 
+  const statuses = viewer
+    ? await withDbRetry(() =>
+        loadHomeCallupStatus(
+          viewer.id,
+          viewer.name,
+          matches.map((m) => m.id),
+          now
+        )
+      )
+    : {};
+
   const cardData = matches.map((m) => ({
     ...m,
     isImminent: m.date <= imminentLimit,
+    callupStatus: statuses[m.id] ?? null,
   }));
 
   return (

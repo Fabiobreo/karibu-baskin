@@ -19,6 +19,10 @@ const CONTENT_FIELD: Record<AppNotificationType, "title" | "body"> = {
   NEW_EVENT: "body",
   TEAMS_READY: "body",
   BADGE_UNLOCKED: "body",
+  // "Convocazione", "Disponibilità segnata dallo staff": il titolo è il tipo,
+  // chi e quale partita stanno nel testo.
+  MATCH_CALLUP: "body",
+  MATCH_AVAILABILITY: "body",
   MATCH_RESULT: "title",
   LINK_REQUEST: "title",
   LINK_RESPONSE: "title",

@@ -133,7 +133,7 @@ async function matchesFor(
             ...(rowChildIds.length > 0 ? [{ childId: { in: rowChildIds } }] : []),
           ],
         },
-        select: { userId: true, childId: true, available: true },
+        select: { userId: true, childId: true, available: true, setByStaff: true },
       },
     },
   });
@@ -159,6 +159,7 @@ async function matchesFor(
         teamName: teamRef?.name ?? "—",
         teamColor: teamRef?.color ?? null,
         available: av ? av.available : null,
+        setByStaff: av?.setByStaff ?? false,
       });
     }
 
@@ -177,6 +178,7 @@ async function matchesFor(
         teamName: teamRef?.name ?? "—",
         teamColor: teamRef?.color ?? null,
         available: av ? av.available : null,
+        setByStaff: av?.setByStaff ?? false,
       });
     }
 

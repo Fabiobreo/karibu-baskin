@@ -6,12 +6,14 @@ import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { MIN_CALLUPS } from "@/lib/constants";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
+import { loadAvailabilityLookup } from "@/lib/matches/availability";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 // Vercel Cron — eseguito giornalmente.
 // Notifica i giocatori (User o genitori di Child) membri di una squadra che ha
 // una partita ufficiale entro 14 giorni e che non hanno ancora marcato la
-// propria disponibilità (nessun record MatchAvailability per quel match).
+// propria disponibilità (nessun record MatchAvailability per quel match) e che
+// non sono già convocati.
 // Si ripete giornalmente finché il match ha meno di MIN_CALLUPS convocati —
 // quando lo staff ha completato le convocazioni, smettiamo di stressare i
 // giocatori rimasti.
@@ -57,28 +59,43 @@ export async function GET(req: NextRequest) {
       [m.team, m.opponentTeam].filter((t): t is NonNullable<typeof t> => !!t)
     );
 
-    const [memberships, availabilities] = await Promise.all([
+    const [memberships, callups] = await Promise.all([
       prisma.teamMembership.findMany({
         where: { teamId: { in: teamIds } },
         select: { userId: true, childId: true },
       }),
-      prisma.matchAvailability.findMany({
+      prisma.matchCallup.findMany({
         where: { matchId: m.id },
         select: { userId: true, childId: true },
       }),
     ]);
 
-    const respondedUserIds = new Set(availabilities.filter((a) => a.userId).map((a) => a.userId!));
-    const respondedChildIds = new Set(
-      availabilities.filter((a) => a.childId).map((a) => a.childId!)
-    );
+    // Persona unica (@/lib/person): la risposta di chi ha account e scheda può
+    // stare su tutte e due le chiavi, e così la convocazione.
+    const memberUserIds = memberships.flatMap((mb) => (mb.userId ? [mb.userId] : []));
+    const memberChildIds = memberships.flatMap((mb) => (mb.childId ? [mb.childId] : []));
+    const answers = await loadAvailabilityLookup(m.id, memberUserIds, memberChildIds);
+    const linked = await prisma.child.findMany({
+      where: {
+        OR: [{ userId: { in: memberUserIds } }, { id: { in: memberChildIds } }],
+        userId: { not: null },
+      },
+      select: { id: true, userId: true },
+    });
+    const calledUserIds = new Set(callups.flatMap((c) => (c.userId ? [c.userId] : [])));
+    const calledChildIds = new Set(callups.flatMap((c) => (c.childId ? [c.childId] : [])));
+    for (const card of linked) {
+      if (card.userId && calledChildIds.has(card.id)) calledUserIds.add(card.userId);
+      if (card.userId && calledUserIds.has(card.userId)) calledChildIds.add(card.id);
+    }
 
-    const missingUserIds = memberships
-      .filter((mb) => mb.userId && !respondedUserIds.has(mb.userId))
-      .map((mb) => mb.userId!);
-    const missingChildIds = memberships
-      .filter((mb) => mb.childId && !respondedChildIds.has(mb.childId))
-      .map((mb) => mb.childId!);
+    // Chi è già convocato non si sollecita: la convocazione gli è arrivata.
+    const missingUserIds = memberUserIds.filter(
+      (id) => answers.forUser(id) === null && !calledUserIds.has(id)
+    );
+    const missingChildIds = memberChildIds.filter(
+      (id) => answers.forChild(id) === null && !calledChildIds.has(id)
+    );
 
     const targetUserIds = new Set<string>(missingUserIds);
 

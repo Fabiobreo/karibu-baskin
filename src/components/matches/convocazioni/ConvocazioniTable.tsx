@@ -220,13 +220,35 @@ export default function ConvocazioniTable({
                           )}
                           {row.availability === true && (
                             <Chip
-                              label="Disponibile"
+                              label={
+                                row.availabilityByStaff ? "Disponibile (staff)" : "Disponibile"
+                              }
+                              title={
+                                row.availabilityByStaff
+                                  ? "Disponibilità segnata dallo staff, non dalla famiglia"
+                                  : undefined
+                              }
                               size="small"
                               sx={{
                                 bgcolor: (theme) => alpha(theme.palette.success.main, 0.12),
                                 color: "success.main",
                                 fontSize: TYPE_SCALE.xs,
                                 height: 20,
+                              }}
+                            />
+                          )}
+                          {showNoAnswer && row.availability === false && (
+                            // Convocato prima del suo "no": resta in elenco per
+                            // poterlo togliere, con la risposta in vista.
+                            <Chip
+                              label="Ha detto di no"
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                fontSize: TYPE_SCALE.xs,
+                                height: 20,
+                                color: "error.main",
+                                borderColor: "error.main",
                               }}
                             />
                           )}

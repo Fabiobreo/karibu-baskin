@@ -5,14 +5,17 @@ import { alpha } from "@mui/material/styles";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import BoltIcon from "@mui/icons-material/Bolt";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { format } from "date-fns";
 import type { Locale } from "date-fns";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { teamFill } from "@/lib/teamColors";
+import type { HomeCallupStatus } from "@/lib/matches/homeCallupStatus";
 
 export interface MatchCardData {
   id: string;
@@ -24,6 +27,8 @@ export interface MatchCardData {
   team: { id: string; name: string; color: string | null };
   opponent: { id: string; name: string } | null;
   opponentTeam: { id: string; name: string } | null;
+  /** Solo per i tesserati: convocazione propria o dei figli, risposta mancante. */
+  callupStatus?: HomeCallupStatus | null;
 }
 
 function relativeLabel(
@@ -41,6 +46,52 @@ function relativeLabel(
     return format(date, "EEEE", { locale: dateLocale }).replace(/^./, (c) => c.toUpperCase());
   }
   return tCommon("daysAway", { count: diffDays });
+}
+
+/**
+ * Una riga sotto la card: convocato (verde = positivo, con l'icona, come il
+ * "Ci sei" degli allenamenti) o risposta mancante (neutro, con l'icona).
+ */
+function CallupStatusLine({ status }: { status: HomeCallupStatus }) {
+  const t = useTranslations("matches");
+  const locale = useLocale();
+  const { calledSelf, calledOthers, pending } = status;
+  if (!calledSelf && calledOthers.length === 0 && !pending) return null;
+
+  const names = new Intl.ListFormat(locale, { type: "conjunction" }).format(calledOthers);
+  const text =
+    calledSelf && calledOthers.length > 0
+      ? t("homeCalledSelfAndOthers", { names })
+      : calledSelf
+        ? t("homeCalledSelf")
+        : calledOthers.length > 0
+          ? t("homeCalledOthers", { names, count: calledOthers.length })
+          : t("homeAvailabilityPending");
+  const called = calledSelf || calledOthers.length > 0;
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 0.75,
+        mt: 1.5,
+        pt: 1.5,
+        borderTop: "1px solid",
+        borderColor: "divider",
+        color: called ? "success.main" : "text.secondary",
+      }}
+    >
+      {called ? (
+        <CheckCircleIcon sx={{ fontSize: 18 }} aria-hidden="true" />
+      ) : (
+        <HelpOutlineIcon sx={{ fontSize: 18 }} aria-hidden="true" />
+      )}
+      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+        {text}
+      </Typography>
+    </Box>
+  );
 }
 
 interface ProssimePartiteCardsProps {
@@ -200,6 +251,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     {m.venue ? ` · ${m.venue}` : ""}
                   </Typography>
                 </Box>
+                {m.callupStatus && <CallupStatusLine status={m.callupStatus} />}
               </Box>
             </Paper>
           </Link>

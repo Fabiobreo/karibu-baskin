@@ -11,6 +11,8 @@ import PollIcon from "@mui/icons-material/Poll";
 import EventIcon from "@mui/icons-material/Event";
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import CakeIcon from "@mui/icons-material/Cake";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -46,6 +48,8 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "NEW_EVENT") return <EventIcon fontSize="small" sx={ICON_SX} />;
   if (type === "BADGE_UNLOCKED") return <MilitaryTechIcon fontSize="small" sx={ICON_SX} />;
   if (type === "BIRTHDAY") return <CakeIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "MATCH_CALLUP") return <HowToRegIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "MATCH_AVAILABILITY") return <EventAvailableIcon fontSize="small" sx={ICON_SX} />;
   return <NotificationsIcon fontSize="small" sx={ICON_SX} />;
 }
 

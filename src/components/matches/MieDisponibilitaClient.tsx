@@ -42,6 +42,8 @@ export interface AvailabilityEntity {
   teamName: string;
   teamColor: string | null;
   available: boolean | null;
+  /** La risposta l'ha segnata lo staff: la famiglia la vede e può correggerla. */
+  setByStaff: boolean;
 }
 
 export interface AvailabilityMatch {
@@ -451,6 +453,15 @@ function CompactMatchRow({
                 </ToggleButtonGroup>
               )}
             </Box>
+            {entity.setByStaff && value === entity.available && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: -0.25, mb: 0.5 }}
+              >
+                {t("availabilitySetByStaff")}
+              </Typography>
+            )}
             {failed && (
               <Alert
                 severity="error"

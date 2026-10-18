@@ -179,6 +179,13 @@ export const AvailabilitySchema = z.object({
   childId: z.string().min(1).optional(),
 });
 
+// Disponibilità segnata dallo staff al posto del giocatore (convocazioni).
+export const StaffAvailabilitySchema = z.object({
+  kind: z.enum(["user", "child"]),
+  id: z.string().min(1),
+  available: z.boolean(),
+});
+
 export const CallupsSchema = z.object({
   // Per le amichevoli interne specificare la squadra (match.teamId o match.opponentTeamId).
   // Se omesso, le convocazioni si applicano a match.teamId (comportamento legacy).
