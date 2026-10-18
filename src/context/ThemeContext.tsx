@@ -101,6 +101,23 @@ function afterStreamRevealed(cb: () => void): () => void {
   return stop;
 }
 
+/**
+ * Il tema salvato dalla vecchia versione in `localStorage`, se c'è.
+ *
+ * `localStorage` può non esserci: con i dati dei siti bloccati, in alcune
+ * WebView dentro le app e nei documenti isolati il solo accesso solleva un
+ * `SecurityError` ("Access is denied for this document", segnalato da Sentry).
+ * Senza protezione l'errore interrompeva la sincronizzazione del tema.
+ */
+function readLegacyMode(): ColorMode | null {
+  try {
+    const legacy = localStorage.getItem(COLOR_MODE_COOKIE);
+    return legacy === "light" || legacy === "dark" || legacy === "system" ? legacy : null;
+  } catch {
+    return null;
+  }
+}
+
 function writeCookieMode(mode: ColorMode) {
   // 1 anno, path root, lax — coerente con il cookie della lingua
   document.cookie = `${COLOR_MODE_COOKIE}=${mode}; path=/; max-age=31536000; samesite=lax`;
@@ -150,8 +167,8 @@ export function ThemeContextProvider({
         let actualMode = initialMode;
         // Migrazione una-tantum dalla vecchia persistenza localStorage al cookie.
         if (!readCookieMode()) {
-          const legacy = localStorage.getItem(COLOR_MODE_COOKIE) as ColorMode | null;
-          if (legacy === "light" || legacy === "dark" || legacy === "system") {
+          const legacy = readLegacyMode();
+          if (legacy) {
             writeCookieMode(legacy);
             setModeState(legacy);
             actualMode = legacy;

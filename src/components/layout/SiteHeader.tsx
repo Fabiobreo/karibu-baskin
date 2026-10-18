@@ -36,8 +36,7 @@ import LanguageIcon from "@mui/icons-material/Language";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
-import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
+import { useSession } from "next-auth/react";
 import { canViewAdminPanel } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
@@ -58,6 +57,8 @@ import { heroText } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { safeSignOut } from "@/lib/safeSignOut";
+import { useToast } from "@/context/ToastContext";
 // href-only — le label vengono da t() dentro il componente.
 // Niente voce "Home": ci porta il logo, e lo spazio della barra serve alle voci
 // con il nome (UX-44).
@@ -122,6 +123,8 @@ interface SiteHeaderProps {
 
 export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
+  const { showToast } = useToast();
   const router = useRouter();
 
   /**
@@ -130,8 +133,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
    * La pulizia ha un timeout interno e non può bloccare il logout.
    */
   async function handleSignOut() {
-    await purgeServiceWorkerCaches();
-    await signOut({ callbackUrl: "/" });
+    if (!(await safeSignOut())) showToast({ message: tCommon("networkError"), severity: "error" });
   }
 
   const [drawerOpen, setDrawerOpen] = useState(false);

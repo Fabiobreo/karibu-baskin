@@ -130,6 +130,10 @@ export default function CalendarClient({
     try {
       const res = await fetch(`/api/calendar?${rangeQuery}`);
       if (res.ok) setEvents(await res.json());
+    } catch {
+      // Senza rete (mese non in cache del service worker) restano gli impegni
+      // già a schermo: lo dice il banner "Sei senza connessione". Prima era un
+      // errore non gestito.
     } finally {
       setLoading(false);
     }

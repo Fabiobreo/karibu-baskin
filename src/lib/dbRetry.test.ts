@@ -59,4 +59,38 @@ describe("withDbRetry", () => {
     await expect(withDbRetry(op, { attempts: 3, delayMs: 1 })).rejects.toBe(err);
     expect(op).toHaveBeenCalledTimes(3);
   });
+
+  it("su una connessione chiusa (P1017) insiste di più: fallisce subito e costa poco", async () => {
+    const closed = () =>
+      new Prisma.PrismaClientKnownRequestError("Server has closed the connection.", {
+        code: "P1017",
+        clientVersion: "6.5.0",
+      });
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce(closed())
+      .mockRejectedValueOnce(closed())
+      .mockRejectedValueOnce(closed())
+      .mockResolvedValue("ok");
+    await expect(withDbRetry(op, { delayMs: 1 })).resolves.toBe("ok");
+    expect(op).toHaveBeenCalledTimes(4);
+  });
+
+  it("un server irraggiungibile resta a due tentativi (ognuno aspetta il timeout)", async () => {
+    const op = vi.fn().mockRejectedValue(unreachable());
+    await expect(withDbRetry(op, { delayMs: 1 })).rejects.toBeInstanceOf(
+      Prisma.PrismaClientInitializationError
+    );
+    expect(op).toHaveBeenCalledTimes(2);
+  });
+
+  it("un solo tentativo resta uno solo, anche su connessione chiusa", async () => {
+    const closed = new Prisma.PrismaClientKnownRequestError("closed", {
+      code: "P1017",
+      clientVersion: "6.5.0",
+    });
+    const op = vi.fn().mockRejectedValue(closed);
+    await expect(withDbRetry(op, { attempts: 1, delayMs: 1 })).rejects.toBe(closed);
+    expect(op).toHaveBeenCalledTimes(1);
+  });
 });

@@ -2,7 +2,7 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import LinkBehavior from "@/components/common/LinkBehavior";
 import type { AppRole } from "@prisma/client";
 import {
@@ -35,7 +35,6 @@ import AdminNavDrawer from "@/components/admin/AdminNavDrawer";
 import { useThemeMode } from "@/context/ThemeContext";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { canViewAdminPanel } from "@/lib/authRoles";
-import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
 import {
   ADMIN_NAV_GROUP_LABELS,
   activeAdminSection,
@@ -46,6 +45,9 @@ import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { safeSignOut } from "@/lib/safeSignOut";
+import { useToast } from "@/context/ToastContext";
+import { NETWORK_ERROR_IT } from "@/lib/networkError";
 const BAR_HEIGHT = { xs: 56, sm: 60 } as const;
 
 const THEME_MODES = [
@@ -99,6 +101,7 @@ function barItemSx(active: boolean) {
 export default function AdminHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const mounted = useHasMounted();
   const { mode, setMode } = useThemeMode();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -128,8 +131,7 @@ export default function AdminHeader() {
     : "?";
 
   async function handleSignOut() {
-    await purgeServiceWorkerCaches();
-    await signOut({ callbackUrl: "/" });
+    if (!(await safeSignOut())) showToast({ message: NETWORK_ERROR_IT, severity: "error" });
   }
 
   return (

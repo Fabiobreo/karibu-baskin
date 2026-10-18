@@ -2,7 +2,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Box,
@@ -18,9 +17,11 @@ import {
 import { useTranslations } from "next-intl";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import { readError } from "@/lib/fetchJson";
-import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
+import { safeSignOut } from "@/lib/safeSignOut";
+import { useToast } from "@/context/ToastContext";
 interface MissingNameDialogProps {
   /** Email con cui è entrato: lo aiuta a capire con quale account sta entrando. */
   email: string | null;
@@ -38,6 +39,8 @@ interface MissingNameDialogProps {
  */
 export default function MissingNameDialog({ email }: MissingNameDialogProps) {
   const t = useTranslations("missingName");
+  const { showToast } = useToast();
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -72,8 +75,7 @@ export default function MissingNameDialog({ email }: MissingNameDialogProps) {
   }
 
   async function handleSignOut() {
-    await purgeServiceWorkerCaches();
-    await signOut({ callbackUrl: "/" });
+    if (!(await safeSignOut())) showToast({ message: tCommon("networkError"), severity: "error" });
   }
 
   return (
@@ -121,7 +123,7 @@ export default function MissingNameDialog({ email }: MissingNameDialogProps) {
           </Stack>
           {save.isError && (
             <Typography variant="body2" color="error" sx={{ mt: 2 }} role="alert">
-              {save.error instanceof Error ? save.error.message : t("saveError")}
+              {errorText(save.error, t("saveError"), tCommon("networkError"))}
             </Typography>
           )}
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 2.5 }}>

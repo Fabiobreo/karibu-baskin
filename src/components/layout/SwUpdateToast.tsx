@@ -34,19 +34,26 @@ export default function SwUpdateToast() {
       setWaiting(worker);
     }
 
-    void navigator.serviceWorker.getRegistration().then((registration) => {
-      if (!registration || cancelled) return;
+    navigator.serviceWorker
+      .getRegistration()
+      .then((registration) => {
+        if (!registration || cancelled) return;
 
-      offerUpdate(registration.waiting);
+        offerUpdate(registration.waiting);
 
-      registration.addEventListener("updatefound", () => {
-        const installing = registration.installing;
-        if (!installing) return;
-        installing.addEventListener("statechange", () => {
-          if (installing.state === "installed") offerUpdate(installing);
+        registration.addEventListener("updatefound", () => {
+          const installing = registration.installing;
+          if (!installing) return;
+          installing.addEventListener("statechange", () => {
+            if (installing.state === "installed") offerUpdate(installing);
+          });
         });
-      });
-    });
+      })
+      // Il browser può negare il service worker (Firefox con i cookie
+      // bloccati, navigazione privata): "Failed to get a
+      // ServiceWorkerRegistration". Senza worker non c'è niente da aggiornare;
+      // senza catch era un rifiuto non gestito su ogni pagina (Sentry).
+      .catch(() => {});
 
     // Il worker nuovo ha preso il controllo: ricarichiamo solo se il cambio
     // l'abbiamo chiesto noi, per non ricaricare la pagina sotto i piedi

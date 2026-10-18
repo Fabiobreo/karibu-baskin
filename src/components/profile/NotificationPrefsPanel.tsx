@@ -28,6 +28,8 @@ import {
   rememberPushChoice,
   savePushSubscription,
 } from "@/lib/pushSubscription";
+import { useToast } from "@/context/ToastContext";
+import { errorText } from "@/lib/networkError";
 
 interface Props {
   initialPrefs: NotifPrefs;
@@ -37,6 +39,8 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
   const t = useTranslations("notifPanel");
   const tNav = useTranslations("nav");
   const tTypes = useTranslations("notifTypes");
+  const tCommon = useTranslations("common");
+  const { showToast } = useToast();
 
   // ── Push subscription state ───────────────────────────────────────────────
   const [pushStatus, setPushStatus] = useState<
@@ -51,16 +55,25 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
   const [prefSaving, setPrefSaving] = useState<ControllableNotifType | null>(null);
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    // Anche `Notification`: alcune WebView e Safari fuori dall'app installata
+    // hanno PushManager ma non Notification, e leggerne il permesso lancia.
+    if (
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window) ||
+      typeof Notification === "undefined"
+    ) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPushStatus("unsupported");
       return;
     }
     setPushStatus(Notification.permission as "granted" | "denied" | "default");
-    navigator.serviceWorker.ready.then(async (reg) => {
-      const sub = await reg.pushManager.getSubscription();
-      setSubscribed(!!sub);
-    });
+    navigator.serviceWorker.ready
+      .then(async (reg) => {
+        const sub = await reg.pushManager.getSubscription();
+        setSubscribed(!!sub);
+      })
+      // Worker o push negati dal browser: resta "non attive", senza errori.
+      .catch(() => {});
   }, []);
 
   async function subscribe() {
@@ -80,13 +93,14 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       rememberPushChoice(true);
       setSubscribed(true);
     } catch (e) {
-      setPushError((e as Error).message ?? t("activationError"));
+      setPushError(errorText(e, t("activationError"), tCommon("networkError")));
     } finally {
       setPushSaving(false);
     }
   }
 
   async function unsubscribe() {
+    setPushError("");
     setPushSaving(true);
     try {
       const reg = await navigator.serviceWorker.ready;
@@ -102,6 +116,9 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       // Spente da qui: all'apertura dell'app non si ricreano da sole.
       rememberPushChoice(false);
       setSubscribed(false);
+    } catch (e) {
+      // Senza rete era un errore non gestito, e il bottone non diceva niente.
+      setPushError(errorText(e, t("prefSaveError"), tCommon("networkError")));
     } finally {
       setPushSaving(false);
     }
@@ -116,13 +133,23 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       ...prefs,
       [channel]: { ...prefs[channel], [type]: value },
     };
+    const previous = prefs;
     setPrefs(newPrefs);
     setPrefSaving(type);
     try {
-      await fetch("/api/users/me/notif-prefs", {
+      const res = await fetch("/api/users/me/notif-prefs", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPrefs),
+      });
+      if (!res.ok) throw new Error(t("prefSaveError"));
+    } catch (err) {
+      // L'interruttore torna dov'era: prima restava spostato anche se il
+      // server non aveva salvato niente.
+      setPrefs(previous);
+      showToast({
+        message: errorText(err, t("prefSaveError"), tCommon("networkError")),
+        severity: "error",
       });
     } finally {
       setPrefSaving(null);

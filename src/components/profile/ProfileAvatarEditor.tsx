@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import ImageUploader from "@/components/common/ImageUploader";
 import { useToast } from "@/context/ToastContext";
 
+import { errorText } from "@/lib/networkError";
 interface ProfileAvatarEditorProps {
   googleImage: string | null;
   customImage: string | null;
@@ -32,32 +33,34 @@ export default function ProfileAvatarEditor({
   }, [googleImage]);
   const { showToast } = useToast();
   const t = useTranslations("childLinker");
+  const tCommon = useTranslations("common");
 
   const displayImage = customImage ?? googleImage;
 
-  async function handleUploaded(url: string) {
-    const res = await fetch("/api/users/me", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customImage: url }),
-    });
-    if (!res.ok) {
-      showToast({ message: t("avatarSaveError"), severity: "error" });
-      return;
+  /** Salva la foto sul profilo. `ImageUploader` non aspetta questi callback:
+   * senza try un errore di rete restava un rifiuto non gestito (Sentry, /profilo). */
+  async function saveImage(image: string | null): Promise<boolean> {
+    const failure = image ? t("avatarSaveError") : t("avatarRemoveError");
+    try {
+      const res = await fetch("/api/users/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customImage: image }),
+      });
+      if (res.ok) return true;
+      showToast({ message: failure, severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, failure, tCommon("networkError")), severity: "error" });
     }
-    setCustomImage(url);
+    return false;
+  }
+
+  async function handleUploaded(url: string) {
+    if (await saveImage(url)) setCustomImage(url);
   }
 
   async function handleRemoved() {
-    const res = await fetch("/api/users/me", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customImage: null }),
-    });
-    if (!res.ok) {
-      showToast({ message: t("avatarRemoveError"), severity: "error" });
-      return;
-    }
+    if (!(await saveImage(null))) return;
     setCustomImage(null);
     showToast({ message: t("avatarRemoved"), severity: "success" });
   }

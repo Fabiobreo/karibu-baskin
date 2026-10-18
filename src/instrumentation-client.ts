@@ -20,6 +20,12 @@ if (dsn) {
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 1.0,
     integrations: [Sentry.replayIntegration()],
+    ignoreErrors: [
+      // Il ponte JavaScript delle WebView Android (browser interni di Instagram,
+      // Facebook…) quando l'app chiude la pagina: non è codice nostro e non
+      // c'è niente da correggere.
+      "Java object is gone",
+    ],
   });
 }
 
