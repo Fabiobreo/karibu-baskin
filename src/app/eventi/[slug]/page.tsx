@@ -7,9 +7,11 @@ import JsonLd from "@/components/common/JsonLd";
 import EventHero from "@/components/common/EventHero";
 import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
+import { canViewAdminPanel, hasRole } from "@/lib/authRoles";
 import EventPoster from "@/components/common/EventPoster";
 import EventRsvp from "@/components/common/EventRsvp";
+import EventResponsesPanel from "@/components/common/EventResponsesPanel";
+import { loadEventResponses } from "@/lib/eventResponses";
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
@@ -69,15 +71,19 @@ export default async function EventoPage({ params }: Props) {
   if (!ev) notFound();
 
   const isStaff = !!session?.user?.appRole && hasRole(session.user.appRole, "COACH");
+  // Il dettaglio delle risposte (nomi, note, esterni) è della direzione e
+  // dello staff: agli altri non arriva nemmeno nella pagina.
+  const canSeeResponses = canViewAdminPanel(session?.user?.appRole);
   const isPast = isEventPast(ev);
 
   // RSVP: la famiglia di chi guarda (risponde uno per tutti) e i suoi esterni.
   // La famiglia serve prima delle risposte, ma il conteggio parte subito.
   const userId = session?.user?.id ?? null;
   const optionIds = ev.options.map((o) => o.id);
-  const [family, going] = await Promise.all([
+  const [family, going, responses] = await Promise.all([
     userId ? loadFamily(userId) : [],
     prisma.eventAttendance.count({ where: { eventId: ev.id, status: "GOING" } }),
+    canSeeResponses ? loadEventResponses(ev.id) : null,
   ]);
   const rsvp = userId
     ? await loadFamilyRsvp(ev.id, userId, family, optionIds)
@@ -152,6 +158,8 @@ export default async function EventoPage({ params }: Props) {
                 maxGuests={ev.maxGuests}
                 initialGoing={going}
               />
+
+              {responses && <EventResponsesPanel eventId={ev.id} responses={responses} />}
             </Stack>
 
             {ev.imageUrl && (
