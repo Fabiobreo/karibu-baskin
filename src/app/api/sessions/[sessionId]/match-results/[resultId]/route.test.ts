@@ -9,14 +9,12 @@ vi.mock("@/lib/db", () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
-      findMany: vi.fn(),
     },
-    match: { findMany: vi.fn() },
-    sportRoleHistory: { findMany: vi.fn() },
-    user: { update: vi.fn() },
-    child: { update: vi.fn() },
-    ratingUpdate: { deleteMany: vi.fn(), createMany: vi.fn() },
   },
+}));
+
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
@@ -26,36 +24,21 @@ vi.mock("@/lib/apiAuth", () => ({
 import { PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 
 type PrismaMock = {
   $transaction: Mock;
-  trainingMatchResult: { findUnique: Mock; update: Mock; delete: Mock; findMany: Mock };
-  match: { findMany: Mock };
-  sportRoleHistory: { findMany: Mock };
-  user: { update: Mock };
-  child: { update: Mock };
-  ratingUpdate: { deleteMany: Mock; createMany: Mock };
+  trainingMatchResult: { findUnique: Mock; update: Mock; delete: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
 
 const CTX = (resultId: string) => ({ params: Promise.resolve({ sessionId: "s1", resultId }) });
 
-/** Configura i mock comuni al ricalcolo TrueSkill (recomputeRatings). */
-function setupRecomputeMocks() {
-  p.$transaction.mockImplementation(async (cb: (tx: PrismaMock) => unknown) => cb(p));
-  p.trainingMatchResult.findMany.mockResolvedValue([]);
-  p.match.findMany.mockResolvedValue([]);
-  p.sportRoleHistory.findMany.mockResolvedValue([]);
-  p.ratingUpdate.deleteMany.mockResolvedValue({ count: 0 });
-  p.ratingUpdate.createMany.mockResolvedValue({ count: 0 });
-}
-
 describe("PUT /api/sessions/[sessionId]/match-results/[resultId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(true);
-    setupRecomputeMocks();
   });
 
   it("restituisce 403 se non staff", async () => {
@@ -81,7 +64,7 @@ describe("PUT /api/sessions/[sessionId]/match-results/[resultId]", () => {
   });
 
   it("aggiorna scoreA e scoreB", async () => {
-    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1" });
+    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1", sessionId: "s1" });
     p.trainingMatchResult.update.mockResolvedValue({
       id: "mr1",
       scoreA: 20,
@@ -99,10 +82,13 @@ describe("PUT /api/sessions/[sessionId]/match-results/[resultId]", () => {
     const json = await res.json();
     expect(json.scoreA).toBe(20);
     expect(json.scoreB).toBe(15);
+    // Ricalcolo dopo la risposta, fuori dalla transazione (vedi recompute.ts).
+    expect(p.$transaction).not.toHaveBeenCalled();
+    expect(recomputeRatingsSafely).toHaveBeenCalledOnce();
   });
 
   it("aggiorna solo i campi forniti", async () => {
-    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1" });
+    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1", sessionId: "s1" });
     p.trainingMatchResult.update.mockResolvedValue({
       id: "mr1",
       scoreA: 25,
@@ -126,7 +112,6 @@ describe("DELETE /api/sessions/[sessionId]/match-results/[resultId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(true);
-    setupRecomputeMocks();
   });
 
   it("restituisce 403 se non staff", async () => {
@@ -144,11 +129,20 @@ describe("DELETE /api/sessions/[sessionId]/match-results/[resultId]", () => {
   });
 
   it("elimina il risultato e restituisce 204", async () => {
-    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1" });
+    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1", sessionId: "s1" });
     p.trainingMatchResult.delete.mockResolvedValue({ id: "mr1" });
     const req = new NextRequest("http://localhost/...", { method: "DELETE" });
     const res = await DELETE(req, CTX("mr1"));
     expect(res.status).toBe(204);
     expect(p.trainingMatchResult.delete).toHaveBeenCalledWith({ where: { id: "mr1" } });
+    expect(recomputeRatingsSafely).toHaveBeenCalledOnce();
+  });
+
+  it("non elimina un risultato di un altro allenamento", async () => {
+    p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1", sessionId: "altro" });
+    const req = new NextRequest("http://localhost/...", { method: "DELETE" });
+    const res = await DELETE(req, CTX("mr1"));
+    expect(res.status).toBe(404);
+    expect(p.trainingMatchResult.delete).not.toHaveBeenCalled();
   });
 });

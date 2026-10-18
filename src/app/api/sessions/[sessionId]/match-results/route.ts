@@ -6,11 +6,8 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import {
-  buildRostersSnapshot,
-  recomputeRatings,
-  type RegistrationRefMap,
-} from "@/lib/rating/ratingEngine";
+import { buildRostersSnapshot, type RegistrationRefMap } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 import { inBackground } from "@/lib/background";
 
 const MatchResultSchema = z.object({
@@ -80,9 +77,9 @@ export async function POST(
   // TrueSkill): risolve gli atleti a userId/childId via le iscrizioni correnti.
   const snapshot = await buildSnapshotForSession(sessionId, session.teams, parsed.data.matchup);
 
-  // Crea il risultato e ricalcola i rating in un'unica transazione.
-  const result = await prisma.$transaction(async (tx) => {
-    const created = await tx.trainingMatchResult.create({
+  let result;
+  try {
+    result = await prisma.trainingMatchResult.create({
       data: {
         sessionId,
         matchup: parsed.data.matchup ?? null,
@@ -93,9 +90,14 @@ export async function POST(
         rostersSnapshot: snapshot as unknown as Prisma.InputJsonValue,
       },
     });
-    await recomputeRatings(tx);
-    return created;
-  });
+  } catch (err) {
+    console.error("[match-results POST]", err);
+    return NextResponse.json({ error: "Risultato non salvato. Riprova." }, { status: 500 });
+  }
+
+  // Il ricalcolo dei rating va dopo la risposta: il risultato è salvato, e
+  // farlo dentro la stessa transazione la faceva sforare il limite (500).
+  inBackground(recomputeRatingsSafely(), "rating recompute after training result");
 
   if (authSession?.user?.id) {
     inBackground(

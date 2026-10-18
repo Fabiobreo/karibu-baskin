@@ -55,6 +55,10 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET, PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isAdminUser, isMember } from "@/lib/apiAuth";

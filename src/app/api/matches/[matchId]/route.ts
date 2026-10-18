@@ -11,7 +11,7 @@ import { generateMatchSlug } from "@/lib/slugUtils";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 import { isRestrictedClubTeam, mixedMatchError } from "@/lib/matches/mixedTeam";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
@@ -351,7 +351,7 @@ export async function PUT(req: Request, { params }: Params) {
   // (segnale secondario W/L campionato). Fire-and-forget: non blocca la risposta.
   const resultChanged = resolvedResult !== previous?.result;
   if (resultChanged) {
-    inBackground(recomputeRatings(prisma), "rating recompute after match result");
+    inBackground(recomputeRatingsSafely(), "rating recompute after match result");
     // I badge legati alle vittorie dipendono dal risultato: se le statistiche
     // ci sono già (storico inserito prima del punteggio) vanno ricalcolati
     // adesso. Altrimenti resterebbero in sospeso e arriverebbero tutti insieme,
@@ -430,7 +430,7 @@ export async function DELETE(_req: Request, { params }: Params) {
 
   // Se la partita aveva un risultato, rimuovere quel segnale TrueSkill
   if (matchToDelete?.result) {
-    inBackground(recomputeRatings(prisma), "rating recompute after match delete");
+    inBackground(recomputeRatingsSafely(), "rating recompute after match delete");
   }
 
   if (session?.user?.id) {

@@ -16,8 +16,8 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/lib/childHistory", () => ({
   moveChildHistoryToUser: vi.fn().mockResolvedValue({}),
 }));
-vi.mock("@/lib/rating/ratingEngine", () => ({
-  recomputeRatings: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),

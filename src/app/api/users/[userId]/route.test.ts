@@ -37,6 +37,10 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
+}));
+
 // La cancellazione passa dall'helper che toglie anche i figli rimasti senza
 // genitori: la sua logica ha un test a parte (src/lib/guardians.test.ts).
 vi.mock("@/lib/guardians", () => ({

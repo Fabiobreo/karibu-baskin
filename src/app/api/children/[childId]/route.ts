@@ -7,7 +7,7 @@ import { sendPushToUser } from "@/lib/notifications/webpush";
 import { ChildPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { generateChildSlug } from "@/lib/slugUtils";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 import { moveChildHistoryToUser } from "@/lib/childHistory";
 import { isGuardian } from "@/lib/guardians";
 import { inBackground } from "@/lib/background";
@@ -249,7 +249,7 @@ export async function PATCH(
     await prisma.sportRoleHistory.create({ data: { childId, sportRole: sportRole! } });
     // Cambio categoria (non prima assegnazione) → rigonfia σ del rating TrueSkill.
     if (isCategoryChange) {
-      inBackground(recomputeRatings(prisma), "rating child role change recompute");
+      inBackground(recomputeRatingsSafely(), "rating child role change recompute");
     }
   }
 
@@ -312,7 +312,7 @@ export async function DELETE(
       timeout: 30_000,
       maxWait: 10_000,
     });
-    inBackground(recomputeRatings(prisma), "rating delete linked child");
+    inBackground(recomputeRatingsSafely(), "rating delete linked child");
   }
 
   // Trova le sessioni con squadre generate che includono questo figlio,

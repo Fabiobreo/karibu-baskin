@@ -67,7 +67,7 @@ export function movWeight(scoreWin: number, scoreLose: number): number {
 
 // ── Chiave giocatore (per il replay in memoria) ───────────────────────────────
 
-type PlayerKey = `u:${string}` | `c:${string}`;
+export type PlayerKey = `u:${string}` | `c:${string}`;
 
 function keyOf(ref: PlayerRef): PlayerKey | null {
   if (ref.userId) return `u:${ref.userId}`;
@@ -338,6 +338,46 @@ function parseSnapshot(value: Prisma.JsonValue | null): RostersSnapshot | null {
   return { teamA: s.teamA as PlayerRef[], teamB: s.teamB as PlayerRef[] };
 }
 
+/** Colonne parallele (id, μ, σ) per la scrittura in blocco. */
+export interface RatingColumns {
+  ids: string[];
+  mus: number[];
+  sigmas: number[];
+}
+
+/** Divide i rating finali fra account e figli, in colonne pronte per `unnest`. */
+export function ratingColumns(ratings: ReadonlyMap<PlayerKey, Rating>): {
+  users: RatingColumns;
+  children: RatingColumns;
+} {
+  const users: RatingColumns = { ids: [], mus: [], sigmas: [] };
+  const children: RatingColumns = { ids: [], mus: [], sigmas: [] };
+  for (const [key, rating] of ratings) {
+    const { kind, id } = splitKey(key);
+    const target = kind === "u" ? users : children;
+    target.ids.push(id);
+    target.mus.push(rating.mu);
+    target.sigmas.push(rating.sigma);
+  }
+  return { users, children };
+}
+
+/** Toglie dal risultato del replay i giocatori che non esistono più. */
+export function onlyExisting(
+  replay: ReplayResult,
+  users: ReadonlySet<string>,
+  children: ReadonlySet<string>
+): ReplayResult {
+  const alive = (key: PlayerKey) => {
+    const { kind, id } = splitKey(key);
+    return kind === "u" ? users.has(id) : children.has(id);
+  };
+  return {
+    ratings: new Map([...replay.ratings].filter(([key]) => alive(key))),
+    log: replay.log.filter((e) => alive(e.key)),
+  };
+}
+
 /** Reason gestiti dal replay (riscritti ad ogni ricalcolo). */
 const REPLAY_REASONS: RatingUpdateReason[] = ["TRAINING_MATCH", "OFFICIAL_MATCH", "ROLE_CHANGE"];
 
@@ -346,7 +386,8 @@ const REPLAY_REASONS: RatingUpdateReason[] = ["TRAINING_MATCH", "OFFICIAL_MATCH"
  * completa — partitelle (con snapshot) + cambi categoria (da SportRoleHistory) —
  * in ordine cronologico, e riscrive lo storico RatingUpdate. Idempotente.
  * Da chiamare dopo ogni create/update/delete di un risultato e dopo un cambio
- * di ruolo confermato.
+ * di ruolo confermato: dalle rotte passando da `recomputeRatingsSafely`
+ * (`@/lib/rating/recompute`), che la mette in una transazione sua e in fila.
  *
  * NB: ricalcola i rating solo dei giocatori presenti nella timeline; chi non ha
  * mai giocato una partitella resta `null` (unrated). Il cambio categoria dei
@@ -435,22 +476,52 @@ export async function recomputeRatings(db: Db): Promise<void> {
     return rankKind(a.kind) - rankKind(b.kind);
   });
 
-  const { ratings, log } = replayTimeline(timeline);
+  const replay = replayTimeline(timeline);
 
-  // Persisti i rating finali sui giocatori che compaiono nella timeline.
-  for (const [key, rating] of ratings) {
-    const { kind, id } = splitKey(key);
-    if (kind === "u") {
-      await db.user.update({
-        where: { id },
-        data: { ratingMu: rating.mu, ratingSigma: rating.sigma },
-      });
-    } else {
-      await db.child.update({
-        where: { id },
-        data: { ratingMu: rating.mu, ratingSigma: rating.sigma },
-      });
-    }
+  // Solo i giocatori che esistono ancora: gli snapshot delle partitelle e le
+  // statistiche possono nominare un account o una scheda eliminati, e lo
+  // storico (`RatingUpdate`) ha una chiave verso User e Child. Una riga per un
+  // id sparito faceva fallire tutto il ricalcolo, e da allora i livelli
+  // restavano fermi.
+  const keys = [...replay.ratings.keys()].map(splitKey);
+  const [liveUsers, liveChildren] = await Promise.all([
+    db.user.findMany({
+      where: { id: { in: keys.filter((k) => k.kind === "u").map((k) => k.id) } },
+      select: { id: true },
+    }),
+    db.child.findMany({
+      where: { id: { in: keys.filter((k) => k.kind === "c").map((k) => k.id) } },
+      select: { id: true },
+    }),
+  ]);
+  const { ratings, log } = onlyExisting(
+    replay,
+    new Set(liveUsers.map((u) => u.id)),
+    new Set(liveChildren.map((c) => c.id))
+  );
+
+  // Persisti i rating finali sui giocatori che compaiono nella timeline: una
+  // query per gli account e una per i figli. Un `update` per giocatore costava
+  // un viaggio al database ciascuno (50 giocatori, oltre 4 secondi), e dentro
+  // una transazione sforava il suo limite: il salvataggio delle partitelle
+  // rispondeva 500. I numeri viaggiano come testo e si convertono in SQL: un
+  // array JS con interi e decimali misti non deve decidere il tipo del parametro.
+  const { users, children } = ratingColumns(ratings);
+  if (users.ids.length > 0) {
+    await db.$executeRaw`
+      UPDATE "User" AS t
+      SET "ratingMu" = v.mu, "ratingSigma" = v.sigma
+      FROM unnest(${users.ids}::text[], ${users.mus.map(String)}::text[]::float8[], ${users.sigmas.map(String)}::text[]::float8[])
+        AS v(id, mu, sigma)
+      WHERE t.id = v.id`;
+  }
+  if (children.ids.length > 0) {
+    await db.$executeRaw`
+      UPDATE "Child" AS t
+      SET "ratingMu" = v.mu, "ratingSigma" = v.sigma
+      FROM unnest(${children.ids}::text[], ${children.mus.map(String)}::text[]::float8[], ${children.sigmas.map(String)}::text[]::float8[])
+        AS v(id, mu, sigma)
+      WHERE t.id = v.id`;
   }
 
   // Riscrivi lo storico (curve del Development Tracker).

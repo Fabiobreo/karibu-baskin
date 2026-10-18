@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
+import { inBackground } from "@/lib/background";
 
 const MatchResultUpdateSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),
@@ -20,10 +21,11 @@ export async function PUT(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const { resultId } = await params;
+  const { sessionId, resultId } = await params;
 
   const existing = await prisma.trainingMatchResult.findUnique({ where: { id: resultId } });
-  if (!existing) {
+  // Un risultato di un altro allenamento non si tocca da qui.
+  if (!existing || existing.sessionId !== sessionId) {
     return NextResponse.json({ error: "Risultato non trovato" }, { status: 404 });
   }
 
@@ -44,12 +46,16 @@ export async function PUT(
   if ("notes" in parsed.data) data.notes = parsed.data.notes?.trim() || null;
 
   // Lo snapshot del roster resta congelato (per cambiare le squadre si cancella
-  // il risultato). Un cambio di punteggio però altera l'esito: ricalcola.
-  const updated = await prisma.$transaction(async (tx) => {
-    const u = await tx.trainingMatchResult.update({ where: { id: resultId }, data });
-    await recomputeRatings(tx);
-    return u;
-  });
+  // il risultato). Un cambio di punteggio però altera l'esito: ricalcola,
+  // dopo la risposta (vedi `recomputeRatingsSafely`).
+  let updated;
+  try {
+    updated = await prisma.trainingMatchResult.update({ where: { id: resultId }, data });
+  } catch (err) {
+    console.error("[match-results PUT]", err);
+    return NextResponse.json({ error: "Risultato non salvato. Riprova." }, { status: 500 });
+  }
+  inBackground(recomputeRatingsSafely(), "rating recompute after training result update");
 
   return NextResponse.json(updated);
 }
@@ -62,21 +68,24 @@ export async function DELETE(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const { resultId } = await params;
+  const { sessionId, resultId } = await params;
 
   const existing = await prisma.trainingMatchResult.findUnique({
     where: { id: resultId },
-    select: { id: true },
+    select: { id: true, sessionId: true },
   });
-  if (!existing) {
+  if (!existing || existing.sessionId !== sessionId) {
     return NextResponse.json({ error: "Risultato non trovato" }, { status: 404 });
   }
 
   // Cancellare il risultato "scongela" il roster e annulla il suo effetto sui
   // rating: il replay ricalcola tutto senza questa partitella.
-  await prisma.$transaction(async (tx) => {
-    await tx.trainingMatchResult.delete({ where: { id: resultId } });
-    await recomputeRatings(tx);
-  });
+  try {
+    await prisma.trainingMatchResult.delete({ where: { id: resultId } });
+  } catch (err) {
+    console.error("[match-results DELETE]", err);
+    return NextResponse.json({ error: "Risultato non eliminato. Riprova." }, { status: 500 });
+  }
+  inBackground(recomputeRatingsSafely(), "rating recompute after training result delete");
   return new NextResponse(null, { status: 204 });
 }

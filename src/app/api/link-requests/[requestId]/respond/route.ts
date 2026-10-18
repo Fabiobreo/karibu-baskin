@@ -3,7 +3,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { sendPushToUser } from "@/lib/notifications/webpush";
 import { moveChildHistoryToUser } from "@/lib/childHistory";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 import { inBackground } from "@/lib/background";
 
 // POST /api/link-requests/[requestId]/respond
@@ -151,7 +151,7 @@ export async function POST(
   }
 
   // Il livello si rilegge dallo storico, che ora è dell'account.
-  if (moved.history) inBackground(recomputeRatings(prisma), "rating link request accepted");
+  if (moved.history) inBackground(recomputeRatingsSafely(), "rating link request accepted");
 
   // Invia push al genitore (fuori dalla transaction)
   await sendPushToUser(linkRequest.parentId, {

@@ -28,9 +28,14 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 
 type PrismaMock = {
   $transaction: Mock;
@@ -103,15 +108,8 @@ describe("POST /api/sessions/[sessionId]/match-results", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(true);
-    // $transaction esegue il callback con lo stesso mock (tx = prisma mock)
-    p.$transaction.mockImplementation(async (cb: (tx: PrismaMock) => unknown) => cb(p));
-    // Default per il ricalcolo TrueSkill (recomputeRatings): nessun dato
+    // Iscrizioni per lo snapshot dei roster: nessuna
     p.registration.findMany.mockResolvedValue([]);
-    p.trainingMatchResult.findMany.mockResolvedValue([]);
-    p.match.findMany.mockResolvedValue([]);
-    p.sportRoleHistory.findMany.mockResolvedValue([]);
-    p.ratingUpdate.deleteMany.mockResolvedValue({ count: 0 });
-    p.ratingUpdate.createMany.mockResolvedValue({ count: 0 });
   });
 
   it("restituisce 403 se non staff", async () => {
@@ -204,5 +202,35 @@ describe("POST /api/sessions/[sessionId]/match-results", () => {
     });
     const res = await POST(req, CTX("s1"));
     expect(res.status).toBe(400);
+  });
+
+  it("salva il risultato fuori da una transazione e ricalcola dopo la risposta", async () => {
+    p.trainingSession.findUnique.mockResolvedValue({ id: "s1" });
+    p.trainingMatchResult.create.mockResolvedValue({ id: "mr3", scoreA: 20, scoreB: 4 });
+    const req = new NextRequest("http://localhost/api/sessions/s1/match-results", {
+      method: "POST",
+      body: JSON.stringify({ scoreA: 20, scoreB: 4 }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req, CTX("s1"));
+    expect(res.status).toBe(201);
+    // Il ricalcolo nella stessa transazione sforava il limite di 5 secondi (500).
+    expect(p.$transaction).not.toHaveBeenCalled();
+    expect(recomputeRatingsSafely).toHaveBeenCalledOnce();
+  });
+
+  it("risponde con un JSON leggibile se il salvataggio fallisce, senza ricalcolare", async () => {
+    p.trainingSession.findUnique.mockResolvedValue({ id: "s1" });
+    p.trainingMatchResult.create.mockRejectedValue(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const req = new NextRequest("http://localhost/api/sessions/s1/match-results", {
+      method: "POST",
+      body: JSON.stringify({ scoreA: 20, scoreB: 4 }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req, CTX("s1"));
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "Risultato non salvato. Riprova." });
+    expect(recomputeRatingsSafely).not.toHaveBeenCalled();
   });
 });

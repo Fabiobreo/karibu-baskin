@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   buildRostersSnapshot,
   movWeight,
+  onlyExisting,
+  ratingColumns,
   replayTimeline,
   replayTrainingEvents,
   type RegistrationRefMap,
@@ -164,5 +166,58 @@ describe("replayTimeline — cambio categoria (σ rigonfiato)", () => {
     // u2 non compare in nessuna partita: due eventi role ma nessun rating → nessun log
     const { log } = replayTimeline([role("u:u2"), role("u:u2")]);
     expect(log).toHaveLength(0);
+  });
+});
+
+describe("ratingColumns", () => {
+  it("divide account e figli in colonne parallele, nello stesso ordine", () => {
+    const cols = ratingColumns(
+      new Map([
+        ["u:a", { mu: 30, sigma: 5 }],
+        ["c:k", { mu: 22, sigma: 7 }],
+        ["u:b", { mu: 18.5, sigma: 4.25 }],
+      ])
+    );
+    expect(cols.users).toEqual({ ids: ["a", "b"], mus: [30, 18.5], sigmas: [5, 4.25] });
+    expect(cols.children).toEqual({ ids: ["k"], mus: [22], sigmas: [7] });
+  });
+
+  it("restituisce colonne vuote senza giocatori", () => {
+    const cols = ratingColumns(new Map());
+    expect(cols.users.ids).toHaveLength(0);
+    expect(cols.children.ids).toHaveLength(0);
+  });
+
+  it("non si confonde con un id che contiene i due punti", () => {
+    const cols = ratingColumns(new Map([["u:x:y", { mu: 1, sigma: 2 }]]));
+    expect(cols.users.ids).toEqual(["x:y"]);
+  });
+});
+
+describe("onlyExisting", () => {
+  it("toglie rating e storico di chi è stato eliminato", () => {
+    const entry = (key: "u:a" | "u:gone" | "c:k" | "c:gone") => ({
+      key,
+      reason: "TRAINING_MATCH" as const,
+      muBefore: 25,
+      sigmaBefore: 8,
+      muAfter: 26,
+      sigmaAfter: 7,
+    });
+    const out = onlyExisting(
+      {
+        ratings: new Map([
+          ["u:a", { mu: 26, sigma: 7 }],
+          ["u:gone", { mu: 20, sigma: 7 }],
+          ["c:k", { mu: 22, sigma: 7 }],
+          ["c:gone", { mu: 22, sigma: 7 }],
+        ]),
+        log: [entry("u:a"), entry("u:gone"), entry("c:k"), entry("c:gone")],
+      },
+      new Set(["a"]),
+      new Set(["k"])
+    );
+    expect([...out.ratings.keys()]).toEqual(["u:a", "c:k"]);
+    expect(out.log.map((e) => e.key)).toEqual(["u:a", "c:k"]);
   });
 });

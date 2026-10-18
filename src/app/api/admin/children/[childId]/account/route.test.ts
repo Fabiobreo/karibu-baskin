@@ -25,8 +25,8 @@ vi.mock("@/lib/db", () => {
 vi.mock("@/lib/childHistory", () => ({
   moveChildHistoryToUser: vi.fn().mockResolvedValue({ registrations: 3, teamMemberships: 1 }),
 }));
-vi.mock("@/lib/rating/ratingEngine", () => ({
-  recomputeRatings: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/lib/rating/recompute", () => ({
+  recomputeRatingsSafely: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("@/lib/authjs", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/apiAuth", () => ({ isCoachOrAdmin: vi.fn() }));
@@ -42,7 +42,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { moveChildHistoryToUser } from "@/lib/childHistory";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 
 type Many = { findMany: Mock; updateMany: Mock; deleteMany: Mock };
 const p = prisma as unknown as {
@@ -159,7 +159,7 @@ describe("PUT /api/admin/children/[childId]/account", () => {
     const res = await put({ userId: "u9" });
     expect(moveChildHistoryToUser).toHaveBeenCalledWith(expect.anything(), "c1", "u9");
     expect((await res.json()).moved).toEqual({ registrations: 3, teamMemberships: 1 });
-    expect(recomputeRatings).toHaveBeenCalled();
+    expect(recomputeRatingsSafely).toHaveBeenCalled();
   });
 
   it("la scheda aveva già uno storico del ruolo: non se ne crea un altro", async () => {

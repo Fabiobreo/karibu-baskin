@@ -9,7 +9,7 @@ import { sendPushToUser } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 import { generateUserSlug } from "@/lib/slugUtils";
 import {
   VALID_APP_ROLES,
@@ -238,7 +238,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
   // TrueSkill mantenendo μ. Il replay legge SportRoleHistory, quindi basta
   // ricalcolare; dopo la risposta perché la risposta non dipende dal rating.
   if (roleConfirmed && prevSportRole !== null) {
-    inBackground(recomputeRatings(prisma), "rating role change recompute");
+    inBackground(recomputeRatingsSafely(), "rating role change recompute");
   }
 
   return NextResponse.json(user);

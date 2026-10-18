@@ -8,7 +8,7 @@ import { ChildAccountSchema } from "@/lib/schemas";
 import { inBackground } from "@/lib/background";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { moveChildHistoryToUser, type MovedHistory } from "@/lib/childHistory";
-import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 
 type Params = { params: Promise<{ childId: string }> };
 
@@ -173,7 +173,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   // Il livello si rilegge dallo storico: ora partitelle e partite sono dell'account.
-  inBackground(recomputeRatings(prisma), "rating link child account");
+  inBackground(recomputeRatingsSafely(), "rating link child account");
   inBackground(
     logAudit({
       actorId,
