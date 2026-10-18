@@ -15,6 +15,7 @@ import SkipToContent from "@/components/layout/SkipToContent";
 import Footer from "@/components/layout/Footer";
 import HideInAdmin, { OnlyInAdmin } from "@/components/layout/HideInAdmin";
 import MainContent from "@/components/layout/MainContent";
+import ScrollToTopOnNavigate from "@/components/layout/ScrollToTopOnNavigate";
 import AdminHeader from "@/components/admin/AdminHeader";
 import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
@@ -166,6 +167,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Footer />
                   <BottomNav />
                 </HideInAdmin>
+                <ScrollToTopOnNavigate />
                 <SwUpdateToast />
                 <CookieBanner />
                 <InstallPrompt />
