@@ -39,9 +39,19 @@ export default function Providers({
     () =>
       new QueryClient({
         defaultOptions: {
+          // `networkMode: "always"`: senza rete si prova lo stesso. Di default
+          // React Query mette in pausa: le letture restavano sullo scheletro e i
+          // salvataggi con la rotella, che partivano minuti dopo al ritorno
+          // della rete. Così una lettura riceve la copia del service worker, se
+          // c'è, o l'errore con "Riprova"; un salvataggio fallisce subito e
+          // dice "Sei senza connessione" (`errorText`, @/lib/networkError).
           queries: {
             staleTime: 0,
             retry: 1,
+            networkMode: "always",
+          },
+          mutations: {
+            networkMode: "always",
           },
         },
       })

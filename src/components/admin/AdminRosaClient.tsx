@@ -46,6 +46,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
 type Athlete = {
@@ -249,7 +250,7 @@ export default function AdminRosaClient({
         showToast({ message: `${entry.athlete.name} aggiunto in rosa`, severity: "success" });
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : "Errore",
+          message: errorText(err, "Errore"),
           severity: "error",
         });
       } finally {
@@ -273,7 +274,7 @@ export default function AdminRosaClient({
         showToast({ message: "Atleta rimosso dalla rosa", severity: "success" });
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : "Errore",
+          message: errorText(err, "Errore"),
           severity: "error",
         });
       } finally {
@@ -300,7 +301,7 @@ export default function AdminRosaClient({
         }));
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : "Errore",
+          message: errorText(err, "Errore"),
           severity: "error",
         });
       } finally {

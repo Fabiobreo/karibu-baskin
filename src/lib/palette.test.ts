@@ -175,3 +175,27 @@ describe("manifest della PWA", () => {
     expect(manifest.background_color).toBe(NEUTRAL.light.background);
   });
 });
+
+describe("pagina offline", () => {
+  it("usa solo colori della palette e regge il contrasto", () => {
+    const html = readFileSync(join(process.cwd(), "public", "offline.html"), "utf8");
+    // Anche le forme corte (#fff): non devono sfuggire al controllo.
+    const used = new Set((html.match(/#[0-9A-Fa-f]{3,8}\b/g) ?? []).map((c) => c.toUpperCase()));
+    const allowed = new Set(
+      [
+        BRAND.dark,
+        BRAND.white,
+        BRAND.orangeOnDark,
+        BRAND.orangeFill,
+        BRAND.orangeFillHover,
+        NEUTRAL.dark.textSecondary,
+      ].map((c) => c.toUpperCase())
+    );
+    expect(used.size).toBeGreaterThan(0);
+    for (const c of used) expect(allowed).toContain(c);
+    expect(html).not.toMatch(/rgba?\(/);
+    expect(ratio(BRAND.orangeOnDark, BRAND.dark)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(NEUTRAL.dark.textSecondary, BRAND.dark)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(BRAND.white, BRAND.orangeFill)).toBeGreaterThanOrEqual(4.5);
+  });
+});

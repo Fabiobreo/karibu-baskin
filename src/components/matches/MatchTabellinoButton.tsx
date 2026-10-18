@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { heroText } from "@/lib/heroStyles";
 
+import { errorText } from "@/lib/networkError";
 interface Props {
   matchId: string;
   filename: string;
@@ -67,7 +68,7 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
       showToast({ message: t("tabellinoDownloaded"), severity: "success" });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : tCommon("networkError"),
+        message: errorText(err, tCommon("networkError"), tCommon("networkError")),
         severity: "error",
       });
     } finally {

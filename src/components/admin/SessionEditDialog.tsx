@@ -23,6 +23,7 @@ import { CLUB_VENUE_LABEL } from "@/lib/clubVenue";
 import { useToast } from "@/context/ToastContext";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 export interface EditableSession {
   id: string;
   title: string;
@@ -111,8 +112,8 @@ function EditForm({
       }
       showToast({ message: "Allenamento aggiornato", severity: "success" });
       onSaved();
-    } catch {
-      setError("Errore di rete, riprova");
+    } catch (err) {
+      setError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setLoading(false);
     }

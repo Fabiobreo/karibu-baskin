@@ -56,6 +56,7 @@ import { teamMenuEntries } from "@/lib/adminRowActions";
 import { useToast } from "@/context/ToastContext";
 import { TOUCH_CHIP_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 // ── Tinte squadra ──────────────────────────────────────────────────────────────
 
 // Tinte che lo staff puo' scegliere (UX-29): la palette chiusa, tranne
@@ -313,8 +314,8 @@ export default function AdminSquadreClient({
         severity: "success",
       });
       router.refresh();
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setSavingClub(false);
     }

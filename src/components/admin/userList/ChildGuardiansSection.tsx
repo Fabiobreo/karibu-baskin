@@ -20,6 +20,7 @@ import UserSearchPicker from "@/components/admin/people/UserSearchPicker";
 import type { AdminPerson } from "@/components/admin/people/usePeopleSearch";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface Guardian {
   id: string;
   name: string | null;
@@ -81,7 +82,7 @@ export default function ChildGuardiansSection({
       showToast({ message: `${user.name} ora è genitore di ${childName}`, severity: "success" });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante il collegamento",
+        message: errorText(err, "Errore durante il collegamento"),
         severity: "error",
       });
     } finally {
@@ -104,7 +105,7 @@ export default function ChildGuardiansSection({
       });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante lo scollegamento",
+        message: errorText(err, "Errore durante lo scollegamento"),
         severity: "error",
       });
     } finally {

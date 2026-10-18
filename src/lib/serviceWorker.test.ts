@@ -176,14 +176,23 @@ describe("service worker · routing", () => {
     expect(fireFetch(sw, makeRequest("https://esempio.test/x")).handled).toBe(false);
   });
 
-  it.each(["/admin", "/admin/utenti", "/profilo", "/profilo/disponibilita", "/notifiche"])(
-    "lascia passare %s senza toccarlo",
-    (pathname) => {
-      // Le aree riservate non devono nemmeno sfiorare la cache: l'HTML contiene
-      // email e ruoli dei tesserati.
-      expect(fireFetch(sw, navigation(pathname)).handled).toBe(false);
-    }
-  );
+  it.each([
+    "/admin",
+    "/admin/utenti",
+    "/profilo",
+    "/profilo/disponibilita",
+    "/notifiche",
+    // Dettaglio evento: risposte della famiglia e, per lo staff, di tutti.
+    "/eventi/pranzo-sociale",
+  ])("lascia passare %s senza toccarlo", (pathname) => {
+    // Le aree riservate non devono nemmeno sfiorare la cache: l'HTML contiene
+    // email e ruoli dei tesserati.
+    expect(fireFetch(sw, navigation(pathname)).handled).toBe(false);
+  });
+
+  it("tiene in cache la lista degli eventi, solo il dettaglio è privato", () => {
+    expect(fireFetch(sw, navigation("/eventi")).handled).toBe(true);
+  });
 
   it("intercetta /amministrazione, che non è un'area riservata", () => {
     // Il controllo è per segmento: un prefisso nudo farebbe passare per privata
@@ -213,14 +222,14 @@ describe("service worker · rete assente", () => {
   });
 
   it("serve la pagina offline a una navigazione senza cache", async () => {
-    sw.caches._seed("karibu-v11-static", "/offline.html", makeResponse("OFFLINE"));
+    sw.caches._seed("karibu-v13-static", "/offline.html", makeResponse("OFFLINE"));
     const res = await fireFetch(sw, navigation("/classifiche")).response;
     expect(res?.body).toBe("OFFLINE");
   });
 
   it("preferisce la pagina in cache alla pagina offline", async () => {
-    sw.caches._seed("karibu-v11-static", "/offline.html", makeResponse("OFFLINE"));
-    sw.caches._seed("karibu-v11-pages", "/squadre", makeResponse("SQUADRE"));
+    sw.caches._seed("karibu-v13-static", "/offline.html", makeResponse("OFFLINE"));
+    sw.caches._seed("karibu-v13-pages", "/squadre", makeResponse("SQUADRE"));
     const res = await fireFetch(sw, navigation("/squadre")).response;
     expect(res?.body).toBe("SQUADRE");
   });
@@ -233,7 +242,7 @@ describe("service worker · rete assente", () => {
   ])("non serve mai offline.html a una richiesta di tipo %s", async (destination, url) => {
     // È il difetto che produceva ChunkLoadError e schermata 500: un documento
     // HTML consegnato dove è atteso JavaScript non è eseguibile.
-    sw.caches._seed("karibu-v11-static", "/offline.html", makeResponse("<!doctype html>"));
+    sw.caches._seed("karibu-v13-static", "/offline.html", makeResponse("<!doctype html>"));
     const { response } = fireFetch(sw, makeRequest(url, { destination }));
     await expect(response).rejects.toThrow();
   });
@@ -247,7 +256,7 @@ describe("service worker · rete assente", () => {
   });
 
   it("usa la cache delle API quando c'è", async () => {
-    sw.caches._seed("karibu-v11-api", "/api/sessions", makeResponse("[]"));
+    sw.caches._seed("karibu-v13-api", "/api/sessions", makeResponse("[]"));
     const res = await fireFetch(sw, makeRequest("/api/sessions")).response;
     expect(res?.body).toBe("[]");
   });
@@ -278,7 +287,7 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/squadre"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v11-pages")).toBe(0);
+    expect(sw.caches._size("karibu-v13-pages")).toBe(0);
   });
 
   it("non mette in cache le risposte redirette", async () => {
@@ -288,7 +297,7 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/la-squadra"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v11-pages")).toBe(0);
+    expect(sw.caches._size("karibu-v13-pages")).toBe(0);
   });
 
   it("non mette in cache le risposte opache", async () => {
@@ -296,7 +305,7 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/squadre"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v11-pages")).toBe(0);
+    expect(sw.caches._size("karibu-v13-pages")).toBe(0);
   });
 
   it("salva le pagine valide per l'offline", async () => {
@@ -304,11 +313,11 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/squadre"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v11-pages")).toBe(1);
+    expect(sw.caches._size("karibu-v13-pages")).toBe(1);
   });
 
   it("serve gli asset con hash dalla cache senza toccare la rete", async () => {
-    sw.caches._seed("karibu-v11-static", "/_next/static/chunks/abc.js", makeResponse("JS"));
+    sw.caches._seed("karibu-v13-static", "/_next/static/chunks/abc.js", makeResponse("JS"));
     const res = await fireFetch(
       sw,
       makeRequest("/_next/static/chunks/abc.js", { destination: "script" })
@@ -323,9 +332,9 @@ describe("service worker · scrittura in cache", () => {
 describe("service worker · messaggi dal client", () => {
   it("PURGE_SESSION_CACHES svuota pagine e API ma non gli asset statici", async () => {
     const sw = loadServiceWorker();
-    sw.caches._seed("karibu-v11-pages", "/profilo", makeResponse("privato"));
-    sw.caches._seed("karibu-v11-api", "/api/sessions", makeResponse("[]"));
-    sw.caches._seed("karibu-v11-static", "/logo.png", makeResponse("png"));
+    sw.caches._seed("karibu-v13-pages", "/profilo", makeResponse("privato"));
+    sw.caches._seed("karibu-v13-api", "/api/sessions", makeResponse("[]"));
+    sw.caches._seed("karibu-v13-static", "/logo.png", makeResponse("png"));
 
     const waits: Promise<unknown>[] = [];
     const port = { postMessage: vi.fn() };
@@ -336,7 +345,7 @@ describe("service worker · messaggi dal client", () => {
     });
     await Promise.allSettled(waits);
 
-    expect(sw.caches._names()).toEqual(["karibu-v11-static"]);
+    expect(sw.caches._names()).toEqual(["karibu-v13-static"]);
     expect(port.postMessage).toHaveBeenCalledWith({ ok: true });
   });
 
@@ -359,7 +368,7 @@ describe("service worker · attivazione", () => {
     const sw = loadServiceWorker();
     sw.caches._seed("karibu-v9-pages", "/admin/utenti", makeResponse("dati personali"));
     sw.caches._seed("karibu-v10-pages", "/squadre", makeResponse("vecchio"));
-    sw.caches._seed("karibu-v11-pages", "/squadre", makeResponse("nuovo"));
+    sw.caches._seed("karibu-v13-pages", "/squadre", makeResponse("nuovo"));
 
     const waits: Promise<unknown>[] = [];
     sw.dispatch("activate", { waitUntil: (p: Promise<unknown>) => waits.push(p) });
@@ -367,6 +376,6 @@ describe("service worker · attivazione", () => {
 
     // È così che l'HTML dell'area admin già salvato sui dispositivi sparisce al
     // primo aggiornamento, invece di restare lì per sempre.
-    expect(sw.caches._names()).toEqual(["karibu-v11-pages"]);
+    expect(sw.caches._names()).toEqual(["karibu-v13-pages"]);
   });
 });

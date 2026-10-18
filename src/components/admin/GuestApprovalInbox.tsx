@@ -25,6 +25,7 @@ import { RADIUS } from "@/lib/radius";
 import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 export interface GuestUser {
   id: string;
   name: string | null;
@@ -88,8 +89,8 @@ export default function GuestApprovalInbox({
         message: `${guest.name ?? guest.email} approvato come ${ROLE_LABELS_IT[appRole]}`,
         severity: "success",
       });
-    } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setProcessing(null);
     }

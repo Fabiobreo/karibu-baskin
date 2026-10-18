@@ -10,6 +10,7 @@ import UserSearchPicker from "@/components/admin/people/UserSearchPicker";
 import type { AdminPerson } from "@/components/admin/people/usePeopleSearch";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface ChildAccountSectionProps {
   childId: string;
   childName: string;
@@ -65,7 +66,7 @@ export default function ChildAccountSection({
       });
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Errore durante il collegamento");
+      setError(errorText(err, "Errore durante il collegamento"));
     } finally {
       setBusy(false);
     }
@@ -83,7 +84,7 @@ export default function ChildAccountSection({
       });
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Errore durante lo scollegamento");
+      setError(errorText(err, "Errore durante lo scollegamento"));
     } finally {
       setBusy(false);
     }

@@ -37,6 +37,7 @@ import type { GuestRsvp, MemberRsvp } from "@/lib/eventRsvp";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
 /** Risposta a una domanda: si', no, o non ancora data. */
 type Answer = boolean | null;
@@ -462,6 +463,7 @@ function RsvpForm({
   onGoingChange: (going: number) => void;
 }) {
   const t = useTranslations("events");
+  const tCommon = useTranslations("common");
   const { showToast } = useToast();
   const [saved, setSaved] = useState<SavedState>({
     members: initialMembers,
@@ -555,7 +557,7 @@ function RsvpForm({
   const errorBox = mutation.isError && (
     <InlineError
       title={t("rsvpNotSaved")}
-      message={mutation.error instanceof Error ? mutation.error.message : t("saveError")}
+      message={errorText(mutation.error, t("saveError"), tCommon("networkError"))}
       onRetry={() => mutation.mutate(undefined)}
       onClose={() => mutation.reset()}
       retrying={busy}

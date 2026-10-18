@@ -36,6 +36,7 @@ import type {
   OpponentSheetMatch,
 } from "@/lib/matches/opponentSheet";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 /** L'avversaria in anagrafica di questa partita, con la sua scheda (solo staff). */
 export interface ConvocazioniOpponent {
   id: string;
@@ -314,8 +315,8 @@ export default function ConvocazioniClient({
       }
       showToast({ message: `Salvati ${totalSelectedAll} convocati`, severity: "success" });
       router.refresh();
-    } catch {
-      setSaveError("Errore di rete.");
+    } catch (err) {
+      setSaveError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setSaving(false);
     }

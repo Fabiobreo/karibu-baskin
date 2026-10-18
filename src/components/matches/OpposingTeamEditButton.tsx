@@ -25,6 +25,7 @@ import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { heroText } from "@/lib/heroStyles";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 export interface OpposingTeamEditButtonProps {
   teamId: string;
   initial: {
@@ -96,8 +97,8 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
         return;
       }
       setImageUrl(data.url);
-    } catch {
-      setError("Errore di rete durante il caricamento");
+    } catch (err) {
+      setError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setUploading(false);
     }
@@ -133,8 +134,8 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
       setOpen(false);
       setLoading(false);
       router.refresh();
-    } catch {
-      setError("Errore di rete, riprova");
+    } catch (err) {
+      setError(errorText(err, GENERIC_ERROR_IT));
       setLoading(false);
     }
   }

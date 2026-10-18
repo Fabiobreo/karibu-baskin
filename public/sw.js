@@ -18,7 +18,7 @@
 //    errore al posto della pagina offline: il contrario di quello che una PWA
 //    deve fare. Il routing è deciso su `request.destination`, non per esclusione.
 
-const VERSION = "karibu-v11";
+const VERSION = "karibu-v13";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const API_CACHE = `${VERSION}-api`;
@@ -249,8 +249,17 @@ function isApiCacheable(pathname) {
   return API_CACHE_PATTERNS.some((p) => p.test(pathname));
 }
 
+// Pagine pubbliche che a chi ha fatto l'accesso mostrano dati personali: il
+// dettaglio di un evento ha le risposte della famiglia e, per la direzione e lo
+// staff, l'elenco di tutte le risposte con le note. La lista (/eventi) resta in
+// cache.
+const PRIVATE_DETAIL_PREFIXES = ["/eventi"];
+
 function isPrivatePath(pathname) {
-  return PRIVATE_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return (
+    PRIVATE_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+    PRIVATE_DETAIL_PREFIXES.some((p) => pathname.startsWith(`${p}/`))
+  );
 }
 
 // ── Messaggi dal client ────────────────────────────────────────────────────

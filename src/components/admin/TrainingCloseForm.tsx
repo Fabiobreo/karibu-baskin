@@ -39,6 +39,7 @@ import {
 import type { TeamsData } from "@/lib/schemas";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 export interface CloseAthlete {
   id: string;
   name: string;
@@ -180,7 +181,7 @@ export default function TrainingCloseForm({
       onSaved(conclude);
     } catch (err) {
       // Resta scritto qui, vicino ai bottoni, finche' non si riprova (UX-05).
-      setError(err instanceof Error ? err.message : "Errore di rete.");
+      setError(errorText(err, "Salvataggio non riuscito. Riprova."));
       setFailedConclude(conclude);
       router.refresh();
     } finally {

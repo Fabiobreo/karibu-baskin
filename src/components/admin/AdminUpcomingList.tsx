@@ -35,6 +35,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { lastNotifiedLabel, notifyConfirm } from "@/lib/adminRowActions";
 import { hasRestrictions } from "@/lib/registrationRestrictions";
 
+import { errorText } from "@/lib/networkError";
 export interface AdminUpcomingRow {
   id: string;
   title: string;
@@ -126,7 +127,7 @@ function UpcomingDetails({ s, initialEdit }: { s: AdminUpcomingRow; initialEdit:
       });
       router.refresh();
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusy(false);
     }
@@ -141,7 +142,7 @@ function UpcomingDetails({ s, initialEdit }: { s: AdminUpcomingRow; initialEdit:
       setSentAt(data.lastNotifiedAt);
       showToast({ message: "Avviso inviato", severity: "success" });
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusy(false);
     }

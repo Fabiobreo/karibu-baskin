@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Box,
   Avatar,
@@ -21,6 +22,7 @@ import { useToast } from "@/context/ToastContext";
 import type { BlobFolder } from "@/lib/blob";
 import { readError } from "@/lib/fetchJson";
 
+import { errorText } from "@/lib/networkError";
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
@@ -47,6 +49,9 @@ export default function ImageUploader({
   const [uploading, setUploading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { showToast } = useToast();
+  // Tradotto: oltre al pannello staff lo usa il profilo pubblico (foto profilo).
+  const t = useTranslations("imageUploader");
+  const tCommon = useTranslations("common");
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -55,11 +60,11 @@ export default function ImageUploader({
     if (!file) return;
 
     if (file.size > MAX_SIZE_BYTES) {
-      showToast({ message: "Il file supera il limite di 5 MB", severity: "error" });
+      showToast({ message: t("tooLarge"), severity: "error" });
       return;
     }
     if (!ALLOWED_TYPES.includes(file.type)) {
-      showToast({ message: "Formato non supportato. Usa JPEG, PNG o WebP", severity: "error" });
+      showToast({ message: t("badFormat"), severity: "error" });
       return;
     }
 
@@ -75,10 +80,10 @@ export default function ImageUploader({
       if (!res.ok) throw new Error(await readError(res));
       const data = await res.json();
       onUploaded(data.url as string);
-      showToast({ message: "Immagine caricata", severity: "success" });
+      showToast({ message: t("uploaded"), severity: "success" });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante l'upload",
+        message: errorText(err, t("uploadError"), tCommon("networkError")),
         severity: "error",
       });
     } finally {
@@ -135,7 +140,7 @@ export default function ImageUploader({
               gap: 0.5,
             }}
           >
-            <Tooltip title="Cambia immagine">
+            <Tooltip title={t("change")}>
               <IconButton
                 size="small"
                 onClick={() => inputRef.current?.click()}
@@ -152,7 +157,7 @@ export default function ImageUploader({
             </Tooltip>
 
             {currentUrl && onRemoved && (
-              <Tooltip title="Rimuovi immagine">
+              <Tooltip title={t("remove")}>
                 <IconButton
                   size="small"
                   onClick={() => setConfirmOpen(true)}
@@ -181,17 +186,14 @@ export default function ImageUploader({
       </Box>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs">
-        <DialogTitle>Rimuovi immagine</DialogTitle>
+        <DialogTitle>{t("remove")}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Sei sicuro di voler rimuovere questa immagine? L&apos;operazione non può essere
-            annullata.
-          </DialogContentText>
+          <DialogContentText>{t("removeConfirm")}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>Annulla</Button>
+          <Button onClick={() => setConfirmOpen(false)}>{t("cancel")}</Button>
           <Button onClick={handleRemoveConfirm} color="error" variant="contained">
-            Rimuovi
+            {t("removeAction")}
           </Button>
         </DialogActions>
       </Dialog>

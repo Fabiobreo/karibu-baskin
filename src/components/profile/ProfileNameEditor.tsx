@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 
+import { errorText } from "@/lib/networkError";
 interface ProfileNameEditorProps {
   name: string | null;
 }
@@ -18,6 +19,7 @@ interface ProfileNameEditorProps {
  */
 export default function ProfileNameEditor({ name }: ProfileNameEditorProps) {
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
@@ -39,7 +41,7 @@ export default function ProfileNameEditor({ name }: ProfileNameEditorProps) {
     },
     onError: (err) =>
       showToast({
-        message: err instanceof Error ? err.message : t("nameSaveError"),
+        message: errorText(err, t("nameSaveError"), tCommon("networkError")),
         severity: "error",
       }),
   });

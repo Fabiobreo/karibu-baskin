@@ -9,15 +9,15 @@ dell'applicazione che non esiste.
 
 ## Strategie
 
-| Richiesta                          | Strategia          | Fallback offline              |
-| ---------------------------------- | ------------------ | ----------------------------- |
-| `/admin`, `/profilo`, `/notifiche` | nessuna: rete pura | nessuno                       |
-| `/_next/static/*` (hash nel nome)  | cache-first        | cache                         |
-| Immagini, font, icone              | cache-first        | cache                         |
-| `/api/` in `API_CACHE_PATTERNS`    | network-first      | cache, poi errore             |
-| Altre `/api/`                      | nessuna: rete pura | nessuno                       |
-| Navigazioni                        | network-first      | cache, poi `offline.html`     |
-| Script, stili, media               | network-first      | cache, **mai** `offline.html` |
+| Richiesta                                            | Strategia          | Fallback offline              |
+| ---------------------------------------------------- | ------------------ | ----------------------------- |
+| `/admin`, `/profilo`, `/notifiche`, `/eventi/<slug>` | nessuna: rete pura | nessuno                       |
+| `/_next/static/*` (hash nel nome)                    | cache-first        | cache                         |
+| Immagini, font, icone                                | cache-first        | cache                         |
+| `/api/` in `API_CACHE_PATTERNS`                      | network-first      | cache, poi errore             |
+| Altre `/api/`                                        | nessuna: rete pura | nessuno                       |
+| Navigazioni                                          | network-first      | cache, poi `offline.html`     |
+| Script, stili, media                                 | network-first      | cache, **mai** `offline.html` |
 
 Tre regole da non violare quando si tocca il file.
 

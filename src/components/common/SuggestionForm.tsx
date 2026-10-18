@@ -19,6 +19,7 @@ import { useToast } from "@/context/ToastContext";
 import { SUGGESTION_CATEGORIES } from "@/lib/schemas/suggestion";
 import { readError } from "@/lib/fetchJson";
 
+import { errorText } from "@/lib/networkError";
 export default function SuggestionForm() {
   const { showToast } = useToast();
   const t = useTranslations("suggestion");
@@ -53,7 +54,7 @@ export default function SuggestionForm() {
       setMessage("");
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : t("sendError"),
+        message: errorText(err, t("sendError"), tCommon("networkError")),
         severity: "error",
       });
     } finally {

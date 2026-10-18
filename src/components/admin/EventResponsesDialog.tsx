@@ -31,6 +31,7 @@ import { readError } from "@/lib/fetchJson";
 import type { EventResponses, ResponseRow } from "@/lib/eventResponses";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface EventResponsesDialogProps {
   eventId: string | null;
   onClose: () => void;
@@ -132,7 +133,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
         ) : query.isError ? (
           <InlineError
             title="Risposte non caricate."
-            message={query.error instanceof Error ? query.error.message : "Errore"}
+            message={errorText(query.error, "Errore")}
             onRetry={() => query.refetch()}
             retrying={query.isFetching}
           />

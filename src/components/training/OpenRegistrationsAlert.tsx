@@ -5,6 +5,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useToast } from "@/context/ToastContext";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 interface Props {
   sessionId: string;
   onOpened?: () => void;
@@ -25,8 +26,8 @@ export default function OpenRegistrationsAlert({ sessionId, onOpened }: Props) {
         const data = await res.json().catch(() => ({}));
         showToast({ message: data.error ?? "Errore nell'apertura", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setLoading(false);
     }

@@ -28,6 +28,7 @@ import ExistingChildMatches from "@/components/admin/people/ExistingChildMatches
 import UserSearchPicker from "@/components/admin/people/UserSearchPicker";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface ChildDraft {
   name: string;
   gender: Gender | null;
@@ -134,7 +135,7 @@ export default function AdminNuovoFiglioClient({
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante la creazione",
+        message: errorText(err, "Errore durante la creazione"),
         severity: "error",
       });
     } finally {
@@ -177,7 +178,7 @@ export default function AdminNuovoFiglioClient({
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante il collegamento",
+        message: errorText(err, "Errore durante il collegamento"),
         severity: "error",
       });
     } finally {

@@ -12,6 +12,7 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import type { AlbumCard } from "@/lib/gallery/albums";
 
+import { errorText } from "@/lib/networkError";
 type GallerySection = "album" | "instagram";
 
 interface AdminGalleryViewProps {
@@ -92,7 +93,7 @@ export default function AdminGalleryView({
       }
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Aggiornamento non riuscito",
+        message: errorText(err, "Aggiornamento non riuscito"),
         severity: "error",
       });
     } finally {
@@ -109,7 +110,7 @@ export default function AdminGalleryView({
       return true;
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Eliminazione non riuscita",
+        message: errorText(err, "Eliminazione non riuscita"),
         severity: "error",
       });
       return false;

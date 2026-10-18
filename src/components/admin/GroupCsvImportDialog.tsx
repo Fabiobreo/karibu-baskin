@@ -27,6 +27,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 interface OpposingTeam {
   id: string;
   name: string;
@@ -181,8 +182,8 @@ export default function GroupCsvImportDialog({
       onImported(imported);
       onClose();
       handleReset();
-    } catch {
-      setError("Errore di rete durante l'importazione.");
+    } catch (err) {
+      setError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setSaving(false);
     }

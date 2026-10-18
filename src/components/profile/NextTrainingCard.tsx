@@ -23,6 +23,7 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 /** Un iscrivibile: l'utente stesso oppure un figlio collegato. */
 export interface TrainingSubject {
   kind: "user" | "child";
@@ -98,7 +99,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
       router.refresh();
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : tCommon("error"),
+        message: errorText(err, tCommon("error"), tCommon("networkError")),
         severity: "error",
       });
     } finally {
@@ -119,7 +120,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
       router.refresh();
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : tCommon("error"),
+        message: errorText(err, tCommon("error"), tCommon("networkError")),
         severity: "error",
       });
     } finally {

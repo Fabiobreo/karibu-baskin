@@ -22,6 +22,7 @@ import TeamColorDot from "@/components/teams/TeamColorDot";
 import { useToast } from "@/context/ToastContext";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 interface Team {
   id: string;
   name: string;
@@ -113,8 +114,8 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         setError(data.error ?? "Errore durante l'invio");
       }
-    } catch {
-      setError("Errore di rete, riprova");
+    } catch (err) {
+      setError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setSending(false);
     }

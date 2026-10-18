@@ -33,6 +33,7 @@ import PersonRow from "@/components/admin/people/PersonRow";
 import RolePicker from "@/components/admin/people/RolePicker";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 export interface ParticipantRegistration {
   id: string;
   name: string;
@@ -143,7 +144,7 @@ export default function ManageParticipantsDialog({
       onChanged();
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante l'iscrizione",
+        message: errorText(err, "Errore durante l'iscrizione"),
         severity: "error",
       });
     } finally {
@@ -162,7 +163,7 @@ export default function ManageParticipantsDialog({
       onChanged();
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante la rimozione",
+        message: errorText(err, "Errore durante la rimozione"),
         severity: "error",
       });
     } finally {

@@ -38,6 +38,7 @@ import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 // Dialog riservato allo staff → testi in italiano per scelta (come l'admin)
 
 type CreateType = "training" | "event" | "match";
@@ -219,8 +220,8 @@ export default function CreateEventDialog({
       showToast({ message: `${typeLabel} creato con successo`, severity: "success" });
       resetForm();
       onCreated();
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setLoading(false);
     }

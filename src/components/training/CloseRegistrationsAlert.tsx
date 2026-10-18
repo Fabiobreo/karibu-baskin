@@ -5,6 +5,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { useToast } from "@/context/ToastContext";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 interface Props {
   sessionId: string;
   onClosed?: () => void;
@@ -26,8 +27,8 @@ export default function CloseRegistrationsAlert({ sessionId, onClosed }: Props) 
         const data = await res.json().catch(() => ({}));
         showToast({ message: data.error ?? "Errore nella chiusura", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setLoading(false);
       setConfirm(false);

@@ -5,6 +5,7 @@ import TeamDisplay, { type TeamsData, type TeamAthlete } from "@/components/trai
 import TeamsHeader from "@/components/training/TeamsHeader";
 import { useToast } from "@/context/ToastContext";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 interface AdminSessionTeamsProps {
   sessionId: string;
   sessionTitle: string;
@@ -55,8 +56,8 @@ export default function AdminSessionTeams({
       } else {
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setRemoving(false);
     }

@@ -44,6 +44,7 @@ import { newsMenuEntries, notifyConfirm } from "@/lib/adminRowActions";
 import { canNotifyPost } from "@/lib/notifications/renotifyRules";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 
+import { errorText } from "@/lib/networkError";
 const PostEditor = dynamic(() => import("@/components/news/PostEditor"), { ssr: false });
 
 interface PostSummary {
@@ -163,7 +164,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
       }
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore nel caricamento",
+        message: errorText(err, "Errore nel caricamento"),
         severity: "error",
       });
     }
@@ -248,7 +249,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
       });
       setOpen(false);
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setSaving(false);
     }

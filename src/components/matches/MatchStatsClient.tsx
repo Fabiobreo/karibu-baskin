@@ -37,6 +37,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 interface CalledPlayer {
   id: string;
   userId: string | null;
@@ -304,8 +305,8 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
       setDirty(false);
       router.push("/admin/partite");
       router.refresh();
-    } catch {
-      setSaveError("Errore di rete.");
+    } catch (err) {
+      setSaveError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setSaving(false);
     }

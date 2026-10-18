@@ -26,6 +26,7 @@ import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface PollOption {
   id: string;
   text: string;
@@ -63,6 +64,7 @@ export default function PollWidget({
   const { showToast } = useToast();
   const router = useRouter();
   const t = useTranslations("poll");
+  const tCommon = useTranslations("common");
   const dateLocale = useActiveDateLocale();
 
   const now = new Date();
@@ -105,7 +107,7 @@ export default function PollWidget({
       // Aggiorna i risultati lato server (anteprima staff o sondaggio chiuso)
       router.refresh();
     } catch (err) {
-      setVoteError(err instanceof Error ? err.message : t("voteNotSaved"));
+      setVoteError(errorText(err, t("voteNotSaved"), tCommon("networkError")));
     } finally {
       setSaving(false);
     }

@@ -17,6 +17,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { roleColor, roleColorSx } from "@/lib/constants";
 
+import { errorText } from "@/lib/networkError";
 interface RoleQuizClientProps {
   /** Ruolo confermato dallo staff: se c'è, niente questionario. */
   confirmed: SportRoleResult | null;
@@ -39,6 +40,7 @@ export default function RoleQuizClient({
   nextSession,
 }: RoleQuizClientProps) {
   const t = useTranslations("roleQuiz");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { showToast } = useToast();
   const [suggested, setSuggested] = useState(initialSuggested);
@@ -62,7 +64,7 @@ export default function RoleQuizClient({
     },
     onError: (err) =>
       showToast({
-        message: err instanceof Error ? err.message : t("saveError"),
+        message: errorText(err, t("saveError"), tCommon("networkError")),
         severity: "error",
       }),
   });

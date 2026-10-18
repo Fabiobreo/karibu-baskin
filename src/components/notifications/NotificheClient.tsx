@@ -10,6 +10,7 @@ import { useToast } from "@/context/ToastContext";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface NotifItem {
   id: string;
   type: string;
@@ -42,6 +43,7 @@ export default function NotificheClient({
   initialHasMore,
 }: NotificheClientProps) {
   const t = useTranslations("pages");
+  const tCommon = useTranslations("common");
   const { markAllRead, refreshCount } = useNotifications();
   const { showToast } = useToast();
 
@@ -61,12 +63,12 @@ export default function NotificheClient({
         setHasMore(data.hasMore ?? false);
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : t("notifiche.loadError"),
+          message: errorText(err, t("notifiche.loadError"), tCommon("networkError")),
           severity: "error",
         });
       }
     },
-    [showToast, t]
+    [showToast, t, tCommon]
   );
 
   // Aprire la pagina vuol dire aver visto le notifiche: si segnano lette subito

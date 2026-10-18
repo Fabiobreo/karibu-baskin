@@ -27,6 +27,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
 import type { AlbumCard } from "@/lib/gallery/albums";
 
+import { errorText } from "@/lib/networkError";
 /** Un evento o una partita a cui collegare l'album. */
 export interface AlbumLinkOption {
   kind: "event" | "match";
@@ -128,7 +129,7 @@ export default function AlbumFormDialog({
       setTitle(data.title);
       setDay(toDateInput(data.date));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Non sono riuscito a leggere la cartella");
+      setError(errorText(err, "Non sono riuscito a leggere la cartella"));
     } finally {
       setBusy(false);
     }
@@ -169,7 +170,7 @@ export default function AlbumFormDialog({
       });
       onSaved(saved, !editing);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Salvataggio non riuscito");
+      setError(errorText(err, "Salvataggio non riuscito"));
     } finally {
       setBusy(false);
     }

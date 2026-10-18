@@ -29,6 +29,7 @@ import type { UserEntry } from "@/components/admin/userList/userListShared";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
 
+import { errorText } from "@/lib/networkError";
 type UserRow = UserEntry & { kind: "user" };
 
 interface MergeAccountDialogProps {
@@ -120,7 +121,7 @@ export default function MergeAccountDialog({
       });
       onMerged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Errore di rete. Non è cambiato nulla.");
+      setError(errorText(err, "Unione non riuscita. Non è cambiato nulla."));
     } finally {
       setBusy(false);
     }

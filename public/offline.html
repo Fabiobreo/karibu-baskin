@@ -3,58 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Karibu Baskin — Offline</title>
+  <title>Karibu Baskin · Senza connessione</title>
+  <!--
+    Pagina che il service worker mostra quando una pagina non e' in cache e la
+    rete manca. Stesse frasi dell'app (common.networkError, offline.banner) e
+    colori di @/lib/palette: qui non si puo' importare, quindi palette.test.ts
+    controlla che ogni colore sia uno di quelli. La lingua viene solo dal
+    cookie, come nel resto del sito: senza cookie e' italiano.
+  -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #1A1A1A;
-      color: #fff;
+      color: #FFFFFF;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      padding: 24px;
+      gap: 20px;
+      padding: 24px 16px;
       text-align: center;
     }
-    img { width: 72px; height: 72px; object-fit: contain; opacity: 0.9; }
-    h1 { font-size: 1.5rem; font-weight: 800; color: #E65100; }
-    p { font-size: 0.95rem; color: rgba(255,255,255,0.6); max-width: 320px; line-height: 1.6; }
-    .icon { font-size: 3rem; margin-bottom: -8px; }
+    img { width: 72px; height: 72px; object-fit: contain; }
+    h1 { font-size: 1.5rem; font-weight: 800; color: #FF8A50; }
+    p { font-size: 1rem; color: #AAAAAA; max-width: 340px; line-height: 1.6; }
     button {
-      margin-top: 8px;
-      background: #E65100;
-      color: #fff;
+      min-height: 48px;
+      background: #C84B00;
+      color: #FFFFFF;
       border: none;
       border-radius: 8px;
-      padding: 10px 24px;
-      font-size: 0.9rem;
-      font-weight: 700;
+      padding: 0 24px;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
       font-family: inherit;
     }
-    button:hover { background: #BF360C; }
+    button:hover { background: #A83F00; }
   </style>
 </head>
 <body>
-  <span class="icon">📡</span>
   <img src="/logo.png" alt="Karibu Baskin" />
-  <h1 id="title">Sei offline</h1>
-  <p id="desc">Controlla la connessione. Alcune pagine visitate di recente sono comunque disponibili.</p>
-  <button id="btn" onclick="location.reload()">Riprova</button>
+  <h1 id="title">Sei senza connessione</h1>
+  <p id="desc">Questa pagina non è tra quelle già aperte. Riprova quando torna la rete.</p>
+  <button id="btn" type="button" onclick="location.reload()">Riprova</button>
   <script>
-    var lang = (document.cookie.match(/karibu-locale=([^;]+)/) || [])[1]
-      || navigator.language.slice(0, 2);
+    var lang = (document.cookie.match(/(?:^|;\s*)karibu-locale=([^;]+)/) || [])[1];
     if (lang === "en") {
       document.documentElement.lang = "en";
+      document.title = "Karibu Baskin · Offline";
       document.getElementById("title").textContent = "You are offline";
       document.getElementById("desc").textContent =
-        "Check your connection. Some recently visited pages are still available.";
+        "This page is not among the ones you already opened. Try again when you are back online.";
       document.getElementById("btn").textContent = "Try again";
     }
-    window.addEventListener("online", function() { location.reload(); });
+    window.addEventListener("online", function () { location.reload(); });
   </script>
 </body>
 </html>

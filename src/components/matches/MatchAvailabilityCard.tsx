@@ -20,6 +20,7 @@ import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 
+import { errorText } from "@/lib/networkError";
 export interface MatchAvailabilityEntity {
   kind: "user" | "child";
   id: string;
@@ -86,7 +87,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
         return next;
       });
       showToast({
-        message: err instanceof Error ? err.message : tCommon("error"),
+        message: errorText(err, tCommon("error"), tCommon("networkError")),
         severity: "error",
       });
     } finally {

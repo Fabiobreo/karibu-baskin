@@ -39,6 +39,7 @@ import type {
   UserEntry,
 } from "@/components/admin/userList/userListShared";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 /** Righe per pagina di default (vedi utenti/page.tsx). */
 const DEFAULT_ROWS_PER_PAGE = 25;
 
@@ -491,8 +492,8 @@ export default function AdminUserList({
         const data = await res.json().catch(() => ({}));
         showToast({ message: data.error ?? "Errore durante l'eliminazione", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
       setDeleting(false);
     }

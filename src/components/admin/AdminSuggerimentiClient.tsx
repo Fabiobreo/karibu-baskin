@@ -28,6 +28,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 type Category = "APP" | "ALLENAMENTI" | "PARTITE_EVENTI" | "ALTRO";
 type Status = "NUOVO" | "LETTO" | "ARCHIVIATO";
 
@@ -125,7 +126,7 @@ export default function AdminSuggerimentiClient({
       const updated: Suggestion = await res.json();
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusyId(null);
     }
@@ -146,7 +147,7 @@ export default function AdminSuggerimentiClient({
           setItems((prev) => prev.filter((i) => i.id !== s.id));
           showToast({ message: "Suggerimento eliminato", severity: "success" });
         } catch (err) {
-          showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+          showToast({ message: errorText(err, "Errore"), severity: "error" });
         } finally {
           setBusyId(null);
         }
@@ -174,7 +175,7 @@ export default function AdminSuggerimentiClient({
       );
       setDrafts((prev) => ({ ...prev, [suggestionId]: "" }));
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusyId(null);
     }
@@ -196,7 +197,7 @@ export default function AdminSuggerimentiClient({
           )
         );
       } catch (err) {
-        showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+        showToast({ message: errorText(err, "Errore"), severity: "error" });
       }
     });
   }

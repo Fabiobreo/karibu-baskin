@@ -21,6 +21,7 @@ import { RADIUS } from "@/lib/radius";
 import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import type { AlbumCard } from "@/lib/gallery/albums";
 
+import { errorText } from "@/lib/networkError";
 interface AlbumPhotosDialogProps {
   album: AlbumCard;
   onClose: () => void;
@@ -85,7 +86,7 @@ export default function AlbumPhotosDialog({ album, onClose, onChanged }: AlbumPh
         photos: data.photos.map((p) => (p.id === photo.id ? { ...p, hidden } : p)),
       });
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusyId(null);
     }
@@ -104,7 +105,7 @@ export default function AlbumPhotosDialog({ album, onClose, onChanged }: AlbumPh
       apply({ ...data, coverPhotoId: photo.id });
       showToast({ message: "Copertina aggiornata", severity: "success" });
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusyId(null);
     }

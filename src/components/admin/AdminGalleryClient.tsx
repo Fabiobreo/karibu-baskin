@@ -25,6 +25,7 @@ import EmptyState from "@/components/common/EmptyState";
 import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
 
+import { errorText } from "@/lib/networkError";
 interface GalleryAdminPost {
   id: string;
   caption: string | null;
@@ -70,7 +71,7 @@ export default function AdminGalleryClient({
       window.location.reload();
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore durante il sync",
+        message: errorText(err, "Errore durante il sync"),
         severity: "error",
         duration: 6000,
       });
@@ -92,7 +93,7 @@ export default function AdminGalleryClient({
       setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, hidden: next } : p)));
       showToast({ message: next ? "Post nascosto" : "Post visibile", severity: "success" });
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusyId(null);
     }
@@ -114,7 +115,7 @@ export default function AdminGalleryClient({
       setPosts((prev) => prev.filter((p) => p.id !== post.id));
       showToast({ message: "Post eliminato", severity: "success" });
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
     } finally {
       setBusyId(null);
     }

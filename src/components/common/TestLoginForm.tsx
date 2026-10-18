@@ -12,6 +12,7 @@ import {
 import BugReportIcon from "@mui/icons-material/BugReport";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,8 +38,8 @@ export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: str
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Errore durante il login");
       }
-    } catch {
-      setError("Errore di rete, riprova");
+    } catch (err) {
+      setError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       setLoading(false);
     }

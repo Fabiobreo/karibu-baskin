@@ -15,7 +15,7 @@ App web per la squadra di Baskin di Montecchio Maggiore (VI). Gestione allenamen
 - **Upload immagini:** Vercel Blob (`@vercel/blob`) + `sharp` per resize/ottimizzazione — vedi `src/lib/blob.ts` (cartelle: avatars, teams, matches, events, posts) e `POST /api/upload`
 - **Rating giocatori:** sistema TrueSkill custom in `src/lib/rating/` (`trueskill.ts`, `ratingEngine.ts`, `ratingTrend.ts`) + ottimizzatore formazioni (`lineupOptimizer.ts`) + badge (`badges.ts`)
 - **Analytics:** Vercel Analytics
-- **Error monitoring:** Sentry (`@sentry/nextjs`) — config in `sentry.client/server/edge.config.ts`, init via `src/instrumentation.ts`, plugin in `next.config.ts` (`withSentryConfig`). Source map caricate solo in CI (`SENTRY_AUTH_TOKEN`)
+- **Error monitoring:** Sentry (`@sentry/nextjs`) — browser in `src/instrumentation-client.ts` (replay, `ignoreErrors`), server ed edge in `sentry.server/edge.config.ts` via `src/instrumentation.ts`, plugin in `next.config.ts` (`withSentryConfig`). Source map caricate solo in CI (`SENTRY_AUTH_TOKEN`)
 - **i18n:** next-intl (it/en) **cookie-based** — vedi sezione [Internazionalizzazione](#internazionalizzazione)
 - **Validazione input:** Zod v4 (schemi in `src/lib/schemas/`)
 - **Data fetching client:** TanStack React Query (`useQuery`/`useMutation`); `fetch` diretto nei Server Component
@@ -218,7 +218,6 @@ src/
     └── next-auth.d.ts                     # Augmentazione tipi sessione
 
 # (root, fuori da src/)
-sentry.client.config.ts                    # Sentry browser (replay) — NEXT_PUBLIC_SENTRY_DSN
 sentry.server.config.ts                    # Sentry server — SENTRY_DSN
 sentry.edge.config.ts                      # Sentry edge runtime
 ```
@@ -470,9 +469,9 @@ NEXT_PUBLIC_SENTRY_DSN=           # Sentry: DSN client (error monitoring)
 
 ## Offline / PWA
 
-Service worker (`public/sw.js`, versione `karibu-v11`), registrato **solo in produzione** da `ServiceWorkerRegistrar` (per provarlo in locale: `NEXT_PUBLIC_ENABLE_SW_IN_DEV=true`). Strategie, regole e **procedura di emergenza (kill switch)** in [`docs/workflows/service-worker.md`](docs/workflows/service-worker.md). In sintesi:
+Service worker (`public/sw.js`, versione `karibu-v13`), registrato **solo in produzione** da `ServiceWorkerRegistrar` (per provarlo in locale: `NEXT_PUBLIC_ENABLE_SW_IN_DEV=true`). Strategie, regole e **procedura di emergenza (kill switch)** in [`docs/workflows/service-worker.md`](docs/workflows/service-worker.md). In sintesi:
 
-- **Rete pura, mai in cache:** `/admin`, `/profilo`, `/notifiche` (HTML con dati personali) e le API non elencate sotto
+- **Rete pura, mai in cache:** `/admin`, `/profilo`, `/notifiche` e il dettaglio di un evento `/eventi/<slug>` (HTML con dati personali: risposte della famiglia e, per lo staff, di tutti) e le API non elencate sotto
 - **Cache-first:** `/_next/static/*` (hash nel nome, immutabile) e asset statici
 - **Network-first + cache:** navigazioni (poi `/offline.html`) e GET su `/api/sessions`, `/api/teams/`, `/api/matches`, `/api/competitive-teams`, `/api/events`, `/api/calendar` (poi errore)
 - **Script, stili, font, media:** network-first + cache, **mai** `/offline.html` (HTML consegnato al posto di JS causa ChunkLoadError)

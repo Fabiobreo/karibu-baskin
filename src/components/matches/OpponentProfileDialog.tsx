@@ -46,6 +46,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",
   2: "Ruolo 2",
@@ -216,7 +217,7 @@ export default function OpponentProfileDialog({
       onClose();
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore",
+        message: errorText(err, "Errore"),
         severity: "error",
       });
     } finally {

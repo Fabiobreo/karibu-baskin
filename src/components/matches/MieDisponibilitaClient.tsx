@@ -33,6 +33,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
+import { errorText } from "@/lib/networkError";
 export interface AvailabilityEntity {
   kind: "user" | "child";
   id: string;
@@ -160,12 +161,8 @@ export default function MieDisponibilitaClient({
       setFailures((m) =>
         new Map(m).set(k, {
           value,
-          // `fetch` senza rete lancia un TypeError con il testo del browser
-          // ("Failed to fetch"): non tradotto e incomprensibile.
-          message:
-            err instanceof Error && !(err instanceof TypeError)
-              ? err.message
-              : tCommon("networkError"),
+          // Senza rete la frase unica (@/lib/networkError), non il testo del browser.
+          message: errorText(err, tCommon("networkError"), tCommon("networkError")),
         })
       );
     } finally {
