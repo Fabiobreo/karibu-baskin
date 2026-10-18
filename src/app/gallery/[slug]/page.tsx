@@ -2,18 +2,17 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Box, Breadcrumbs, Button, Container, Link as MuiLink, Typography } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { hasRole, isMemberRole } from "@/lib/authRoles";
 import { buildMetadata } from "@/lib/seo";
 import { heroText } from "@/lib/heroStyles";
-import { loginHref } from "@/lib/loginReturn";
 import { canSeeAlbum, LISTED_ALBUM_WHERE } from "@/lib/gallery/albumRules";
 import { driveFolderUrl } from "@/lib/gallery/drive";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
+import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import StaffManageButton from "@/components/common/StaffManageButton";
 import AlbumPhotoGrid from "@/components/gallery/AlbumPhotoGrid";
 import AlbumPagination from "@/components/gallery/AlbumPagination";
@@ -188,17 +187,11 @@ export default async function AlbumPage({ params, searchParams }: Props) {
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         {!canSee ? (
-          <EmptyState
-            icon={<LockOutlinedIcon sx={{ fontSize: 48, color: "text.secondary" }} />}
-            title={t("gallery.albumLockedTitle")}
-            message={session?.user ? t("gallery.albumLockedGuest") : t("gallery.albumLockedAnon")}
-            action={
-              session?.user ? undefined : (
-                <Button size="large" variant="contained" href={loginHref(`/gallery/${album.slug}`)}>
-                  {t("gallery.albumsLogin")}
-                </Button>
-              )
-            }
+          <MembersOnlyNotice
+            viewer={session?.user ? "guest" : "anonymous"}
+            what="photos"
+            variant="block"
+            returnTo={`/gallery/${album.slug}`}
           />
         ) : (
           <>

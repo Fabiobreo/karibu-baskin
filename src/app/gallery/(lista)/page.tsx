@@ -1,16 +1,16 @@
 import { prisma } from "@/lib/db";
-import { Box, Container, Button, Divider, Link as MuiLink, Typography } from "@mui/material";
+import { Box, Container, Button, Divider, Typography } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
-import { loginHref } from "@/lib/loginReturn";
 import AlbumCards from "@/components/gallery/AlbumCards";
 import { loadAlbumCards } from "@/lib/gallery/albums";
 import { LISTED_ALBUM_WHERE, visibleAlbumWhere } from "@/lib/gallery/albumRules";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
+import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import GalleryGrid from "@/components/gallery/GalleryGrid";
 import YouTubeSection from "@/components/gallery/YouTubeSection";
 import { getChannelVideos } from "@/lib/gallery/youtube";
@@ -101,17 +101,13 @@ export default async function GalleryPage() {
                   />
                 )}
                 {hiddenAlbums > 0 && (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: albums.length > 0 ? 2 : 0 }}
-                  >
-                    {t("gallery.albumsMoreForMembers")}{" "}
-                    {/* L'ospite ha già fatto l'accesso: per lui niente link. */}
-                    {!session?.user && (
-                      <MuiLink href={loginHref("/gallery")}>{t("gallery.albumsLogin")}</MuiLink>
-                    )}
-                  </Typography>
+                  <Box sx={{ mt: albums.length > 0 ? 2 : 0 }}>
+                    <MembersOnlyNotice
+                      viewer={session?.user ? "guest" : "anonymous"}
+                      what="albums"
+                      returnTo="/gallery"
+                    />
+                  </Box>
                 )}
               </Box>
             )}

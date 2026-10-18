@@ -12,7 +12,7 @@ export interface AlbumCardItem {
   /** "84 foto", già tradotto. */
   countLabel: string;
   coverFileId: string | null;
-  /** Etichetta "Solo tesserati" (tradotta) per gli album riservati; null se pubblico. */
+  /** Etichetta "Riservato al Karibu" (tradotta) per gli album riservati; null se pubblico. */
   membersLabel: string | null;
 }
 

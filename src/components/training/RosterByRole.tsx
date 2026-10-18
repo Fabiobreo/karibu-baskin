@@ -23,6 +23,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
 import { ROLES, roleColor } from "@/lib/constants";
+import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -32,6 +33,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+import { errorText } from "@/lib/networkError";
 interface Registration {
   id: string;
   name: string;
@@ -63,6 +65,8 @@ interface Props {
   /** Visitatore non autenticato: i nomi non gli vengono serviti, ma il numero
    *  di iscritti sì, perché è l'informazione utile e non identifica nessuno. */
   restricted?: false | "anonymous" | "guest";
+  /** Nella schermata c'è già un invito ad accedere (il modulo d'iscrizione). */
+  loginElsewhere?: boolean;
   /** Non si sa ancora chi guarda, o la rosa sta arrivando: nessuno stato vuoto. */
   loading?: boolean;
   totalCount?: number;
@@ -292,6 +296,7 @@ export default function RosterByRole({
   loadFailed = false,
   onRetry,
   restricted = false,
+  loginElsewhere = false,
   loading = false,
   totalCount = 0,
   onManage,
@@ -344,7 +349,7 @@ export default function RosterByRole({
     onError: (err, reg) =>
       setRowError({
         title: t("unregisterFailed", { name: reg.name }),
-        message: err instanceof Error ? err.message : tCommon("networkError"),
+        message: errorText(err, tCommon("networkError"), tCommon("networkError")),
         retry: () => void executeDeletion(reg),
       }),
   });
@@ -533,9 +538,7 @@ export default function RosterByRole({
           />
         )}
         {restricted && !loading && (
-          <Typography variant="body2" color="text.secondary">
-            {t("rosterPrivateShort")}
-          </Typography>
+          <MembersOnlyNotice viewer={restricted} what="names" withLogin={!loginElsewhere} />
         )}
         {!loadFailed && !restricted && coachRegs.length > 0 && (
           <Chip

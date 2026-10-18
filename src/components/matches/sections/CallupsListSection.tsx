@@ -1,9 +1,10 @@
 "use client";
 
-import { Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
+import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
-import LockIcon from "@mui/icons-material/Lock";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
+import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import CallupRow from "@/components/matches/CallupRow";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -29,26 +30,16 @@ export default function CallupsListSection({
   teamColor = null,
 }: CallupsListSectionProps) {
   const t = useTranslations("matches");
-  const tNav = useTranslations("nav");
+  // Chi ha già fatto l'accesso (account in attesa) non deve sentirsi dire "Accedi".
+  const { data: session } = useSession();
 
   if (!canSeeCallups) {
     return (
-      <Box sx={{ textAlign: "center", py: 8 }}>
-        <LockIcon sx={{ fontSize: 44, color: "text.disabled", mb: 1.5 }} />
-        <Typography variant="h6" color="text.secondary">
-          {t("membersOnly")}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mt: 0.5, mb: 2.5, maxWidth: 360, mx: "auto" }}
-        >
-          {t("callupsRestricted")}
-        </Typography>
-        <Button href="/login" variant="contained" color="primary">
-          {tNav("login")}
-        </Button>
-      </Box>
+      <MembersOnlyNotice
+        viewer={session?.user ? "guest" : "anonymous"}
+        what="callups"
+        variant="block"
+      />
     );
   }
 

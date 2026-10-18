@@ -16,6 +16,7 @@ import { heroGradient, heroImage, heroResultColor, heroText, heroTint } from "@/
 import { Fragment } from "react";
 import EntityHero from "@/components/common/EntityHero";
 import StaffManageButton from "@/components/common/StaffManageButton";
+import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
 import MatchAvailabilityCard, {
   type MatchAvailabilityEntity,
@@ -34,7 +35,6 @@ import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
 import StandingsSection from "@/components/matches/sections/StandingsSection";
 import { matchLocation, matchPlaceShort } from "@/lib/clubVenue";
 import { matchPhase, showWhereWhen } from "@/lib/matches/matchPhase";
-import { loginHref } from "@/lib/loginReturn";
 import HomeIcon from "@mui/icons-material/Home";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -864,12 +864,11 @@ export default async function MatchDetailPage({ params }: Props) {
           {publicPreview ? (
             <>
               {/* Una riga sola sui convocati, non un lucchetto (UX-50). */}
-              <Typography variant="body2" color="text.secondary">
-                {t("whereWhen.callupsMembersOnly")}{" "}
-                <MuiLink href={loginHref(`/partite/${match.slug ?? match.id}`)} variant="body2">
-                  {t("whereWhen.login")}
-                </MuiLink>
-              </Typography>
+              <MembersOnlyNotice
+                viewer={session?.user ? "guest" : "anonymous"}
+                what="callups"
+                returnTo={`/partite/${match.slug ?? match.id}`}
+              />
               {(prevMatches.length > 0 || (groupStandings && groupStandings.length > 0)) && (
                 <Box sx={{ mt: { xs: 4, md: 5 } }}>
                   <HeadToHeadSection
