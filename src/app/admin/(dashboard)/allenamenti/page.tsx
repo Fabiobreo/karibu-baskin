@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
-import AdminTrainingsView, { type TrainingsSection } from "@/components/admin/AdminTrainingsView";
+import AdminTrainingsView, {
+  type DuplicateTemplate,
+  type TrainingsSection,
+} from "@/components/admin/AdminTrainingsView";
 import type { Metadata } from "next";
 import { requireAdminPage } from "@/lib/adminAccess";
+import { duplicateFormValues } from "@/lib/trainingDuplicate";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 
 export const metadata: Metadata = { title: "Allenamenti | Admin" };
 export const revalidate = 0;
@@ -14,7 +19,7 @@ const CONCLUDED_LIMIT = 20;
 const SECTIONS: TrainingsSection[] = ["prossimi", "da-completare", "conclusi"];
 
 type Props = {
-  searchParams: Promise<{ sezione?: string; apri?: string; modifica?: string }>;
+  searchParams: Promise<{ sezione?: string; apri?: string; modifica?: string; duplica?: string }>;
 };
 
 export default async function AdminAllenamentiPage({ searchParams }: Props) {
@@ -137,6 +142,55 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
     requested ||
     (toComplete.length > 0 ? "da-completare" : "prossimi");
 
+  // "Duplica" (`?duplica=<id>`): il modello è quasi sempre in una delle tre
+  // liste; un allenamento concluso più vecchio si legge a parte.
+  async function loadTemplate(id: string): Promise<DuplicateTemplate | null> {
+    const listed = [...upcoming, ...toComplete, ...concluded].find((s) => s.id === id);
+    const src =
+      listed ??
+      (await prisma.trainingSession.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          title: true,
+          date: true,
+          endTime: true,
+          location: true,
+          allowedRoles: true,
+          restrictTeamId: true,
+          openRoles: true,
+        },
+      }));
+    if (!src) return null;
+    // La restrizione a una squadra si copia solo se la squadra c'è ancora ed è
+    // della stagione della data proposta: altrimenti il modulo la manderebbe
+    // senza mostrarla (il selettore elenca solo le squadre di quella stagione).
+    let restrictTeamId = src.restrictTeamId;
+    if (restrictTeamId) {
+      const team = await prisma.competitiveTeam.findUnique({
+        where: { id: restrictTeamId },
+        select: { season: true },
+      });
+      const proposed = duplicateFormValues(
+        { ...src, date: new Date(src.date), endTime: null, location: null },
+        now
+      );
+      const season = getCurrentSeason(new Date(`${proposed.date}T12:00:00`));
+      if (team?.season !== season) restrictTeamId = null;
+    }
+    return {
+      id: src.id,
+      title: src.title,
+      date: new Date(src.date).toISOString(),
+      endTime: src.endTime ? new Date(src.endTime).toISOString() : null,
+      location: src.location ?? null,
+      allowedRoles: src.allowedRoles,
+      restrictTeamId,
+      openRoles: restrictTeamId ? src.openRoles : [],
+    };
+  }
+  const duplicateFrom = !readOnly && sp.duplica ? await loadTemplate(sp.duplica) : null;
+
   return (
     // L'intestazione la disegna la vista: il bottone "Nuovo allenamento" apre
     // un dialog suo e sta nello slot azione di PageHeader (UX-51).
@@ -155,6 +209,7 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
       openId={sp.apri ?? null}
       editId={readOnly ? null : (sp.modifica ?? null)}
       readOnly={readOnly}
+      duplicateFrom={duplicateFrom}
     />
   );
 }

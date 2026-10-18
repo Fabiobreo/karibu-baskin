@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Box, Button, Link as MuiLink } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SessionEditDialog, { type EditableSession } from "@/components/admin/SessionEditDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -19,10 +20,21 @@ interface SessionActionsProps {
 
 /**
  * Azioni su un allenamento, uguali nelle tre sezioni di /admin/allenamenti
- * (UX-14): modifica, elimina, apri la pagina pubblica.
+ * (UX-14): modifica, duplica, elimina, apri la pagina pubblica.
  */
 export default function SessionActions({ session, initialEdit = false }: SessionActionsProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  /** Apre "Duplica" restando sulla scheda e alla stessa altezza della lista. */
+  function duplicate() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("apri");
+    params.delete("modifica");
+    params.set("duplica", session.id);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  }
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [editing, setEditing] = useState(initialEdit);
@@ -46,6 +58,16 @@ export default function SessionActions({ session, initialEdit = false }: Session
         sx={{ minHeight: 44 }}
       >
         Modifica
+      </Button>
+      {/* Stessi orari, luogo e restrizioni, la settimana dopo: si cambia solo
+          quello che serve (`duplicateFormValues`). */}
+      <Button
+        variant="outlined"
+        startIcon={<ContentCopyIcon />}
+        onClick={duplicate}
+        sx={{ minHeight: 44 }}
+      >
+        Duplica
       </Button>
       <Button
         color="error"

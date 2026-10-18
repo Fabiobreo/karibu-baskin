@@ -22,7 +22,9 @@ import SessionRestrictionEditor, {
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import type { SessionFormValues } from "@/lib/trainingDuplicate";
 
+import { GENERIC_ERROR_IT, errorText } from "@/lib/networkError";
 // Schema del form client-side — include la validazione cross-field inizio/fine
 const SessionFormSchema = z
   .object({
@@ -44,6 +46,9 @@ interface Props {
   showTitle?: boolean;
   formId?: string;
   onLoadingChange?: (loading: boolean) => void;
+  /** Modulo già compilato ("Duplica allenamento", `duplicateFormValues`). */
+  initialValues?: SessionFormValues;
+  initialRestrictions?: RestrictionValue;
 }
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = {
@@ -57,8 +62,12 @@ export default function AdminSessionForm({
   showTitle = true,
   formId,
   onLoadingChange,
+  initialValues,
+  initialRestrictions,
 }: Props) {
-  const [restrictions, setRestrictions] = useState<RestrictionValue>(DEFAULT_RESTRICTIONS);
+  const [restrictions, setRestrictions] = useState<RestrictionValue>(
+    initialRestrictions ?? DEFAULT_RESTRICTIONS
+  );
   const [openImmediately, setOpenImmediately] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -71,7 +80,7 @@ export default function AdminSessionForm({
   } = useForm<FormValues>({
     resolver: zodResolver(SessionFormSchema),
     // Luogo precompilato con la sede abituale (UX-15): si cambia solo per le trasferte.
-    defaultValues: {
+    defaultValues: initialValues ?? {
       title: "",
       date: "",
       time: "18:00",
@@ -117,8 +126,8 @@ export default function AdminSessionForm({
       setRestrictions(DEFAULT_RESTRICTIONS);
       setOpenImmediately(false);
       onCreated();
-    } catch {
-      setApiError("Errore di rete, riprova");
+    } catch (err) {
+      setApiError(errorText(err, GENERIC_ERROR_IT));
     } finally {
       onLoadingChange?.(false);
     }
