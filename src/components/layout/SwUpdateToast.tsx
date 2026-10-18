@@ -18,6 +18,14 @@ import { useTranslations } from "next-intl";
  * l'aggiornamento di un'applicazione che stava aprendo in quel momento. Ora la
  * condizione è esplicita — esiste un worker in attesa *e* uno che già
  * controlla la pagina — quindi c'è davvero qualcosa da aggiornare.
+ *
+ * Un worker già in attesa all'apertura della pagina si attiva da solo, senza
+ * avviso: ricaricare non basta al browser per attivarlo (lo fa solo quando
+ * tutte le schede sono chiuse, e l'app installata su Android non si chiude
+ * quasi mai), quindi l'avviso tornava a ogni apertura anche dopo aver
+ * ricaricato. La pagina appena aperta è già quella nuova: attivare il worker
+ * ora non mescola build. L'avviso resta per l'aggiornamento trovato mentre la
+ * pagina è aperta, quando è la pagina a essere vecchia.
  */
 export default function SwUpdateToast() {
   const t = useTranslations("sw");
@@ -39,7 +47,10 @@ export default function SwUpdateToast() {
       .then((registration) => {
         if (!registration || cancelled) return;
 
-        offerUpdate(registration.waiting);
+        // Attesa ereditata da una visita precedente: si attiva senza ricaricare.
+        if (registration.waiting && navigator.serviceWorker.controller) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
 
         registration.addEventListener("updatefound", () => {
           const installing = registration.installing;
@@ -69,11 +80,15 @@ export default function SwUpdateToast() {
     };
   }, []);
 
-  const handleUpdate = useCallback(() => {
+  const handleUpdate = useCallback(async () => {
     reloadingRef.current = true;
     setWaiting(null);
-    if (waiting) {
-      waiting.postMessage({ type: "SKIP_WAITING" });
+    // Il worker in attesa si rilegge adesso: quello dell'avviso può essere stato
+    // sostituito da uno più nuovo (un altro deploy) e non risponderebbe più.
+    const registration = await navigator.serviceWorker.getRegistration().catch(() => undefined);
+    const current = registration?.waiting ?? waiting;
+    if (current) {
+      current.postMessage({ type: "SKIP_WAITING" });
       // Se per qualche motivo `controllerchange` non arriva, ricarichiamo
       // comunque: restare su una versione vecchia dopo aver premuto "Aggiorna"
       // è peggio di un reload in più.

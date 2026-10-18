@@ -44,6 +44,11 @@ attesa e `SwUpdateToast` propone l'aggiornamento. Prendere il controllo a metà
 sessione significherebbe servire i chunk di una build a una pagina renderizzata
 da un'altra.
 
+Se invece all'apertura di una pagina c'è già un worker in attesa (trovato in una
+visita precedente), `SwUpdateToast` lo attiva subito senza avviso e senza
+ricaricare: il browser non lo attiverebbe con un semplice ricaricamento, ma solo
+chiudendo tutte le schede, e l'avviso tornerebbe a ogni apertura.
+
 `/sw.js` è servito con `Cache-Control: no-store` (vedi `next.config.ts`): senza,
 il browser può tenerne una copia fino a 24 ore e continuare a reinstallare una
 versione difettosa anche dopo il deploy del fix.
