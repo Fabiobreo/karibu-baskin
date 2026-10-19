@@ -82,6 +82,9 @@ export default function SuggestionForm() {
         <Button variant="outlined" size="small" onClick={() => setSent(false)} sx={{ mt: 1 }}>
           {t("sendAnother")}
         </Button>
+        <Button variant="text" size="small" href="/profilo/suggerimenti">
+          {t("seeMine")}
+        </Button>
       </Box>
     );
   }

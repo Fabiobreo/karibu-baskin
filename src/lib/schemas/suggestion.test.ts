@@ -80,3 +80,17 @@ describe("SuggestionNoteCreateSchema", () => {
     expect(SuggestionNoteCreateSchema.safeParse({ body: "a".repeat(1001) }).success).toBe(false);
   });
 });
+
+describe("SuggestionNoteCreateSchema kind", () => {
+  it("senza kind vale NOTE", () => {
+    const r = SuggestionNoteCreateSchema.safeParse({ body: "ok" });
+    expect(r.success && r.data.kind).toBe("NOTE");
+  });
+  it("accetta REPLY", () => {
+    const r = SuggestionNoteCreateSchema.safeParse({ body: "ok", kind: "REPLY" });
+    expect(r.success && r.data.kind).toBe("REPLY");
+  });
+  it("rifiuta altri valori", () => {
+    expect(SuggestionNoteCreateSchema.safeParse({ body: "ok", kind: "X" }).success).toBe(false);
+  });
+});

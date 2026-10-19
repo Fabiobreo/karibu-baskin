@@ -24,6 +24,7 @@ import {
 import { columnSx } from "@/lib/layout";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import TeamChip from "@/components/teams/TeamChip";
@@ -181,27 +182,30 @@ export default async function ProfiloPage({
     },
   });
 
-  const [user, sentLinkRequests, pendingAvailabilities, currentSeason] = await Promise.all([
-    userQuery,
-    // Richieste di collegamento inviate e ancora senza risposta: senza, dopo
-    // un ricaricamento il figlio "in attesa" sembrava non collegato.
-    prisma.linkRequest.findMany({
-      where: {
-        parentId: session.user.id,
-        status: "PENDING",
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        childId: true,
-        targetUser: { select: { name: true, image: true, customImage: true } },
-      },
-    }),
-    // Chi non può avere partite a cui rispondere non ha il bottone (UX-46).
-    session.user.showsAvailabilities ? countPendingAvailabilities(session.user.id) : 0,
-    getCurrentSeasonLabel(),
-  ]);
+  const [user, sentLinkRequests, pendingAvailabilities, currentSeason, suggestionCount] =
+    await Promise.all([
+      userQuery,
+      // Richieste di collegamento inviate e ancora senza risposta: senza, dopo
+      // un ricaricamento il figlio "in attesa" sembrava non collegato.
+      prisma.linkRequest.findMany({
+        where: {
+          parentId: session.user.id,
+          status: "PENDING",
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          childId: true,
+          targetUser: { select: { name: true, image: true, customImage: true } },
+        },
+      }),
+      // Chi non può avere partite a cui rispondere non ha il bottone (UX-46).
+      session.user.showsAvailabilities ? countPendingAvailabilities(session.user.id) : 0,
+      getCurrentSeasonLabel(),
+      // Il link ai propri suggerimenti compare solo a chi ne ha mandato almeno uno.
+      prisma.suggestion.count({ where: { userId: session.user.id } }),
+    ]);
 
   if (!user) redirect("/login");
   const children = user.guardianOf.map(({ child: { guardians, user: account, ...child } }) => ({
@@ -462,6 +466,17 @@ export default async function ProfiloPage({
                 {t("myAvailabilities")}
               </Button>
             </Badge>
+          )}
+          {suggestionCount > 0 && (
+            <Button
+              href="/profilo/suggerimenti"
+              size="small"
+              variant="outlined"
+              startIcon={<LightbulbIcon sx={{ fontSize: "0.9rem !important" }} />}
+              sx={{ fontSize: TYPE_SCALE.xs }}
+            >
+              {t("mySuggestions")}
+            </Button>
           )}
         </Stack>
       </Paper>

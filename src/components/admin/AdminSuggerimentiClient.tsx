@@ -1,91 +1,38 @@
 "use client";
-import { useMemo, useState } from "react";
-import {
-  Box,
-  Paper,
-  Typography,
-  Chip,
-  Button,
-  IconButton,
-  TextField,
-  Stack,
-  Tooltip,
-  Avatar,
-  Divider,
-} from "@mui/material";
-import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
-import ArchiveIcon from "@mui/icons-material/Archive";
-import UnarchiveIcon from "@mui/icons-material/Unarchive";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import SendIcon from "@mui/icons-material/Send";
-import StatusPill from "@/components/common/StatusPill";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
+import SuggestionCard from "@/components/admin/SuggestionCard";
 import { useToast } from "@/context/ToastContext";
-import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { readError } from "@/lib/fetchJson";
-import { TYPE_SCALE } from "@/lib/typeScale";
-import { RADIUS } from "@/lib/radius";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
-
 import { errorText } from "@/lib/networkError";
-type Category = "APP" | "ALLENAMENTI" | "PARTITE_EVENTI" | "ALTRO";
-type Status = "NUOVO" | "LETTO" | "ARCHIVIATO";
+import type { AdminSuggestion, AdminSuggestionNote } from "@/lib/suggestions/adminSuggestion";
 
-interface NoteAuthor {
-  id: string;
-  name: string | null;
-  image: string | null;
-  customImage: string | null;
-}
-
-interface Note {
-  id: string;
-  body: string;
-  createdAt: string;
-  author: NoteAuthor;
-}
-
-interface Suggestion {
-  id: string;
-  category: Category;
-  message: string;
-  status: Status;
-  createdAt: string;
-  updatedAt: string;
-  notes: Note[];
-}
+type Status = AdminSuggestion["status"];
+type Filter = "DA_GESTIRE" | "ARCHIVIATI" | "TUTTI";
 
 interface AdminSuggerimentiClientProps {
-  initialSuggestions: Suggestion[];
+  initialSuggestions: AdminSuggestion[];
   currentUserId: string;
   isAdmin: boolean;
 }
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  APP: "App / sito",
-  ALLENAMENTI: "Allenamenti",
-  PARTITE_EVENTI: "Partite ed eventi",
-  ALTRO: "Altro",
+const FILTER_LABELS: Record<Filter, string> = {
+  DA_GESTIRE: "Da gestire",
+  ARCHIVIATI: "Archiviati",
+  TUTTI: "Tutti",
+};
+const FILTER_ORDER: Filter[] = ["DA_GESTIRE", "ARCHIVIATI", "TUTTI"];
+
+const EMPTY_TEXT: Record<Filter, string> = {
+  DA_GESTIRE: "Niente da gestire. I suggerimenti nuovi arrivano anche come notifica.",
+  ARCHIVIATI: "Nessun suggerimento archiviato.",
+  TUTTI: "Nessun suggerimento.",
 };
 
-// Stato del suggerimento (UX-29): forma e parola, niente tinte. Nuovo = pieno
-// (e' quello da guardare), Letto = contornato, Archiviato = tenue.
-const STATUS_META: Record<Status, { label: string; variant: "inverted" | "outlined" | "muted" }> = {
-  NUOVO: { label: "Nuovo", variant: "inverted" },
-  LETTO: { label: "Letto", variant: "outlined" },
-  ARCHIVIATO: { label: "Archiviato", variant: "muted" },
-};
-
-const FILTERS: { value: Status | "TUTTI"; label: string }[] = [
-  { value: "TUTTI", label: "Tutti" },
-  { value: "NUOVO", label: "Nuovi" },
-  { value: "LETTO", label: "Letti" },
-  { value: "ARCHIVIATO", label: "Archiviati" },
-];
-
-function fmt(iso: string): string {
-  return format(new Date(iso), "d MMM yyyy, HH:mm", { locale: it });
+function matches(filter: Filter, status: Status): boolean {
+  if (filter === "TUTTI") return true;
+  return filter === "ARCHIVIATI" ? status === "ARCHIVIATO" : status !== "ARCHIVIATO";
 }
 
 export default function AdminSuggerimentiClient({
@@ -94,130 +41,127 @@ export default function AdminSuggerimentiClient({
   isAdmin,
 }: AdminSuggerimentiClientProps) {
   const { showToast } = useToast();
-  const { openConfirm, ConfirmDialog } = useConfirmDialog();
-  const [items, setItems] = useState<Suggestion[]>(initialSuggestions);
-  const [filter, setFilter] = useState<Status | "TUTTI">("TUTTI");
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [items, setItems] = useState<AdminSuggestion[]>(initialSuggestions);
+  const [filter, setFilter] = useState<Filter>("DA_GESTIRE");
+  const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  const listHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { NUOVO: 0, LETTO: 0, ARCHIVIATO: 0 };
-    for (const it of items) c[it.status]++;
+    const c: Record<Filter, number> = { DA_GESTIRE: 0, ARCHIVIATI: 0, TUTTI: items.length };
+    for (const i of items) c[i.status === "ARCHIVIATO" ? "ARCHIVIATI" : "DA_GESTIRE"]++;
     return c;
   }, [items]);
 
-  const visible = useMemo(
-    () => (filter === "TUTTI" ? items : items.filter((i) => i.status === filter)),
-    [items, filter]
-  );
+  const visible = useMemo(() => items.filter((i) => matches(filter, i.status)), [items, filter]);
+
+  // Apertura da notifica: ?apri=<id> apre il thread e porta la card in vista.
+  useEffect(() => {
+    const id = searchParams.get("apri");
+    if (!id) return;
+    const target = initialSuggestions.find((s) => s.id === id);
+    if (target) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (target.status === "ARCHIVIATO") setFilter("TUTTI");
+      setOpenIds((prev) => new Set(prev).add(id));
+      setTimeout(() => {
+        document.getElementById(`s-${id}`)?.scrollIntoView({ block: "start" });
+      }, 150);
+    } else {
+      showToast({ message: "Questo suggerimento non c'è più.", severity: "info" });
+    }
+    router.replace("/admin/suggerimenti", { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function toggle(id: string) {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   async function changeStatus(id: string, status: Status) {
-    setBusyId(id);
     try {
       const res = await fetch(`/api/suggestions/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) {
-        const message = await readError(res);
-        throw new Error(message);
-      }
-      const updated: Suggestion = await res.json();
+      if (!res.ok) throw new Error(await readError(res));
+      const updated: AdminSuggestion = await res.json();
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
     } catch (err) {
       showToast({ message: errorText(err, "Errore"), severity: "error" });
-    } finally {
-      setBusyId(null);
     }
   }
 
-  function handleDeleteSuggestion(s: Suggestion) {
-    openConfirm(
-      "Eliminare il suggerimento?",
-      "Verranno eliminate anche tutte le note. L'azione è definitiva.",
-      async () => {
-        setBusyId(s.id);
-        try {
-          const res = await fetch(`/api/suggestions/${s.id}`, { method: "DELETE" });
-          if (!res.ok && res.status !== 204) {
-            const message = await readError(res);
-            throw new Error(message);
-          }
-          setItems((prev) => prev.filter((i) => i.id !== s.id));
-          showToast({ message: "Suggerimento eliminato", severity: "success" });
-        } catch (err) {
-          showToast({ message: errorText(err, "Errore"), severity: "error" });
-        } finally {
-          setBusyId(null);
-        }
-      }
+  async function deleteSuggestion(id: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/suggestions/${id}`, { method: "DELETE" });
+      if (!res.ok && res.status !== 204) throw new Error(await readError(res));
+      setItems((prev) => prev.filter((i) => i.id !== id));
+      showToast({ message: "Suggerimento eliminato", severity: "success" });
+      return true;
+    } catch (err) {
+      showToast({ message: errorText(err, "Errore"), severity: "error" });
+      return false;
+    }
+  }
+
+  function noteAdded(suggestionId: string, note: AdminSuggestionNote, status: string) {
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === suggestionId
+          ? {
+              ...i,
+              status: status as Status,
+              notes: [...i.notes, note],
+              lastActivityAt: note.createdAt,
+            }
+          : i
+      )
     );
   }
 
-  async function addNote(suggestionId: string) {
-    const body = (drafts[suggestionId] ?? "").trim();
-    if (!body) return;
-    setBusyId(suggestionId);
-    try {
-      const res = await fetch(`/api/suggestions/${suggestionId}/notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body }),
-      });
-      if (!res.ok) {
-        const message = await readError(res);
-        throw new Error(message);
-      }
-      const note: Note = await res.json();
-      setItems((prev) =>
-        prev.map((i) => (i.id === suggestionId ? { ...i, notes: [...i.notes, note] } : i))
-      );
-      setDrafts((prev) => ({ ...prev, [suggestionId]: "" }));
-    } catch (err) {
-      showToast({ message: errorText(err, "Errore"), severity: "error" });
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  function handleDeleteNote(suggestionId: string, note: Note) {
-    openConfirm("Eliminare la nota?", "L'azione non può essere annullata.", async () => {
-      try {
-        const res = await fetch(`/api/suggestions/${suggestionId}/notes/${note.id}`, {
-          method: "DELETE",
-        });
-        if (!res.ok && res.status !== 204) {
-          const message = await readError(res);
-          throw new Error(message);
-        }
-        setItems((prev) =>
-          prev.map((i) =>
-            i.id === suggestionId ? { ...i, notes: i.notes.filter((n) => n.id !== note.id) } : i
-          )
-        );
-      } catch (err) {
-        showToast({ message: errorText(err, "Errore"), severity: "error" });
-      }
-    });
+  function noteDeleted(suggestionId: string, noteId: string) {
+    setItems((prev) =>
+      prev.map((i) => {
+        if (i.id !== suggestionId) return i;
+        const notes = i.notes.filter((n) => n.id !== noteId);
+        return {
+          ...i,
+          notes,
+          lastActivityAt: notes.length > 0 ? notes[notes.length - 1].createdAt : i.createdAt,
+        };
+      })
+    );
   }
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {/* Filtri */}
-      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-        {FILTERS.map((f) => {
-          const count = f.value === "TUTTI" ? items.length : counts[f.value];
-          return (
-            <Chip
-              key={f.value}
-              label={`${f.label} (${count})`}
-              onClick={() => setFilter(f.value)}
-              color={filter === f.value ? "primary" : "default"}
-              variant={filter === f.value ? "filled" : "outlined"}
-            />
-          );
-        })}
+      <Typography
+        component="h2"
+        variant="h6"
+        ref={listHeadingRef}
+        tabIndex={-1}
+        sx={{ outline: "none" }}
+      >
+        {FILTER_LABELS[filter]}
+      </Typography>
+      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+        {FILTER_ORDER.map((f) => (
+          <Chip
+            key={f}
+            label={`${FILTER_LABELS[f]} (${counts[f]})`}
+            onClick={() => setFilter(f)}
+            color={filter === f ? "primary" : "default"}
+            variant={filter === f ? "filled" : "outlined"}
+          />
+        ))}
       </Stack>
 
       {visible.length === 0 ? (
@@ -225,167 +169,25 @@ export default function AdminSuggerimentiClient({
           elevation={0}
           sx={{ p: 4, textAlign: "center", border: "1px dashed", borderColor: "divider" }}
         >
-          <Typography color="text.secondary">Nessun suggerimento in questa categoria.</Typography>
+          <Typography color="text.secondary">{EMPTY_TEXT[filter]}</Typography>
         </Paper>
       ) : (
-        visible.map((s) => {
-          const busy = busyId === s.id;
-          return (
-            <Paper
-              key={s.id}
-              elevation={1}
-              sx={{
-                p: 2.5,
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.5,
-                opacity: s.status === "ARCHIVIATO" ? 0.75 : 1,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <StatusPill
-                  label={STATUS_META[s.status].label}
-                  variant={STATUS_META[s.status].variant}
-                />
-                <Chip label={CATEGORY_LABELS[s.category]} size="small" variant="outlined" />
-                <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
-                  {fmt(s.createdAt)}
-                </Typography>
-              </Box>
-
-              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
-                {s.message}
-              </Typography>
-
-              {/* Thread note staff */}
-              {s.notes.length > 0 && (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mt: 0.5 }}>
-                  <Divider />
-                  {s.notes.map((n) => {
-                    const canDelete = isAdmin || n.author.id === currentUserId;
-                    return (
-                      <Box key={n.id} sx={{ display: "flex", gap: 1.25 }}>
-                        <Avatar
-                          src={n.author.customImage ?? n.author.image ?? undefined}
-                          sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.xs }}
-                        >
-                          {n.author.name?.[0]?.toUpperCase() ?? "?"}
-                        </Avatar>
-                        <Box
-                          sx={{
-                            flex: 1,
-                            bgcolor: "action.hover",
-                            borderRadius: RADIUS.md,
-                            p: 1.25,
-                          }}
-                        >
-                          <Box
-                            sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
-                          >
-                            <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
-                              {n.author.name ?? "Staff"}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {fmt(n.createdAt)}
-                            </Typography>
-                            {canDelete && (
-                              <Tooltip title="Elimina nota">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  sx={{ ml: "auto", p: 0.25 }}
-                                  onClick={() => handleDeleteNote(s.id, n)}
-                                >
-                                  <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
-                          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", mt: 0.25 }}>
-                            {n.body}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              )}
-
-              {/* Aggiungi nota / rispondi */}
-              <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start", mt: 0.5 }}>
-                <TextField
-                  placeholder="Aggiungi una nota o una risposta…"
-                  value={drafts[s.id] ?? ""}
-                  onChange={(e) => setDrafts((prev) => ({ ...prev, [s.id]: e.target.value }))}
-                  size="small"
-                  fullWidth
-                  multiline
-                  maxRows={4}
-                  inputProps={{ maxLength: 1000 }}
-                />
-                <Button
-                  variant="contained"
-                  disabled={busy || !(drafts[s.id] ?? "").trim()}
-                  onClick={() => addNote(s.id)}
-                  startIcon={<SendIcon />}
-                  sx={{ flexShrink: 0 }}
-                >
-                  Invia
-                </Button>
-              </Box>
-
-              <Divider sx={{ mt: 0.5 }} />
-
-              {/* Azioni stato */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
-                {s.status === "NUOVO" && (
-                  <Button
-                    size="small"
-                    startIcon={<MarkEmailReadIcon />}
-                    disabled={busy}
-                    onClick={() => changeStatus(s.id, "LETTO")}
-                  >
-                    Segna letto
-                  </Button>
-                )}
-                {s.status !== "ARCHIVIATO" ? (
-                  <Button
-                    size="small"
-                    startIcon={<ArchiveIcon />}
-                    disabled={busy}
-                    onClick={() => changeStatus(s.id, "ARCHIVIATO")}
-                  >
-                    Archivia
-                  </Button>
-                ) : (
-                  <Button
-                    size="small"
-                    startIcon={<UnarchiveIcon />}
-                    disabled={busy}
-                    onClick={() => changeStatus(s.id, "LETTO")}
-                  >
-                    Riapri
-                  </Button>
-                )}
-                <Tooltip title="Elimina suggerimento">
-                  <span style={{ marginLeft: "auto" }}>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      disabled={busy}
-                      onClick={() => handleDeleteSuggestion(s)}
-                    >
-                      <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </Box>
-            </Paper>
-          );
-        })
+        visible.map((s) => (
+          <SuggestionCard
+            key={s.id}
+            suggestion={s}
+            open={openIds.has(s.id)}
+            onToggle={() => toggle(s.id)}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+            onStatus={changeStatus}
+            onDelete={deleteSuggestion}
+            onNoteAdded={noteAdded}
+            onNoteDeleted={noteDeleted}
+            focusAfterDelete={listHeadingRef}
+          />
+        ))
       )}
-
-      {ConfirmDialog}
     </Box>
   );
 }

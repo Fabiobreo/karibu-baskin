@@ -679,6 +679,7 @@ enum AppNotificationType {
   NEW_EVENT // nuovo evento generico pubblicato
   MATCH_CALLUP // convocato (o non più convocato) per una partita
   MATCH_AVAILABILITY // disponibilità segnata dallo staff, o un convocato che dice di no
+  SUGGESTION // suggerimento nuovo o nota/risposta su un suggerimento
 }
 
 // Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione
@@ -1132,8 +1133,9 @@ model Suggestion {
   @@index([status, createdAt])
 }
 
-// Nota/risposta interna dello staff su un suggerimento. A differenza del
-// suggerimento, l'autore della nota (membro dello staff) È visibile.
+// Nota interna o risposta all'autore, scritta dallo staff su un suggerimento. A
+// differenza del suggerimento, l'autore della nota (membro dello staff) È visibile
+// allo staff; all'autore del suggerimento una risposta si mostra come "Lo staff".
 model SuggestionNote {
   id           String     @id @default(cuid())
   suggestionId String
@@ -1141,6 +1143,9 @@ model SuggestionNote {
   authorId     String
   author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   body         String     @db.Text
+  // true = risposta all'autore del suggerimento (la legge in /profilo/suggerimenti);
+  // false = nota interna, solo per lo staff.
+  isReply      Boolean    @default(false)
   createdAt    DateTime   @default(now())
 
   @@index([suggestionId, createdAt])

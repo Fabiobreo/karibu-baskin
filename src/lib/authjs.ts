@@ -95,20 +95,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
     async session({ session, user }) {
-      session.user.id = user.id;
-      session.user.appRole = (user as typeof user & { appRole: AppRole }).appRole;
+      const appRole = (user as typeof user & { appRole: AppRole }).appRole;
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
         select: { customImage: true, sportRole: true, _count: { select: { guardianOf: true } } },
       });
-      session.user.customImage = dbUser?.customImage ?? null;
-      // Per il menu dell'header, che conosce solo la sessione (UX-46).
-      session.user.showsAvailabilities = showsAvailabilities(
-        session.user.appRole,
-        dbUser?.sportRole,
-        dbUser?._count.guardianOf ?? 0
-      );
-      return session;
+      // Con la strategia "database" `session` porta anche la riga Session
+      // (`sessionToken`) e `session.user` è la riga User intera (rating, data di
+      // nascita…). Il layout passa la sessione al client: finirebbe tutto
+      // nell'HTML, token del cookie httpOnly compreso. Solo i campi di `Session`.
+      return {
+        expires: session.expires,
+        user: {
+          id: user.id,
+          name: user.name ?? null,
+          email: user.email ?? null,
+          image: user.image ?? null,
+          appRole,
+          customImage: dbUser?.customImage ?? null,
+          // Per il menu dell'header, che conosce solo la sessione (UX-46).
+          showsAvailabilities: showsAvailabilities(
+            appRole,
+            dbUser?.sportRole,
+            dbUser?._count.guardianOf ?? 0
+          ),
+        },
+      };
     },
   },
   events: {

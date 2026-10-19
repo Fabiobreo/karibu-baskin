@@ -71,14 +71,15 @@ AppNotificationRead {
 
 ## Tipi di notifica e destinatari
 
-| Tipo            | Trigger                                | Push                   | In-app              | Audience            |
-| --------------- | -------------------------------------- | ---------------------- | ------------------- | ------------------- |
-| `NEW_TRAINING`  | Creazione allenamento                  | ✅ tutti (con pref)    | ✅ tutti (con pref) | Broadcast           |
-| `TEAMS_READY`   | Generazione squadre                    | ✅ iscritti (con pref) | ✅ tutti (con pref) | Push: solo iscritti |
-| `MATCH_RESULT`  | Inserimento risultato partita\*        | ✅ tutti (con pref)    | ✅ tutti (con pref) | Broadcast           |
-| `SYSTEM`        | Nuovo utente registrato                | ✅ solo admin          | ✅ no (non creata)  | Solo admin          |
-| `LINK_REQUEST`  | Richiesta collegamento genitore-figlio | `sendPushToUser`       | `targetUserId`      | Utente specifico    |
-| `LINK_RESPONSE` | Risposta alla richiesta                | `sendPushToUser`       | `targetUserId`      | Utente specifico    |
+| Tipo            | Trigger                                | Push                   | In-app              | Audience                 |
+| --------------- | -------------------------------------- | ---------------------- | ------------------- | ------------------------ |
+| `NEW_TRAINING`  | Creazione allenamento                  | ✅ tutti (con pref)    | ✅ tutti (con pref) | Broadcast                |
+| `TEAMS_READY`   | Generazione squadre                    | ✅ iscritti (con pref) | ✅ tutti (con pref) | Push: solo iscritti      |
+| `MATCH_RESULT`  | Inserimento risultato partita\*        | ✅ tutti (con pref)    | ✅ tutti (con pref) | Broadcast                |
+| `SYSTEM`        | Nuovo utente registrato                | ✅ solo admin          | ✅ no (non creata)  | Solo admin               |
+| `LINK_REQUEST`  | Richiesta collegamento genitore-figlio | `sendPushToUser`       | `targetUserId`      | Utente specifico         |
+| `LINK_RESPONSE` | Risposta alla richiesta                | `sendPushToUser`       | `targetUserId`      | Utente specifico         |
+| `SUGGESTION`    | Suggerimento nuovo; nota o risposta    | `sendPushToUsers`      | `targetUserId`      | Staff; autore (risposta) |
 
 \*MATCH_RESULT viene inviata solo quando il risultato viene impostato **per la prima volta** (da `null` a non-null).
 

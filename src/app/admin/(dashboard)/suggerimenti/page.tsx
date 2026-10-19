@@ -1,7 +1,13 @@
 import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
+import { hasRole } from "@/lib/authRoles";
 import AdminSuggerimentiClient from "@/components/admin/AdminSuggerimentiClient";
 import PageHeader from "@/components/common/PageHeader";
+import {
+  ADMIN_SUGGESTION_SELECT,
+  sortByActivity,
+  toAdminSuggestion,
+} from "@/lib/suggestions/adminSuggestion";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Suggerimenti | Admin" };
@@ -9,44 +15,23 @@ export const revalidate = 0;
 
 export default async function AdminSuggerimentiPage() {
   const { session } = await requireAdminPage("/admin/suggerimenti");
-  // NB: userId/user del suggerimento volutamente esclusi — i suggerimenti sono
-  // anonimi verso lo staff. L'autore delle note (staff) invece è visibile.
-  const suggestions = await prisma.suggestion.findMany({
+  // `toAdminSuggestion` toglie `userId`: i suggerimenti sono anonimi verso lo
+  // staff. L'autore delle note (staff) invece è visibile.
+  const rows = await prisma.suggestion.findMany({
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      category: true,
-      message: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-      notes: {
-        orderBy: { createdAt: "asc" },
-        select: {
-          id: true,
-          body: true,
-          createdAt: true,
-          author: { select: { id: true, name: true, image: true, customImage: true } },
-        },
-      },
-    },
+    select: ADMIN_SUGGESTION_SELECT,
   });
   return (
     <>
       <PageHeader
         title="Suggerimenti"
-        subtitle="Le proposte inviate (in forma anonima) dagli utenti registrati."
+        subtitle="Le proposte di chi usa l'app. Non vedi chi le ha scritte, ma puoi rispondergli."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Suggerimenti" }]}
       />
       <AdminSuggerimentiClient
         currentUserId={session.user.id}
-        isAdmin={session.user.appRole === "ADMIN"}
-        initialSuggestions={suggestions.map((s) => ({
-          ...s,
-          createdAt: s.createdAt.toISOString(),
-          updatedAt: s.updatedAt.toISOString(),
-          notes: s.notes.map((n) => ({ ...n, createdAt: n.createdAt.toISOString() })),
-        }))}
+        isAdmin={hasRole(session.user.appRole, "ADMIN")}
+        initialSuggestions={sortByActivity(rows.map(toAdminSuggestion))}
       />
     </>
   );

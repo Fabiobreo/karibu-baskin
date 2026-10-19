@@ -1,0 +1,3 @@
+ALTER TYPE "AppNotificationType" ADD VALUE 'SUGGESTION';
+
+ALTER TABLE "SuggestionNote" ADD COLUMN "isReply" BOOLEAN NOT NULL DEFAULT false;

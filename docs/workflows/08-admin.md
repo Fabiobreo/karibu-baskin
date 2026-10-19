@@ -13,6 +13,7 @@ Accessibile da `/admin` — richiede `appRole >= COACH`.
 /admin/squadre                → Gestione squadre agonistiche e roster
 /admin/utenti                 → Gestione utenti
 /admin/utenti/nuovo           → Crea utente manualmente
+/admin/suggerimenti          → Suggerimenti anonimi: note interne e risposte all'autore (`?apri=<id>` dalla notifica)
 ```
 
 Il layout `/admin/(dashboard)/layout.tsx` verifica che l'utente sia almeno COACH — reindirizza altrimenti.

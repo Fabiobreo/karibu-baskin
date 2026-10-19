@@ -23,6 +23,8 @@ const CONTENT_FIELD: Record<AppNotificationType, "title" | "body"> = {
   // chi e quale partita stanno nel testo.
   MATCH_CALLUP: "body",
   MATCH_AVAILABILITY: "body",
+  // "Nuovo suggerimento", "Lo staff ha risposto…": il titolo è il tipo, il contenuto è nel testo.
+  SUGGESTION: "body",
   MATCH_RESULT: "title",
   LINK_REQUEST: "title",
   LINK_RESPONSE: "title",

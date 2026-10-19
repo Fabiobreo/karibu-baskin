@@ -16,12 +16,15 @@ export const SuggestionUpdateSchema = z.object({
   status: z.enum(SUGGESTION_STATUSES, { message: "Stato non valido" }),
 });
 
+export const SUGGESTION_NOTE_KINDS = ["NOTE", "REPLY"] as const;
+
 export const SuggestionNoteCreateSchema = z.object({
   body: z
     .string()
     .trim()
     .min(1, "La nota non può essere vuota")
     .max(1000, "Nota troppo lunga (max 1000 caratteri)"),
+  kind: z.enum(SUGGESTION_NOTE_KINDS, { message: "Tipo non valido" }).default("NOTE"),
 });
 
 export type SuggestionCreateInput = z.infer<typeof SuggestionCreateSchema>;

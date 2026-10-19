@@ -1,29 +1,19 @@
+import type { SuggestionCategory } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { staffGuard } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { inBackground } from "@/lib/background";
+import { staffUserIds } from "@/lib/notifications/recipients";
+import { deliverNotices } from "@/lib/notifications/matchNotify";
+import {
+  ADMIN_SUGGESTION_SELECT,
+  sortByActivity,
+  toAdminSuggestion,
+} from "@/lib/suggestions/adminSuggestion";
+import { newSuggestionNotice } from "@/lib/suggestions/suggestionNotify";
 import { SuggestionCreateSchema, SUGGESTION_STATUSES } from "@/lib/schemas/suggestion";
-
-// Campi esposti all'admin: NB userId/user del suggerimento volutamente esclusi
-// (anonimo "per finta"). L'autore delle NOTE invece è visibile (è staff).
-const ADMIN_SELECT = {
-  id: true,
-  category: true,
-  message: true,
-  status: true,
-  createdAt: true,
-  updatedAt: true,
-  notes: {
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      body: true,
-      createdAt: true,
-      author: { select: { id: true, name: true, image: true, customImage: true } },
-    },
-  },
-} as const;
 
 export async function GET(req: NextRequest) {
   const denied = await staffGuard();
@@ -35,9 +25,9 @@ export async function GET(req: NextRequest) {
   const items = await prisma.suggestion.findMany({
     where: status ? { status } : undefined,
     orderBy: { createdAt: "desc" },
-    select: ADMIN_SELECT,
+    select: ADMIN_SUGGESTION_SELECT,
   });
-  return NextResponse.json(items);
+  return NextResponse.json(sortByActivity(items.map(toAdminSuggestion)));
 }
 
 export async function POST(req: NextRequest) {
@@ -64,13 +54,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await prisma.suggestion.create({
-    data: {
-      category: parsed.data.category,
-      message: parsed.data.message,
-      userId: session.user.id,
-    },
-  });
+  let created: { id: string; category: SuggestionCategory; message: string };
+  try {
+    created = await prisma.suggestion.create({
+      data: {
+        category: parsed.data.category,
+        message: parsed.data.message,
+        userId: session.user.id,
+      },
+      select: { id: true, category: true, message: true },
+    });
+  } catch (err) {
+    console.error("[suggestions] salvataggio non riuscito", err);
+    return NextResponse.json({ error: "Suggerimento non salvato" }, { status: 500 });
+  }
+
+  const authorId = session.user.id;
+  inBackground(
+    (async () => {
+      const notice = newSuggestionNotice({ ...created, authorId }, await staffUserIds());
+      if (notice) await deliverNotices([notice], "suggestion");
+    })(),
+    "notification new suggestion"
+  );
 
   // Nessuna eco dell'autore nella risposta.
   return NextResponse.json({ ok: true }, { status: 201 });
