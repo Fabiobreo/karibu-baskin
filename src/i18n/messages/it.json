@@ -153,6 +153,8 @@
     "downloadIcs": "Scarica .ics",
     "instructionsTitle": "Istruzioni Google Calendar",
     "instructionsBody": "1. Clicca su \"Google Calendar\" qui sopra (o da computer: Altri calendari → Aggiungi → Da URL).\n2. Incolla l'URL del calendario e conferma.\n3. Gli eventi appaiono dopo qualche minuto. Gli aggiornamenti arrivano entro 24 ore.",
+    "androidTitle": "Su Android",
+    "androidBody": "L'app Google Calendar non aggiunge calendari da un indirizzo: si fa una volta sola dal sito.\n1. Tocca «Copia» qui sopra.\n2. Da un computer, o dal browser del telefono con «Sito desktop», apri calendar.google.com: Altri calendari → + → Da URL. Incolla e conferma.\n3. Nell'app Google Calendar apri Impostazioni, tocca il calendario Karibu Baskin e attiva «Sincronizza». Senza questo passo sul telefono non compare.",
     "urlCopied": "URL copiato",
     "urlCopyFailed": "Impossibile copiare l'URL"
   },

@@ -126,12 +126,39 @@ export interface MatchIcsInput {
  * Solo squadre, orario e luogo: niente nomi di persone, niente note.
  */
 export function matchVevent(m: MatchIcsInput): string {
-  const summary = m.isHome
-    ? `${m.teamName} vs ${m.opponentName}`
-    : `${m.teamName} @ ${m.opponentName}`;
-  return vevent(`match-${m.id}`, summary, m.date, new Date(m.date.getTime() + MATCH_DURATION_MS), {
+  return vevent(`match-${m.id}`, matchSummary(m), m.date, matchEnd(m.date), {
     location: m.location ?? undefined,
   });
+}
+
+/** Titolo della partita nel calendario, uguale nel feed e nel link di Google. */
+export function matchSummary(m: Pick<MatchIcsInput, "isHome" | "teamName" | "opponentName">) {
+  return m.isHome ? `${m.teamName} vs ${m.opponentName}` : `${m.teamName} @ ${m.opponentName}`;
+}
+
+export function matchEnd(start: Date): Date {
+  return new Date(start.getTime() + MATCH_DURATION_MS);
+}
+
+/**
+ * Link "aggiungi un impegno" di Google Calendar, per Android: li' un .ics
+ * scaricato l'app Google non lo apre, mentre questo link apre il modulo
+ * dell'impegno gia' compilato e lo salva nell'account Google del telefono.
+ */
+export function googleEventUrl(e: {
+  title: string;
+  start: Date;
+  end: Date;
+  location?: string | null;
+}): string {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: e.title,
+    dates: `${icsDate(e.start)}/${icsDate(e.end)}`,
+  });
+  if (e.location) params.set("location", e.location);
+  // La barra fra i due orari resta in chiaro, come nei link che Google stesso genera.
+  return `https://calendar.google.com/calendar/render?${params.toString().replace("%2F", "/")}`;
 }
 
 /** Calendario con un solo impegno, da importare (non e' un feed da seguire). */

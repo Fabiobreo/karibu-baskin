@@ -2,15 +2,20 @@ import { Box, Button, Link as MuiLink, Paper, Typography } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PlaceIcon from "@mui/icons-material/Place";
 import EventIcon from "@mui/icons-material/Event";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { formatRome } from "@/lib/dateUtils";
 import { mapsSearchUrl, type MatchLocation } from "@/lib/clubVenue";
 import MatchSubscribeLink from "@/components/matches/MatchSubscribeLink";
 import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
+import { googleEventUrl, matchEnd } from "@/lib/calendar/ics";
+import { calendarPlatform } from "@/lib/calendar/platform";
 
 interface MatchWhereWhenProps {
   matchId: string;
+  /** Titolo dell'impegno, da `matchSummary()`: lo stesso del feed. */
+  title: string;
   date: Date;
   location: MatchLocation;
 }
@@ -23,9 +28,24 @@ const iconSx = { color: "text.secondary", mt: 0.25 } as const;
  * luogo con link a Google Maps (niente embed, come UX-15) e "Aggiungi al
  * calendario" con il .ics della sola partita. Server Component; lo vedono
  * tutti, tesserati compresi (l'indirizzo serve soprattutto ai genitori).
+ * Su Android il .ics non lo apre nessuno (l'app Google non importa file):
+ * li' il bottone porta al modulo di Google Calendar gia' compilato.
  */
-export default async function MatchWhereWhen({ matchId, date, location }: MatchWhereWhenProps) {
-  const [t, locale] = await Promise.all([getTranslations("matches.whereWhen"), getLocale()]);
+export default async function MatchWhereWhen({
+  matchId,
+  title,
+  date,
+  location,
+}: MatchWhereWhenProps) {
+  const [t, locale, requestHeaders] = await Promise.all([
+    getTranslations("matches.whereWhen"),
+    getLocale(),
+    headers(),
+  ]);
+  const android = calendarPlatform(requestHeaders.get("user-agent") ?? "") === "android";
+  const calendarHref = android
+    ? googleEventUrl({ title, start: date, end: matchEnd(date), location: location.label })
+    : `/api/matches/${matchId}/event.ics`;
   const dateLocale = getDateFnsLocale(locale);
   const when = formatRome(date, "EEEE d MMMM yyyy · HH:mm", { locale: dateLocale });
 
@@ -82,7 +102,8 @@ export default async function MatchWhereWhen({ matchId, date, location }: MatchW
         }}
       >
         <Button
-          href={`/api/matches/${matchId}/event.ics`}
+          href={calendarHref}
+          {...(android ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           variant="outlined"
           startIcon={<EventIcon />}
           sx={TOUCH_TARGET_ON_PHONE}

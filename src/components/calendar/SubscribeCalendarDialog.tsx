@@ -21,6 +21,7 @@ import { useToast } from "@/context/ToastContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { calendarPlatform, type CalendarPlatform } from "@/lib/calendar/platform";
 
 interface SubscribeCalendarDialogProps {
   open: boolean;
@@ -36,6 +37,13 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
   const t = useTranslations("calendarSub");
   const tCommon = useTranslations("common");
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
+  // Il contenuto del dialog si monta solo all'apertura, quindi nel browser:
+  // leggere il navigator qui non crea differenze d'idratazione.
+  const [platform] = useState<CalendarPlatform>(() =>
+    typeof navigator !== "undefined"
+      ? calendarPlatform(navigator.userAgent, navigator.maxTouchPoints)
+      : "desktop"
+  );
 
   const httpsUrl = useMemo(() => (origin ? `${origin}${ICS_PATH}` : ICS_PATH), [origin]);
   const webcalUrl = useMemo(
@@ -110,76 +118,101 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
             </Box>
           </Box>
 
-          <Box>
-            <Typography
-              variant="caption"
-              sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold }}
-            >
-              {t("shortcuts")}
-            </Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 0.5 }}>
-              <Button
-                component="a"
-                href={googleUrl || undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="contained"
-                startIcon={<OpenInNewIcon />}
-                disabled={!googleUrl}
-              >
-                Google Calendar
-              </Button>
-              <Button
-                component="a"
-                href={webcalUrl || undefined}
-                variant="outlined"
-                startIcon={<OpenInNewIcon />}
-                disabled={!webcalUrl}
-              >
-                Apple / iCloud
-              </Button>
-              <Button
-                component="a"
-                href={ICS_DOWNLOAD_PATH}
-                download="karibu-baskin.ics"
-                variant="text"
-                startIcon={<DownloadIcon />}
-              >
-                {t("downloadIcs")}
-              </Button>
-            </Stack>
-          </Box>
+          {platform === "android" ? (
+            // Su Android l'app Google Calendar non aggiunge calendari da URL,
+            // `webcal:` non lo apre nessuno e il .ics non si aggiorna: resta
+            // il passo da fare una volta dal sito, poi la sincronizzazione
+            // nell'app, senza la quale il calendario non compare sul telefono.
+            <InstructionsBox title={t("androidTitle")} body={t("androidBody")} />
+          ) : (
+            <>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold }}
+                >
+                  {t("shortcuts")}
+                </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 0.5 }}>
+                  {platform === "ios" && (
+                    <Button
+                      component="a"
+                      href={webcalUrl || undefined}
+                      variant="contained"
+                      startIcon={<OpenInNewIcon />}
+                      disabled={!webcalUrl}
+                    >
+                      Apple / iCloud
+                    </Button>
+                  )}
+                  <Button
+                    component="a"
+                    href={googleUrl || undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant={platform === "ios" ? "outlined" : "contained"}
+                    startIcon={<OpenInNewIcon />}
+                    disabled={!googleUrl}
+                  >
+                    Google Calendar
+                  </Button>
+                  {platform === "desktop" && (
+                    <>
+                      <Button
+                        component="a"
+                        href={webcalUrl || undefined}
+                        variant="outlined"
+                        startIcon={<OpenInNewIcon />}
+                        disabled={!webcalUrl}
+                      >
+                        Apple / iCloud
+                      </Button>
+                      <Button
+                        component="a"
+                        href={ICS_DOWNLOAD_PATH}
+                        download="karibu-baskin.ics"
+                        variant="text"
+                        startIcon={<DownloadIcon />}
+                      >
+                        {t("downloadIcs")}
+                      </Button>
+                    </>
+                  )}
+                </Stack>
+              </Box>
 
-          <Box
-            sx={{
-              bgcolor: "action.hover",
-              borderRadius: RADIUS.md,
-              p: 1.5,
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: "text.secondary",
-                fontWeight: FONT_WEIGHT.semibold,
-                display: "block",
-                mb: 0.5,
-              }}
-            >
-              {t("instructionsTitle")}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: "text.secondary", display: "block", whiteSpace: "pre-line" }}
-            >
-              {t("instructionsBody")}
-            </Typography>
-          </Box>
+              <InstructionsBox title={t("instructionsTitle")} body={t("instructionsBody")} />
+            </>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{tCommon("close")}</Button>
       </DialogActions>
     </ResponsiveDialog>
+  );
+}
+
+function InstructionsBox({ title, body }: { title: string; body: string }) {
+  return (
+    <Box sx={{ bgcolor: "action.hover", borderRadius: RADIUS.md, p: 1.5 }}>
+      <Typography
+        variant="caption"
+        sx={{
+          color: "text.secondary",
+          fontWeight: FONT_WEIGHT.semibold,
+          display: "block",
+          mb: 0.5,
+        }}
+      >
+        {title}
+      </Typography>
+      <Typography
+        variant="caption"
+        sx={{ color: "text.secondary", display: "block", whiteSpace: "pre-line" }}
+      >
+        {body}
+      </Typography>
+    </Box>
   );
 }

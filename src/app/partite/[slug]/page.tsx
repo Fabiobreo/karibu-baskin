@@ -31,6 +31,7 @@ import { computeStandings } from "@/lib/season/standings";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import MatchTabellinoButton from "@/components/matches/MatchTabellinoButton";
 import MatchWhereWhen from "@/components/matches/MatchWhereWhen";
+import { matchSummary } from "@/lib/calendar/ics";
 import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
 import StandingsSection from "@/components/matches/sections/StandingsSection";
 import { matchLocation, matchPlaceShort } from "@/lib/clubVenue";
@@ -875,7 +876,16 @@ export default async function MatchDetailPage({ params }: Props) {
         <Box sx={columnSx("main")}>
           {showWhereWhenBlock && (
             <Box sx={{ mb: publicPreview ? 2 : { xs: 3, md: 4 } }}>
-              <MatchWhereWhen matchId={match.id} date={match.date} location={location} />
+              <MatchWhereWhen
+                matchId={match.id}
+                title={matchSummary({
+                  isHome: match.isHome,
+                  teamName: match.team.name,
+                  opponentName,
+                })}
+                date={match.date}
+                location={location}
+              />
             </Box>
           )}
           {publicPreview ? (

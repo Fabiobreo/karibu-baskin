@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchVevent, singleEventCalendar } from "./ics";
+import { googleEventUrl, matchEnd, matchSummary, matchVevent, singleEventCalendar } from "./ics";
 
 const base = {
   id: "m1",
@@ -35,5 +35,28 @@ describe("singleEventCalendar", () => {
     expect(ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0")).toBe(true);
     expect(ics.endsWith("END:VCALENDAR")).toBe(true);
     expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBe(1);
+  });
+});
+
+describe("googleEventUrl", () => {
+  it("compila titolo, orari UTC e luogo come il feed", () => {
+    const url = new URL(
+      googleEventUrl({
+        title: matchSummary(base),
+        start: base.date,
+        end: matchEnd(base.date),
+        location: base.location,
+      })
+    );
+    expect(url.origin + url.pathname).toBe("https://calendar.google.com/calendar/render");
+    expect(url.searchParams.get("action")).toBe("TEMPLATE");
+    expect(url.searchParams.get("text")).toBe("Montekki @ Orsi Bassano");
+    expect(url.searchParams.get("dates")).toBe("20261004T130000Z/20261004T143000Z");
+    expect(url.searchParams.get("location")).toBe("Via Roma 1, Bassano del Grappa");
+  });
+
+  it("senza luogo non mette il parametro", () => {
+    const url = new URL(googleEventUrl({ title: "x", start: base.date, end: base.date }));
+    expect(url.searchParams.has("location")).toBe(false);
   });
 });
