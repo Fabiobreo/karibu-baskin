@@ -1,49 +1,65 @@
 import { Box, useTheme } from "@mui/material";
+import type { CurvePoint } from "@/lib/rating/ratingTrend";
 
 interface RatingSparklineProps {
-  /** Serie di μ in ordine cronologico. */
-  values: number[];
-  /** Colore della linea (token tema). Default `text.primary`: la serie e' neutra. */
-  colorToken?: string;
+  /** Punti della curva in ordine cronologico. */
+  points: CurvePoint[];
   /**
-   * Colore del pallino finale, se diverso dalla linea: e' l'unico punto dove
-   * mettere una valenza (es. `success.main` per un trend in crescita).
+   * Scala comune a tutta la rosa: chi è stabile ha una linea piatta e una
+   * salita disegnata è una salita vera (con una scala per giocatore anche una
+   * variazione minima andava da un bordo all'altro).
+   */
+  scale: { min: number; max: number };
+  /** Livello medio della rosa: riga tratteggiata di riferimento. */
+  reference?: number;
+  /**
+   * Colore del pallino finale: e' l'unico punto dove mettere una valenza
+   * (es. `success.main` per un trend in salita). La serie resta neutra.
    */
   endColorToken?: string;
+  /** Cerchio per le partitelle, quadrato per le ufficiali (vista di dettaglio). */
+  markers?: boolean;
   width?: number;
   height?: number;
+  /** Larghezza al 100% del contenitore, altezza in proporzione. */
+  fluid?: boolean;
 }
 
 /**
- * Mini-grafico della curva di μ nel tempo, in SVG puro (nessuna dipendenza di
- * charting). Presentazionale: nessun hook di stato, può essere reso ovunque.
+ * Curva del livello stimato nel tempo, in SVG puro. La fascia attorno alla
+ * linea è l'incertezza (±σ): larga all'inizio, si stringe a ogni partita.
  * UX-29: i dati sono in inchiostro, mai in arancio (che vuol dire "si tocca").
  */
 export default function RatingSparkline({
-  values,
-  colorToken = "text.primary",
+  points,
+  scale,
+  reference,
   endColorToken,
-  width = 120,
-  height = 32,
+  markers = false,
+  width = 140,
+  height = 34,
+  fluid = false,
 }: RatingSparklineProps) {
   const theme = useTheme();
+  const size = fluid ? { width: "100%", height: "auto" } : { width, height };
 
-  if (values.length < 2) {
-    return <Box sx={{ width, height, display: "inline-block" }} />;
+  if (points.length < 2) {
+    return <Box sx={{ ...size, display: "inline-block" }} />;
   }
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const pad = 3;
+  const pad = markers ? 6 : 3;
   const w = width - pad * 2;
   const h = height - pad * 2;
+  const span = scale.max - scale.min || 1;
+  const x = (i: number) => pad + (i / (points.length - 1)) * w;
+  // μ alto = in alto; la fascia può uscire dalla scala e si ferma al bordo.
+  const y = (v: number) => pad + Math.min(1, Math.max(0, 1 - (v - scale.min) / span)) * h;
 
-  const points = values.map((v, i) => {
-    const x = pad + (i / (values.length - 1)) * w;
-    const y = pad + (1 - (v - min) / span) * h; // μ alto = in alto
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
+  const line = points.map((p, i) => `${x(i).toFixed(1)},${y(p.mu).toFixed(1)}`).join(" ");
+  const upper = points.map((p, i) => `${x(i).toFixed(1)},${y(p.mu + p.sigma).toFixed(1)}`);
+  const lower = points
+    .map((p, i) => `${x(i).toFixed(1)},${y(p.mu - p.sigma).toFixed(1)}`)
+    .reverse();
 
   // Risolve il token tema "a.b" → colore concreto per gli attributi SVG.
   const palette = theme.palette as unknown as Record<string, Record<string, string>>;
@@ -51,30 +67,52 @@ export default function RatingSparkline({
     const [group, shade] = token.split(".");
     return palette[group]?.[shade ?? "main"] ?? theme.palette.text.primary;
   };
-  const stroke = resolve(colorToken);
-  const end = endColorToken ? resolve(endColorToken) : stroke;
+  const ink = theme.palette.text.primary;
+  const end = endColorToken ? resolve(endColorToken) : ink;
+  const last = points.length - 1;
 
   return (
     <Box
       component="svg"
       viewBox={`0 0 ${width} ${height}`}
-      sx={{ width, height, display: "inline-block", verticalAlign: "middle" }}
+      sx={{ ...size, display: "inline-block", verticalAlign: "middle" }}
       aria-hidden
     >
+      {reference !== undefined && (
+        <line
+          x1={0}
+          x2={width}
+          y1={y(reference)}
+          y2={y(reference)}
+          stroke={theme.palette.divider}
+          strokeDasharray="3 4"
+        />
+      )}
+      <polygon points={[...upper, ...lower].join(" ")} fill={ink} fillOpacity={0.08} />
       <polyline
-        points={points.join(" ")}
+        points={line}
         fill="none"
-        stroke={stroke}
-        strokeWidth={1.5}
+        stroke={ink}
+        strokeWidth={markers ? 2 : 1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      <circle
-        cx={points[points.length - 1].split(",")[0]}
-        cy={points[points.length - 1].split(",")[1]}
-        r={endColorToken ? 2.75 : 2}
-        fill={end}
-      />
+      {markers &&
+        points
+          .slice(0, last)
+          .map((p, i) =>
+            p.kind === "official" ? (
+              <rect key={i} x={x(i) - 3.5} y={y(p.mu) - 3.5} width={7} height={7} fill={ink} />
+            ) : p.kind === "training" ? (
+              <circle key={i} cx={x(i)} cy={y(p.mu)} r={3.5} fill={ink} />
+            ) : null
+          )}
+      {/* L'ultimo punto tiene la sua forma (quadrato = ufficiale) e porta la valenza. */}
+      {markers && points[last].kind === "official" ? (
+        <rect x={x(last) - 5} y={y(points[last].mu) - 5} width={10} height={10} fill={end} />
+      ) : (
+        <circle cx={x(last)} cy={y(points[last].mu)} r={markers ? 5 : 3} fill={end} />
+      )}
     </Box>
   );
 }

@@ -331,7 +331,7 @@ export function replayTrainingEvents(events: ReplayEvent[]): ReplayResult {
 
 // ── Persistenza: ricalcolo completo dei rating dalle partitelle ───────────────
 
-function parseSnapshot(value: Prisma.JsonValue | null): RostersSnapshot | null {
+export function parseSnapshot(value: Prisma.JsonValue | null): RostersSnapshot | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const s = value as Record<string, unknown>;
   if (!Array.isArray(s.teamA) || !Array.isArray(s.teamB)) return null;

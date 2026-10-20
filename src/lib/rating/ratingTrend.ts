@@ -1,82 +1,97 @@
-// ── Classificazione andamento rating (Player Development Tracker) ────────────
+// ── Andamento del livello stimato (Sviluppo giocatori) ───────────────────────
 //
-// A partire dalla serie cronologica di μ di un giocatore, classifica l'andamento
-// in: crescita / calo / plateau / altalenante. Logica pura e testabile; le
-// soglie sono euristiche tarabili. Usata dal Development Tracker (COACH/ADMIN).
+// Logica pura e testabile per il tracker dello staff (/admin/sviluppo).
+// Due domande, tenute separate:
+//   1. quanti dati ci sono (si legge la curva o è ancora in formazione?);
+//   2. come sta andando adesso: il trend guarda solo le ultime partite, così
+//      coincide con quello che l'occhio vede alla fine della curva. Una retta su
+//      tutta la storia diceva "Stabile" a chi era sceso e poi risalito.
 
-export type TrendLabel = "crescita" | "calo" | "plateau" | "altalenante" | "nuovo";
+/** Punto della curva: livello stimato dopo un aggiornamento. */
+export interface CurvePoint {
+  mu: number;
+  sigma: number;
+  /** Partita che ha prodotto il punto; "other" = cambio ruolo o correzione. */
+  kind: "training" | "official" | "other";
+}
 
-export interface TrendResult {
+export type CurveStatus = "leggibile" | "formazione" | "senza";
+export type TrendLabel = "salita" | "calo" | "stabile";
+
+export interface RecentTrend {
   label: TrendLabel;
-  /** Pendenza media per passo (variazione di μ attesa per partita). */
-  slope: number;
-  /** Variazione totale di μ stimata sull'intera serie (slope × passi). */
-  totalTrend: number;
-  /** Volatilità = deviazione standard delle variazioni consecutive di μ. */
-  volatility: number;
+  /** Partite guardate (al più `RECENT_WINDOW`). */
+  window: number;
 }
 
-/** Numero minimo di punti per dare un giudizio (sotto → "nuovo"). */
-const MIN_POINTS = 4;
-/** Variazione totale di μ oltre la quale si parla di crescita/calo. */
+/** Partite (partitelle + ufficiali) sotto le quali la curva non si legge. */
+export const MIN_GAMES_FOR_CURVE = 4;
+/** Ultime partite guardate dal trend. */
+export const RECENT_WINDOW = 4;
+/**
+ * Variazione del livello nelle ultime partite oltre la quale c'è un trend:
+ * almeno `TREND_THRESHOLD`, e di più finché la stima è incerta (all'inizio
+ * ogni partita sposta il livello di parecchio, e sarebbe solo rumore).
+ */
 const TREND_THRESHOLD = 2.0;
-/** Volatilità oltre la quale (in assenza di trend netto) è "altalenante". */
-const VOLATILITY_THRESHOLD = 2.0;
+const TREND_SIGMA_FACTOR = 0.4;
 
-/** Regressione lineare semplice: pendenza di y rispetto all'indice 0..n-1. */
-function linearSlope(ys: number[]): number {
-  const n = ys.length;
-  const meanX = (n - 1) / 2;
-  const meanY = ys.reduce((s, v) => s + v, 0) / n;
-  let num = 0;
-  let den = 0;
-  for (let i = 0; i < n; i++) {
-    num += (i - meanX) * (ys[i] - meanY);
-    den += (i - meanX) ** 2;
-  }
-  return den === 0 ? 0 : num / den;
+export function isGame(p: CurvePoint): boolean {
+  return p.kind !== "other";
 }
 
-function stdDev(values: number[]): number {
-  if (values.length === 0) return 0;
-  const mean = values.reduce((s, v) => s + v, 0) / values.length;
-  const variance = values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length;
-  return Math.sqrt(variance);
+export function curveStatus(games: number): CurveStatus {
+  if (games === 0) return "senza";
+  return games < MIN_GAMES_FOR_CURVE ? "formazione" : "leggibile";
+}
+
+/** Tacche dell'indicatore "quanti dati": 0 nessuno, 3 abbastanza da fidarsi. */
+export function dataLevel(games: number): 0 | 1 | 2 | 3 {
+  if (games === 0) return 0;
+  if (games < MIN_GAMES_FOR_CURVE) return 1;
+  return games < 10 ? 2 : 3;
 }
 
 /**
- * Classifica l'andamento di una serie cronologica di μ.
- * @param mus μ in ordine cronologico (dal più vecchio al più recente).
+ * Trend delle ultime `RECENT_WINDOW` partite: somma quanto ha spostato il
+ * livello ciascuna di esse. Cambi di ruolo e correzioni a mano non contano,
+ * anche se cadono nella finestra. `null` finché la curva non è leggibile.
  */
-export function classifyTrend(mus: number[]): TrendResult {
-  if (mus.length < MIN_POINTS) {
-    return { label: "nuovo", slope: 0, totalTrend: 0, volatility: 0 };
-  }
+export function recentTrend(points: CurvePoint[], initialMu: number): RecentTrend | null {
+  const gameIdx = points.flatMap((p, i) => (isGame(p) ? [i] : []));
+  if (gameIdx.length < MIN_GAMES_FOR_CURVE) return null;
 
-  const slope = linearSlope(mus);
-  const totalTrend = slope * (mus.length - 1);
+  const window = gameIdx.slice(-RECENT_WINDOW);
+  const delta = window.reduce(
+    (sum, i) => sum + points[i].mu - (i > 0 ? points[i - 1].mu : initialMu),
+    0
+  );
+  const sigma = points[points.length - 1].sigma;
+  const threshold = Math.max(TREND_THRESHOLD, TREND_SIGMA_FACTOR * sigma);
 
-  const deltas: number[] = [];
-  for (let i = 1; i < mus.length; i++) deltas.push(mus[i] - mus[i - 1]);
-  const volatility = stdDev(deltas);
-
-  let label: TrendLabel;
-  if (totalTrend > TREND_THRESHOLD) label = "crescita";
-  else if (totalTrend < -TREND_THRESHOLD) label = "calo";
-  else if (volatility > VOLATILITY_THRESHOLD) label = "altalenante";
-  else label = "plateau";
-
-  return { label, slope, totalTrend, volatility };
+  const label: TrendLabel = delta > threshold ? "salita" : delta < -threshold ? "calo" : "stabile";
+  return { label, window: window.length };
 }
 
-/** Etichetta leggibile + colore MUI per la UI. */
-export const TREND_META: Record<
-  TrendLabel,
-  { label: string; color: "success" | "error" | "warning" | "default" }
-> = {
-  crescita: { label: "In crescita", color: "success" },
-  calo: { label: "In calo", color: "error" },
-  plateau: { label: "Stabile", color: "default" },
-  altalenante: { label: "Altalenante", color: "warning" },
-  nuovo: { label: "Pochi dati", color: "default" },
+/** Scala comune delle curve: min e max dei livelli di tutta la rosa. */
+export function curveScale(series: CurvePoint[][]): { min: number; max: number } | null {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const s of series) {
+    for (const p of s) {
+      if (p.mu < min) min = p.mu;
+      if (p.mu > max) max = p.mu;
+    }
+  }
+  if (!Number.isFinite(min)) return null;
+  // Un po' di margine, e mai una scala piatta (rosa con un solo valore).
+  const pad = Math.max(1, (max - min) * 0.05);
+  return { min: min - pad, max: max + pad };
+}
+
+/** Etichette dello staff (pannello solo in italiano). */
+export const TREND_LABELS: Record<TrendLabel, string> = {
+  salita: "In salita",
+  calo: "In calo",
+  stabile: "Stabile",
 };

@@ -32,7 +32,7 @@ export default async function AdminMetrichePage() {
   const { community: c, training: t, matches: p, engagement: e } = m;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 3, md: 4 } }}>
       <PageHeader
         title="Metriche"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Metriche" }]}
@@ -185,7 +185,11 @@ function MetricTile({
       <Typography variant="subtitle2" sx={{ mt: 0.75 }}>
         {label}
       </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: "block", mt: 0.5, lineHeight: 1.4 }}
+      >
         {caption}
       </Typography>
     </Paper>

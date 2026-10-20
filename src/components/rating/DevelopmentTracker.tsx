@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   Box,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -21,11 +22,33 @@ import {
   MenuItem,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import RatingSparkline from "@/components/rating/RatingSparkline";
-import { classifyTrend, TREND_META, type TrendLabel } from "@/lib/rating/ratingTrend";
-import { ordinal } from "@/lib/rating/trueskill";
-import { ROLES, sportRoleLabel } from "@/lib/constants";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
+import DevelopmentRow, {
+  formatDay,
+  type DevelopmentRowData,
+} from "@/components/rating/DevelopmentRow";
+import {
+  RECENT_WINDOW,
+  TREND_LABELS,
+  curveScale,
+  curveStatus,
+  isGame,
+  recentTrend,
+  type TrendLabel,
+} from "@/lib/rating/ratingTrend";
+import type { TrackedAthlete, TrackerSummary } from "@/lib/rating/developmentData";
+import { ordinal, TRUESKILL } from "@/lib/rating/trueskill";
+import RoleBadge from "@/components/common/RoleBadge";
+import {
+  ROLE_GROUPS,
+  ROLE_GROUP_LABELS,
+  ROLE_GROUP_MEAN_LABELS,
+  ROLE_GROUP_ROLES,
+  groupReference,
+  roleGroupOf,
+  tercileThresholds,
+  type RoleGroup,
+} from "@/lib/rating/roleGroups";
+import { RADIUS } from "@/lib/radius";
 
 type SkillBucket = "alta" | "media" | "bassa";
 
@@ -37,100 +60,122 @@ const SKILL_LABELS: Record<SkillBucket, string> = {
   bassa: "Terzo più basso",
 };
 
-export interface TrackedAthlete {
-  id: string;
-  kind: "user" | "child";
-  name: string;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-  gender: "MALE" | "FEMALE" | null;
-  mu: number;
-  sigma: number;
-  /** μ in ordine cronologico (curva di sviluppo). */
-  series: number[];
-  /** Numero di partitelle che hanno contribuito al rating. */
-  games: number;
-  /** Numero di partite ufficiali (segnale secondario W/L campionato). */
-  officialGames: number;
-}
+type View = "tutti" | "leggibile" | "salita" | "calo" | "formazione" | "senza";
 
-// Valenza del trend (UX-29): solo sul pallino finale della curva e sul chip,
-// che ha gia' l'etichetta. La serie resta neutra. "Pochi dati" non e' una
-// valenza: grigio.
-const TREND_COLOR_TOKEN: Record<TrendLabel, string> = {
-  crescita: "success.main",
-  calo: "error.main",
-  plateau: "text.secondary",
-  altalenante: "warning.main",
-  nuovo: "text.secondary",
+const VIEW_LABELS: Record<View, string> = {
+  tutti: "Tutti",
+  leggibile: "Curva leggibile",
+  salita: TREND_LABELS.salita,
+  calo: TREND_LABELS.calo,
+  formazione: "In formazione",
+  senza: "Senza dati",
 };
 
-/** Colore del chip di trend: valenza, o neutro per "Pochi dati". */
-function trendChipColor(label: TrendLabel) {
-  return TREND_META[label].color;
+const VIEWS: View[] = ["leggibile", "salita", "calo", "formazione", "senza", "tutti"];
+
+function inView(row: DevelopmentRowData, view: View) {
+  switch (view) {
+    case "tutti":
+      return true;
+    case "salita":
+    case "calo":
+      return row.trend?.label === view;
+    default:
+      return row.status === view;
+  }
 }
 
-const TREND_ORDER: TrendLabel[] = ["crescita", "calo", "altalenante", "plateau", "nuovo"];
+const TREND_ORDER: (TrendLabel | null)[] = ["salita", "calo", "stabile", null];
 
-type SortColumn = "name" | "role" | "trend" | "games";
+type SortColumn = "name" | "trend" | "games";
 
-export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthlete[] }) {
-  const [search, setSearch] = useState("");
-  const [trendFilter, setTrendFilter] = useState<TrendLabel | null>(null);
-  const [roleFilter, setRoleFilter] = useState<number | null>(null);
-  const [genderFilter, setGenderFilter] = useState<"MALE" | "FEMALE" | null>(null);
-  const [skillFilter, setSkillFilter] = useState<SkillBucket | null>(null);
-  const [sort, setSort] = useState<{ col: SortColumn; dir: "asc" | "desc" } | null>(null);
+interface DevelopmentTrackerProps {
+  athletes: TrackedAthlete[];
+  summary: TrackerSummary;
+}
 
-  const rows = useMemo(() => {
-    return athletes
-      .map((a) => ({
-        ...a,
-        trend: classifyTrend(a.series),
-        ord: ordinal({ mu: a.mu, sigma: a.sigma }),
-      }))
-      .sort((a, b) => b.ord - a.ord);
-  }, [athletes]);
+export default function DevelopmentTracker({ athletes, summary }: DevelopmentTrackerProps) {
+  const rows = useMemo<DevelopmentRowData[]>(
+    () =>
+      athletes
+        .map((a) => {
+          const totalGames = a.points.filter(isGame).length;
+          return {
+            ...a,
+            totalGames,
+            status: curveStatus(totalGames),
+            trend: recentTrend(a.points, TRUESKILL.MU),
+          };
+        })
+        // Prima chi ha più dati: la curva di chi ha giocato tanto dice di più.
+        .sort((a, b) => b.totalGames - a.totalGames || a.name.localeCompare(b.name, "it")),
+    [athletes]
+  );
 
-  // Soglie di skill a terzili sull'ordinal dell'intera popolazione: "Alta" =
-  // terzo superiore, "Bassa" = terzo inferiore. Stabile rispetto agli altri filtri.
-  const skillThresholds = useMemo(() => {
-    const ords = rows.map((r) => r.ord).sort((a, b) => a - b);
-    if (ords.length < 3) return null;
-    return {
-      lo: ords[Math.floor(ords.length / 3)],
-      hi: ords[Math.floor((2 * ords.length) / 3)],
-    };
+  const scale = useMemo(() => curveScale(rows.map((r) => r.points)) ?? { min: 0, max: 50 }, [rows]);
+  // Per ogni gruppo di ruolo: media di riferimento e terzili. Contano solo le
+  // curve leggibili: chi non ha mai giocato resta al livello di partenza e
+  // tirerebbe la media verso quel valore. Calcolati sull'intera rosa, quindi
+  // stabili rispetto ai filtri.
+  const groupStats = useMemo(() => {
+    const measured = rows.filter((r) => r.status === "leggibile");
+    const squad = measured.length > 0 ? measured : rows;
+    const squadMean = squad.reduce((s, r) => s + r.mu, 0) / Math.max(1, squad.length);
+    return Object.fromEntries(
+      ROLE_GROUPS.map((g) => {
+        const inGroup = rows.filter((r) => roleGroupOf(r.sportRole) === g);
+        return [
+          g,
+          {
+            reference: groupReference(
+              inGroup.filter((r) => r.status === "leggibile").map((r) => r.mu),
+              squadMean
+            ),
+            terciles: tercileThresholds(inGroup.map((r) => ordinal(r))),
+          },
+        ];
+      })
+    ) as Record<
+      RoleGroup,
+      {
+        reference: { value: number; own: boolean };
+        terciles: { lo: number; hi: number } | null;
+      }
+    >;
   }, [rows]);
 
-  function skillBucketOf(ord: number): SkillBucket {
-    if (!skillThresholds) return "media";
-    return ord >= skillThresholds.hi ? "alta" : ord < skillThresholds.lo ? "bassa" : "media";
-  }
-
   const counts = useMemo(() => {
-    const c: Record<TrendLabel, number> = {
-      crescita: 0,
-      calo: 0,
-      altalenante: 0,
-      plateau: 0,
-      nuovo: 0,
-    };
-    for (const r of rows) c[r.trend.label]++;
+    const c = Object.fromEntries(VIEWS.map((v) => [v, 0])) as Record<View, number>;
+    for (const r of rows) for (const v of VIEWS) if (inView(r, v)) c[v]++;
     return c;
   }, [rows]);
 
+  const [view, setView] = useState<View>(counts.leggibile > 0 ? "leggibile" : "tutti");
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleGroup | null>(null);
+  const [genderFilter, setGenderFilter] = useState<"MALE" | "FEMALE" | null>(null);
+  const [skillFilter, setSkillFilter] = useState<SkillBucket | null>(null);
+  const [sort, setSort] = useState<{ col: SortColumn; dir: "asc" | "desc" } | null>(null);
+  const [openKey, setOpenKey] = useState<string | null>(null);
+
+  // Terzi dentro il gruppo di ruolo: sulla rosa intera li dominerebbero i ruoli alti.
+  function skillBucketOf(r: DevelopmentRowData): SkillBucket {
+    const t = groupStats[roleGroupOf(r.sportRole)].terciles;
+    if (!t) return "media";
+    const ord = ordinal(r);
+    return ord >= t.hi ? "alta" : ord < t.lo ? "bassa" : "media";
+  }
+
   const matching = rows.filter((r) => {
-    if (trendFilter && r.trend.label !== trendFilter) return false;
-    if (roleFilter !== null && r.sportRole !== roleFilter) return false;
+    if (!inView(r, view)) return false;
+    if (roleFilter !== null && roleGroupOf(r.sportRole) !== roleFilter) return false;
     if (genderFilter && r.gender !== genderFilter) return false;
-    if (skillFilter && skillBucketOf(r.ord) !== skillFilter) return false;
+    if (skillFilter && skillBucketOf(r) !== skillFilter) return false;
     if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  // Senza colonna scelta resta l'ordine di partenza (`rows`); a parità di
-  // valore pure, perché l'ordinamento è stabile.
+  // Senza colonna scelta resta l'ordine di partenza (più dati prima).
   const filtered = sort
     ? [...matching].sort((a, b) => {
         let cmp = 0;
@@ -138,14 +183,13 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
           case "name":
             cmp = a.name.localeCompare(b.name, "it");
             break;
-          case "role":
-            cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
-            break;
           case "trend":
-            cmp = TREND_ORDER.indexOf(a.trend.label) - TREND_ORDER.indexOf(b.trend.label);
+            cmp =
+              TREND_ORDER.indexOf(a.trend?.label ?? null) -
+              TREND_ORDER.indexOf(b.trend?.label ?? null);
             break;
           case "games":
-            cmp = a.games - b.games || a.officialGames - b.officialGames;
+            cmp = a.totalGames - b.totalGames;
             break;
         }
         return sort.dir === "asc" ? cmp : -cmp;
@@ -173,8 +217,57 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
     </TableSortLabel>
   );
 
+  const readable = counts.leggibile;
+  const forming = counts.formazione;
+  const pct = (n: number) => `${(n / Math.max(1, rows.length)) * 100}%`;
+
   return (
     <Box>
+      {/* Riepilogo: quanti dati ci sono, così la pagina si vede riempire. */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, minmax(0, 1fr))" },
+          gap: 1.5,
+          mb: 3,
+        }}
+      >
+        <SummaryTile
+          label="Partitelle registrate"
+          value={String(summary.seasonGames)}
+          caption={
+            summary.lastSessionAt
+              ? `In ${summary.seasonSessions} ${summary.seasonSessions === 1 ? "allenamento" : "allenamenti"} di questa stagione, l'ultima ${formatDay(summary.lastSessionAt)}`
+              : "Nessuna in questa stagione"
+          }
+        />
+        <SummaryTile
+          label="Curva leggibile"
+          value={`${readable} di ${rows.length}`}
+          caption={`${readable} leggibili · ${forming} in formazione · ${counts.senza} senza dati`}
+        >
+          <Box
+            aria-hidden
+            sx={{
+              display: "flex",
+              height: 6,
+              mt: 1,
+              borderRadius: RADIUS.pill,
+              overflow: "hidden",
+              bgcolor: "divider",
+            }}
+          >
+            <Box sx={{ width: pct(readable), bgcolor: "text.primary" }} />
+            <Box sx={{ width: pct(forming), bgcolor: "text.secondary" }} />
+          </Box>
+        </SummaryTile>
+        <SummaryTile
+          label="Da guardare"
+          value={String(counts.calo)}
+          caption={`In calo nelle ultime ${RECENT_WINDOW} partite`}
+        />
+      </Box>
+
       {/* Filtri */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -206,15 +299,15 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
           <Select
             labelId="dev-role-label"
             label="Ruolo"
-            value={roleFilter === null ? "all" : String(roleFilter)}
+            value={roleFilter ?? "all"}
             onChange={(e) =>
-              setRoleFilter(e.target.value === "all" ? null : Number(e.target.value))
+              setRoleFilter(e.target.value === "all" ? null : (e.target.value as RoleGroup))
             }
           >
             <MenuItem value="all">Tutti</MenuItem>
-            {ROLES.map((r) => (
-              <MenuItem key={r} value={String(r)}>
-                {sportRoleLabel(r)}
+            {ROLE_GROUPS.map((g) => (
+              <MenuItem key={g} value={g}>
+                {ROLE_GROUP_LABELS[g]}
               </MenuItem>
             ))}
           </Select>
@@ -256,17 +349,16 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
         </FormControl>
       </Stack>
 
-      {/* Filtro per trend */}
       <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
-        {TREND_ORDER.map((t) => (
+        {VIEWS.map((v) => (
           <Chip
-            key={t}
-            label={`${TREND_META[t].label} (${counts[t]})`}
+            key={v}
+            label={`${VIEW_LABELS[v]} (${counts[v]})`}
             size="small"
             // Filtro selezionato = stato attivo standard (UX-29).
-            color={trendFilter === t ? "primary" : "default"}
-            variant={trendFilter === t ? "filled" : "outlined"}
-            onClick={() => setTrendFilter(trendFilter === t ? null : t)}
+            color={view === v ? "primary" : "default"}
+            variant={view === v ? "filled" : "outlined"}
+            onClick={() => setView(v)}
           />
         ))}
       </Stack>
@@ -277,64 +369,48 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
             <TableRow>
               <TableCell>{sortLabel("name", "Giocatore")}</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                {sortLabel("role", "Ruolo")}
+                Ruolo
               </TableCell>
               <TableCell align="center">Andamento</TableCell>
-              <TableCell align="center">{sortLabel("trend", "Trend")}</TableCell>
-              <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                {sortLabel("games", "Partitelle (+ ufficiali)")}
+              <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                {sortLabel("trend", "Ultime partite")}
+              </TableCell>
+              <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                {sortLabel("games", "Dati")}
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((r) => (
-              <TableRow key={`${r.kind}-${r.id}`} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-                    {r.name}
-                  </Typography>
-                </TableCell>
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {r.sportRole ? sportRoleLabel(r.sportRole, r.sportRoleVariant) : "—"}
-                  </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <RatingSparkline
-                    values={r.series}
-                    endColorToken={TREND_COLOR_TOKEN[r.trend.label]}
+            {ROLE_GROUPS.map((g) => {
+              const groupRows = filtered.filter((r) => roleGroupOf(r.sportRole) === g);
+              if (groupRows.length === 0) return null;
+              const { reference } = groupStats[g];
+              return (
+                <Fragment key={g}>
+                  <RoleGroupHeader
+                    group={g}
+                    count={groupRows.length}
+                    ownReference={reference.own}
                   />
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={TREND_META[r.trend.label].label}
-                    size="small"
-                    color={trendChipColor(r.trend.label)}
-                    variant={
-                      r.trend.label === "plateau" || r.trend.label === "nuovo"
-                        ? "outlined"
-                        : "filled"
-                    }
-                  />
-                </TableCell>
-                <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {r.games}
-                    {r.officialGames > 0 && (
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ ml: 0.5 }}
-                        title={`+ ${r.officialGames} partite ufficiali`}
-                      >
-                        +{r.officialGames} uff.
-                      </Typography>
-                    )}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ))}
+                  {groupRows.map((r) => {
+                    const key = `${r.kind}-${r.id}`;
+                    return (
+                      <DevelopmentRow
+                        key={key}
+                        row={r}
+                        scale={scale}
+                        reference={reference.value}
+                        referenceLabel={
+                          reference.own ? ROLE_GROUP_MEAN_LABELS[g] : "la media della rosa"
+                        }
+                        open={openKey === key}
+                        onToggle={() => setOpenKey(openKey === key ? null : key)}
+                      />
+                    );
+                  })}
+                </Fragment>
+              );
+            })}
             {filtered.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
@@ -346,5 +422,66 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
         </Table>
       </TableContainer>
     </Box>
+  );
+}
+
+/** Intestazione di sezione: i giocatori si confrontano dentro il gruppo di ruolo. */
+function RoleGroupHeader({
+  group,
+  count,
+  ownReference,
+}: {
+  group: RoleGroup;
+  count: number;
+  ownReference: boolean;
+}) {
+  return (
+    <TableRow>
+      <TableCell colSpan={5} sx={{ bgcolor: "action.hover", py: 1 }}>
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+          {ROLE_GROUP_ROLES[group].map((r) => (
+            <RoleBadge key={r} role={r} />
+          ))}
+          <Typography variant="subtitle2" component="h3">
+            {ROLE_GROUP_LABELS[group]}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {count} {count === 1 ? "giocatore" : "giocatori"}
+            {!ownReference && " · poche curve, riferimento sulla media della rosa"}
+          </Typography>
+        </Stack>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function SummaryTile({
+  label,
+  value,
+  caption,
+  children,
+}: {
+  label: string;
+  value: string;
+  caption: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <Paper variant="outlined" sx={{ p: 2 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+        {label}
+      </Typography>
+      <Typography variant="h5" component="p" sx={{ fontVariantNumeric: "tabular-nums" }}>
+        {value}
+      </Typography>
+      {children}
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: "block", mt: 0.75, lineHeight: 1.4 }}
+      >
+        {caption}
+      </Typography>
+    </Paper>
   );
 }
