@@ -24,7 +24,13 @@ export async function GET(req: NextRequest) {
       _count: { select: { memberships: true, matches: true } },
     },
   });
-  return NextResponse.json(teams);
+  // L'elenco è pubblico e uguale per chiunque lo chieda (non legge cookie né
+  // sessione), e l'header lo chiede a ogni pagina: lo serve la CDN di Vercel,
+  // così la funzione gira al più una volta ogni cinque minuti. Una squadra
+  // appena creata o rinominata può comparire nel menu con quel ritardo.
+  return NextResponse.json(teams, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
+  });
 }
 
 export async function POST(req: Request) {

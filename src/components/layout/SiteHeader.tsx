@@ -174,6 +174,9 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
     // vuote: prima il corpo di errore finiva in `allTeams` e il `.filter`
     // qui sotto faceva cadere l'intero sito nell'errore critico.
     queryFn: () => fetchJson("/api/competitive-teams"),
+    // Le squadre cambiano qualche volta a stagione: niente nuova richiesta a
+    // ogni ritorno sulla scheda.
+    staleTime: 10 * 60_000,
   });
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
   // Stagione a squadra unica: la Karibu (nell'elenco solo quando gioca il

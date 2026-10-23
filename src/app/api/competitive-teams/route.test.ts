@@ -59,6 +59,11 @@ describe("GET /api/competitive-teams", () => {
     expect(p.competitiveTeam.findMany).toHaveBeenCalledOnce();
   });
 
+  it("si lascia servire dalla CDN, perché è uguale per tutti", async () => {
+    const res = await GET(new NextRequest("http://localhost/api/competitive-teams"));
+    expect(res.headers.get("Cache-Control")).toContain("s-maxage=");
+  });
+
   it("restituisce array vuoto se non ci sono squadre", async () => {
     p.competitiveTeam.findMany.mockResolvedValue([]);
     const res = await GET(new NextRequest("http://localhost/api/competitive-teams"));
