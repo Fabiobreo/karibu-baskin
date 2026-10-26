@@ -1,18 +1,9 @@
 "use client";
 import { useTranslations } from "next-intl";
-import {
-  DialogTitle,
-  DialogContent,
-  IconButton,
-  Typography,
-  Box,
-  Chip,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { DialogTitle, DialogContent, IconButton, Typography, Box, Chip } from "@mui/material";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import CloseIcon from "@mui/icons-material/Close";
-import { AlignedTeamGrid, MobileTeamTabs } from "@/components/training/TeamDisplay";
+import TeamsView from "@/components/training/TeamBoard";
 import ShareTeamsButton from "@/components/training/ShareTeamsButton";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -49,8 +40,6 @@ export default function TeamsModal({
   const tCommon = useTranslations("common");
   const t = useTranslations("trainings");
   const numTeams = teamC ? 3 : 2;
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   const teamsData = {
     teamA,
@@ -81,7 +70,7 @@ export default function TeamsModal({
       </DialogTitle>
 
       <DialogContent dividers sx={{ pt: 2 }}>
-        {isDesktop ? <AlignedTeamGrid teams={teamsData} /> : <MobileTeamTabs teams={teamsData} />}
+        <TeamsView teams={teamsData} />
 
         {coaches && coaches.length > 0 && (
           <Box sx={{ mt: 1.5, display: "flex", alignItems: "baseline", gap: 1, flexWrap: "wrap" }}>

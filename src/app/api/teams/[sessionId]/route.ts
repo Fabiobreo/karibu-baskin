@@ -3,15 +3,31 @@ import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { generateTeams, withoutRatings } from "@/lib/season/teamGenerator";
+import {
+  generateTeams,
+  withoutRatings,
+  type Teams,
+  type Athlete,
+} from "@/lib/season/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { isMemberRole } from "@/lib/authRoles";
-import { sendPushToUsers } from "@/lib/notifications/webpush";
-import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
-import { playerRecipientIds } from "@/lib/notifications/recipients";
+import { notifyTeamChanges } from "@/lib/notifications/teamsNotify";
+import { TRUESKILL } from "@/lib/rating/trueskill";
+import { TeamsPostSchema } from "@/lib/schemas/teams";
+import {
+  NOTIFIED_KEY,
+  assignmentOf,
+  notifiedAssignmentOf,
+  placeLateAthletes,
+  teamChanges,
+  type BibKey,
+} from "@/lib/trainingTeams";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { inBackground } from "@/lib/background";
+
+/** Squadre come stanno nel JSON di `TrainingSession.teams`. */
+type SavedTeams = Partial<Record<BibKey, Athlete[]>>;
 
 // GET — ritorna le squadre salvate in DB
 export async function GET(
@@ -45,7 +61,8 @@ export async function GET(
   return NextResponse.json({ ...withoutRatings(session.teams as object), generated: true });
 }
 
-// POST — crea squadre e le salva in DB (solo admin)
+// POST — crea le squadre da capo (`generate`) o ci aggiunge chi si è iscritto
+// dopo (`add`, UX-54), e le salva in DB (solo staff)
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
@@ -57,8 +74,11 @@ export async function POST(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({}));
-  const numTeams: 2 | 3 = body.numTeams === 3 ? 3 : 2;
+  const parsed = TeamsPostSchema.safeParse((await req.json().catch(() => null)) ?? {});
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
+  }
+  const { mode, numTeams } = parsed.data;
 
   // Chi è segnato assente non gioca: conta per le squadre ricreate a
   // allenamento finito, dalla pagina "da completare".
@@ -74,7 +94,9 @@ export async function POST(
     },
   });
 
-  if (registrations.length === 0) {
+  // In `add` si va avanti anche senza iscritti: se se ne sono andati tutti,
+  // "Aggiorna le squadre" deve poterli togliere.
+  if (registrations.length === 0 && mode !== "add") {
     return NextResponse.json({ error: "Nessun atleta iscritto" }, { status: 400 });
   }
 
@@ -91,73 +113,94 @@ export async function POST(
   const coaches = registrations
     .filter((r) => r.registeredAsCoach)
     .map((r) => ({ id: r.id, name: r.name }));
-  // SHA-256(sessionId || secret) → hex string used as the PRNG seed.
-  // Hashing prevents reversing observed team outputs back to the raw secret,
-  // which matters because AUTH_SECRET is also the session-signing key.
-  const seedInput = createHash("sha256")
-    .update(sessionId + (process.env.AUTH_SECRET ?? ""))
-    .digest("hex");
-  const teams = generateTeams(athletes, seedInput, numTeams);
 
-  await prisma.trainingSession.update({
+  // Le squadre di prima: per sapere chi avvisare (solo chi entra o cambia
+  // squadra) e, in `add`, per non spostare nessuno.
+  const current = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
-    data: { teams: { ...withoutRatings(teams), coaches, generated: true } as object },
+    select: { teams: true },
   });
+  if (!current) return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
+  const before = (current.teams as SavedTeams | null) ?? null;
 
-  // Notifica push solo agli iscritti all'allenamento (dopo la risposta)
-  // Solo se l'allenamento non è finito: squadre ricostruite dopo (pagina "da
-  // completare") non sono una novità per nessuno.
-  const trainingSession = await prisma.trainingSession.findUnique({
-    where: { id: sessionId },
-    select: { title: true, dateSlug: true, date: true, endTime: true },
-  });
-  const sessionEnded =
-    !!trainingSession && (trainingSession.endTime ?? trainingSession.date) < new Date();
-  if (trainingSession && !sessionEnded) {
-    const pushPayload = {
-      title: "📋 Squadre pronte!",
-      body: `Le squadre per "${trainingSession.title}" sono state create.`,
-      url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
-      type: "TEAMS_READY",
-    };
-    // Chi è iscritto come atleta (non allenatore); per un figlio iscritto, i
-    // suoi genitori. Push e in-app partono insieme, alle stesse persone.
-    inBackground(
-      playerRecipientIds(registrations.filter((r) => !r.registeredAsCoach)).then((ids) =>
-        Promise.all([
-          sendPushToUsers(ids, pushPayload, "TEAMS_READY").catch((err) =>
-            console.error("[push teams ready]", err)
-          ),
-          createTargetedAppNotifications(ids, {
-            type: "TEAMS_READY",
-            title: "Squadre pronte!",
-            body: pushPayload.body,
-            url: pushPayload.url,
-          }),
-        ])
-      ),
-      "notification teams ready"
+  let teams: Teams;
+  let addedCount = 0;
+  let removedCount = 0;
+  if (mode === "add") {
+    if (!before) {
+      return NextResponse.json({ error: "Le squadre non ci sono ancora" }, { status: 400 });
+    }
+    const keys: BibKey[] = before.teamC ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
+    const ratingById = new Map(athletes.map((a) => [a.id, a.rating ?? TRUESKILL.MU]));
+    const placed = placeLateAthletes(
+      keys.map((k) => before[k] ?? []),
+      athletes,
+      (id) => ratingById.get(id) ?? TRUESKILL.MU
     );
+    addedCount = placed.added.length;
+    removedCount = placed.removed.length;
+    teams = {
+      teamA: placed.teams[0],
+      teamB: placed.teams[1],
+      ...(keys.length === 3 ? { teamC: placed.teams[2] } : {}),
+      numTeams: keys.length as 2 | 3,
+    };
+  } else {
+    // SHA-256(sessionId || secret) → hex string used as the PRNG seed.
+    // Hashing prevents reversing observed team outputs back to the raw secret,
+    // which matters because AUTH_SECRET is also the session-signing key.
+    const seedInput = createHash("sha256")
+      .update(sessionId + (process.env.AUTH_SECRET ?? ""))
+      .digest("hex");
+    teams = generateTeams(athletes, seedInput, numTeams);
   }
+
+  const teamsOnly = { ...withoutRatings(teams), coaches, generated: true };
+  // Il confronto parte dall'ultimo avviso, se c'è: una modifica a mano mai
+  // avvisata (uscita senza "Fatto") arriva così con la prossima squadra fatta.
+  const baseline = notifiedAssignmentOf(before) ?? assignmentOf(before);
+  const changes = teamChanges(baseline, assignmentOf(teamsOnly));
+  const saved = { ...teamsOnly, [NOTIFIED_KEY]: assignmentOf(teamsOnly) };
+  try {
+    await prisma.trainingSession.update({
+      where: { id: sessionId },
+      data: { teams: saved as object },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
+
+  // La prima volta "Squadre pronte!" a tutti; dopo solo a chi entra o cambia
+  // squadra. Allenamento finito: nessuno (lo decide `notifyTeamChanges`).
+  inBackground(
+    notifyTeamChanges(
+      sessionId,
+      changes,
+      registrations.filter((r) => !r.registeredAsCoach)
+    ),
+    "notification teams"
+  );
 
   if (authSession?.user?.id) {
     inBackground(
       logAudit({
         actorId: authSession.user.id,
-        action: "GENERATE_TEAMS",
+        action: mode === "add" ? "UPDATE_TEAMS" : "GENERATE_TEAMS",
         targetType: "TrainingSession",
         targetId: sessionId,
-        after: {
-          numTeams,
-          athleteCount: athletes.length,
-          coachCount: coaches.length,
-        },
+        after:
+          mode === "add"
+            ? { added: addedCount, removed: removedCount }
+            : { numTeams, athleteCount: athletes.length, coachCount: coaches.length },
       }),
       "audit generate teams"
     );
   }
 
-  return NextResponse.json({ ...withoutRatings(teams), coaches, generated: true });
+  return NextResponse.json(saved);
 }
 
 // PUT — aggiorna le squadre (spostamento manuale giocatori, solo staff)
@@ -182,10 +225,23 @@ export async function PUT(
     select: { teams: true },
   });
 
-  await prisma.trainingSession.update({
-    where: { id: sessionId },
-    data: { teams: { ...body, generated: true } as object },
-  });
+  // L'ultimo avviso lo scrive solo il server: quello che manda il browser si
+  // ignora, quello salvato resta.
+  const { [NOTIFIED_KEY]: _ignored, ...teamsBody } = body as Record<string, unknown>;
+  void _ignored;
+  const notified = notifiedAssignmentOf(beforeSession?.teams);
+  const next = { ...teamsBody, generated: true, ...(notified ? { [NOTIFIED_KEY]: notified } : {}) };
+  try {
+    await prisma.trainingSession.update({
+      where: { id: sessionId },
+      data: { teams: next as object },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
 
   if (authSession?.user?.id) {
     inBackground(
@@ -195,13 +251,13 @@ export async function PUT(
         targetType: "TrainingSession",
         targetId: sessionId,
         before: (beforeSession?.teams as Record<string, unknown> | null) ?? null,
-        after: { ...body, generated: true },
+        after: { ...teamsBody, generated: true },
       }),
       "audit update teams"
     );
   }
 
-  return NextResponse.json({ ...body, generated: true });
+  return NextResponse.json(next);
 }
 
 // DELETE — rimuove le squadre salvate (solo admin)

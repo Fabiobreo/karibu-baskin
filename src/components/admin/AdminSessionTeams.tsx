@@ -16,6 +16,8 @@ interface AdminSessionTeamsProps {
   coaches: { id: string; name: string }[];
   /** Vedi `TeamDisplay.beforeGenerate`. */
   beforeGenerate?: () => Promise<void>;
+  /** Allenamento finito: le modifiche non avvisano nessuno. */
+  isEnded?: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export default function AdminSessionTeams({
   athletes,
   coaches,
   beforeGenerate,
+  isEnded = false,
 }: AdminSessionTeamsProps) {
   const [teams, setTeams] = useState<TeamsData | null>(initialTeams);
   const [editMode, setEditMode] = useState(false);
@@ -90,6 +93,7 @@ export default function AdminSessionTeams({
         onTeamsGenerated={handleTeamsChanged}
         athletes={athletes}
         beforeGenerate={beforeGenerate}
+        isEnded={isEnded}
       />
     </>
   );

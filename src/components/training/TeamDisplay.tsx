@@ -6,32 +6,31 @@ import {
   Paper,
   Grid2 as Grid,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
   Skeleton,
   Button,
   ToggleButton,
   ToggleButtonGroup,
   Alert,
+  Checkbox,
   CircularProgress,
-  Tabs,
-  Tab,
-  useMediaQuery,
-  useTheme,
+  FormControlLabel,
 } from "@mui/material";
 import Link from "next/link";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLES, TEAM_META, bibFill, roleColorSx } from "@/lib/constants";
+import { ROLES, TEAM_META, bibFill } from "@/lib/constants";
 import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
-import { bibDotSx, bibSurfaceSx } from "@/lib/bib";
-import { alpha } from "@mui/material/styles";
-import { readableOn } from "@/lib/colorUtils";
+import { bibSurfaceSx } from "@/lib/bib";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import QueryErrorState from "@/components/common/QueryErrorState";
+import TeamsView, { type ViewerMarks } from "@/components/training/TeamBoard";
+import TeamBalanceBar, { BandMark, type TeamLevels } from "@/components/training/TeamBalanceBar";
+import { useQuery } from "@tanstack/react-query";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { readError } from "@/lib/fetchJson";
+import { assignmentOf, notifiedAssignmentOf, teamChanges } from "@/lib/trainingTeams";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -63,7 +62,8 @@ interface Props {
   registrationIds?: string[];
   coaches?: { id: string; name: string }[];
   slugMap?: Record<string, string>; // reg.id → user.slug
-  currentUserTeamIndex?: number; // tab da selezionare di default su mobile
+  /** Iscrizioni di chi guarda e dei suoi figli: "Tu" / "Famiglia" nel tabellone. */
+  viewerMarks?: ViewerMarks;
   editMode?: boolean; // controllato dal parent (via TeamsHeader)
   isEnded?: boolean; // allenamento già concluso: cambia il messaggio "nessuna squadra"
   onExitEditMode?: () => void;
@@ -90,285 +90,8 @@ interface Props {
   /** Chiamata prima di creare le squadre (es. per salvare le presenze ancora
    *  in sospeso, che il server usa per escludere gli assenti). */
   beforeGenerate?: () => Promise<void>;
-}
-
-// ── Badge ruolo (riutilizzato in entrambi i layout) ───────────────────────────
-
-function RoleBadge({
-  role,
-  count,
-  playerLabel,
-  label,
-}: {
-  role: number;
-  count: number;
-  playerLabel: string;
-  label: string;
-}) {
-  return (
-    <Box
-      sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        borderRadius: RADIUS.pill,
-        overflow: "hidden",
-        ...roleColorSx(role),
-        fontSize: TYPE_SCALE.xs,
-        lineHeight: 1,
-        opacity: count === 0 ? 0.28 : 1,
-      }}
-    >
-      <Box sx={{ px: 1.25, py: "5px", fontWeight: FONT_WEIGHT.semibold }}>{label}</Box>
-      <Box
-        sx={{
-          px: 1.25,
-          py: "5px",
-          fontWeight: FONT_WEIGHT.regular,
-          bgcolor: (theme) => alpha(theme.palette.common.black, 0.22),
-        }}
-      >
-        {playerLabel}
-      </Box>
-    </Box>
-  );
-}
-
-// ── Layout mobile: tab per squadra ────────────────────────────────────────────
-
-export function MobileTeamTabs({
-  teams,
-  slugMap = {},
-  defaultTab = 0,
-}: {
-  teams: TeamsData;
-  slugMap?: Record<string, string>;
-  defaultTab?: number;
-}) {
-  const t = useTranslations("trainings");
-  const { roleLabel, teamColorLabel } = useEntityLabels();
-  const [tab, setTab] = useState(defaultTab);
-  // allTeams è l'unica fonte di verità: include teamC solo se esiste davvero.
-  // meta viene derivato dalla sua lunghezza così non possono mai divergere
-  // (dati legacy senza numTeams facevano slice(0, undefined) = array intero → crash).
-  const allTeams: TeamAthlete[][] = [teams.teamA ?? [], teams.teamB ?? []];
-  if (teams.teamC) allTeams.push(teams.teamC);
-  const meta = TEAM_META.slice(0, allTeams.length);
-  const activeColor = meta[tab]?.color ?? TEAM_META[0].color;
-
-  return (
-    <Paper variant="outlined" sx={{ overflow: "hidden" }}>
-      <Tabs
-        value={tab}
-        onChange={(_e, v) => setTab(v)}
-        variant="fullWidth"
-        sx={{
-          "& .MuiTabs-indicator": { backgroundColor: activeColor, height: 3 },
-          "& .MuiTab-root": {
-            fontWeight: FONT_WEIGHT.semibold,
-            fontSize: TYPE_SCALE.xs,
-            minHeight: 48,
-          },
-          // Il nome della squadra è testo sul fondo del tema: l'arancio pieno fa
-          // 3,78:1 sul bianco e i "Neri" sparirebbero in scuro (UX-22).
-          "& .MuiTab-root.Mui-selected": {
-            color: (theme) => readableOn(activeColor, theme.palette.background.paper),
-          },
-        }}
-      >
-        {meta.map((m, i) => (
-          <Tab
-            key={m.key}
-            label={
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <Box
-                  sx={[
-                    { width: 10, height: 10, borderRadius: "50%", flexShrink: 0 },
-                    bibDotSx(m.key),
-                  ]}
-                />
-                <span>{teamColorLabel(m.key)}</span>
-                <Chip
-                  label={allTeams[i].length}
-                  size="small"
-                  sx={[
-                    { height: 20, fontSize: TYPE_SCALE.xs },
-                    tab === i
-                      ? bibSurfaceSx(m.key)
-                      : { bgcolor: "action.selected", color: "text.secondary" },
-                  ]}
-                />
-              </Box>
-            }
-          />
-        ))}
-      </Tabs>
-      <Box>
-        {ROLES.map((role) => {
-          const group = allTeams[tab].filter((a) => a.role === role);
-          if (group.length === 0) return null;
-          return (
-            <Box key={role} sx={{ pb: 0.5 }}>
-              <Box sx={{ px: 2, pt: 1 }}>
-                <RoleBadge
-                  role={role}
-                  count={group.length}
-                  playerLabel={t("playerCount", { count: group.length })}
-                  label={roleLabel(role)}
-                />
-              </Box>
-              <List dense disablePadding>
-                {group.map((a) => {
-                  const slug = slugMap[a.id];
-                  return (
-                    <ListItem key={a.id} sx={{ py: 0, px: 3 }}>
-                      <ListItemText
-                        primary={
-                          slug ? (
-                            <Link
-                              href={`/giocatori/${slug}`}
-                              style={{
-                                color: "inherit",
-                                textDecoration: "none",
-                                fontWeight: FONT_WEIGHT.semibold,
-                              }}
-                            >
-                              {a.name}
-                            </Link>
-                          ) : (
-                            a.name
-                          )
-                        }
-                      />
-                    </ListItem>
-                  );
-                })}
-              </List>
-            </Box>
-          );
-        })}
-      </Box>
-    </Paper>
-  );
-}
-
-// ── Layout desktop: griglia allineata cross-column ────────────────────────────
-
-export function AlignedTeamGrid({
-  teams,
-  slugMap = {},
-}: {
-  teams: TeamsData;
-  slugMap?: Record<string, string>;
-}) {
-  const t = useTranslations("trainings");
-  const { roleLabel, teamColorLabel } = useEntityLabels();
-  const allTeams: TeamAthlete[][] = [teams.teamA ?? [], teams.teamB ?? []];
-  if (teams.teamC) allTeams.push(teams.teamC);
-  const meta = TEAM_META.slice(0, allTeams.length);
-  const cols = allTeams.length;
-
-  const cells: React.ReactNode[] = [];
-
-  // ── Header ──
-  meta.forEach((m, i) => {
-    cells.push(
-      <Box
-        key={`header-${i}`}
-        sx={[
-          { px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1 },
-          bibSurfaceSx(m.key),
-        ]}
-      >
-        <Typography component="h3" variant="h6" sx={{ color: "common.white" }}>
-          {teamColorLabel(m.key)}
-        </Typography>
-        <Chip
-          label={t("athletes", { count: allTeams[i].length })}
-          size="small"
-          variant="outlined"
-          sx={{ color: "common.white", borderColor: "common.white" }}
-        />
-      </Box>
-    );
-  });
-
-  // ── Sezioni per ruolo ──
-  for (const role of ROLES) {
-    const groups = allTeams.map((t) => t.filter((a) => a.role === role));
-    const maxCount = Math.max(...groups.map((g) => g.length));
-    if (maxCount === 0) continue;
-
-    // Riga badge
-    groups.forEach((group, i) => {
-      cells.push(
-        <Box
-          key={`badge-${role}-${i}`}
-          sx={{
-            px: 2,
-            pt: 1,
-            pb: 0.5,
-          }}
-        >
-          <RoleBadge
-            role={role}
-            count={group.length}
-            playerLabel={t("playerCount", { count: group.length })}
-            label={roleLabel(role)}
-          />
-        </Box>
-      );
-    });
-
-    // Righe atleti (padding con celle vuote fino a maxCount)
-    for (let idx = 0; idx < maxCount; idx++) {
-      groups.forEach((group, i) => {
-        const athlete = group[idx];
-        const slug = athlete ? slugMap[athlete.id] : undefined;
-        cells.push(
-          <Box
-            key={`player-${role}-${idx}-${i}`}
-            sx={{
-              px: 3,
-              minHeight: 32,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            {athlete &&
-              (slug ? (
-                <Link
-                  href={`/giocatori/${slug}`}
-                  style={{
-                    color: "inherit",
-                    textDecoration: "none",
-                    fontWeight: FONT_WEIGHT.semibold,
-                  }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
-                    {athlete.name}
-                  </Typography>
-                </Link>
-              ) : (
-                <Typography variant="body2">{athlete.name}</Typography>
-              ))}
-          </Box>
-        );
-      });
-    }
-  }
-
-  return (
-    <Paper
-      variant="outlined"
-      sx={{
-        overflow: "hidden",
-        display: "grid",
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-      }}
-    >
-      {cells}
-    </Paper>
-  );
+  /** Livelli già noti (stories). Senza, allo staff li chiede il server (UX-54). */
+  levels?: TeamLevels;
 }
 
 // ── Team Editor (spostamento manuale, solo staff) ─────────────────────────────
@@ -381,6 +104,10 @@ interface TeamEditorProps {
   teams: TeamsData;
   sessionId: string;
   athletes?: TeamAthlete[];
+  /** Livello stimato degli iscritti: fasce e anteprima dell'equilibrio (solo staff). */
+  levels?: TeamLevels;
+  /** Allenamento finito: nessun avviso parte, quindi niente spunta. */
+  isEnded?: boolean;
   onTeamsUpdated: (teams: TeamsData) => void;
   onDone: () => void;
 }
@@ -389,6 +116,8 @@ function TeamEditor({
   teams: initialTeams,
   sessionId,
   athletes,
+  levels,
+  isEnded = false,
   onTeamsUpdated,
   onDone,
 }: TeamEditorProps) {
@@ -399,6 +128,11 @@ function TeamEditor({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
+  // Le squadre di quando l'editor è stato aperto: su "Fatto" si avvisa solo
+  // chi, rispetto a queste, è entrato o ha cambiato squadra (UX-54).
+  const [startAssignment] = useState(() => assignmentOf(initialTeams));
+  const [notify, setNotify] = useState(true);
+  const [finishing, setFinishing] = useState(false);
 
   const teamKeys: TeamKey[] =
     localTeams.numTeams === 3 ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
@@ -422,22 +156,28 @@ function TeamEditor({
     });
   }
 
-  async function moveTo(toKey: SlotKey) {
-    if (saving) return;
+  /** Le squadre dopo aver spostato i selezionati in `toKey` (null se nessuno si muove). */
+  function afterMove(toKey: SlotKey): TeamsData | null {
     // Chi è già nel gruppo di destinazione resta dov'è.
     const moving = slotKeys
       .filter((k) => k !== toKey)
       .flatMap((k) => listOf(k).filter((a) => selected.has(a.id)));
-    if (moving.length === 0) return;
+    if (moving.length === 0) return null;
     const movingIds = new Set(moving.map((a) => a.id));
-
     // "Da assegnare" non si salva: è chi manca dalle squadre.
-    const prevTeams = localTeams;
-    const newTeams: TeamsData = { ...localTeams };
+    const next: TeamsData = { ...localTeams };
     for (const k of teamKeys) {
       const kept = (localTeams[k] ?? []).filter((a) => !movingIds.has(a.id));
-      newTeams[k] = k === toKey ? [...kept, ...moving] : kept;
+      next[k] = k === toKey ? [...kept, ...moving] : kept;
     }
+    return next;
+  }
+
+  async function moveTo(toKey: SlotKey) {
+    if (saving) return;
+    const newTeams = afterMove(toKey);
+    if (!newTeams) return;
+    const prevTeams = localTeams;
 
     setLocalTeams(newTeams);
     setSelected(new Set());
@@ -465,8 +205,62 @@ function TeamEditor({
     }
   }
 
+  function chipLabel(a: TeamAthlete, isSelected: boolean) {
+    const band = levels?.[a.id]?.band;
+    if (!band) return a.name;
+    return (
+      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25 }}>
+        {a.name}
+        <BandMark band={band} inherit={isSelected} />
+      </Box>
+    );
+  }
+
+  // Anteprima dell'equilibrio per ogni squadra in cui si possono spostare i selezionati.
+  const previews = levels
+    ? teamKeys.flatMap((key, i) => {
+        const next = canMoveInto(key) ? afterMove(key) : null;
+        return next ? [{ targetIndex: i, teams: teamKeys.map((k) => next[k] ?? []) }] : [];
+      })
+    : [];
+
+  // Il server avvisa rispetto all'ultimo avviso, se lo tiene: il conteggio
+  // della spunta parte dallo stesso punto.
+  const pending = teamChanges(
+    notifiedAssignmentOf(localTeams) ?? startAssignment,
+    assignmentOf(localTeams)
+  );
+  const pendingCount = isEnded ? 0 : pending.added.length + pending.moved.length;
+
+  async function finish() {
+    if (notify && pendingCount > 0) {
+      setFinishing(true);
+      try {
+        const res = await fetch(`/api/teams/${sessionId}/notify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ before: startAssignment }),
+        });
+        if (!res.ok) throw new Error(await readError(res));
+        showToast({ message: t("editorNotified"), severity: "success" });
+      } catch (err) {
+        showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
+        setFinishing(false);
+        return;
+      }
+    }
+    onDone();
+  }
+
   return (
     <Box>
+      {levels && (
+        <TeamBalanceBar
+          teams={teamKeys.map((k) => localTeams[k] ?? [])}
+          levels={levels}
+          previews={previews}
+        />
+      )}
       <Box sx={{ mb: 1.5, minHeight: 30, display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="caption" color="text.secondary" aria-live="polite">
           {hasSelection ? t("editorMoveTarget", { count: selected.size }) : t("editorMoveHint")}
@@ -529,7 +323,7 @@ function TeamEditor({
                     return (
                       <Chip
                         key={a.id}
-                        label={a.name}
+                        label={chipLabel(a, isSelected)}
                         size="small"
                         disabled={saving}
                         aria-pressed={isSelected}
@@ -625,7 +419,7 @@ function TeamEditor({
                       return (
                         <Chip
                           key={a.id}
-                          label={a.name}
+                          label={chipLabel(a, isSelected)}
                           size="small"
                           disabled={saving}
                           aria-pressed={isSelected}
@@ -656,8 +450,41 @@ function TeamEditor({
         })}
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <Button variant="outlined" size="small" onClick={onDone} disabled={saving}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          flexWrap: "wrap",
+          columnGap: 1,
+          mt: 2,
+        }}
+      >
+        {pendingCount > 0 && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={notify}
+                onChange={(e) => setNotify(e.target.checked)}
+              />
+            }
+            label={
+              <Typography variant="body2">
+                {pending.initial
+                  ? t("editorNotifyInitial")
+                  : t("editorNotify", { count: pendingCount })}
+              </Typography>
+            }
+          />
+        )}
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={finish}
+          disabled={saving || finishing}
+          startIcon={finishing ? <CircularProgress size={14} color="inherit" /> : undefined}
+        >
           {t("editorDone")}
         </Button>
       </Box>
@@ -673,7 +500,7 @@ export default function TeamDisplay({
   registrationIds,
   coaches,
   slugMap = {},
-  currentUserTeamIndex,
+  viewerMarks,
   editMode = false,
   isEnded = false,
   onExitEditMode,
@@ -686,13 +513,32 @@ export default function TeamDisplay({
   athletes,
   onEnterEditMode,
   beforeGenerate,
+  levels: givenLevels,
 }: Props) {
   const t = useTranslations("trainings");
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const { openConfirm, ConfirmDialog } = useConfirmDialog();
+
+  // Livello stimato degli iscritti: solo allenatori e admin (la GET risponde
+  // 403 a tutti gli altri). Si richiede quando cambiano gli iscritti.
+  const levelsQuery = useQuery({
+    // Gli id, non il numero: uno che esce e uno che entra lasciano il numero uguale.
+    queryKey: ["team-levels", sessionId, [...(registrationIds ?? [])].sort().join(",")],
+    queryFn: async (): Promise<TeamLevels> => {
+      const res = await fetch(`/api/teams/${sessionId}/levels`);
+      if (!res.ok) throw new Error(await readError(res));
+      return (await res.json()).levels;
+    },
+    enabled: !!isStaff && !!teams && !givenLevels,
+    staleTime: 60_000,
+    retry: false,
+  });
+  const levels = givenLevels ?? (isStaff ? levelsQuery.data : undefined);
+  const bands = levels
+    ? Object.fromEntries(Object.entries(levels).map(([id, l]) => [id, l.band]))
+    : undefined;
 
   async function handleGenerate() {
     setGenerating(true);
@@ -701,18 +547,16 @@ export default function TeamDisplay({
       const res = await fetch(`/api/teams/${sessionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ numTeams }),
+        // "Ricrea da capo" tiene il numero di squadre salvato: lo stato locale
+        // nasce prima che le squadre arrivino e resterebbe a 2.
+        body: JSON.stringify({ numTeams: teams?.numTeams ?? numTeams }),
       });
-      if (res.ok) {
-        const data: TeamsData = await res.json();
-        onTeamsGenerated(data);
-        setNumTeams(data.numTeams);
-        onExitEditMode?.();
-        showToast({ message: "Squadre create con successo!", severity: "success" });
-      } else {
-        const err = await res.json().catch(() => ({}));
-        showToast({ message: err.error ?? "Errore nella creazione", severity: "error" });
-      }
+      if (!res.ok) throw new Error(await readError(res));
+      const data: TeamsData = await res.json();
+      onTeamsGenerated(data);
+      setNumTeams(data.numTeams);
+      onExitEditMode?.();
+      showToast({ message: "Squadre create con successo!", severity: "success" });
     } catch (err) {
       showToast({
         message: errorText(err, "Qualcosa non ha funzionato. Riprova."),
@@ -754,19 +598,45 @@ export default function TeamDisplay({
     }
   }
 
-  // Confronta il set di registration ID nelle squadre con quello attuale
-  const registrationsChanged = (() => {
-    if (!teams || !registrationIds) return false;
-    const inTeams = new Set([
-      ...teams.teamA.map((a) => a.id),
-      ...teams.teamB.map((a) => a.id),
-      ...(teams.teamC ?? []).map((a) => a.id),
-    ]);
-    const current = new Set(registrationIds);
-    if (inTeams.size !== current.size) return true;
-    for (const id of current) if (!inTeams.has(id)) return true;
-    return false;
-  })();
+  // Chi è iscritto ma non in squadra (arrivato dopo) e chi è in squadra ma
+  // non più iscritto (o segnato assente): si sistemano senza ricreare (UX-54).
+  const inTeams = assignmentOf(teams);
+  const currentIds = new Set(registrationIds ?? []);
+  const missingIds = registrationIds?.filter((id) => !inTeams[id]) ?? [];
+  const removedCount = registrationIds
+    ? Object.keys(inTeams).filter((id) => !currentIds.has(id)).length
+    : 0;
+  const registrationsChanged = !!teams && (missingIds.length > 0 || removedCount > 0);
+  const athleteName = new Map((athletes ?? []).map((a) => [a.id, a.name]));
+  const missingNames = missingIds.flatMap((id) => athleteName.get(id) ?? []);
+
+  async function handleAddLate() {
+    setGenerating(true);
+    try {
+      // Come per la creazione: le presenze appena segnate prima, così il
+      // server toglie dalle squadre chi è assente.
+      await beforeGenerate?.();
+      const res = await fetch(`/api/teams/${sessionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "add" }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      onTeamsGenerated(await res.json());
+      showToast({ message: t("teamsLateDone"), severity: "success" });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function confirmRecreate() {
+    openConfirm(t("teamsRecreateConfirmTitle"), t("teamsRecreateConfirmBody"), handleGenerate, {
+      confirmLabel: t("teamsRecreateConfirm"),
+      confirmColor: "primary",
+    });
+  }
 
   if (restricted) {
     return (
@@ -882,27 +752,61 @@ export default function TeamDisplay({
 
   return (
     <Box>
-      {/* Avviso iscritti cambiati (solo staff, non in modalità modifica) */}
+      {ConfirmDialog}
+      {/* Iscritti cambiati (solo staff, non in modifica): prima si aggiunge
+          chi manca senza toccare gli altri, ricreare è la seconda scelta. */}
       {isStaff && registrationsChanged && !editMode && (
-        <Alert
-          severity="warning"
-          icon={<WarningAmberIcon fontSize="inherit" />}
-          sx={{ mb: 2 }}
-          action={
+        <Alert severity="warning" icon={<WarningAmberIcon fontSize="inherit" />} sx={{ mb: 2 }}>
+          {missingIds.length > 0 && (
+            <Typography variant="body2">
+              {missingNames.length === missingIds.length
+                ? t("teamsLateMissing", {
+                    count: missingIds.length,
+                    names: missingNames.join(", "),
+                  })
+                : t("teamsLateMissingCount", { count: missingIds.length })}
+            </Typography>
+          )}
+          {removedCount > 0 && (
+            <Typography variant="body2">
+              {t("teamsLateRemoved", { count: removedCount })}
+            </Typography>
+          )}
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
             <Button
               color="warning"
               size="small"
-              variant="outlined"
-              onClick={handleGenerate}
+              variant="contained"
+              onClick={handleAddLate}
               disabled={generating}
               startIcon={generating ? <CircularProgress size={14} color="inherit" /> : undefined}
+              sx={{ minHeight: 40 }}
             >
-              {generating ? "..." : t("teamsRecreate")}
+              {missingIds.length > 0 ? t("teamsLateAdd") : t("teamsLateUpdate")}
             </Button>
-          }
-        >
-          {t("teamsChanged")}
+            <Button
+              color="warning"
+              size="small"
+              variant="text"
+              onClick={confirmRecreate}
+              disabled={generating}
+              sx={{ minHeight: 40 }}
+            >
+              {t("teamsRecreateFromScratch")}
+            </Button>
+          </Box>
         </Alert>
+      )}
+
+      {levels && !editMode && (
+        <TeamBalanceBar
+          teams={[
+            teams.teamA ?? [],
+            teams.teamB ?? [],
+            ...((teams.numTeams ?? (teams.teamC?.length ? 3 : 2)) === 3 ? [teams.teamC ?? []] : []),
+          ]}
+          levels={levels}
+        />
       )}
 
       {editMode ? (
@@ -910,13 +814,13 @@ export default function TeamDisplay({
           teams={teams}
           sessionId={sessionId}
           athletes={athletes}
+          levels={levels}
+          isEnded={isEnded}
           onTeamsUpdated={(t) => onTeamsGenerated(t)}
           onDone={() => onExitEditMode?.()}
         />
-      ) : isDesktop && !teams.teamC?.length ? (
-        <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
-        <MobileTeamTabs teams={teams} slugMap={slugMap} defaultTab={currentUserTeamIndex} />
+        <TeamsView teams={teams} slugMap={slugMap} viewerMarks={viewerMarks} bands={bands} />
       )}
 
       {/* Allenatori presenti */}

@@ -129,11 +129,13 @@ Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando
 
 Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Dei riaudit non resta nulla da fare: il passo successivo, su quel fronte, è un nuovo riaudit.
 
-In lista c'è una funzione nuova, chiesta dal committente il 07/10/2026 (ondata 6, non nasce da un riaudit):
+Ondata 6: richieste del committente che non nascono da un riaudit (UX-52 del 07/10/2026, UX-53 e UX-54 del 26/10/2026):
 
-| Ticket                                        | Titolo                                           | Stima | Dipende da | In attesa di |
-| --------------------------------------------- | ------------------------------------------------ | ----- | ---------- | ------------ |
-| [UX-52](tickets/UX-52-album-foto-da-drive.md) | Album foto da una cartella Google Drive (fase 1) | L     |            |              |
+| Ticket                                                      | Titolo                                                                  | Stima | Dipende da | In attesa di |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------- | ----- | ---------- | ------------ |
+| [UX-52](tickets/UX-52-album-foto-da-drive.md)               | Album foto da una cartella Google Drive (fase 1)                        | L     |            |              |
+| [UX-53](tickets/UX-53-squadre-allenamento-a-specchio.md)    | Squadre dell'allenamento a specchio, anche su telefono                  | S     |            |              |
+| [UX-54](tickets/UX-54-ritardatari-ed-equilibrio-squadre.md) | Ritardatari nelle squadre senza avvisare tutti, equilibrio per lo staff | M     | UX-53      |              |
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

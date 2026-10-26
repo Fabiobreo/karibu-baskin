@@ -15,6 +15,9 @@ vi.mock("@/lib/db", () => ({
     child: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    user: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 
@@ -38,7 +41,7 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { GET, POST, DELETE } from "./route";
+import { GET, POST, PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
@@ -48,6 +51,7 @@ type PrismaMock = {
   registration: { findMany: Mock };
   trainingSession: { update: Mock; findUnique: Mock };
   child: { findMany: Mock };
+  user: { findMany: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
@@ -277,6 +281,126 @@ describe("POST /api/teams/[sessionId]", () => {
     await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalledOnce());
     const [userIds] = mockCreateTargeted.mock.calls[0] as [string[], unknown];
     expect(userIds).not.toContain("u7");
+  });
+});
+
+describe("POST /api/teams/[sessionId] · avvisi dopo la prima volta (UX-54)", () => {
+  const future = {
+    title: "Allenamento Test",
+    dateSlug: "2025-01-15",
+    date: new Date(Date.now() + 86_400_000),
+    endTime: null,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.trainingSession.update.mockResolvedValue({});
+    p.child.findMany.mockResolvedValue([]);
+    p.user.findMany.mockImplementation(({ where }: { where: { id: { in: string[] } } }) =>
+      Promise.resolve(where.id.in.map((id) => ({ id, name: `Nome ${id}` })))
+    );
+  });
+
+  it("ricreare con gli stessi iscritti non avvisa nessuno", async () => {
+    p.registration.findMany.mockResolvedValue(athletes);
+    p.trainingSession.findUnique.mockResolvedValue({ ...future, teams: null });
+    const first = await (await POST(makePost(), mockParams)).json();
+    await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalledOnce());
+
+    mockCreateTargeted.mockClear();
+    p.trainingSession.findUnique.mockResolvedValue({ ...future, teams: first });
+    await POST(makePost(), mockParams);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(mockCreateTargeted).not.toHaveBeenCalled();
+  });
+
+  it("aggiunge chi si è iscritto dopo senza spostare nessuno e avvisa solo lui", async () => {
+    const late = { ...athletes[2], id: "r9", name: "Nuovo", role: 3, userId: "u9" };
+    p.registration.findMany.mockResolvedValue([...athletes, late]);
+    const before = {
+      teamA: [athletes[0], athletes[2], athletes[4]].map(({ id, name, role }) => ({
+        id,
+        name,
+        role,
+      })),
+      teamB: [athletes[1], athletes[3], athletes[5]].map(({ id, name, role }) => ({
+        id,
+        name,
+        role,
+      })),
+      numTeams: 2,
+      generated: true,
+    };
+    p.trainingSession.findUnique.mockResolvedValue({ ...future, teams: before });
+
+    const res = await POST(makePost({ mode: "add" }), mockParams);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    // Il ruolo 3 mancava ai Neri: il nuovo va lì, gli altri restano dove sono.
+    expect(json.teamA.map((a: { id: string }) => a.id)).toEqual(["r1", "r3", "r5"]);
+    expect(json.teamB.map((a: { id: string }) => a.id)).toEqual(["r2", "r4", "r6", "r9"]);
+
+    await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalledOnce());
+    const [ids, payload] = mockCreateTargeted.mock.calls[0] as [string[], { body: string }];
+    expect(ids).toEqual(["u9"]);
+    expect(payload.body).toMatch(/^Sei nei Neri/);
+  });
+
+  it("con tutti gli iscritti andati via, aggiornare toglie i nomi rimasti", async () => {
+    p.registration.findMany.mockResolvedValue([]);
+    p.trainingSession.findUnique.mockResolvedValue({
+      ...future,
+      teams: { teamA: [{ id: "r1", name: "Alice", role: 1 }], teamB: [], numTeams: 2 },
+    });
+    const res = await POST(makePost({ mode: "add" }), mockParams);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.teamA).toEqual([]);
+    expect(json.teamB).toEqual([]);
+  });
+
+  it("parte dall'ultimo avviso: una modifica a mano non avvisata arriva con la squadra successiva", async () => {
+    const late = { ...athletes[2], id: "r9", name: "Nuovo", role: 3, userId: "u9" };
+    p.registration.findMany.mockResolvedValue([...athletes, late]);
+    const pick = (list: typeof athletes) => list.map(({ id, name, role }) => ({ id, name, role }));
+    p.trainingSession.findUnique.mockResolvedValue({
+      ...future,
+      teams: {
+        // Alice spostata a mano nei Neri, uscendo senza "Fatto".
+        teamA: pick([athletes[2], athletes[4]]),
+        teamB: pick([athletes[0], athletes[1], athletes[3], athletes[5]]),
+        numTeams: 2,
+        notified: { r1: "teamA", r3: "teamA", r5: "teamA", r2: "teamB", r4: "teamB", r6: "teamB" },
+      },
+    });
+    const res = await POST(makePost({ mode: "add" }), mockParams);
+    const json = await res.json();
+    expect(json.notified.r1).toBe("teamB");
+    await vi.waitFor(() => expect(mockCreateTargeted).toHaveBeenCalled());
+    const notified = mockCreateTargeted.mock.calls.flatMap(([ids]) => ids as string[]);
+    expect(notified.sort()).toEqual(["u1", "u9"]);
+  });
+
+  it("la PUT tiene l'ultimo avviso salvato e ignora quello del browser", async () => {
+    const notified = { r1: "teamA", r2: "teamB" };
+    p.trainingSession.findUnique.mockResolvedValue({ teams: { teamA: [], teamB: [], notified } });
+    const res = await PUT(
+      new NextRequest("http://localhost/api/teams/sess-1", {
+        method: "PUT",
+        body: JSON.stringify({ teamA: [], teamB: [], notified: {} }),
+      }),
+      mockParams
+    );
+    expect(res.status).toBe(200);
+    expect(p.trainingSession.update.mock.calls[0][0].data.teams.notified).toEqual(notified);
+  });
+
+  it("aggiungere senza squadre salvate risponde 400", async () => {
+    p.registration.findMany.mockResolvedValue(athletes);
+    p.trainingSession.findUnique.mockResolvedValue({ ...future, teams: null });
+    const res = await POST(makePost({ mode: "add" }), mockParams);
+    expect(res.status).toBe(400);
   });
 });
 

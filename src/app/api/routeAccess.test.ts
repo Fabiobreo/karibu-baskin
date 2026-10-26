@@ -79,6 +79,8 @@ const ROUTES: Record<string, Access> = {
   "sessions/[sessionId]/match-results": "public",
   suggestions: "staff",
   "teams/[sessionId]": "member",
+  // Livello stimato degli iscritti (UX-54): solo allenatori e admin.
+  "teams/[sessionId]/levels": "staff",
   "test-login": "dev",
   users: "admin",
   "users/[userId]/season-stats": "public",

@@ -332,6 +332,7 @@ export default function TrainingCloseForm({
           {/* ── Squadre: servono per registrare le partitelle ── */}
           <AdminSessionTeams
             sessionId={sessionId}
+            isEnded
             sessionTitle={title}
             sessionDate={date}
             initialTeams={teams}

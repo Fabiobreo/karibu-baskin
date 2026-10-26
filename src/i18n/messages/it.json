@@ -1597,7 +1597,41 @@
     "showMore": "Mostra altri {count}",
     "nonePastSeason": "Nessun allenamento concluso in questa stagione.",
     "seasonsLabel": "Stagione",
-    "familyTeamSelf": "Tu · {team}"
+    "familyTeamSelf": "Tu · {team}",
+    "teamsVersus": "vs",
+    "viewerSelf": "Tu",
+    "viewerFamily": "Famiglia",
+    "teamsLateMissing": "{count, plural, one {# iscritto non è in squadra} other {# iscritti non sono in squadra}}: {names}",
+    "teamsLateMissingCount": "{count, plural, one {# iscritto non è in squadra} other {# iscritti non sono in squadra}}",
+    "teamsLateRemoved": "{count, plural, one {# giocatore in squadra non è più iscritto} other {# giocatori in squadra non sono più iscritti}}",
+    "teamsLateAdd": "Aggiungili alle squadre",
+    "teamsLateUpdate": "Aggiorna le squadre",
+    "teamsLateDone": "Squadre aggiornate",
+    "teamsRecreateFromScratch": "Ricrea da capo",
+    "teamsRecreateConfirmTitle": "Ricreare le squadre?",
+    "teamsRecreateConfirmBody": "Le squadre verranno rifatte da zero. L'avviso arriva solo a chi cambia squadra.",
+    "teamsRecreateConfirm": "Ricrea",
+    "editorNotify": "Avvisa chi è entrato o ha cambiato squadra ({count})",
+    "editorNotifyInitial": "Avvisa gli iscritti che le squadre sono pronte",
+    "editorNotified": "Avviso inviato",
+    "balanceTitle": "Equilibrio delle squadre",
+    "balanceEven": "Squadre equilibrate",
+    "balanceFavourite": "In vantaggio: {team}",
+    "balanceStrength": "forza {values}",
+    "balanceTooFew": "Forza e percentuale si vedono con almeno {min} giocatori per squadra",
+    "balancePreview": "Spostandoli in {team}: {result}",
+    "balanceUnrated": "{count, plural, one {# giocatore senza livello stimato, contato} other {# giocatori senza livello stimato, contati}} al livello di partenza",
+    "bandLegendNone": "nessun segno: livello non ancora stimato",
+    "band": {
+      "alta": "Terzo più alto del suo ruolo",
+      "media": "Terzo centrale del suo ruolo",
+      "bassa": "Terzo più basso del suo ruolo"
+    },
+    "bandShort": {
+      "alta": "alto",
+      "media": "centrale",
+      "bassa": "basso"
+    }
   },
   "home": {
     "heroSubtitle": "Sport per tutti. Alleniamoci insieme, senza distinzioni.",

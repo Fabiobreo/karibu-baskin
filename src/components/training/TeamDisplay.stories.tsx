@@ -3,6 +3,22 @@ import { fn } from "storybook/test";
 import TeamDisplay from "./TeamDisplay";
 import { teamsTwo, teamsThree, teamsUnbalanced } from "@/stories/fixtures/teams";
 import { athletes } from "@/stories/fixtures/athletes";
+import type { TeamLevels } from "./TeamBalanceBar";
+
+// Livelli finti per lo staff (UX-54): gli Arancioni un po' più forti.
+const demoLevels: TeamLevels = {
+  "ath-1": { mu: 29, sigma: 4, band: "alta" },
+  "ath-2": { mu: 24, sigma: 4, band: "media" },
+  "ath-3": { mu: 27, sigma: 5, band: "alta" },
+  "ath-4": { mu: 21, sigma: 5, band: "bassa" },
+  "ath-5": { mu: 26, sigma: 4, band: "media" },
+  "ath-6": { mu: 25, sigma: 4, band: "media" },
+  "ath-7": { mu: 28, sigma: 4, band: "alta" },
+  "ath-8": { mu: 22, sigma: 5, band: "bassa" },
+  "ath-9": { mu: 27, sigma: 4, band: "media" },
+};
+const lateAthlete = { id: "ath-late", name: "Anna Pozza", role: 3 };
+const allAthletes = [...teamsTwo.teamA, ...teamsTwo.teamB, lateAthlete];
 
 const meta: Meta<typeof TeamDisplay> = {
   title: "Componenti/TeamDisplay",
@@ -95,7 +111,7 @@ export const UtenteInSquadra: Story = {
   name: "Utente nella sua squadra (banner)",
   args: {
     teams: teamsTwo,
-    currentUserTeamIndex: 1,
+    viewerMarks: { [athletes.centrale2.id]: "self" },
     registrationIds: [athletes.centrale2.id, athletes.ala2.id],
   },
 };
@@ -108,5 +124,30 @@ export const ModalitaModifica: Story = {
     teams: teamsTwo,
     isStaff: true,
     editMode: true,
+  },
+};
+
+// ── Staff: ritardatari ed equilibrio (UX-54) ──────────────────────────────────
+
+export const StaffRitardatarioEquilibrio: Story = {
+  name: "Staff: ritardatario ed equilibrio",
+  args: {
+    teams: teamsTwo,
+    isStaff: true,
+    levels: demoLevels,
+    athletes: allAthletes,
+    registrationIds: allAthletes.map((a) => a.id),
+  },
+};
+
+export const StaffModificaConEquilibrio: Story = {
+  name: "Staff: modifica con equilibrio",
+  args: {
+    teams: teamsTwo,
+    isStaff: true,
+    editMode: true,
+    levels: demoLevels,
+    athletes: allAthletes,
+    registrationIds: allAthletes.map((a) => a.id),
   },
 };

@@ -37,6 +37,7 @@ import {
 } from "@/lib/rating/ratingTrend";
 import type { TrackedAthlete, TrackerSummary } from "@/lib/rating/developmentData";
 import { ordinal, TRUESKILL } from "@/lib/rating/trueskill";
+import { levelBand, type BandThresholds, type LevelBand } from "@/lib/rating/levelBands";
 import RoleBadge from "@/components/common/RoleBadge";
 import {
   ROLE_GROUPS,
@@ -50,7 +51,7 @@ import {
 } from "@/lib/rating/roleGroups";
 import { RADIUS } from "@/lib/radius";
 
-type SkillBucket = "alta" | "media" | "bassa";
+type SkillBucket = LevelBand;
 
 // Le fasce dicono la posizione nella lista, non un giudizio sulla persona
 // (UX-40): servono solo a filtrare, non compaiono mai accanto a un nome.
@@ -159,11 +160,12 @@ export default function DevelopmentTracker({ athletes, summary }: DevelopmentTra
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   // Terzi dentro il gruppo di ruolo: sulla rosa intera li dominerebbero i ruoli alti.
+  // Stessa regola delle fasce nelle squadre degli allenamenti (`levelBand`, UX-54).
   function skillBucketOf(r: DevelopmentRowData): SkillBucket {
-    const t = groupStats[roleGroupOf(r.sportRole)].terciles;
-    if (!t) return "media";
-    const ord = ordinal(r);
-    return ord >= t.hi ? "alta" : ord < t.lo ? "bassa" : "media";
+    const thresholds = Object.fromEntries(
+      ROLE_GROUPS.map((g) => [g, groupStats[g].terciles])
+    ) as BandThresholds;
+    return levelBand(r.sportRole, r, thresholds);
   }
 
   const matching = rows.filter((r) => {

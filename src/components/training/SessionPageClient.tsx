@@ -14,6 +14,7 @@ import RegistrationSummary, {
   type MyRegistration,
 } from "@/components/training/RegistrationSummary";
 import TeamDisplay, { type TeamsData } from "@/components/training/TeamDisplay";
+import type { ViewerMarks } from "@/components/training/TeamBoard";
 import AllenamentoHero from "@/components/training/AllenamentoHero";
 import AllenamentoEndedView from "@/components/training/AllenamentoEndedView";
 import OpenRegistrationsAlert from "@/components/training/OpenRegistrationsAlert";
@@ -342,8 +343,12 @@ export default function SessionPageClient({
     !hasUnregisteredChildren &&
     (selfRegistered || !selfCanRegister);
 
-  const TEAM_KEYS = ["teamA", "teamB", "teamC"] as const;
-  const myTeamIndex = myTeams[0] ? Math.max(0, TEAM_KEYS.indexOf(myTeams[0].key)) : 0;
+  // "Tu" / "Famiglia" sui nomi del tabellone delle squadre (UX-53).
+  const viewerMarks: ViewerMarks = Object.fromEntries(
+    mine
+      .filter((r) => !r.registeredAsCoach)
+      .map((r) => [r.id, isSelf(r) ? "self" : "family"] as const)
+  );
 
   const rosterProps = {
     registrations,
@@ -366,15 +371,21 @@ export default function SessionPageClient({
     onManage: isStaff ? () => setManagingRoster(true) : undefined,
   };
 
+  // Chi è segnato assente il server lo toglie dalle squadre: non è un
+  // "iscritto che manca" da segnalare allo staff.
+  const teamAthletes = registrations.filter((r) => !r.registeredAsCoach && r.attended !== false);
   const teamDisplayProps = {
     sessionId,
     isStaff,
-    registrationIds: registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id),
+    isEnded,
+    registrationIds: teamAthletes.map((r) => r.id),
     coaches: registrations
       .filter((r) => r.registeredAsCoach)
       .map((r) => ({ id: r.id, name: r.name })),
+    // Per l'editor dello staff: "Da assegnare" e i nomi di chi si è iscritto dopo (UX-54).
+    athletes: teamAthletes.map((r) => ({ id: r.id, name: r.name, role: r.role })),
     slugMap,
-    currentUserTeamIndex: myTeamIndex,
+    viewerMarks,
     editMode: editingTeams,
     onExitEditMode: () => setEditingTeams(false),
     teams,

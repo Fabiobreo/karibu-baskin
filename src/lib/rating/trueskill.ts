@@ -67,7 +67,7 @@ function erf(x: number): number {
 }
 
 /** Funzione di ripartizione normale standard Φ(x). */
-function normCdf(x: number): number {
+export function normCdf(x: number): number {
   return 0.5 * (1 + erf(x / SQRT_2));
 }
 

@@ -1597,7 +1597,41 @@
     "showMore": "Show {count} more",
     "nonePastSeason": "No finished sessions this season.",
     "seasonsLabel": "Season",
-    "familyTeamSelf": "You · {team}"
+    "familyTeamSelf": "You · {team}",
+    "teamsVersus": "vs",
+    "viewerSelf": "You",
+    "viewerFamily": "Family",
+    "teamsLateMissing": "{count, plural, one {# player is not on a team} other {# players are not on a team}}: {names}",
+    "teamsLateMissingCount": "{count, plural, one {# player is not on a team} other {# players are not on a team}}",
+    "teamsLateRemoved": "{count, plural, one {# player on a team is no longer registered} other {# players on a team are no longer registered}}",
+    "teamsLateAdd": "Add them to the teams",
+    "teamsLateUpdate": "Update the teams",
+    "teamsLateDone": "Teams updated",
+    "teamsRecreateFromScratch": "Recreate from scratch",
+    "teamsRecreateConfirmTitle": "Recreate the teams?",
+    "teamsRecreateConfirmBody": "The teams will be made again from scratch. Only players who change team get a notification.",
+    "teamsRecreateConfirm": "Recreate",
+    "editorNotify": "Notify who joined or changed team ({count})",
+    "editorNotifyInitial": "Tell registered players the teams are ready",
+    "editorNotified": "Notification sent",
+    "balanceTitle": "Team balance",
+    "balanceEven": "Teams are balanced",
+    "balanceFavourite": "Favourite: {team}",
+    "balanceStrength": "strength {values}",
+    "balanceTooFew": "Strength and percentage show with at least {min} players per team",
+    "balancePreview": "Moving them to {team}: {result}",
+    "balanceUnrated": "{count, plural, one {# player without an estimated level, counted} other {# players without an estimated level, counted}} at the starting level",
+    "bandLegendNone": "no mark: level not estimated yet",
+    "band": {
+      "alta": "Top third of their role",
+      "media": "Middle third of their role",
+      "bassa": "Bottom third of their role"
+    },
+    "bandShort": {
+      "alta": "top",
+      "media": "middle",
+      "bassa": "bottom"
+    }
   },
   "home": {
     "heroSubtitle": "Sport for everyone. Let's train together, without distinctions.",
