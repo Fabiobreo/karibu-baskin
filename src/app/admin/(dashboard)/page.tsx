@@ -10,7 +10,6 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import DownloadIcon from "@mui/icons-material/Download";
 import HistoryIcon from "@mui/icons-material/History";
 import TableChartIcon from "@mui/icons-material/TableChart";
-import ShieldIcon from "@mui/icons-material/Shield";
 import ArticleIcon from "@mui/icons-material/Article";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CollectionsIcon from "@mui/icons-material/Collections";
@@ -172,7 +171,6 @@ export default async function AdminPage() {
         <NavSection title="Anagrafiche">
           <NavLink href="/admin/squadre" icon={<GroupsIcon />} label="Squadre" />
           <NavLink href="/admin/gironi" icon={<TableChartIcon />} label="Gironi" />
-          <NavLink href="/admin/avversarie" icon={<ShieldIcon />} label="Squadre avversarie" />
         </NavSection>
 
         <NavSection title="Strumenti">

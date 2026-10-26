@@ -84,7 +84,7 @@ interface OpponentProfileDialogProps {
   onSaved: (sheet: OpponentSheet) => void;
   /**
    * La partita da cui si è aperta la scheda, se è già iniziata: in cima c'è la
-   * sua nota. Senza (da `/admin/avversarie`, o prima di giocare) solo la scheda.
+   * sua nota. Senza (da `/admin/squadre?tab=avversarie`, o prima di giocare) solo la scheda.
    */
   match?: OpponentSheetMatch | null;
   /** Le note delle partite contro questa avversaria: il diario della scheda. */
@@ -108,7 +108,7 @@ function parseProfile(current: OpponentProfile | null): Record<string, CategoryA
 
 /**
  * Scheda di un'avversaria: forza complessiva, valutazione per ruolo e nota.
- * Sta sulla squadra, quindi si apre da `/admin/avversarie` e da qualunque
+ * Sta sulla squadra, quindi si apre da `/admin/squadre?tab=avversarie` e da qualunque
  * partita contro di lei, giocata o no. Aperta da una partita giocata, in cima
  * c'è la nota di quella partita; la scheda si salva solo se la si è toccata,
  * così "aggiornata il" dice davvero quando è cambiata.

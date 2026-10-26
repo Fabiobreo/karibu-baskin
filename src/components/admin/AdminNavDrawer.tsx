@@ -23,7 +23,6 @@ import CollectionsIcon from "@mui/icons-material/Collections";
 import PersonIcon from "@mui/icons-material/Person";
 import GroupsIcon from "@mui/icons-material/Groups";
 import TableChartIcon from "@mui/icons-material/TableChart";
-import ShieldIcon from "@mui/icons-material/Shield";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import InsightsIcon from "@mui/icons-material/Insights";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -46,7 +45,6 @@ const ICONS: Record<string, ReactNode> = {
   "/admin/utenti": <PersonIcon />,
   "/admin/squadre": <GroupsIcon />,
   "/admin/gironi": <TableChartIcon />,
-  "/admin/avversarie": <ShieldIcon />,
   "/admin/sviluppo": <TrendingUpIcon />,
   "/admin/metriche": <InsightsIcon />,
   "/admin/esporta": <DownloadIcon />,

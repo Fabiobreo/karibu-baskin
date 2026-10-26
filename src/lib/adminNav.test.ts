@@ -32,7 +32,6 @@ describe("activeAdminSection", () => {
 
   it("non confonde sezioni che iniziano allo stesso modo", () => {
     expect(activeAdminSection("/admin/avvisi")?.label).toBe("Avviso urgente");
-    expect(activeAdminSection("/admin/avversarie")?.label).toBe("Squadre avversarie");
   });
 
   it("non assegna una sezione al login né alle pagine pubbliche", () => {

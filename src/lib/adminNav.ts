@@ -46,7 +46,6 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Utenti", href: "/admin/utenti", group: "anagrafiche", inBar: true, director: true },
   { label: "Squadre", href: "/admin/squadre", group: "anagrafiche", inBar: true, director: true },
   { label: "Gironi", href: "/admin/gironi", group: "anagrafiche" },
-  { label: "Squadre avversarie", href: "/admin/avversarie", group: "anagrafiche" },
   { label: "Sviluppo giocatori", href: "/admin/sviluppo", group: "strumenti" },
   { label: "Metriche", href: "/admin/metriche", group: "strumenti", director: true },
   { label: "Esporta dati", href: "/admin/esporta", group: "strumenti", director: true },
