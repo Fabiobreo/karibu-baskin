@@ -227,14 +227,22 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                 {filtered ? "Nessuno con questi filtri." : "Ancora nessuna risposta."}
               </Typography>
             ) : (
-              <Stack divider={<Divider flexItem />}>
-                {rows.map((r) => {
+              <Stack>
+                {rows.map((r, i) => {
                   const meta = statusMeta(r);
                   const isGuest = r.kind === "guest";
+                  // Famiglie separate da uno stacco più marcato; dentro la
+                  // famiglia una riga sottile.
+                  const newFamily = i > 0 && rows[i - 1].family !== r.family;
                   return (
                     <Box
                       key={r.id}
                       sx={{
+                        ...(i > 0 && {
+                          borderTop: newFamily ? 2 : 1,
+                          borderColor: "divider",
+                          mt: newFamily ? 1.5 : 0,
+                        }),
                         py: 1.25,
                         pl: isGuest && !filtered ? 3 : 0,
                         display: "flex",

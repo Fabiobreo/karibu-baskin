@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { splitOwnChild } from "@/lib/registrationSubjects";
 import { prisma } from "@/lib/db";
-import { guardianOf } from "@/lib/guardians";
+import { followedInNextAction, guardianOf } from "@/lib/guardians";
 import { familyTeams, type FamilyTeam } from "@/lib/trainingTeams";
 import { parseTeamsData } from "@/lib/schemas";
 import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
@@ -157,12 +157,16 @@ export const loadNextAction = cache(async function loadNextAction(
         teamMemberships: { select: { teamId: true } },
         // Un figlio con un account: ruolo e squadra sono quelli dell'account.
         user: { select: { sportRole: true, teamMemberships: { select: { teamId: true } } } },
+        guardians: { where: { userId }, select: { showInNextAction: true } },
       },
     }),
   ]);
   // La scheda figlio collegata al proprio account è la stessa persona, non un
   // figlio: come nel form d'iscrizione (`splitOwnChild`).
-  const { own, others } = splitOwnChild(children, userId);
+  const { own, others: allOthers } = splitOwnChild(children, userId);
+  // Un figlio con un account suo che il genitore ha scelto di non seguire qui:
+  // si occupa da solo delle sue cose, la card non lo propone.
+  const others = allOthers.filter(followedInNextAction);
   const selfRole = user?.sportRole ?? own?.sportRole ?? null;
 
   const subjects: Subject[] = [];
@@ -188,7 +192,7 @@ export const loadNextAction = cache(async function loadNextAction(
       teamIds: [...c.teamMemberships, ...(c.user?.teamMemberships ?? [])].map((m) => m.teamId),
     });
   }
-  const childIds = children.map((c) => c.id);
+  const childIds = [...(own ? [own.id] : []), ...others.map((c) => c.id)];
   // L'iscrizione di un figlio con un account sta sull'account (@/lib/person).
   const childOfAccount = new Map(others.flatMap((c) => (c.userId ? [[c.userId, c.id]] : [])));
   const mine = {

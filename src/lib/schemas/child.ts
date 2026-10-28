@@ -98,3 +98,6 @@ export const LinkRequestCreateSchema = z.object({
       "Devi confermare di essere il genitore/tutore legale e prestare il consenso al trattamento dei dati",
   }),
 });
+
+/** Il genitore vede le cose da fare per un figlio con un account suo? */
+export const ChildNextActionSchema = z.object({ show: z.boolean() });

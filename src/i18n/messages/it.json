@@ -245,6 +245,9 @@
     "avatarSaveError": "Immagine non salvata. Riprova.",
     "avatarRemoveError": "Errore nella rimozione dell'immagine",
     "avatarRemoved": "Immagine rimossa",
+    "showInNextAction": "Mostrami le cose da fare per {name}",
+    "showInNextActionHint": "Se lo spegni, {name} non compare più nella tua prossima cosa da fare né fra le disponibilità da dare: se ne occupa dal suo account. Puoi sempre iscrivere {name} dalla pagina dell'allenamento.",
+    "showInNextActionError": "Non è stato possibile salvare la scelta. Riprova.",
     "sharedWith": "Gestito anche da {names}",
     "removeFromMe": "Togli dal mio profilo",
     "childRemovedFromMe": "{name} non è più nel tuo profilo: resta a {names}"

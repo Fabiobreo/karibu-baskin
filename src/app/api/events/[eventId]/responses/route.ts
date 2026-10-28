@@ -43,6 +43,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { event, options, rows } = data;
   const lines = [
     csvRow([
+      "Famiglia",
       "Nome",
       "Tipo",
       "Ruolo Baskin",
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     ]),
     ...rows.map((r) =>
       csvRow([
+        r.family,
         r.name || "Esterno senza nome",
         KIND_IT[r.kind],
         r.sportRole != null ? sportRoleLabel(r.sportRole, r.sportRoleVariant) : "",

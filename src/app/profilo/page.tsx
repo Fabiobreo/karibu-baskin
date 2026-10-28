@@ -97,6 +97,7 @@ export default async function ProfiloPage({
       guardianOf: {
         orderBy: { createdAt: "asc" as const },
         select: {
+          showInNextAction: true,
           child: {
             select: {
               id: true,
@@ -208,19 +209,22 @@ export default async function ProfiloPage({
     ]);
 
   if (!user) redirect("/login");
-  const children = user.guardianOf.map(({ child: { guardians, user: account, ...child } }) => ({
-    ...child,
-    ...(account && {
-      sportRole: account.sportRole ?? child.sportRole,
-      sportRoleVariant: account.sportRole ? account.sportRoleVariant : child.sportRoleVariant,
-      gender: account.gender ?? child.gender,
-      birthDate: account.birthDate ?? child.birthDate,
-      teamMemberships: [...account.teamMemberships, ...child.teamMemberships],
-    }),
-    user: account ? { email: account.email, image: account.image } : null,
-    otherGuardians: guardians.map((g) => g.user.name ?? "?"),
-    pendingRequestId: sentLinkRequests.find((r) => r.childId === child.id)?.id ?? null,
-  }));
+  const children = user.guardianOf.map(
+    ({ showInNextAction, child: { guardians, user: account, ...child } }) => ({
+      ...child,
+      showInNextAction,
+      ...(account && {
+        sportRole: account.sportRole ?? child.sportRole,
+        sportRoleVariant: account.sportRole ? account.sportRoleVariant : child.sportRoleVariant,
+        gender: account.gender ?? child.gender,
+        birthDate: account.birthDate ?? child.birthDate,
+        teamMemberships: [...account.teamMemberships, ...child.teamMemberships],
+      }),
+      user: account ? { email: account.email, image: account.image } : null,
+      otherGuardians: guardians.map((g) => g.user.name ?? "?"),
+      pendingRequestId: sentLinkRequests.find((r) => r.childId === child.id)?.id ?? null,
+    })
+  );
   // Figli con account che non hanno ancora accettato: non hanno una scheda.
   const pendingLinks = sentLinkRequests
     .filter((r) => r.childId === null)

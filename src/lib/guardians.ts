@@ -35,6 +35,14 @@ export function familyRegistrationWhere(userId: string): Prisma.RegistrationWher
   };
 }
 
+/** Il genitore vede le cose da fare per questo figlio? Spegnibile solo se ha un account. */
+export function followedInNextAction(child: {
+  userId: string | null;
+  guardians: { showInNextAction: boolean }[];
+}): boolean {
+  return !child.userId || child.guardians.every((g) => g.showInNextAction);
+}
+
 /** `userId` è uno dei genitori di `childId`? */
 export async function isGuardian(userId: string, childId: string): Promise<boolean> {
   const link = await prisma.childGuardian.findUnique({

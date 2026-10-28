@@ -90,7 +90,9 @@ export async function loadHomeCallupStatus(
       },
       select: { matchId: true, userId: true, childId: true },
     }),
-    loadMyAvailabilityMatches(viewerId, viewerName, { from: now }),
+    // Il sollecito "manca la tua risposta" solo per chi si segue (i figli con un
+    // account suo possono essere esclusi dal genitore).
+    loadMyAvailabilityMatches(viewerId, viewerName, { from: now, followedOnly: true }),
   ]);
   const pending = new Set(
     availability.filter((m) => m.entities.some((e) => e.available === null)).map((m) => m.matchId)

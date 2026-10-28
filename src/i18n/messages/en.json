@@ -245,6 +245,9 @@
     "avatarSaveError": "Image not saved. Please try again.",
     "avatarRemoveError": "Error removing the image",
     "avatarRemoved": "Image removed",
+    "showInNextAction": "Show me the to-dos for {name}",
+    "showInNextActionHint": "If you turn this off, {name} no longer appears in your next thing to do or in the availabilities to give: they handle it from their own account. You can still register {name} from the training page.",
+    "showInNextActionError": "Could not save your choice. Please try again.",
     "sharedWith": "Also managed by {names}",
     "removeFromMe": "Remove from my profile",
     "childRemovedFromMe": "{name} is no longer in your profile: still managed by {names}"

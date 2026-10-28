@@ -56,9 +56,9 @@ export const MIN_CALLUPS = 6;
  */
 export const ROLE_GROUPS = [
   { key: "1-2", label: "Ruolo 1-2", roles: [1, 2] as number[], min: 3 },
-  { key: "3", label: "Ruolo 3", roles: [3] as number[], min: 2 },
-  { key: "4", label: "Ruolo 4", roles: [4] as number[], min: 1 },
-  { key: "5", label: "Ruolo 5", roles: [5] as number[], min: 1 },
+  { key: "3", label: "Ruolo 3", roles: [3] as number[], min: 3 },
+  { key: "4", label: "Ruolo 4", roles: [4] as number[], min: 2 },
+  { key: "5", label: "Ruolo 5", roles: [5] as number[], min: 3 },
 ] as const;
 
 export type RoleGroupKey = (typeof ROLE_GROUPS)[number]["key"];

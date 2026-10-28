@@ -11,6 +11,11 @@ import { prisma } from "@/lib/db";
  * aggiungere la stessa persona senza accorgersene: qui si segnalano gli
  * esterni con lo stesso nome di un altro esterno o di un partecipante.
  *
+ * Le righe sono raggruppate per famiglia (genitori vicino ai figli), con le
+ * famiglie che hanno almeno un "Ci sarò" in testa. La famiglia si ricava dai
+ * collegamenti genitore-figlio (`ChildGuardian`, `Child.userId`), come
+ * nell'RSVP: chi non ha collegamenti fa famiglia da solo.
+ *
  * Chi gioca: chi ha un ruolo Baskin (1-5), qualunque sia il ruolo nell'app. Un
  * genitore con un ruolo gioca; uno senza partecipa ma non gioca. Serve per le
  * partite di dimostrazione, dove conta sapere chi scende in campo.
@@ -31,6 +36,8 @@ export interface ResponseRow {
   respondedBy: string | null;
   /** Esterno con lo stesso nome di un altro esterno o di un partecipante. */
   possibleDuplicate: boolean;
+  /** Famiglia della riga: 1, 2, 3… nell'ordine dell'elenco. */
+  family: number;
   /** Ruolo Baskin: chi ce l'ha puo' giocare. Mai per gli esterni. */
   sportRole: number | null;
   sportRoleVariant: string | null;
@@ -73,6 +80,15 @@ export interface AttendanceInput {
   respondedBy: { name: string | null } | null;
 }
 
+/** Un collegamento genitore-figlio fra le persone dell'evento. */
+export interface GuardianLink {
+  childId: string;
+  /** Il genitore. */
+  userId: string;
+  /** L'account del figlio, se ne ha uno. */
+  childAccountId: string | null;
+}
+
 export interface SelectionInput {
   optionId: string;
   userId: string | null;
@@ -87,7 +103,8 @@ const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 export function summarizeResponses(
   options: { id: string; label: string }[],
   attendances: AttendanceInput[],
-  selections: SelectionInput[]
+  selections: SelectionInput[],
+  links: GuardianLink[] = []
 ): EventResponses {
   // Una sola riga per chi ha scheda figlio e account: vale la scheda, come
   // nell'RSVP. Una vecchia riga sull'account si scarta.
@@ -143,6 +160,7 @@ export function summarizeResponses(
       guestOf: a.guest ? (a.guest.addedBy.name ?? "—") : null,
       respondedBy: kind === "guest" || self ? null : (a.respondedBy?.name ?? null),
       possibleDuplicate: false,
+      family: 0,
       ...roleOf(a),
     };
   };
@@ -159,30 +177,100 @@ export function summarizeResponses(
     return guestNames.filter((x) => x === n).length > 1 || peopleNames.has(n);
   };
 
-  const byName = (a: ResponseRow, b: ResponseRow) =>
-    STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.name.localeCompare(b.name, "it");
+  const byName = (a: ResponseRow, b: ResponseRow) => a.name.localeCompare(b.name, "it");
 
-  // Esterni subito sotto chi li ha portati; quelli di chi non ha risposto in fondo.
-  const peopleRows = people.map(toRow).sort(byName);
+  // Famiglie: componenti connesse fra persone (u:account, c:scheda figlio).
+  const parent = new Map<string, string>();
+  const find = (k: string): string => {
+    let root = k;
+    while (parent.has(root) && parent.get(root) !== root) root = parent.get(root)!;
+    parent.set(k, root);
+    return root;
+  };
+  const union = (a: string, b: string) => {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra !== rb) parent.set(rb, ra);
+  };
+  const guardianKeys = new Set<string>();
+  for (const l of links) {
+    union(`c:${l.childId}`, `u:${l.userId}`);
+    if (l.childAccountId) union(`c:${l.childId}`, `u:${l.childAccountId}`);
+    guardianKeys.add(`u:${l.userId}`);
+  }
+  const personKey = (a: AttendanceInput) => {
+    if (a.childId) {
+      if (a.child?.userId) union(`c:${a.childId}`, `u:${a.child.userId}`);
+      return `c:${a.childId}`;
+    }
+    return `u:${a.userId}`;
+  };
+  // Prima si collegano tutte le chiavi, poi si leggono le radici.
+  const keyOf = new Map(people.map((a) => [a.id, personKey(a)]));
+  const isGuardianRow = (a: AttendanceInput) =>
+    guardianKeys.has(`u:${a.userId}`) ||
+    (!!a.child?.userId && guardianKeys.has(`u:${a.child.userId}`));
+
+  interface Family {
+    members: { row: ResponseRow; account: string | null; guardian: boolean }[];
+    guests: { row: ResponseRow; addedById: string }[];
+  }
+  const families = new Map<string, Family>();
+  const familyOf = (root: string) => {
+    let f = families.get(root);
+    if (!f) families.set(root, (f = { members: [], guests: [] }));
+    return f;
+  };
+  for (const a of people) {
+    familyOf(find(keyOf.get(a.id)!)).members.push({
+      row: toRow(a),
+      account: accountOf(a),
+      guardian: isGuardianRow(a),
+    });
+  }
+
+  // Esterni subito sotto chi li ha portati; quelli di chi non ha risposto in
+  // fondo alla sua famiglia, o in fondo all'elenco se non ne ha una.
   const guestRows = guests.map((g) => ({
     row: { ...toRow(g), possibleDuplicate: isDuplicate(g.guest!.name) },
     addedById: g.guest!.addedById,
   }));
+  const strayGuests: ResponseRow[] = [];
+  for (const g of guestRows) {
+    const root = find(`u:${g.addedById}`);
+    if (families.has(root)) families.get(root)!.guests.push(g);
+    else strayGuests.push(g.row);
+  }
+
+  // Dentro la famiglia prima i genitori, poi gli altri, per nome. Le famiglie
+  // con un "Ci sarò" (poi con un "Forse") in testa, poi per nome.
+  const ordered = [...families.values()].map((f) => {
+    f.members.sort((a, b) => Number(b.guardian) - Number(a.guardian) || byName(a.row, b.row));
+    const best = Math.min(...f.members.map((m) => STATUS_ORDER[m.row.status]));
+    return { f, best };
+  });
+  ordered.sort((a, b) => a.best - b.best || byName(a.f.members[0].row, b.f.members[0].row));
+
   const rows: ResponseRow[] = [];
-  const placed = new Set<string>();
-  for (const p of peopleRows) {
-    rows.push(p);
-    const account = accountOf(people.find((a) => a.id === p.id)!);
-    for (const g of guestRows) {
-      if (account && g.addedById === account && !placed.has(g.row.id)) {
-        rows.push(g.row);
-        placed.add(g.row.id);
+  ordered.forEach(({ f }, i) => {
+    const family = i + 1;
+    const placed = new Set<string>();
+    for (const m of f.members) {
+      rows.push({ ...m.row, family });
+      for (const g of f.guests) {
+        if (m.account && g.addedById === m.account && !placed.has(g.row.id)) {
+          rows.push({ ...g.row, family });
+          placed.add(g.row.id);
+        }
       }
     }
-  }
-  rows.push(...guestRows.filter((g) => !placed.has(g.row.id)).map((g) => g.row));
+    for (const g of f.guests) {
+      if (!placed.has(g.row.id)) rows.push({ ...g.row, family });
+    }
+  });
+  strayGuests.forEach((g, i) => rows.push({ ...g, family: ordered.length + i + 1 }));
 
-  const all = [...peopleRows, ...guestRows.map((g) => g.row)];
+  const all = rows;
   const totals = { GOING: 0, MAYBE: 0, NOT_GOING: 0, guests: guestRows.length };
   for (const r of all) totals[r.status] += 1;
 
@@ -257,5 +345,33 @@ export async function loadEventResponses(eventId: string) {
     }),
   ]);
   if (!event) return null;
-  return { event, ...summarizeResponses(event.options, attendances, selections) };
+
+  // Collegamenti genitore-figlio fra chi ha risposto, per raggruppare le famiglie.
+  const childIds = attendances.flatMap((a) => (a.childId ? [a.childId] : []));
+  const userIds = attendances.flatMap((a) =>
+    [a.userId, a.child?.userId].filter((id): id is string => !!id)
+  );
+  const links =
+    childIds.length + userIds.length === 0
+      ? []
+      : await prisma.childGuardian.findMany({
+          where: {
+            OR: [
+              { childId: { in: childIds } },
+              { userId: { in: userIds } },
+              { child: { userId: { in: userIds } } },
+            ],
+          },
+          select: { childId: true, userId: true, child: { select: { userId: true } } },
+        });
+
+  return {
+    event,
+    ...summarizeResponses(
+      event.options,
+      attendances,
+      selections,
+      links.map((l) => ({ childId: l.childId, userId: l.userId, childAccountId: l.child.userId }))
+    ),
+  };
 }

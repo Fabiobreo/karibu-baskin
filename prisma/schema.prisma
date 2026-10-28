@@ -227,6 +227,10 @@ model ChildGuardian {
   childId   String
   userId    String
   createdAt DateTime @default(now())
+  /// Il genitore vede le cose da fare per questo figlio (card "prossima cosa
+  /// da fare", disponibilità da dare). Spegnibile solo per un figlio con un
+  /// account suo, che se ne occupa da solo.
+  showInNextAction Boolean @default(true)
 
   child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -12,7 +12,7 @@
 import { prisma } from "@/lib/db";
 import { withMixedTeams } from "@/lib/matches/mixedTeam";
 import type { AvailabilityMatch } from "@/components/matches/MieDisponibilitaClient";
-import { guardianOf } from "@/lib/guardians";
+import { followedInNextAction, guardianOf } from "@/lib/guardians";
 
 type PersonKey = `user:${string}` | `child:${string}`;
 
@@ -33,6 +33,7 @@ async function loadEligibility(userId: string) {
         userId: true,
         teamMemberships: team,
         user: { select: { teamMemberships: team } },
+        guardians: { where: { userId }, select: { showInNextAction: true } },
       },
     }),
   ]);
@@ -60,10 +61,21 @@ async function loadEligibility(userId: string) {
       id: c.id,
       name: c.name,
       accountId: c.userId,
+      followed: followedInNextAction(c),
       teamIds: teamIdsByPerson.get(`child:${c.id}`) ?? [],
     })),
     allTeamIds,
   };
+}
+
+interface MatchesOptions {
+  from?: Date;
+  /**
+   * Solo le persone di cui l'utente segue le cose da fare: fuori i figli con un
+   * account che il genitore ha scelto di non seguire. Per i contatori e i
+   * solleciti; la pagina delle disponibilità li mostra tutti.
+   */
+  followedOnly?: boolean;
 }
 
 /** La prima squadra della persona che gioca la partita (le proprie prima delle miste). */
@@ -74,7 +86,7 @@ function teamInMatch(personTeamIds: string[], teamsInMatch: string[]): string | 
 export async function loadMyAvailabilityMatches(
   userId: string,
   userName: string,
-  options: { from?: Date } = {}
+  options: MatchesOptions = {}
 ): Promise<AvailabilityMatch[]> {
   return matchesFor(await loadEligibility(userId), userId, userName, options);
 }
@@ -100,9 +112,10 @@ async function matchesFor(
   { userTeamIds, ownCardId, children, allTeamIds }: Awaited<ReturnType<typeof loadEligibility>>,
   userId: string,
   userName: string,
-  options: { from?: Date }
+  options: MatchesOptions
 ): Promise<AvailabilityMatch[]> {
   if (allTeamIds.length === 0) return [];
+  if (options.followedOnly) children = children.filter((c) => c.followed);
 
   // Le righe di queste persone, su una chiave o sull'altra.
   const rowUserIds = [userId, ...children.flatMap((c) => (c.accountId ? [c.accountId] : []))];
@@ -199,11 +212,14 @@ async function matchesFor(
 }
 
 /**
- * Disponibilità non ancora dichiarate (utente + figli) per le partite future:
+ * Disponibilità non ancora dichiarate (utente + figli seguiti) per le partite future:
  * coppie persona × partita senza riga MatchAvailability.
  */
 export async function countPendingAvailabilities(userId: string): Promise<number> {
-  const items = await loadMyAvailabilityMatches(userId, "", { from: new Date() });
+  const items = await loadMyAvailabilityMatches(userId, "", {
+    from: new Date(),
+    followedOnly: true,
+  });
   return items.reduce(
     (sum, item) => sum + item.entities.filter((e) => e.available === null).length,
     0

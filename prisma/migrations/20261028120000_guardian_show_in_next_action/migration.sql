@@ -1,0 +1,1 @@
+ALTER TABLE "ChildGuardian" ADD COLUMN "showInNextAction" BOOLEAN NOT NULL DEFAULT true;

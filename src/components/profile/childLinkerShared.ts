@@ -17,6 +17,8 @@ export interface ChildData {
   teamMemberships?: { team: { name: string; color: string | null; season: string } }[];
   /** Gli altri genitori collegati, per nome. */
   otherGuardians?: string[];
+  /** Il genitore vede le cose da fare per questo figlio (solo con un account). */
+  showInNextAction?: boolean;
 }
 
 /**

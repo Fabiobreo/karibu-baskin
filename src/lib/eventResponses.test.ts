@@ -84,6 +84,51 @@ describe("summarizeResponses()", () => {
     expect(result.rows[1]).toMatchObject({ kind: "guest", guestOf: "Giulia" });
   });
 
+  it("raggruppa le famiglie: genitori prima, poi figli, con i Ci sarò in testa", () => {
+    // Famiglia Rossi: Luca e Sara genitori di Tommaso (senza account) e di
+    // Giulia (scheda + account). Giulia porta l'esterna Chiara. Anna da sola.
+    const sara = row({ id: "s", userId: "sara", status: "NOT_GOING", user: person("Sara") });
+    const luca = row({ id: "l", userId: "luca", status: "NOT_GOING", user: person("Luca") });
+    const tommaso = row({ id: "t", childId: "c-tom", child: childCard("Tommaso", null, 1) });
+    const anna = row({ id: "an", userId: "anna", status: "MAYBE", user: person("Anna") });
+    const zeno = row({ id: "z", userId: "zeno", status: "NOT_GOING", user: person("Zeno") });
+    const links = [
+      { childId: "c-tom", userId: "sara", childAccountId: null },
+      { childId: "c-tom", userId: "luca", childAccountId: null },
+      { childId: "c-giulia", userId: "sara", childAccountId: "giulia" },
+    ];
+    const r = summarizeResponses([], [zeno, anna, tommaso, chiara, giulia, sara, luca], [], links);
+    expect(r.rows.map((x) => [x.name, x.family])).toEqual([
+      ["Luca", 1],
+      ["Sara", 1],
+      ["Giulia", 1],
+      ["Chiara", 1],
+      ["Tommaso", 1],
+      ["Anna", 2],
+      ["Zeno", 3],
+    ]);
+  });
+
+  it("l'esterno di un genitore che non ha risposto resta nella sua famiglia", () => {
+    const nonna = row({
+      id: "n",
+      guestId: "g-n",
+      guest: { name: "Nonna", addedById: "sara", addedBy: { name: "Sara" } },
+    });
+    const tommaso = row({ id: "t", childId: "c-tom", child: childCard("Tommaso", null, 1) });
+    const r = summarizeResponses(
+      [],
+      [nonna, paola, tommaso],
+      [],
+      [{ childId: "c-tom", userId: "sara", childAccountId: null }]
+    );
+    expect(r.rows.map((x) => [x.name, x.family])).toEqual([
+      ["Paola", 1],
+      ["Tommaso", 2],
+      ["Nonna", 2],
+    ]);
+  });
+
   it("chi ha scheda figlio e account e' un tesserato, non un figlio", () => {
     const kid = row({ id: "k", childId: "c-kid", child: childCard("Anna", null, 1) });
     const r = summarizeResponses([], [giulia, kid], []);

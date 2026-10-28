@@ -7,9 +7,11 @@ import {
   Button,
   Chip,
   CircularProgress,
+  FormControlLabel,
   IconButton,
   Paper,
   Stack,
+  Switch,
   Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -60,6 +62,7 @@ export default function ParentChildLinker({
   const [editTarget, setEditTarget] = useState<ChildData | null>(null);
   const [linkTarget, setLinkTarget] = useState<ChildData | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingFollowId, setSavingFollowId] = useState<string | null>(null);
 
   const { showToast } = useToast();
   const t = useTranslations("childLinker");
@@ -82,6 +85,29 @@ export default function ParentChildLinker({
       showToast({ message: t("accountUnlinkedFrom", { name: child.name }), severity: "info" });
     } catch {
       showToast({ message: tCommon("networkError"), severity: "error" });
+    }
+  }
+
+  async function handleFollowChange(child: ChildData, show: boolean) {
+    setSavingFollowId(child.id);
+    // Subito a schermo: se il server rifiuta si torna indietro.
+    setChildren((prev) =>
+      prev.map((c) => (c.id === child.id ? { ...c, showInNextAction: show } : c))
+    );
+    try {
+      const res = await fetch(`/api/children/${child.id}/next-action`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ show }),
+      });
+      if (!res.ok) throw new Error("follow failed");
+    } catch {
+      setChildren((prev) =>
+        prev.map((c) => (c.id === child.id ? { ...c, showInNextAction: !show } : c))
+      );
+      showToast({ message: t("showInNextActionError"), severity: "error" });
+    } finally {
+      setSavingFollowId(null);
     }
   }
 
@@ -246,6 +272,34 @@ export default function ParentChildLinker({
                     >
                       {child.user.email}
                     </Typography>
+                  )}
+                  {/* Chi ha un account suo può pensarci da solo: il genitore sceglie
+                      se vederlo nella "prossima cosa da fare". */}
+                  {child.userId && (
+                    <Box sx={{ mt: 1 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            size="small"
+                            checked={child.showInNextAction ?? true}
+                            disabled={savingFollowId === child.id}
+                            onChange={(e) => handleFollowChange(child, e.target.checked)}
+                          />
+                        }
+                        label={
+                          <Typography variant="body2">
+                            {t("showInNextAction", { name: child.name })}
+                          </Typography>
+                        }
+                      />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block" }}
+                      >
+                        {t("showInNextActionHint", { name: child.name })}
+                      </Typography>
+                    </Box>
                   )}
                 </Box>
                 <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>

@@ -20,6 +20,7 @@ vi.mock("@/lib/db", () => {
 import { prisma } from "@/lib/db";
 import {
   deleteUserAndOrphanedChildren,
+  followedInNextAction,
   guardianNames,
   guardianOf,
   isGuardian,
@@ -91,5 +92,22 @@ describe("deleteUserAndOrphanedChildren", () => {
     await deleteUserAndOrphanedChildren("u1");
     expect(tx.child.deleteMany).not.toHaveBeenCalled();
     expect(tx.user.delete).toHaveBeenCalled();
+  });
+});
+
+describe("followedInNextAction()", () => {
+  it("un figlio senza account si segue sempre", () => {
+    expect(followedInNextAction({ userId: null, guardians: [{ showInNextAction: false }] })).toBe(
+      true
+    );
+  });
+
+  it("un figlio con un account si segue finché il genitore non lo spegne", () => {
+    expect(followedInNextAction({ userId: "u", guardians: [{ showInNextAction: true }] })).toBe(
+      true
+    );
+    expect(followedInNextAction({ userId: "u", guardians: [{ showInNextAction: false }] })).toBe(
+      false
+    );
   });
 });
