@@ -38,6 +38,15 @@ describe("newsMenuEntries", () => {
     expect(newsMenuEntries(true, { canNotify: false }).map((e) => e.key)).not.toContain("notify");
   });
 
+  it("i risultati del sondaggio ci sono solo su una news uscita che ne ha uno", () => {
+    expect(newsMenuEntries(true, { hasPoll: true })[0]).toEqual({
+      key: "results",
+      label: "Risultati del sondaggio",
+    });
+    expect(newsMenuEntries(false, { hasPoll: true }).map((e) => e.key)).not.toContain("results");
+    expect(newsMenuEntries(true).map((e) => e.key)).not.toContain("results");
+  });
+
   it("una news pubblicata si rimette in bozza e ha la pagina pubblica", () => {
     expect(newsMenuEntries(true).map((e) => e.key)).toEqual(["unpublish", "public"]);
   });

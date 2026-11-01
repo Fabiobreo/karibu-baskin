@@ -41,6 +41,8 @@ interface GuestApprovalInboxProps {
   isAdmin?: boolean;
   /** Ruolo assegnato: la lista aggiorna la riga, e l'account esce da qui. */
   onApproved: (guestId: string, appRole: AppRole) => void;
+  /** Ospite lasciato tale (data) o rimesso fra quelli da approvare (null). */
+  onReviewedChange: (guestId: string, reviewedAt: string | null) => void;
   /** L'ospite è il doppione di una scheda già in elenco: apre l'unione (solo admin). */
   onMerge?: (guestId: string) => void;
 }
@@ -56,6 +58,7 @@ export default function GuestApprovalInbox({
   guests,
   isAdmin = false,
   onApproved,
+  onReviewedChange,
   onMerge,
 }: GuestApprovalInboxProps) {
   const { showToast } = useToast();
@@ -89,6 +92,38 @@ export default function GuestApprovalInbox({
         message: `${guest.name ?? guest.email} approvato come ${ROLE_LABELS_IT[appRole]}`,
         severity: "success",
       });
+    } catch (err) {
+      showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
+    } finally {
+      setProcessing(null);
+    }
+  }
+
+  /** Lascia l'account ospite e lo toglie da qui; `false` lo rimette (Annulla). */
+  async function setReviewed(guest: GuestUser, reviewed: boolean) {
+    setProcessing(guest.id);
+    try {
+      const res = await fetch(`/api/users/${guest.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestReviewed: reviewed }),
+      });
+      if (!res.ok) {
+        showToast({ message: await readError(res), severity: "error" });
+        return;
+      }
+      onReviewedChange(guest.id, reviewed ? new Date().toISOString() : null);
+      if (reviewed) {
+        showToast({
+          message: `${guest.name ?? guest.email} resta ospite. Lo trovi nella tab Account.`,
+          severity: "success",
+          action: (
+            <Button color="inherit" size="small" onClick={() => setReviewed(guest, false)}>
+              Annulla
+            </Button>
+          ),
+        });
+      }
     } catch (err) {
       showToast({ message: errorText(err, GENERIC_ERROR_IT), severity: "error" });
     } finally {
@@ -163,20 +198,18 @@ export default function GuestApprovalInbox({
                 >
                   Genitore
                 </Button>
-                {(otherRoles.length > 0 || onMerge) && (
-                  <Button
-                    size="small"
-                    variant="text"
-                    disabled={busy}
-                    sx={TOUCH_TARGET_ON_PHONE}
-                    endIcon={<ExpandMoreIcon />}
-                    aria-haspopup="menu"
-                    aria-label={`Altre scelte per ${g.name ?? g.email}`}
-                    onClick={(e) => setMenu({ anchor: e.currentTarget, guest: g })}
-                  >
-                    Altro
-                  </Button>
-                )}
+                <Button
+                  size="small"
+                  variant="text"
+                  disabled={busy}
+                  sx={TOUCH_TARGET_ON_PHONE}
+                  endIcon={<ExpandMoreIcon />}
+                  aria-haspopup="menu"
+                  aria-label={`Altre scelte per ${g.name ?? g.email}`}
+                  onClick={(e) => setMenu({ anchor: e.currentTarget, guest: g })}
+                >
+                  Altro
+                </Button>
               </Box>
             </Box>
           );
@@ -205,6 +238,15 @@ export default function GuestApprovalInbox({
             È già in elenco: unisci…
           </MenuItem>
         )}
+        {(otherRoles.length > 0 || onMerge) && <Divider />}
+        <MenuItem
+          onClick={() => {
+            if (menu) setReviewed(menu.guest, true);
+            setMenu(null);
+          }}
+        >
+          Lascia come ospite
+        </MenuItem>
       </Menu>
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
         {isAdmin

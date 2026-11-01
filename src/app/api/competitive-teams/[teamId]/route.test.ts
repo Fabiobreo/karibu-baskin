@@ -127,6 +127,31 @@ describe("PUT /api/competitive-teams/[teamId]", () => {
     expect(p.competitiveTeam.update).not.toHaveBeenCalled();
   });
 
+  it("della Karibu che gioca il campionato cambia il colore ma non il nome", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const karibu = { imageUrl: null, isMixed: true, playsLeague: true };
+    p.competitiveTeam.findUnique.mockResolvedValueOnce(karibu).mockResolvedValueOnce(karibu);
+    p.competitiveTeam.update.mockResolvedValueOnce({ ...baseTeam, color: "blue" });
+    const put = (body: unknown) =>
+      PUT(
+        new Request("http://localhost", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        makeParams("karibu-2026-27")
+      );
+
+    expect((await put({ color: "blue" })).status).toBe(200);
+    expect(p.competitiveTeam.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { color: "blue" } })
+    );
+
+    p.competitiveTeam.update.mockClear();
+    expect((await put({ name: "Altro nome" })).status).toBe(400);
+    expect(p.competitiveTeam.update).not.toHaveBeenCalled();
+  });
+
   it("permette di azzerare il colore con null", async () => {
     mockIsAdmin.mockResolvedValue(true);
     p.competitiveTeam.update.mockResolvedValue({ ...baseTeam, color: null });

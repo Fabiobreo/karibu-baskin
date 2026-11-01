@@ -106,8 +106,9 @@ export async function PUT(req: Request, { params }: Params) {
   // risposta e la convocazione non si contraddicono. Chi non ha risposto si
   // convoca: non rispondere non è un no, e la convocazione glielo fa sapere.
   // Restano convocabili i prestiti (la disponibilità non gli è stata chiesta)
-  // e chi era già convocato e ha cambiato idea dopo: altrimenti un solo "no"
-  // impedirebbe di salvare tutta la squadra. A partita iniziata niente
+  // e chi era già convocato: dopo le convocazioni la persona non cambia più la
+  // risposta (callupsLocked), ma lo staff può averla segnata "no" a mano, e un
+  // solo "no" impedirebbe di salvare tutta la squadra. A partita iniziata niente
   // controllo: lo staff registra chi ha giocato, anche a posteriori.
   if (!started) {
     const checkUserIds = userIds.filter(

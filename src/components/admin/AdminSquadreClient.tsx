@@ -335,9 +335,10 @@ export default function AdminSquadreClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           editTeam?.isMixed
-            ? // Della Karibu si scrivono solo questi tre: il resto è dell'app.
+            ? // Della Karibu nome e stagione sono dell'app.
               {
                 championship: teamForm.championship,
+                color: teamForm.color,
                 description: teamForm.description,
                 imageUrl: teamForm.imageUrl,
               }
@@ -659,7 +660,7 @@ export default function AdminSquadreClient({
               autoFocus={!editTeam?.isMixed}
               required
               placeholder="es. Montekki"
-              // Nome e tinta della Karibu li decide l'app.
+              // Il nome della Karibu lo decide l'app.
               disabled={!!editTeam?.isMixed}
             />
             <TextField
@@ -670,7 +671,7 @@ export default function AdminSquadreClient({
               placeholder="es. Campionato Veneto Gold Ovest"
               helperText="Facoltativo: viene mostrato sotto il nome nelle pagine pubbliche"
             />
-            <Box sx={editTeam?.isMixed ? { display: "none" } : undefined}>
+            <Box>
               <Typography
                 id="team-color-label"
                 variant="body2"
@@ -685,8 +686,9 @@ export default function AdminSquadreClient({
                 color="text.secondary"
                 sx={{ display: "block", mb: 1.5 }}
               >
-                Distingue la squadra in calendario, classifiche e pagine pubbliche. I colori sono
-                quelli della palette del sito; l&apos;Ardesia è riservata alla squadra Karibu.
+                {editTeam?.isMixed
+                  ? "Quest'anno la Karibu gioca il campionato: scegli il colore della maglia. L'Ardesia è il colore di partenza della Karibu."
+                  : "Distingue la squadra in calendario, classifiche e pagine pubbliche. I colori sono quelli della palette del sito; l'Ardesia è riservata alla squadra Karibu."}
               </Typography>
               <Box
                 role="radiogroup"
@@ -694,7 +696,7 @@ export default function AdminSquadreClient({
                 aria-describedby="team-color-help"
                 sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}
               >
-                {PICKABLE_TINTS.map((tint) => {
+                {(editTeam?.isMixed ? TEAM_TINTS : PICKABLE_TINTS).map((tint) => {
                   const selected = teamForm.color === tint;
                   return (
                     <Box

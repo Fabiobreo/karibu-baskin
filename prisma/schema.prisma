@@ -55,6 +55,9 @@ model User {
   createdAt     DateTime  @default(now())
 
   appRole AppRole @default(GUEST)
+  // Ospite che lo staff ha visto e lasciato tale: esce dal riquadro "Nuovi
+  // account da approvare". null = ancora da guardare.
+  guestReviewedAt DateTime?
   slug    String? @unique // es. "mario-rossi" — URL slug leggibile, generato dal nome
 
   // Campi atleta

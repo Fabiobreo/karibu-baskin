@@ -4,19 +4,16 @@ import { prisma } from "@/lib/db";
 import { withGuardians } from "@/lib/person";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
-import { MIN_CALLUPS } from "@/lib/constants";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
-import { loadAvailabilityLookup } from "@/lib/matches/availability";
+import { callupsLocked, loadAvailabilityLookup } from "@/lib/matches/availability";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 // Vercel Cron — eseguito giornalmente.
 // Notifica i giocatori (User o genitori di Child) membri di una squadra che ha
 // una partita ufficiale entro 14 giorni e che non hanno ancora marcato la
-// propria disponibilità (nessun record MatchAvailability per quel match) e che
-// non sono già convocati.
-// Si ripete giornalmente finché il match ha meno di MIN_CALLUPS convocati —
-// quando lo staff ha completato le convocazioni, smettiamo di stressare i
-// giocatori rimasti.
+// propria disponibilità (nessun record MatchAvailability per quel match).
+// Si ripete giornalmente finché lo staff non fa le convocazioni: da lì le
+// risposte non si cambiano più (callupsLocked), quindi non c'è niente da chiedere.
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization") ?? "";
@@ -45,7 +42,7 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const pending = matches.filter((m) => m._count.callups < MIN_CALLUPS);
+  const pending = matches.filter((m) => !callupsLocked(m._count.callups));
   if (pending.length === 0) {
     return NextResponse.json({ reminded: 0, matches: 0 });
   }
@@ -59,43 +56,18 @@ export async function GET(req: NextRequest) {
       [m.team, m.opponentTeam].filter((t): t is NonNullable<typeof t> => !!t)
     );
 
-    const [memberships, callups] = await Promise.all([
-      prisma.teamMembership.findMany({
-        where: { teamId: { in: teamIds } },
-        select: { userId: true, childId: true },
-      }),
-      prisma.matchCallup.findMany({
-        where: { matchId: m.id },
-        select: { userId: true, childId: true },
-      }),
-    ]);
+    const memberships = await prisma.teamMembership.findMany({
+      where: { teamId: { in: teamIds } },
+      select: { userId: true, childId: true },
+    });
 
     // Persona unica (@/lib/person): la risposta di chi ha account e scheda può
-    // stare su tutte e due le chiavi, e così la convocazione.
+    // stare su tutte e due le chiavi, e il lookup le guarda entrambe.
     const memberUserIds = memberships.flatMap((mb) => (mb.userId ? [mb.userId] : []));
     const memberChildIds = memberships.flatMap((mb) => (mb.childId ? [mb.childId] : []));
     const answers = await loadAvailabilityLookup(m.id, memberUserIds, memberChildIds);
-    const linked = await prisma.child.findMany({
-      where: {
-        OR: [{ userId: { in: memberUserIds } }, { id: { in: memberChildIds } }],
-        userId: { not: null },
-      },
-      select: { id: true, userId: true },
-    });
-    const calledUserIds = new Set(callups.flatMap((c) => (c.userId ? [c.userId] : [])));
-    const calledChildIds = new Set(callups.flatMap((c) => (c.childId ? [c.childId] : [])));
-    for (const card of linked) {
-      if (card.userId && calledChildIds.has(card.id)) calledUserIds.add(card.userId);
-      if (card.userId && calledUserIds.has(card.userId)) calledChildIds.add(card.id);
-    }
-
-    // Chi è già convocato non si sollecita: la convocazione gli è arrivata.
-    const missingUserIds = memberUserIds.filter(
-      (id) => answers.forUser(id) === null && !calledUserIds.has(id)
-    );
-    const missingChildIds = memberChildIds.filter(
-      (id) => answers.forChild(id) === null && !calledChildIds.has(id)
-    );
+    const missingUserIds = memberUserIds.filter((id) => answers.forUser(id) === null);
+    const missingChildIds = memberChildIds.filter((id) => answers.forChild(id) === null);
 
     const targetUserIds = new Set<string>(missingUserIds);
 

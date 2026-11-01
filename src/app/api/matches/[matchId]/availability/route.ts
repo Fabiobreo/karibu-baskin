@@ -5,9 +5,7 @@ import { AvailabilitySchema } from "@/lib/schemas";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import { guardianOf } from "@/lib/guardians";
 import { personRows } from "@/lib/person";
-import { inBackground } from "@/lib/background";
-import { loadAvailabilityLookup, saveAvailability } from "@/lib/matches/availability";
-import { notifyCallupDeclined } from "@/lib/notifications/matchNotify";
+import { CALLUPS_LOCKED_ERROR, callupsLocked, saveAvailability } from "@/lib/matches/availability";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -18,8 +16,9 @@ type Params = { params: Promise<{ matchId: string }> };
 // - Non si può modificare la disponibilità per partite già giocate.
 // - Un figlio con un account è una persona sola (@/lib/person): la riga è
 //   sempre quella dell'account, che risponda lui o un genitore.
+// - Dopo le convocazioni la risposta non si cambia più (callupsLocked): resta
+//   quella che lo staff aveva davanti quando ha convocato.
 // - La risposta della persona toglie il segno "segnata dallo staff".
-// - Un convocato che dice di no fa partire un avviso allo staff.
 export async function PUT(req: Request, { params }: Params) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -45,6 +44,7 @@ export async function PUT(req: Request, { params }: Params) {
       date: true,
       team: { select: { id: true, season: true, isMixed: true } },
       opponentTeam: { select: { id: true, season: true, isMixed: true } },
+      _count: { select: { callups: true } },
     },
   });
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
@@ -56,6 +56,10 @@ export async function PUT(req: Request, { params }: Params) {
     );
   }
 
+  if (callupsLocked(match._count.callups)) {
+    return NextResponse.json({ error: CALLUPS_LOCKED_ERROR }, { status: 409 });
+  }
+
   // Per la Karibu di stagione valgono le rose di tutte le squadre della stagione.
   const teamIds = await rosterTeamIds(
     [match.team, match.opponentTeam].filter((t): t is NonNullable<typeof t> => !!t)
@@ -63,12 +67,11 @@ export async function PUT(req: Request, { params }: Params) {
 
   // Chi risponde: la scheda del figlio, oppure l'account di chi chiama.
   let person: { kind: "user" | "child"; id: string };
-  let playerName: string;
   if (childId) {
     // Verifica che il childId appartenga al genitore loggato
     const child = await prisma.child.findFirst({
       where: { id: childId, ...guardianOf(userId) },
-      select: { id: true, userId: true, name: true },
+      select: { id: true, userId: true },
     });
     if (!child) {
       return NextResponse.json({ error: "Non autorizzato per questo figlio" }, { status: 403 });
@@ -85,7 +88,6 @@ export async function PUT(req: Request, { params }: Params) {
       );
     }
     person = { kind: "child", id: child.id };
-    playerName = child.name;
   } else {
     const ownCard = await prisma.child.findUnique({ where: { userId }, select: { id: true } });
     const membership = await prisma.teamMembership.findFirst({
@@ -102,47 +104,10 @@ export async function PUT(req: Request, { params }: Params) {
       );
     }
     person = { kind: "user", id: userId };
-    playerName = session.user.name ?? "";
   }
-
-  const key = person.kind === "user" ? { userId: person.id } : { childId: person.id };
-  const before = (
-    await loadAvailabilityLookup(
-      matchId,
-      person.kind === "user" ? [person.id] : [],
-      person.kind === "child" ? [person.id] : []
-    )
-  ).forPerson(key);
 
   // La risposta della persona o di un genitore vale più di quella dello staff.
   await saveAvailability({ matchId, person, available, setByStaff: false });
-
-  // Un convocato che dice di non esserci: lo staff deve saperlo, altrimenti
-  // scopre l'assenza il giorno della partita. Per la persona unica la
-  // convocazione può stare sull'account o sulla scheda.
-  if (!available && before?.available !== false) {
-    const card =
-      person.kind === "child"
-        ? await prisma.child.findUnique({ where: { id: person.id }, select: { userId: true } })
-        : null;
-    const ownCard =
-      person.kind === "user"
-        ? await prisma.child.findUnique({ where: { userId: person.id }, select: { id: true } })
-        : null;
-    const callup = await prisma.matchCallup.findFirst({
-      where: {
-        matchId,
-        OR:
-          person.kind === "user"
-            ? [{ userId: person.id }, ...(ownCard ? [{ childId: ownCard.id }] : [])]
-            : [{ childId: person.id }, ...(card?.userId ? [{ userId: card.userId }] : [])],
-      },
-      select: { id: true },
-    });
-    if (callup) {
-      inBackground(notifyCallupDeclined(matchId, playerName), "notify callup declined");
-    }
-  }
 
   return NextResponse.json({ ok: true, available });
 }

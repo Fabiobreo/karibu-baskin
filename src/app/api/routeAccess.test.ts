@@ -68,6 +68,8 @@ const ROUTES: Record<string, Access> = {
   notifications: "self",
   "notifications/unread-count": "self",
   "opposing-teams": "public",
+  // Risultati con i nomi di chi ha votato: solo dal pannello.
+  "polls/[id]/results": "panel",
   posts: "public",
   "posts/[id]": "public",
   "posts/admin": "staff",

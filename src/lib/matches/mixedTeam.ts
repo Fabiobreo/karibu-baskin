@@ -28,7 +28,10 @@ import { prisma } from "@/lib/db";
 import { CLUB_TEAM_TINT } from "@/lib/teamColors";
 
 export const CLUB_TEAM_NAME = "Karibu";
-/** La Karibu ha la sua tinta (Ardesia), non scelta dallo staff (UX-29). */
+/**
+ * La Karibu nasce con la sua tinta (Ardesia, UX-29). Quando gioca il campionato
+ * lo staff può dargli il colore della maglia da `/admin/squadre`.
+ */
 const CLUB_TEAM_COLOR = CLUB_TEAM_TINT;
 
 /** Id fisso per stagione: con l'upsert impedisce di creare due Karibu nella stessa stagione. */

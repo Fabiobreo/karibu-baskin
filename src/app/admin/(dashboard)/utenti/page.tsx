@@ -60,6 +60,7 @@ const USER_ROW_SELECT = {
   email: true,
   image: true,
   appRole: true,
+  guestReviewedAt: true,
   sportRole: true,
   sportRoleVariant: true,
   sportRoleSuggested: true,

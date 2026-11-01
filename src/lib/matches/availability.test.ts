@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 
-import { buildAvailabilityLookup } from "./availability";
+import { buildAvailabilityLookup, callupsLocked } from "./availability";
 
 const row = (
   userId: string | null,
@@ -47,5 +47,12 @@ describe("buildAvailabilityLookup", () => {
     );
     expect(both.forUser("u1")?.available).toBe(true);
     expect(both.forChild("c1")?.available).toBe(true);
+  });
+});
+
+describe("callupsLocked", () => {
+  it("chiude le risposte appena c'è una convocazione", () => {
+    expect(callupsLocked(0)).toBe(false);
+    expect(callupsLocked(1)).toBe(true);
   });
 });

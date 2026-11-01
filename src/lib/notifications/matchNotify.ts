@@ -3,7 +3,6 @@ import { withGuardians } from "@/lib/person";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
-import { staffUserIds } from "@/lib/notifications/recipients";
 import type { AppNotificationType } from "@prisma/client";
 
 /**
@@ -130,22 +129,6 @@ export function staffAvailabilityNotices(
     });
   }
   return notices;
-}
-
-/** Avviso allo staff: un convocato ha detto che non c'è. */
-export function callupDeclinedNotice(
-  match: MatchLabelInput,
-  playerName: string,
-  staffIds: string[]
-): OutgoingNotice | null {
-  if (staffIds.length === 0) return null;
-  return {
-    type: "MATCH_AVAILABILITY",
-    ids: staffIds,
-    title: "Un convocato non c'è",
-    body: `${playerName} ha detto che non c'è per ${match.teamName} vs ${match.opponentName}, ${matchWhen(match)}. Rivedi le convocazioni.`,
-    url: `/admin/partite/${match.id}/convocazioni`,
-  };
 }
 
 /** Push e in-app alle stesse persone; un invio fallito non ferma gli altri. */
@@ -280,12 +263,4 @@ export async function notifyStaffAvailability(
     staffAvailabilityNotices(match, audiences[0], available),
     "staff availability"
   );
-}
-
-/** Un convocato ha detto di no: lo dice allo staff. */
-export async function notifyCallupDeclined(matchId: string, playerName: string): Promise<void> {
-  const [match, staffIds] = await Promise.all([loadMatchLabel(matchId), staffUserIds()]);
-  if (!match) return;
-  const notice = callupDeclinedNotice(match, playerName, staffIds);
-  if (notice) await deliverNotices([notice], "callup declined");
 }

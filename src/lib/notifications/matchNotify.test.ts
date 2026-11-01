@@ -6,12 +6,7 @@ vi.mock("@/lib/notifications/appNotifications", () => ({
   createTargetedAppNotifications: vi.fn(),
 }));
 
-import {
-  callupDeclinedNotice,
-  callupNotices,
-  staffAvailabilityNotices,
-  type MatchLabelInput,
-} from "./matchNotify";
+import { callupNotices, staffAvailabilityNotices, type MatchLabelInput } from "./matchNotify";
 
 // Domenica 25 ottobre 2026, 15:00 a Roma.
 const MATCH: MatchLabelInput = {
@@ -78,18 +73,5 @@ describe("staffAvailabilityNotices", () => {
     expect(self.body).toMatch(/^Lo staff ti ha segnato disponibile per Arancioni vs Nove/);
     expect(self.body).toContain("«Le mie disponibilità»");
     expect(mum.body).toMatch(/^Lo staff ha segnato Marco disponibile/);
-  });
-});
-
-describe("callupDeclinedNotice", () => {
-  it("avvisa lo staff e porta alle convocazioni", () => {
-    const n = callupDeclinedNotice(MATCH, "Marco Rossi", ["coach"]);
-    expect(n?.ids).toEqual(["coach"]);
-    expect(n?.body).toMatch(/^Marco Rossi ha detto che non c'è per Arancioni vs Nove/);
-    expect(n?.url).toBe("/admin/partite/m1/convocazioni");
-  });
-
-  it("senza staff non c'è niente da mandare", () => {
-    expect(callupDeclinedNotice(MATCH, "Marco Rossi", [])).toBeNull();
   });
 });

@@ -23,6 +23,7 @@ import { brandColor, heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { SPONSORS, isVectorLogo } from "@/lib/sponsors";
 
 export const metadata = buildMetadata({
   title: "Sponsor",
@@ -31,45 +32,12 @@ export const metadata = buildMetadata({
   path: "/sponsor",
 });
 
-const SPONSORS = [
-  {
-    name: "Denis M. Photographer",
-    url: "https://www.facebook.com/Denis.M.photographer",
-    logo: "/sponsors/denis.jpg",
-  },
-  {
-    name: "Villani and Partners",
-    url: "https://villaniandpartners.eu/",
-    logo: "/sponsors/villani.png",
-  },
-  {
-    name: "LLP",
-    url: "https://www.llp.it/",
-    logo: "/sponsors/LLP.png",
-  },
-  {
-    name: "Tetti Tecchio",
-    url: "https://www.tettitecchio.it/",
-    logo: "/sponsors/tettitecchio.png",
-  },
-  {
-    name: "Saby Sport",
-    url: "https://www.sabysport.com/",
-    logo: "/sponsors/sabysport.png",
-  },
-  {
-    name: "CGRD",
-    url: "https://www.cgrd.it/it/",
-    logo: "/sponsors/cgrd.png",
-  },
-];
-
 export default async function SponsorPage() {
   const t = await getTranslations("pages");
-  const sponsorsContent = t.raw("sponsor.sponsorsData") as {
-    category: string;
-    description: string;
-  }[];
+  const sponsorsContent = t.raw("sponsor.sponsorsData") as Record<
+    string,
+    { category: string; description: string }
+  >;
   const PERKS = t.raw("sponsor.perks") as { title: string; desc: string }[];
 
   return (
@@ -98,7 +66,7 @@ export default async function SponsorPage() {
               {t("sponsor.partnersDesc")}
             </Typography>
             <Grid container spacing={2}>
-              {SPONSORS.map((s, i) => (
+              {SPONSORS.map((s) => (
                 <Grid key={s.name} size={{ xs: 12, sm: 6 }}>
                   <Paper
                     elevation={0}
@@ -142,10 +110,11 @@ export default async function SponsorPage() {
                       }}
                     >
                       <Image
-                        src={s.logo}
+                        src={s.squareLogo ?? s.logo}
                         alt={`Logo ${s.name}`}
                         width={90}
                         height={90}
+                        unoptimized={isVectorLogo(s.squareLogo ?? s.logo)}
                         style={{ objectFit: "contain", padding: "8px" }}
                       />
                     </Box>
@@ -153,7 +122,7 @@ export default async function SponsorPage() {
                     {/* Testo */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Chip
-                        label={sponsorsContent[i].category}
+                        label={sponsorsContent[s.id].category}
                         size="small"
                         sx={{ mb: 1, fontSize: TYPE_SCALE.xs }}
                       />
@@ -166,7 +135,7 @@ export default async function SponsorPage() {
                         />
                       </Box>
                       <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                        {sponsorsContent[i].description}
+                        {sponsorsContent[s.id].description}
                       </Typography>
                     </Box>
                   </Paper>

@@ -122,6 +122,8 @@ const ACTION_LABELS: Record<string, string> = {
   LINK_CHILD_ACCOUNT: "Scheda figlio collegata a un account",
   UNLINK_CHILD_ACCOUNT: "Scheda figlio scollegata dall'account",
   MERGE_USER: "Account unito a una scheda",
+  KEEP_AS_GUEST: "Account lasciato come ospite",
+  UNDO_KEEP_AS_GUEST: "Account rimesso fra quelli da approvare",
   SEND_NOTIFICATION: "Avviso inviato",
 };
 

@@ -74,3 +74,56 @@ export async function syncPushSubscription(): Promise<void> {
   }
   await savePushSubscription(sub);
 }
+
+/**
+ * All'uscita dall'account l'iscrizione del dispositivo si stacca dall'utente:
+ * prima restava sua, e su un telefono condiviso (genitore e figlio) arrivavano
+ * le sue notifiche, nomi compresi, anche a chi entrava dopo. L'iscrizione del
+ * browser resta: al prossimo accesso `syncPushSubscription` la lega a chi entra.
+ *
+ * `getRegistration` e non `ready`: senza service worker (sviluppo) `ready` non
+ * si risolve mai e bloccherebbe l'uscita.
+ */
+export async function releasePushSubscription(): Promise<void> {
+  if (!("serviceWorker" in navigator)) return;
+  const reg = await navigator.serviceWorker.getRegistration();
+  const sub = await reg?.pushManager.getSubscription();
+  if (!sub) return;
+  await fetch("/api/push/subscribe", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ endpoint: sub.endpoint }),
+  });
+}
+
+/**
+ * iPhone o iPad nel browser, fuori dall'app installata: lì le notifiche non
+ * esistono (servono iOS 16.4 e l'app sulla schermata Home), qualunque sia il
+ * browser.
+ */
+export function needsIosInstall(): boolean {
+  const ua = navigator.userAgent;
+  const iOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (!iOS) return false;
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return !standalone;
+}
+
+/** Manda una notifica di prova a questo dispositivo. */
+export async function sendTestPush(): Promise<boolean> {
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  if (!sub) return false;
+  // Prima la si ripresenta: se il server l'aveva persa, la prova la ripara.
+  if (!(await savePushSubscription(sub))) return false;
+  const res = await fetch("/api/push/test", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ endpoint: sub.endpoint }),
+  });
+  if (!res.ok) return false;
+  const { sent } = (await res.json()) as { sent: number };
+  return sent > 0;
+}

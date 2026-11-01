@@ -210,11 +210,12 @@ export default function AdminUserList({
 
   // Account in attesa di approvazione, dal più recente. Sono le stesse righe
   // della tabella: approvare da lì (scheda utente) toglie l'account dal
-  // riquadro in alto, e approvare dal riquadro aggiorna la riga.
+  // riquadro in alto, e approvare dal riquadro aggiorna la riga. Gli ospiti
+  // lasciati tali restano nella tab Account, non qui.
   const pendingGuests = useMemo(
     () =>
       userRows
-        .filter((r) => r.kind === "user" && r.appRole === "GUEST")
+        .filter((r) => r.kind === "user" && r.appRole === "GUEST" && !r.guestReviewedAt)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     [userRows]
   );
@@ -518,6 +519,11 @@ export default function AdminUserList({
         isAdmin={isAdmin}
         onApproved={(id, appRole) =>
           updateRow({ kind: "user", id }, (r) => (r.kind === "user" ? { ...r, appRole } : r))
+        }
+        onReviewedChange={(id, reviewedAt) =>
+          updateRow({ kind: "user", id }, (r) =>
+            r.kind === "user" ? { ...r, guestReviewedAt: reviewedAt } : r
+          )
         }
         onMerge={
           openMerge &&

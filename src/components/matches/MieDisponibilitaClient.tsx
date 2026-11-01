@@ -54,6 +54,8 @@ export interface AvailabilityMatch {
   venue: string | null;
   matchType: MatchType;
   opponentLabel: string;
+  /** Convocazioni fatte: le risposte restano quelle date e non si cambiano più. */
+  locked: boolean;
   entities: AvailabilityEntity[];
 }
 
@@ -373,8 +375,9 @@ function CompactMatchRow({
                 </Typography>
                 {saving && <CircularProgress size={12} sx={{ flexShrink: 0 }} />}
               </Box>
-              {isPast ? (
+              {isPast || m.locked ? (
                 // Niente pulsanti spenti: la risposta data si legge come testo.
+                // Dopo le convocazioni vale lo stesso: la risposta non si cambia più.
                 <Typography
                   variant="caption"
                   fontWeight={FONT_WEIGHT.semibold}
@@ -389,9 +392,9 @@ function CompactMatchRow({
                   }}
                 >
                   {value === true
-                    ? t("answeredYes")
+                    ? t(isPast ? "answeredYes" : "lockedYes")
                     : value === false
-                      ? t("answeredNo")
+                      ? t(isPast ? "answeredNo" : "lockedNo")
                       : t("answeredNone")}
                 </Typography>
               ) : (
@@ -459,7 +462,9 @@ function CompactMatchRow({
                 color="text.secondary"
                 sx={{ display: "block", mt: -0.25, mb: 0.5 }}
               >
-                {t("availabilitySetByStaff")}
+                {m.locked || isPast
+                  ? t("availabilitySetByStaffLocked")
+                  : t("availabilitySetByStaff")}
               </Typography>
             )}
             {failed && (
@@ -486,6 +491,11 @@ function CompactMatchRow({
           </Box>
         );
       })}
+      {m.locked && !isPast && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+          {t("availabilityLocked")}
+        </Typography>
+      )}
     </Paper>
   );
 }

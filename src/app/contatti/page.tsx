@@ -21,6 +21,7 @@ import BrandCta from "@/components/common/BrandCta";
 import TryItSection from "@/components/common/TryItSection";
 import SuggestionForm from "@/components/common/SuggestionForm";
 import Image from "next/image";
+import { SPONSORS, isVectorLogo } from "@/lib/sponsors";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -71,27 +72,6 @@ const SOCIAL = [
     href: "https://youtube.com/@karibubaskin",
     color: socialBrandColor.youtube,
   },
-];
-
-const SPONSORS = [
-  {
-    name: "Denis M. Photographer",
-    url: "https://www.facebook.com/Denis.M.photographer",
-    logo: "/sponsors/denis.jpg",
-  },
-  {
-    name: "Villani and Partners",
-    url: "https://villaniandpartners.eu/",
-    logo: "/sponsors/villani.png",
-  },
-  { name: "LLP", url: "https://www.llp.it/", logo: "/sponsors/LLP.png" },
-  {
-    name: "Tetti Tecchio",
-    url: "https://www.tettitecchio.it/",
-    logo: "/sponsors/tettitecchio.png",
-  },
-  { name: "Saby Sport", url: "https://www.sabysport.com/", logo: "/sponsors/sabysport.png" },
-  { name: "CGRD", url: "https://www.cgrd.it/it/", logo: "/sponsors/cgrd.png" },
 ];
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -456,10 +436,11 @@ export default function ContattiPage() {
                   }}
                 >
                   <Image
-                    src={s.logo}
+                    src={s.squareLogo ?? s.logo}
                     alt={`Logo ${s.name}`}
                     width={88}
                     height={88}
+                    unoptimized={isVectorLogo(s.squareLogo ?? s.logo)}
                     style={{ objectFit: "contain", padding: "10px", width: "100%", height: "100%" }}
                   />
                 </Box>

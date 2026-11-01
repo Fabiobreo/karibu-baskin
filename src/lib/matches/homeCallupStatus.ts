@@ -95,7 +95,9 @@ export async function loadHomeCallupStatus(
     loadMyAvailabilityMatches(viewerId, viewerName, { from: now, followedOnly: true }),
   ]);
   const pending = new Set(
-    availability.filter((m) => m.entities.some((e) => e.available === null)).map((m) => m.matchId)
+    availability
+      .filter((m) => !m.locked && m.entities.some((e) => e.available === null))
+      .map((m) => m.matchId)
   );
   return buildHomeCallupStatus(viewerId, matchIds, family, callups, pending);
 }

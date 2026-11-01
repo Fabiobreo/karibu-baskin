@@ -13,6 +13,7 @@ import { prisma } from "@/lib/db";
 import { withMixedTeams } from "@/lib/matches/mixedTeam";
 import type { AvailabilityMatch } from "@/components/matches/MieDisponibilitaClient";
 import { followedInNextAction, guardianOf } from "@/lib/guardians";
+import { callupsLocked } from "@/lib/matches/availability";
 
 type PersonKey = `user:${string}` | `child:${string}`;
 
@@ -148,6 +149,7 @@ async function matchesFor(
         },
         select: { userId: true, childId: true, available: true, setByStaff: true },
       },
+      _count: { select: { callups: true } },
     },
   });
 
@@ -205,6 +207,7 @@ async function matchesFor(
       venue: m.venue,
       matchType: m.matchType,
       opponentLabel: m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario",
+      locked: callupsLocked(m._count.callups),
       entities,
     });
   }
@@ -213,7 +216,8 @@ async function matchesFor(
 
 /**
  * Disponibilità non ancora dichiarate (utente + figli seguiti) per le partite future:
- * coppie persona × partita senza riga MatchAvailability.
+ * coppie persona × partita senza riga MatchAvailability. Dopo le convocazioni
+ * non c'è più niente da dare.
  */
 export async function countPendingAvailabilities(userId: string): Promise<number> {
   const items = await loadMyAvailabilityMatches(userId, "", {
@@ -221,7 +225,8 @@ export async function countPendingAvailabilities(userId: string): Promise<number
     followedOnly: true,
   });
   return items.reduce(
-    (sum, item) => sum + item.entities.filter((e) => e.available === null).length,
+    (sum, item) =>
+      item.locked ? sum : sum + item.entities.filter((e) => e.available === null).length,
     0
   );
 }

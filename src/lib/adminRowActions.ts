@@ -59,7 +59,13 @@ export function notifyConfirm(opts: {
   };
 }
 
-export type NewsMenuKey = "publish" | "publishSilent" | "unpublish" | "public" | "notify";
+export type NewsMenuKey =
+  | "publish"
+  | "publishSilent"
+  | "unpublish"
+  | "public"
+  | "notify"
+  | "results";
 
 export interface NewsMenuEntry {
   key: NewsMenuKey;
@@ -71,11 +77,12 @@ export interface NewsMenuEntry {
  * (sempre in fondo). Pubblicare avvisa tutti, quindi lo dice, e accanto c'è la
  * via silenziosa; la pagina pubblica di una bozza non esiste (404), quindi la
  * voce c'è solo se è uscita. "Avvisa" c'è solo finché l'API lo accetta
- * (`canNotifyPost`).
+ * (`canNotifyPost`). "Risultati del sondaggio" c'è solo se la news uscita ne ha
+ * uno: una bozza non ha voti.
  */
 export function newsMenuEntries(
   published: boolean,
-  opts: { canNotify?: boolean; notified?: boolean } = {}
+  opts: { canNotify?: boolean; notified?: boolean; hasPoll?: boolean } = {}
 ): NewsMenuEntry[] {
   if (!published) {
     return [
@@ -84,6 +91,7 @@ export function newsMenuEntries(
     ];
   }
   return [
+    ...(opts.hasPoll ? [{ key: "results" as const, label: "Risultati del sondaggio" }] : []),
     ...(opts.canNotify
       ? [{ key: "notify" as const, label: notifyActionLabel(opts.notified ? "x" : null) }]
       : []),

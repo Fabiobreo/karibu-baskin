@@ -98,14 +98,14 @@ export async function PUT(req: Request, { params }: Params) {
   });
   if (current?.isMixed) {
     // Nascosta: non si tocca. Iscritta al campionato: ha una pagina pubblica,
-    // quindi campionato, descrizione e foto si scrivono; nome, stagione e
-    // tinta restano quelli dell'app.
+    // quindi campionato, colore, descrizione e foto si scrivono; nome e
+    // stagione restano quelli dell'app.
     if (!current.playsLeague) {
       return NextResponse.json({ error: KARIBU_LOCKED }, { status: 400 });
     }
-    if (body.name !== undefined || body.season !== undefined || body.color !== undefined) {
+    if (body.name !== undefined || body.season !== undefined) {
       return NextResponse.json(
-        { error: "Della Karibu si cambiano solo campionato, descrizione e foto" },
+        { error: "Della Karibu si cambiano solo campionato, colore, descrizione e foto" },
         { status: 400 }
       );
     }

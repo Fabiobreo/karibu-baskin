@@ -100,6 +100,33 @@ describe("POST /api/push/subscribe", () => {
     expect(p.pushSubscription.upsert).not.toHaveBeenCalled();
   });
 
+  it("passa l'endpoint a un altro utente se le chiavi coincidono (telefono condiviso)", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u-1" } });
+    p.pushSubscription.findUnique.mockResolvedValue({ userId: "u-2", ...validSub.keys });
+    const res = await POST(makePost(validSub));
+    expect(res.status).toBe(200);
+    expect(p.pushSubscription.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.objectContaining({ userId: "u-1" }) })
+    );
+  });
+
+  it("stacca l'endpoint dall'utente se lo stesso dispositivo torna anonimo", async () => {
+    mockAuth.mockResolvedValue(null);
+    p.pushSubscription.findUnique.mockResolvedValue({ userId: "u-2", ...validSub.keys });
+    const res = await POST(makePost(validSub));
+    expect(res.status).toBe(200);
+    expect(p.pushSubscription.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.objectContaining({ userId: null }) })
+    );
+  });
+
+  it("restituisce 409 a un anonimo con chiavi diverse su un endpoint di un utente", async () => {
+    mockAuth.mockResolvedValue(null);
+    p.pushSubscription.findUnique.mockResolvedValue({ userId: "u-2", p256dh: "x", auth: "y" });
+    const res = await POST(makePost(validSub));
+    expect(res.status).toBe(409);
+  });
+
   it("salva la subscription per utente autenticato", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u-1" } });
     const res = await POST(makePost(validSub));

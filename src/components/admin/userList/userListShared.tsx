@@ -60,6 +60,8 @@ export interface UserEntry {
   email: string;
   image: string | null;
   appRole: AppRole;
+  /** Ospite visto e lasciato tale: non compare fra i nuovi account da approvare. */
+  guestReviewedAt?: Date | string | null;
   sportRole: number | null;
   sportRoleVariant: string | null;
   sportRoleSuggested: number | null;

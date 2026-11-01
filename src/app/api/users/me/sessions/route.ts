@@ -9,6 +9,10 @@ import { prisma } from "@/lib/db";
  * `Session`: eliminarle le invalida subito su ogni dispositivo, compreso quello
  * da cui parte la richiesta. Serve a chi ha perso il telefono o ha usato un
  * computer condiviso senza uscire (KB-16).
+ *
+ * Insieme si cancellano le sue iscrizioni push: un telefono perso continuerebbe
+ * a ricevere i suoi avvisi, nomi compresi. I dispositivi che usa ancora le
+ * ripresentano al prossimo accesso (`syncPushSubscription`).
  */
 export async function DELETE() {
   const session = await auth();
@@ -17,7 +21,10 @@ export async function DELETE() {
   }
 
   try {
-    const { count } = await prisma.session.deleteMany({ where: { userId: session.user.id } });
+    const [{ count }] = await prisma.$transaction([
+      prisma.session.deleteMany({ where: { userId: session.user.id } }),
+      prisma.pushSubscription.deleteMany({ where: { userId: session.user.id } }),
+    ]);
     return NextResponse.json({ ok: true, count });
   } catch (err) {
     console.error("[sessions] delete all", err);

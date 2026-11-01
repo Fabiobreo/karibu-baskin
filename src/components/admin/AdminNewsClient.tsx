@@ -34,6 +34,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import PollEditor, { type PollDraft } from "@/components/news/PollEditor";
+import PollResultsDialog from "@/components/news/PollResultsDialog";
 import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
 import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
@@ -98,6 +99,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
   const [hasPoll, setHasPoll] = useState(false);
   const [poll, setPoll] = useState<PollDraft>(EMPTY_POLL);
   const [saving, setSaving] = useState(false);
+  const [resultsPollId, setResultsPollId] = useState<string | null>(null);
   // Dopo un'eliminazione il focus torna su "Nuovo post": la riga non c'è più.
   const newButtonRef = useRef<HTMLButtonElement>(null);
   const { showToast } = useToast();
@@ -315,6 +317,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
   }
 
   function menuAction(key: string, post: PostSummary) {
+    if (key === "results") return setResultsPollId(post.poll?.id ?? null);
     if (key === "notify") return askNotify(post);
     // Senza avviso non c'è niente da confermare: si annulla con "Rimetti in bozza".
     if (key === "publishSilent") return void handleTogglePublish(post, false);
@@ -333,7 +336,8 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
 
   /** "Modifica" in riga; nel "⋯" pubblica o bozza, pagina pubblica (se uscita), elimina. */
   function postActions(post: PostSummary) {
-    // Dirigente: di un post uscito apre la pagina, di una bozza legge solo la riga.
+    // Dirigente: di un post uscito apre la pagina (e i risultati del sondaggio),
+    // di una bozza legge solo la riga.
     if (readOnly) {
       return post.publishedAt ? (
         <RowActions
@@ -344,6 +348,11 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
             external: true,
             emphasis: "text",
           }}
+          items={
+            post.poll
+              ? [{ label: "Risultati del sondaggio", onClick: () => menuAction("results", post) }]
+              : undefined
+          }
         />
       ) : null;
     }
@@ -354,6 +363,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
         items={newsMenuEntries(!!post.publishedAt, {
           canNotify: canNotifyPost(post.publishedAt, now),
           notified: !!post.lastNotifiedAt,
+          hasPoll: !!post.poll,
         }).map((e) =>
           e.key === "public"
             ? { label: e.label, href: `/news/${post.slug}`, external: true }
@@ -632,6 +642,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
           </Button>
         </DialogActions>
       </ResponsiveDialog>
+      <PollResultsDialog pollId={resultsPollId} onClose={() => setResultsPollId(null)} />
       {ConfirmDialog}
     </Box>
   );

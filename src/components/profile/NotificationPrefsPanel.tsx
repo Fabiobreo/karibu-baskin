@@ -25,8 +25,10 @@ import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import {
   createPushSubscription,
+  needsIosInstall,
   rememberPushChoice,
   savePushSubscription,
+  sendTestPush,
 } from "@/lib/pushSubscription";
 import { useToast } from "@/context/ToastContext";
 import { errorText } from "@/lib/networkError";
@@ -44,17 +46,25 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
 
   // ── Push subscription state ───────────────────────────────────────────────
   const [pushStatus, setPushStatus] = useState<
-    "loading" | "unsupported" | "granted" | "denied" | "default"
+    "loading" | "unsupported" | "iosInstall" | "granted" | "denied" | "default"
   >("loading");
   const [subscribed, setSubscribed] = useState(false);
   const [pushSaving, setPushSaving] = useState(false);
   const [pushError, setPushError] = useState("");
+  const [testing, setTesting] = useState(false);
 
   // ── Preferenze granulari ─────────────────────────────────────────────────
   const [prefs, setPrefs] = useState<NotifPrefs>(initialPrefs);
   const [prefSaving, setPrefSaving] = useState<ControllableNotifType | null>(null);
 
   useEffect(() => {
+    // Su iPhone fuori dall'app installata le notifiche non esistono: invece di
+    // "questo browser non può", si dice cosa fare.
+    if (needsIosInstall()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPushStatus("iosInstall");
+      return;
+    }
     // Anche `Notification`: alcune WebView e Safari fuori dall'app installata
     // hanno PushManager ma non Notification, e leggerne il permesso lancia.
     if (
@@ -62,7 +72,6 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       !("PushManager" in window) ||
       typeof Notification === "undefined"
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPushStatus("unsupported");
       return;
     }
@@ -124,6 +133,26 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
     }
   }
 
+  // Chi dice "non mi arriva" può controllare da sé se il problema è il
+  // telefono (risparmio batteria, Non disturbo) o l'iscrizione.
+  async function testPush() {
+    setTesting(true);
+    try {
+      const ok = await sendTestPush();
+      showToast({
+        message: ok ? t("testSent") : t("testFailed"),
+        severity: ok ? "success" : "error",
+      });
+    } catch (e) {
+      showToast({
+        message: errorText(e, t("testFailed"), tCommon("networkError")),
+        severity: "error",
+      });
+    } finally {
+      setTesting(false);
+    }
+  }
+
   async function togglePref(
     channel: "push" | "inApp",
     type: ControllableNotifType,
@@ -169,7 +198,16 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
         {t("pushTitle")}
       </Typography>
 
-      {pushStatus === "unsupported" ? (
+      {pushStatus === "iosInstall" ? (
+        <Box>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
+            {t("iosInstall")}
+          </Typography>
+          <Button variant="outlined" size="small" href="/guida#installare">
+            {t("iosInstallCta")}
+          </Button>
+        </Box>
+      ) : pushStatus === "unsupported" ? (
         <Typography variant="caption" color="text.secondary">
           {t("unsupported")}
         </Typography>
@@ -186,7 +224,15 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
             </a>
             .
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: subscribed ? 1.5 : 0 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 2,
+              mb: subscribed ? 1.5 : 0,
+            }}
+          >
             <Button
               variant={subscribed ? "outlined" : "contained"}
               color={subscribed ? "error" : "primary"}
@@ -201,6 +247,11 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
               <Typography variant="caption" color="success.main" fontWeight={FONT_WEIGHT.semibold}>
                 {t("activeOnDevice")}
               </Typography>
+            )}
+            {subscribed && (
+              <Button size="small" onClick={testPush} disabled={testing || pushSaving}>
+                {testing ? "..." : t("test")}
+              </Button>
             )}
           </Box>
 

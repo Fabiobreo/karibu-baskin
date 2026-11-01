@@ -232,6 +232,40 @@ describe("PATCH /api/users/[userId]", () => {
     );
   });
 
+  describe("ospite lasciato tale", () => {
+    it("segna l'ospite come visto e lo registra", async () => {
+      p.user.update.mockResolvedValue({ ...baseUser, appRole: "GUEST" });
+      const [req, ctx] = makePATCH("user-1", { guestReviewed: true });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(200);
+      expect(p.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { guestReviewedAt: expect.any(Date) } })
+      );
+      expect(mockLogAudit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "KEEP_AS_GUEST", targetId: "user-1" })
+      );
+    });
+
+    it("lo rimette fra quelli da approvare", async () => {
+      p.user.update.mockResolvedValue({ ...baseUser, appRole: "GUEST" });
+      const [req, ctx] = makePATCH("user-1", { guestReviewed: false });
+      await PATCH(req, ctx);
+      expect(p.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { guestReviewedAt: null } })
+      );
+      expect(mockLogAudit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "UNDO_KEEP_AS_GUEST" })
+      );
+    });
+
+    it("rifiuta un valore che non è un booleano", async () => {
+      const [req, ctx] = makePATCH("user-1", { guestReviewed: "sì" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(400);
+      expect(p.user.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe("chi può assegnare un ruolo utente", () => {
     function asCoach() {
       mockAuth.mockResolvedValue({ user: { id: "coach-1" } });

@@ -39,6 +39,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
     email?: string;
     clearRoleSuggestion?: boolean;
     athleteStatus?: AthleteStatus | null;
+    /** true = ospite visto e lasciato tale (esce dal riquadro delle approvazioni). */
+    guestReviewed?: boolean;
   };
 
   const data: Record<string, unknown> = {};
@@ -63,6 +65,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
     }
     prevAppRole = cur.appRole;
     data.appRole = body.appRole;
+  }
+
+  if (body.guestReviewed !== undefined) {
+    if (typeof body.guestReviewed !== "boolean") {
+      return NextResponse.json({ error: "Valore non valido" }, { status: 400 });
+    }
+    data.guestReviewedAt = body.guestReviewed ? new Date() : null;
   }
 
   if (body.gender !== undefined) {
@@ -171,6 +180,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
         gender: true,
         birthDate: true,
         athleteStatus: true,
+        guestReviewedAt: true,
       },
     });
   } catch (err: unknown) {
@@ -193,6 +203,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
         action: "UPDATE_ROLE",
         before: { appRole: prevAppRole },
         after: { appRole: user.appRole },
+      });
+    if (body.guestReviewed !== undefined)
+      actions.push({
+        action: body.guestReviewed ? "KEEP_AS_GUEST" : "UNDO_KEEP_AS_GUEST",
       });
     if (body.sportRole !== undefined)
       actions.push({

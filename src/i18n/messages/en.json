@@ -104,7 +104,14 @@
     "vapidError": "Notifications are not working right now. Please try again later.",
     "inAppTitle": "In-app notifications",
     "inAppDesc": "Control which types of notifications appear in the notification center.",
-    "prefSaveError": "Preference not saved. Please try again."
+    "prefSaveError": "Preference not saved. Please try again.",
+    "iosInstall": "On iPhone and iPad notifications only arrive in the app installed on the Home screen (iOS 16.4 or later). Install it, open it from there and turn notifications on.",
+    "iosInstallCta": "How to install the app",
+    "test": "Send me a test notification",
+    "testSent": "Sent. If it does not arrive within a minute, check your phone's battery saver and Do Not Disturb.",
+    "testFailed": "It could not be sent to this device. Turn notifications off and on again, then try again.",
+    "testTitle": "Test notification",
+    "testBody": "Notifications work on this device."
   },
   "share": {
     "share": "Share",
@@ -461,7 +468,11 @@
       "openInMaps": "{place}, open in Google Maps (new tab)",
       "addToCalendar": "Add to calendar",
       "subscribe": "Or follow the whole club calendar"
-    }
+    },
+    "availabilityLocked": "The squad has been picked: this answer stays. If something is wrong, write to the staff.",
+    "lockedYes": "You said yes",
+    "lockedNo": "You said no",
+    "lockedNone": "You did not answer"
   },
   "teams": {
     "heroTitle": "Teams",
@@ -934,7 +945,7 @@
     "trainingsCount": "{count, plural, one {# training session} other {# training sessions}}",
     "availabilitiesTitle": "Availability",
     "myAvailabilities": "My availabilities",
-    "availabilitiesDesc": "Tap 'Yes' or 'No' for each match: your answer is saved right away. If you don't answer, the staff does not know whether you can come: answer even when it is no.",
+    "availabilitiesDesc": "Tap 'Yes' or 'No' for each match: your answer is saved right away. If you don't answer, the staff does not know whether you can come: answer even when it is no. Once the staff picks the squad, answers can no longer be changed.",
     "noMatchesForTeams": "No matches found for your teams.",
     "noTeamForAvailabilities": "You are not in a team yet",
     "noTeamForAvailabilitiesDesc": "Once the staff adds you to a team, this is where you say whether you can make the matches.",
@@ -1018,7 +1029,11 @@
     "nameSave": "Save",
     "nameCancel": "Cancel",
     "nameSaved": "Name updated",
-    "nameSaveError": "Could not save your name. Please try again."
+    "nameSaveError": "Could not save your name. Please try again.",
+    "availabilityLocked": "The squad has been picked: these answers stay. If something is wrong, write to the staff.",
+    "availabilitySetByStaffLocked": "Marked by the staff.",
+    "lockedYes": "You said yes",
+    "lockedNo": "You said no"
   },
   "guestOnboarding": {
     "heroGreeting": "Hi {name}, welcome!",
@@ -1301,32 +1316,36 @@
           "desc": "Visibility during tournaments, open training sessions and initiatives"
         }
       ],
-      "sponsorsData": [
-        {
+      "sponsorsData": {
+        "denis": {
           "category": "Photography",
           "description": "The team's official photographer. Captures the best moments on and off the court."
         },
-        {
+        "villani": {
           "category": "Professional services",
           "description": "Professional support for the association's administrative and legal activities."
         },
-        {
+        "llp": {
           "category": "Partner",
           "description": "A long-standing partner of Karibu Baskin, by our side since the early years."
         },
-        {
+        "tettitecchio": {
           "category": "Construction",
           "description": "Concrete support for our initiatives and sporting activities in the area."
         },
-        {
+        "sabysport": {
           "category": "Sportswear",
           "description": "Official supplier of sportswear and equipment for our teams."
         },
-        {
+        "cgrd": {
           "category": "Partner",
           "description": "A partner who shares our values of inclusion and sport for all."
+        },
+        "fabiobrea": {
+          "category": "Software development",
+          "description": "Custom software solutions, from idea to finished product."
         }
-      ]
+      }
     },
     "ilbaskin": {
       "heroTitle": "What is Baskin?",

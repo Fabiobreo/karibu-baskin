@@ -33,6 +33,8 @@ export interface MatchAvailabilityEntity {
 interface Props {
   matchId: string;
   entities: MatchAvailabilityEntity[];
+  /** Convocazioni fatte: la risposta si legge, non si cambia più. */
+  locked?: boolean;
 }
 
 function entityKey(e: MatchAvailabilityEntity) {
@@ -44,7 +46,7 @@ function entityKey(e: MatchAvailabilityEntity) {
  * dichiara la propria disponibilità senza passare dal profilo. Mostrata solo
  * per partite future a chi è membro di una delle squadre della partita.
  */
-export default function MatchAvailabilityCard({ matchId, entities }: Props) {
+export default function MatchAvailabilityCard({ matchId, entities, locked = false }: Props) {
   const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
   const [savingKeys, setSavingKeys] = useState<Set<string>>(new Set());
   const { showToast } = useToast();
@@ -142,55 +144,82 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
                   </Typography>
                   {saving && <CircularProgress size={14} sx={{ flexShrink: 0 }} />}
                 </Box>
-                <ToggleButtonGroup
-                  value={value}
-                  exclusive
-                  size="small"
-                  disabled={saving}
-                  onChange={(_, v) => {
-                    if (v === null) return;
-                    handleChange(e, v as boolean);
-                  }}
-                  sx={{
-                    "& .MuiToggleButton-root": {
-                      py: 0.4,
-                      px: 1.5,
-                      fontWeight: FONT_WEIGHT.semibold,
-                      textTransform: "none",
-                    },
-                  }}
-                >
-                  <ToggleButton
-                    value={true}
+                {locked ? (
+                  <Typography
+                    variant="body2"
+                    fontWeight={FONT_WEIGHT.semibold}
                     sx={{
-                      // Anche `:hover`: su telefono il tocco lascia il bottone
-                      // "sotto il mouse" finché non si tocca altrove, e lo
-                      // sfondo tenue di MUI per quello stato copriva il verde.
-                      "&.Mui-selected, &.Mui-selected:hover": {
-                        bgcolor: "success.main",
-                        color: "success.contrastText",
+                      flexShrink: 0,
+                      color:
+                        value === true
+                          ? "success.main"
+                          : value === false
+                            ? "error.main"
+                            : "text.secondary",
+                    }}
+                  >
+                    {value === true
+                      ? t("lockedYes")
+                      : value === false
+                        ? t("lockedNo")
+                        : t("lockedNone")}
+                  </Typography>
+                ) : (
+                  <ToggleButtonGroup
+                    value={value}
+                    exclusive
+                    size="small"
+                    disabled={saving}
+                    onChange={(_, v) => {
+                      if (v === null) return;
+                      handleChange(e, v as boolean);
+                    }}
+                    sx={{
+                      "& .MuiToggleButton-root": {
+                        py: 0.4,
+                        px: 1.5,
+                        fontWeight: FONT_WEIGHT.semibold,
+                        textTransform: "none",
                       },
                     }}
                   >
-                    <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                    {tCommon("yes")}
-                  </ToggleButton>
-                  <ToggleButton
-                    value={false}
-                    sx={{
-                      "&.Mui-selected, &.Mui-selected:hover": {
-                        bgcolor: "error.main",
-                        color: "error.contrastText",
-                      },
-                    }}
-                  >
-                    <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                    {tCommon("no")}
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                    <ToggleButton
+                      value={true}
+                      sx={{
+                        // Anche `:hover`: su telefono il tocco lascia il bottone
+                        // "sotto il mouse" finché non si tocca altrove, e lo
+                        // sfondo tenue di MUI per quello stato copriva il verde.
+                        "&.Mui-selected, &.Mui-selected:hover": {
+                          bgcolor: "success.main",
+                          color: "success.contrastText",
+                        },
+                      }}
+                    >
+                      <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                      {tCommon("yes")}
+                    </ToggleButton>
+                    <ToggleButton
+                      value={false}
+                      sx={{
+                        "&.Mui-selected, &.Mui-selected:hover": {
+                          bgcolor: "error.main",
+                          color: "error.contrastText",
+                        },
+                      }}
+                    >
+                      <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                      {tCommon("no")}
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                )}
               </Box>
             );
           })}
+          {locked && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+              {t("availabilityLocked")}
+            </Typography>
+          )}
         </Paper>
       </Box>
     </Container>

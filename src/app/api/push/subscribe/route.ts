@@ -27,17 +27,15 @@ export async function POST(req: NextRequest) {
     where: { endpoint: body.endpoint },
     select: { userId: true, p256dh: true, auth: true },
   });
-  if (existing) {
-    // Caso 1: endpoint legato a un altro utente autenticato → rifiuta.
-    if (existing.userId && existing.userId !== userId) {
+  // L'endpoint passa a un altro proprietario (un altro utente, o nessuno dopo
+  // l'uscita) solo se le chiavi crittografiche coincidono: le ha soltanto il
+  // browser che si è iscritto, quindi è lo stesso dispositivo con un altro
+  // account. Prima un altro utente riceveva 409 e su un telefono condiviso
+  // (genitore e figlio) chi entrava per secondo non riceveva mai niente.
+  // Fra due anonimi resta libero, come prima.
+  if (existing && existing.userId !== userId && (existing.userId !== null || userId !== null)) {
+    if (existing.p256dh !== body.keys.p256dh || existing.auth !== body.keys.auth) {
       return NextResponse.json({ error: "Endpoint già registrato" }, { status: 409 });
-    }
-    // Caso 2: endpoint anonimo, nuovo chiamante autenticato → consenti solo se le chiavi
-    // crittografiche corrispondono (stesso browser che ora si è loggato).
-    if (existing.userId === null && userId !== null) {
-      if (existing.p256dh !== body.keys.p256dh || existing.auth !== body.keys.auth) {
-        return NextResponse.json({ error: "Endpoint già registrato" }, { status: 409 });
-      }
     }
   }
 

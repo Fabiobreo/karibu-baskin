@@ -18,6 +18,7 @@ import EntityHero from "@/components/common/EntityHero";
 import StaffManageButton from "@/components/common/StaffManageButton";
 import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
+import { callupsLocked } from "@/lib/matches/availability";
 import MatchAvailabilityCard, {
   type MatchAvailabilityEntity,
 } from "@/components/matches/MatchAvailabilityCard";
@@ -249,6 +250,9 @@ export default async function MatchDetailPage({ params }: Props) {
   // passano a un componente client e finirebbero nel payload della pagina.
   const viewerIsMember = isMemberRole(session?.user?.appRole);
   match.playerStats = publicSubjects(match.playerStats, viewerIsMember);
+  // Contate prima del filtro dei minori: per chi guarda le risposte si chiudono
+  // con qualunque convocazione salvata.
+  const availabilityLocked = callupsLocked(match.callups.length);
   match.callups = publicSubjects(match.callups, viewerIsMember);
   // Convocati: `slug` del link, null per chi non ha un profilo pubblico (vedi
   // @/lib/publicProfile). Toglie anche appRole prima di passare al client.
@@ -773,7 +777,11 @@ export default async function MatchDetailPage({ params }: Props) {
       </EntityHero>
 
       {availabilityEntities.length > 0 && (
-        <MatchAvailabilityCard matchId={match.id} entities={availabilityEntities} />
+        <MatchAvailabilityCard
+          matchId={match.id}
+          entities={availabilityEntities}
+          locked={availabilityLocked}
+        />
       )}
 
       {match.mvps.length > 0 && (

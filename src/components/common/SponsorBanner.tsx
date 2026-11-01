@@ -12,42 +12,14 @@ import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { RADIUS } from "@/lib/radius";
 import { heroText } from "@/lib/heroStyles";
 import { isTaskPath } from "@/lib/taskPages";
+import { SPONSORS, isVectorLogo, type Sponsor } from "@/lib/sponsors";
 
-// ── Dati sponsor ──────────────────────────────────────────────────────────────
-// src: percorso immagine in /public (es. "/sponsors/denis.jpg").
-//
 // Tessere tutte uguali (UX-39): bianche, perche' quasi tutti i loghi sono nati
 // per la carta bianca (quattro hanno il fondo bianco dentro il file). Senza
 // didascalia: il nome sta nell'`alt` e nel link.
 //
-// ownBackground: il logo e' un'immagine con un fondo scuro suo (un biglietto da
-// visita nero). Riempie la tessera invece di stare in un riquadro bianco, e un
-// bordo chiaro la stacca dal fondo scuro del footer.
-
-const SPONSORS: Sponsor[] = [
-  {
-    name: "Denis M. Photographer",
-    url: "https://www.facebook.com/Denis.M.photographer",
-    src: "/sponsors/denis.jpg",
-    ownBackground: true,
-  },
-  {
-    name: "Villani and Partners",
-    url: "https://villaniandpartners.eu/",
-    src: "/sponsors/villani.png",
-  },
-  { name: "LLP", url: "https://www.llp.it/", src: "/sponsors/LLP.png" },
-  { name: "Tetti Tecchio", url: "https://www.tettitecchio.it/", src: "/sponsors/tettitecchio.png" },
-  { name: "Saby Sport", url: "https://www.sabysport.com/", src: "/sponsors/sabysport.png" },
-  { name: "CGRD", url: "https://www.cgrd.it/it/", src: "/sponsors/cgrd.png" },
-];
-
-interface Sponsor {
-  name: string;
-  url: string;
-  src: string;
-  ownBackground?: boolean;
-}
+// ownBackground: il logo riempie la tessera invece di stare in un riquadro
+// bianco, e un bordo chiaro la stacca dal fondo scuro del footer.
 
 // Due copie e non sei: l'animazione trasla di -50%, quindi con due metà
 // identiche il punto di arrivo coincide con quello di partenza e il ciclo non
@@ -66,7 +38,7 @@ const TILE = { width: { xs: 124, sm: 148 }, height: { xs: 54, sm: 64 } } as cons
  * una griglia (tre per riga su telefono).
  *
  * Vale per le pagine d'uso, per la pausa e per "riduci movimento": la striscia
- * non si congela a metà logo, diventa l'elenco dei sei sponsor.
+ * non si congela a metà logo, diventa l'elenco degli sponsor.
  */
 const STATIC_TRACK = {
   animation: "none",
@@ -196,10 +168,11 @@ function SponsorTile({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
       }}
     >
       <Image
-        src={sponsor.src}
+        src={sponsor.logo}
         alt={sponsor.name}
         fill
         sizes="148px"
+        unoptimized={isVectorLogo(sponsor.logo)}
         style={
           sponsor.ownBackground
             ? { objectFit: "cover" }

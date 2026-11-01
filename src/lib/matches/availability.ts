@@ -146,3 +146,17 @@ export async function saveAvailability(input: {
     }),
   ]);
 }
+
+/**
+ * Le convocazioni di una partita sono fatte appena lo staff ne salva una.
+ * Da lì le risposte restano quelle date fino a quel momento: la persona non le
+ * cambia più (chi non ha risposto resta senza risposta), così lo staff può
+ * sempre dire cosa sapeva quando ha convocato. Un cambio dopo passa dallo
+ * staff, che segna la disponibilità o tocca le convocazioni.
+ */
+export function callupsLocked(callupCount: number): boolean {
+  return callupCount > 0;
+}
+
+export const CALLUPS_LOCKED_ERROR =
+  "Le convocazioni sono già fatte: la risposta non si cambia più. Se c'è un problema, scrivi allo staff";

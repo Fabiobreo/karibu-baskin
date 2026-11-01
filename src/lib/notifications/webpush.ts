@@ -288,3 +288,19 @@ export async function sendPushToUser(
 
   return dispatchToSubs(targets, buildData(payload));
 }
+
+/**
+ * Invia a un solo dispositivo, se è di `userId` (null = iscrizione anonima).
+ * Serve alla notifica di prova del profilo: niente preferenze, la chiede chi
+ * la riceve.
+ */
+export async function sendPushToEndpoint(
+  endpoint: string,
+  userId: string | null,
+  payload: PushPayload
+): Promise<{ sent: number; removed: number }> {
+  if (!pushEnabled) return { sent: 0, removed: 0 };
+  const subs = await prisma.pushSubscription.findMany({ where: { endpoint, userId } });
+  if (subs.length === 0) return { sent: 0, removed: 0 };
+  return dispatchToSubs(subs, buildData(payload));
+}

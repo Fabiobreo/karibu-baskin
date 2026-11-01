@@ -2,7 +2,11 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 
 vi.mock("@/lib/db", () => ({
-  prisma: { session: { deleteMany: vi.fn() } },
+  prisma: {
+    session: { deleteMany: vi.fn() },
+    pushSubscription: { deleteMany: vi.fn() },
+    $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
+  },
 }));
 vi.mock("@/lib/authjs", () => ({ auth: vi.fn() }));
 
@@ -10,13 +14,19 @@ import { DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 
-const deleteMany = (prisma as unknown as { session: { deleteMany: Mock } }).session.deleteMany;
+const db = prisma as unknown as {
+  session: { deleteMany: Mock };
+  pushSubscription: { deleteMany: Mock };
+};
+const deleteMany = db.session.deleteMany;
+const deletePushSubs = db.pushSubscription.deleteMany;
 const mockAuth = auth as unknown as Mock;
 
 describe("DELETE /api/users/me/sessions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     deleteMany.mockResolvedValue({ count: 3 });
+    deletePushSubs.mockResolvedValue({ count: 1 });
   });
 
   it("richiede l'autenticazione", async () => {
@@ -32,6 +42,12 @@ describe("DELETE /api/users/me/sessions", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, count: 3 });
     expect(deleteMany).toHaveBeenCalledWith({ where: { userId: "u1" } });
+  });
+
+  it("cancella anche le sue iscrizioni push (telefono perso)", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1" } });
+    await DELETE();
+    expect(deletePushSubs).toHaveBeenCalledWith({ where: { userId: "u1" } });
   });
 
   it("risponde con un errore leggibile se il database fallisce", async () => {
