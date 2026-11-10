@@ -35,11 +35,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
+  const startedAt = Date.now();
   // Senza chiave gli album non si leggono: non è un errore del giro di oggi.
   const albums = isDriveConfigured()
     ? await attempt("album", () => syncRecentAlbums())
     : { ok: true as const, result: null };
-  const instagram = await attempt("instagram", () => syncInstagram());
+  // A Instagram resta il tempo non usato dagli album, con un margine sui 60 s:
+  // quello che non copia oggi lo copia domani.
+  const budgetMs = Math.max(10_000, 48_000 - (Date.now() - startedAt));
+  const instagram = await attempt("instagram", () => syncInstagram({ budgetMs }));
 
   // Per Instagram "non configurato" è un esito (`ok: false` con il motivo), non un'eccezione.
   const instagramOk = instagram.ok && instagram.result.ok;

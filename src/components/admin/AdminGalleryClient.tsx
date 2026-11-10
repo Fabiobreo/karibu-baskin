@@ -62,9 +62,13 @@ export default function AdminGalleryClient({
       const res = await fetch("/api/gallery/sync", { method: "POST" });
       if (!res.ok) throw new Error(await readError(res));
       const data = await res.json();
+      const rest =
+        data.remaining > 0
+          ? ` Ne mancano ${data.remaining}: premi di nuovo Sincronizza per continuare.`
+          : "";
       showToast({
-        message: `Sync completato: ${data.created} nuovi, ${data.updated} aggiornati, ${data.pruned} rimossi.`,
-        severity: "success",
+        message: `Sync completato: ${data.created} nuovi, ${data.updated} aggiornati, ${data.pruned} rimossi.${rest}`,
+        severity: data.remaining > 0 ? "info" : "success",
         duration: 6000,
       });
       // Ricarico la pagina per mostrare i nuovi post (server-side fetch).

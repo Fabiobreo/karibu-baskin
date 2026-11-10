@@ -19,7 +19,20 @@ export interface InstagramSyncResult {
   created: number;
   updated: number;
   pruned: number;
+  /** Post nuovi rimasti da copiare perché è finito il tempo: li prende il giro successivo. */
+  remaining: number;
 }
+
+export interface InstagramSyncOptions {
+  /**
+   * Tempo massimo (ms) dopo cui non si inizia a copiare un altro post. Il primo
+   * sync copia decine di immagini e sforerebbe il limite della funzione: si ferma
+   * prima, salva quello che ha fatto, e il giro dopo riparte dai post mancanti.
+   */
+  budgetMs?: number;
+}
+
+const DEFAULT_BUDGET_MS = 40_000;
 
 type IgMediaType = "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
 
@@ -75,18 +88,21 @@ async function mirrorMediaImages(media: IgMedia): Promise<string[]> {
     if (media.media_url) sources.push(media.media_url);
   }
 
-  const blobUrls: string[] = [];
-  for (const src of sources) {
-    const buffer = await downloadToBuffer(src);
-    if (!buffer) continue;
-    try {
-      const { url } = await uploadImage(buffer, { folder: "gallery" });
-      blobUrls.push(url);
-    } catch (err) {
-      console.error("[instagram] upload Blob fallito:", err);
-    }
-  }
-  return blobUrls;
+  // Le immagini di un carosello in parallelo, mantenendo l'ordine.
+  const results = await Promise.all(
+    sources.map(async (src) => {
+      const buffer = await downloadToBuffer(src);
+      if (!buffer) return null;
+      try {
+        const { url } = await uploadImage(buffer, { folder: "gallery" });
+        return url;
+      } catch (err) {
+        console.error("[instagram] upload Blob fallito:", err);
+        return null;
+      }
+    })
+  );
+  return results.filter((u): u is string => u !== null);
 }
 
 /** Recupera gli ultimi media dall'account Instagram Business via Graph API. */
@@ -122,13 +138,17 @@ async function fetchInstagramMedia(): Promise<IgMedia[]> {
  * per i post nuovi, upsert metadati, prune dei post in eccesso.
  * Idempotente: i post già presenti non vengono ri-scaricati.
  */
-export async function syncInstagram(): Promise<InstagramSyncResult> {
+export async function syncInstagram(
+  options: InstagramSyncOptions = {}
+): Promise<InstagramSyncResult> {
+  const deadline = Date.now() + (options.budgetMs ?? DEFAULT_BUDGET_MS);
   const result: InstagramSyncResult = {
     ok: false,
     fetched: 0,
     created: 0,
     updated: 0,
     pruned: 0,
+    remaining: 0,
   };
 
   if (!isInstagramConfigured()) {
@@ -151,6 +171,11 @@ export async function syncInstagram(): Promise<InstagramSyncResult> {
         data: { caption: m.caption ?? null, permalink: m.permalink },
       });
       result.updated++;
+      continue;
+    }
+
+    if (Date.now() >= deadline) {
+      result.remaining++;
       continue;
     }
 
