@@ -98,6 +98,8 @@ export async function moveChildHistoryToUser(
     where: { userId, team: { season: { in: teams.map((m) => m.team.season) } } },
   });
   const teamMemberships = await tx.teamMembership.updateMany({ where: from, data: to });
+  // Storico delle squadre lasciate: segue la persona, senza doppioni da togliere.
+  await tx.pastTeamMembership.updateMany({ where: from, data: to });
 
   // Partite: statistiche, convocazioni, MVP, disponibilità (una riga per partita).
   const stats = await tx.playerMatchStats.findMany({ where: from, select: { matchId: true } });

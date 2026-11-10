@@ -264,6 +264,7 @@ sentry.edge.config.ts                      # Sentry edge runtime
 | `Season`               | `Season`               | Stagioni sportive (es. "2025-26")                       |
 | `CompetitiveTeam`      | `CompetitiveTeam`      | Squadre agonistiche per stagione                        |
 | `TeamMembership`       | `TeamMembership`       | Appartenenza giocatore (User o Child) a una squadra     |
+| `PastTeamMembership`   | `PastTeamMembership`   | Squadra lasciata, con il periodo (storico dei cambi)    |
 | `Match`                | `OfficialMatch`        | Partite ufficiali                                       |
 | `OpposingTeam`         | `OpposingTeam`         | Squadre avversarie                                      |
 | `PlayerMatchStats`     | `PlayerMatchStats`     | Statistiche giocatore per partita                       |
@@ -297,6 +298,7 @@ sentry.edge.config.ts                      # Sentry edge runtime
 
 > **Genitori dei figli:** un `Child` ha uno o più genitori in `ChildGuardian`, tutti paritari. Ogni controllo "è suo genitore?" passa da `@/lib/guardians` (`guardianOf`, `isGuardian`); dettagli in [`docs/workflows/06-genitore-figlio.md`](docs/workflows/06-genitore-figlio.md).
 > **Figlio con un account = una persona sola** (`@/lib/person`): chi ha un account può avere una scheda figlio collegata (`Child.userId`), che è il legame con i genitori. I dati sportivi stanno sull'**account** (al collegamento lo storico della scheda ci passa, `@/lib/childHistory`), e i genitori agiscono sull'account passando dalla scheda: disponibilità, iscrizioni e notifiche valgono per entrambi. Una funzione nuova che riguarda un atleta non guarda una chiave sola: in lettura `personRows(child)`, per i destinatari `withGuardians(userIds)`, in scrittura la riga va sull'account se c'è. Eccezione: le risposte agli eventi stanno sulla scheda.
+> **Cambi di squadra:** togliere qualcuno da una rosa cancella la riga di `TeamMembership` e ne scrive il periodo in `PastTeamMembership` (`recordTeamExit`, stessa transazione). I calcoli che guardano indietro chiedono "in che squadra era quel giorno?" a `@/lib/matches/teamHistory` (`loadTeamPeriods`, `wasMemberAt`): le presenze nelle convocazioni (`callupStats`) e i prestiti (`loanDetection`). Chi ha lasciato una squadra nella stessa stagione è nella nuova solo da quando ci è entrato. Le righe di prima del 10/11/2026 sono ricostruite dal registro attività ("Rimozione membro squadra").
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
 

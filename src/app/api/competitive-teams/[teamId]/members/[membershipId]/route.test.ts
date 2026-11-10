@@ -1,15 +1,19 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 
-vi.mock("@/lib/db", () => ({
-  prisma: {
+vi.mock("@/lib/db", () => {
+  const prisma = {
     teamMembership: {
       update: vi.fn(),
       findUnique: vi.fn(),
       delete: vi.fn(),
     },
-  },
-}));
+    pastTeamMembership: { create: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(),
+  };
+  prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
+  return { prisma };
+});
 
 vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
@@ -33,7 +37,10 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 
-type PrismaMock = { teamMembership: { update: Mock; findUnique: Mock; delete: Mock } };
+type PrismaMock = {
+  teamMembership: { update: Mock; findUnique: Mock; delete: Mock };
+  pastTeamMembership: { create: Mock };
+};
 const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
 const mockAuth = auth as Mock;
@@ -89,6 +96,7 @@ describe("DELETE /api/competitive-teams/[teamId]/members/[membershipId]", () => 
     teamId: "t-1",
     userId: "u-1",
     childId: null,
+    createdAt: new Date("2026-09-27T20:05:00Z"),
     team: { name: "Karibu A" },
   };
 
@@ -116,6 +124,32 @@ describe("DELETE /api/competitive-teams/[teamId]/members/[membershipId]", () => 
     const res = await DELETE(req, { params: membershipParams });
     expect(res.status).toBe(204);
     expect(p.teamMembership.delete).toHaveBeenCalledWith({ where: { id: "m-1" } });
+  });
+
+  it("tiene nello storico il periodo nella squadra lasciata", async () => {
+    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", {
+      method: "DELETE",
+    });
+    await DELETE(req, { params: membershipParams });
+    expect(p.pastTeamMembership.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        teamId: "t-1",
+        userId: "u-1",
+        childId: null,
+        startedAt: new Date("2026-09-27T20:05:00Z"),
+        endedAt: expect.any(Date),
+      }),
+    });
+  });
+
+  it("404 se la riga non c'è più", async () => {
+    p.teamMembership.findUnique.mockResolvedValue(null);
+    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", {
+      method: "DELETE",
+    });
+    const res = await DELETE(req, { params: membershipParams });
+    expect(res.status).toBe(404);
+    expect(p.teamMembership.delete).not.toHaveBeenCalled();
   });
 
   it("sends removal notification to the removed user", async () => {

@@ -11,6 +11,9 @@ vi.mock("@/lib/db", () => ({
     match: {
       findUnique: vi.fn(),
     },
+    pastTeamMembership: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     teamMembership: {
       findMany: vi.fn().mockResolvedValue([]),
     },
@@ -220,8 +223,8 @@ describe("PUT /api/matches/[matchId]/callups", () => {
       // I due giocatori sono in rosa (non prestiti) e nessuno ha risposto.
       (prisma as unknown as { teamMembership: { findMany: Mock } }).teamMembership.findMany //
         .mockResolvedValue([
-          { userId: "user-1", childId: null },
-          { userId: null, childId: "child-1" },
+          { teamId: "team-1", userId: "user-1", childId: null },
+          { teamId: "team-1", userId: null, childId: "child-1" },
         ]);
       p.matchAvailability.findMany.mockResolvedValue([]);
     });

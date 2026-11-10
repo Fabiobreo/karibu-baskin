@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { loadAvailabilityLookup } from "@/lib/matches/availability";
 import { computeCandidateStats } from "@/lib/matches/callupStats";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
+import { loadTeamPeriods } from "@/lib/matches/teamHistory";
 import type {
   CandidateInput,
   SessionEligibilityInput,
@@ -295,12 +296,15 @@ export async function buildTeamCallupContext({
     childId: c.childId,
   }));
 
+  const periodsByCandidate = await loadTeamPeriods(candidateUserIds, candidateChildIds);
+
   const stats = computeCandidateStats({
     candidates,
     windowSessions: windowSessionsInput,
     registrations: regLookup,
     callups: callupLookup,
     referenceDate: now,
+    teamPeriods: periodsByCandidate,
   });
 
   // Prestiti già salvati per questo lato: convocati che NON sono membri della

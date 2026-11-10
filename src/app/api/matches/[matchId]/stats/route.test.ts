@@ -10,8 +10,11 @@ vi.mock("@/lib/db", () => ({
     match: {
       findUnique: vi.fn().mockResolvedValue({ teamId: "team-1", team: { season: "2025-26" } }),
     },
+    pastTeamMembership: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     teamMembership: {
-      findMany: vi.fn().mockResolvedValue([{ userId: "user-1", childId: null }]),
+      findMany: vi.fn().mockResolvedValue([{ teamId: "team-1", userId: "user-1", childId: null }]),
     },
     child: {
       findMany: vi.fn(),

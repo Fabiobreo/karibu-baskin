@@ -54,11 +54,11 @@ model User {
   customImage   String? // immagine caricata dall'utente (priorità su image da Google)
   createdAt     DateTime  @default(now())
 
-  appRole AppRole @default(GUEST)
+  appRole         AppRole   @default(GUEST)
   // Ospite che lo staff ha visto e lasciato tale: esce dal riquadro "Nuovi
   // account da approvare". null = ancora da guardare.
   guestReviewedAt DateTime?
-  slug    String? @unique // es. "mario-rossi" — URL slug leggibile, generato dal nome
+  slug            String?   @unique // es. "mario-rossi" — URL slug leggibile, generato dal nome
 
   // Campi atleta
   sportRole        Int?
@@ -91,6 +91,7 @@ model User {
   sportRoleHistory      SportRoleHistory[]
   pushSubscriptions     PushSubscription[]
   teamMemberships       TeamMembership[]
+  pastTeamMemberships   PastTeamMembership[]
   matchStats            PlayerMatchStats[]
   callups               MatchCallup[]
   matchMvps             MatchMvp[]
@@ -211,6 +212,7 @@ model Child {
   user                  User?                  @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
   registrations         Registration[]
   teamMemberships       TeamMembership[]
+  pastTeamMemberships   PastTeamMembership[]
   matchStats            PlayerMatchStats[]
   callups               MatchCallup[]
   matchMvps             MatchMvp[]
@@ -227,13 +229,13 @@ model Child {
 // paritari. Eliminare un utente toglie solo il suo collegamento: il figlio
 // rimasto senza genitori va eliminato a mano (deleteUserAndOrphanedChildren).
 model ChildGuardian {
-  childId   String
-  userId    String
-  createdAt DateTime @default(now())
+  childId          String
+  userId           String
+  createdAt        DateTime @default(now())
   /// Il genitore vede le cose da fare per questo figlio (card "prossima cosa
   /// da fare", disponibilità da dare). Spegnibile solo per un figlio con un
   /// account suo, che se ne occupa da solo.
-  showInNextAction Boolean @default(true)
+  showInNextAction Boolean  @default(true)
 
   child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -384,6 +386,7 @@ model CompetitiveTeam {
   createdAt    DateTime @default(now())
 
   memberships        TeamMembership[]
+  pastMemberships    PastTeamMembership[]
   matches            Match[]                @relation("MatchTeam")
   opponentInMatches  Match[]                @relation("MatchOpponentTeam")
   callups            MatchCallup[]          @relation("MatchCallupTeam")
@@ -410,6 +413,30 @@ model TeamMembership {
 
   @@unique([teamId, userId])
   @@unique([teamId, childId])
+  @@index([teamId])
+  @@index([userId])
+  @@index([childId])
+}
+
+// Chi è stato in una squadra e non lo è più: la riga di TeamMembership viene
+// cancellata, questa ne tiene il periodo. Serve ai calcoli che guardano indietro
+// (presenze nelle convocazioni, prestiti nelle partite già giocate) dopo un
+// cambio di squadra. Vedi src/lib/matches/teamHistory.ts.
+model PastTeamMembership {
+  id        String    @id @default(cuid())
+  teamId    String
+  // Esattamente uno dei due deve essere valorizzato
+  userId    String?
+  childId   String?
+  // null = non si sa da quando (righe ricostruite dal registro attività)
+  startedAt DateTime?
+  endedAt   DateTime
+  createdAt DateTime  @default(now())
+
+  team  CompetitiveTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user  User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child?          @relation(fields: [childId], references: [id], onDelete: Cascade)
+
   @@index([teamId])
   @@index([userId])
   @@index([childId])

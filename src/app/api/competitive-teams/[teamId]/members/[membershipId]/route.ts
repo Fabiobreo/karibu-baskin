@@ -5,6 +5,8 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { inBackground } from "@/lib/background";
+import { recordTeamExit } from "@/lib/matches/teamHistory";
+import { Prisma } from "@prisma/client";
 
 type Params = { params: Promise<{ teamId: string; membershipId: string }> };
 
@@ -32,11 +34,32 @@ export async function DELETE(_req: Request, { params }: Params) {
   const { membershipId } = await params;
   const membership = await prisma.teamMembership.findUnique({
     where: { id: membershipId },
-    select: { teamId: true, userId: true, childId: true, team: { select: { name: true } } },
+    select: {
+      teamId: true,
+      userId: true,
+      childId: true,
+      createdAt: true,
+      team: { select: { name: true } },
+    },
   });
-  await prisma.teamMembership.delete({ where: { id: membershipId } });
+  if (!membership) {
+    return NextResponse.json({ error: "Non è più in questa rosa" }, { status: 404 });
+  }
+  // Chi lascia la squadra resta nello storico: presenze e prestiti delle
+  // settimane in cui c'era continuano a valere (@/lib/matches/teamHistory).
+  try {
+    await prisma.$transaction(async (tx) => {
+      await recordTeamExit(tx, membership);
+      await tx.teamMembership.delete({ where: { id: membershipId } });
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Non è più in questa rosa" }, { status: 404 });
+    }
+    throw err;
+  }
 
-  if (session?.user?.id && membership) {
+  if (session?.user?.id) {
     inBackground(
       logAudit({
         actorId: session.user.id,
@@ -52,7 +75,7 @@ export async function DELETE(_req: Request, { params }: Params) {
       "audit remove member"
     );
   }
-  if (membership?.userId) {
+  if (membership.userId) {
     inBackground(
       createAppNotification({
         type: "SYSTEM",

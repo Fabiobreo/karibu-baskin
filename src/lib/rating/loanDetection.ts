@@ -7,6 +7,7 @@
 
 import { prisma } from "@/lib/db";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
+import { loadTeamPeriods, wasMemberAt } from "@/lib/matches/teamHistory";
 
 export type LoanLookup = {
   match: { teamId: string; teamSeason: string; date: Date };
@@ -46,18 +47,35 @@ export async function buildLoanLookup(
 
   // La Karibu di stagione schiera i tesserati di tutta la stagione: per lei nessun
   // giocatore della stagione è in prestito.
-  const memberships = await prisma.teamMembership.findMany({
-    where: {
-      teamId: { in: await rosterTeamIds([effectiveTeam]) },
-      team: { season: effectiveSeason },
-    },
-    select: { userId: true, childId: true },
-  });
+  const teamIds = await rosterTeamIds([effectiveTeam]);
+  // Rosa del giorno della partita, dallo storico delle squadre
+  // (@/lib/matches/teamHistory): conta chi c'era allora e ha cambiato squadra
+  // dopo; chi è arrivato con un cambio dopo la partita, quel giorno era altrove.
+  const inSeason = { teamId: { in: teamIds }, team: { season: effectiveSeason } };
+  const [current, past] = await Promise.all([
+    prisma.teamMembership.findMany({
+      where: inSeason,
+      select: { userId: true, childId: true },
+    }),
+    prisma.pastTeamMembership.findMany({
+      where: inSeason,
+      select: { userId: true, childId: true },
+    }),
+  ]);
+  const userIds = [
+    ...new Set([...current, ...past].map((r) => r.userId).filter((x): x is string => !!x)),
+  ];
+  const childIds = [
+    ...new Set([...current, ...past].map((r) => r.childId).filter((x): x is string => !!x)),
+  ];
+  const periods = await loadTeamPeriods(userIds, childIds);
+  const memberOnMatchDay = (key: string) =>
+    teamIds.some((teamId) => wasMemberAt(periods.get(key) ?? [], teamId, match.date));
 
   return {
     match: { teamId: effectiveTeamId, teamSeason: effectiveSeason, date: match.date },
-    memberUserIds: new Set(memberships.map((m) => m.userId).filter((x): x is string => !!x)),
-    memberChildIds: new Set(memberships.map((m) => m.childId).filter((x): x is string => !!x)),
+    memberUserIds: new Set(userIds.filter((id) => memberOnMatchDay(`user-${id}`))),
+    memberChildIds: new Set(childIds.filter((id) => memberOnMatchDay(`child-${id}`))),
   };
 }
 

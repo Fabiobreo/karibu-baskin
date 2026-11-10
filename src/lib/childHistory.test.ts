@@ -50,6 +50,7 @@ function fakeTx() {
   return {
     registration: table(),
     teamMembership: table(),
+    pastTeamMembership: table(),
     playerMatchStats: table(),
     matchCallup: table(),
     matchMvp: table(),
@@ -72,6 +73,7 @@ describe("moveChildHistoryToUser", () => {
     for (const t of [
       tx.registration,
       tx.teamMembership,
+      tx.pastTeamMembership,
       tx.playerMatchStats,
       tx.matchCallup,
       tx.matchMvp,

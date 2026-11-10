@@ -1,10 +1,13 @@
 // Calcolo statistiche per la selezione convocati di una partita.
 // Per ogni candidato (User o Child membro della rosa) calcola:
-// - presenze allenamenti nelle ultime 2 settimane (su sessioni eligibili per ruolo/squadra)
+// - presenze allenamenti nelle ultime 2 settimane (su sessioni eligibili per ruolo/squadra,
+//   guardando la squadra in cui era quel giorno, più quelle a cui era iscritto)
 // - assenze (= eligibile e non presente / non iscritto)
 // - eligibili totali in finestra
 // - n. convocazioni stagione corrente (escluso il match corrente)
 // - giorni dall'ultima convocazione (precedente al match corrente)
+
+import { wasMemberAt, type TeamPeriod } from "@/lib/matches/teamHistory";
 
 export type CandidateKind = "user" | "child";
 
@@ -54,16 +57,23 @@ export interface CandidateStats {
   daysSinceLastCallup: number | null; // null = mai convocato prima
 }
 
+/**
+ * `periods`: squadre della persona nel tempo (@/lib/matches/teamHistory). Senza,
+ * vale la rosa di adesso (`candidate.teamIds`).
+ */
 export function isSessionEligible(
   session: SessionEligibilityInput,
-  candidate: CandidateInput
+  candidate: CandidateInput,
+  periods?: TeamPeriod[]
 ): boolean {
   if (session.allowedRoles.length > 0) {
     if (candidate.sportRole == null) return false;
     if (!session.allowedRoles.includes(candidate.sportRole)) return false;
   }
   if (session.restrictTeamId != null) {
-    const isMember = candidate.teamIds.includes(session.restrictTeamId);
+    const isMember = periods
+      ? wasMemberAt(periods, session.restrictTeamId, session.date)
+      : candidate.teamIds.includes(session.restrictTeamId);
     const isOpenRole =
       candidate.sportRole != null && session.openRoles.includes(candidate.sportRole);
     if (!isMember && !isOpenRole) return false;
@@ -81,6 +91,8 @@ interface ComputeArgs {
   callups: CallupLookup[];
   // Riferimento per "giorni da ultima convocazione" (di solito = oggi, oppure data del match in editing)
   referenceDate: Date;
+  // Squadre di ogni candidato nel tempo, chiave `${kind}-${id}`. Chi manca usa la rosa di adesso.
+  teamPeriods?: Map<string, TeamPeriod[]>;
 }
 
 export function computeCandidateStats({
@@ -89,6 +101,7 @@ export function computeCandidateStats({
   registrations,
   callups,
   referenceDate,
+  teamPeriods,
 }: ComputeArgs): CandidateStats[] {
   // Indice registrazioni: chiave = `${sessionId}|${userId|childId}`
   const regBySessionAndCandidate = new Map<string, RegistrationLookup>();
@@ -109,14 +122,17 @@ export function computeCandidateStats({
   }
 
   return candidates.map((cand) => {
+    const periods = teamPeriods?.get(`${cand.kind}-${cand.id}`);
     let presences = 0;
     let absences = 0;
     let eligibleSessions = 0;
 
     for (const s of windowSessions) {
-      if (!isSessionEligible(s, cand)) continue;
-      eligibleSessions++;
       const reg = regBySessionAndCandidate.get(`${s.id}|${cand.id}`);
+      // Un'iscrizione dice che allora poteva esserci: conta anche se lo storico
+      // delle squadre non lo sa (righe di prima che lo storico esistesse).
+      if (!reg && !isSessionEligible(s, cand, periods)) continue;
+      eligibleSessions++;
       if (reg?.attended === true) presences++;
       else absences++; // include: iscritto+assente, iscritto+null, mai iscritto
     }
