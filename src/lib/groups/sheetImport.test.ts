@@ -15,7 +15,7 @@ const match = (
 ): SheetMatch => ({
   date: new Date("2025-10-19T13:00:00Z"),
   dateFixed: false,
-  venue: "Breganze",
+  venue: "Polisportivo Gino Cosaro, Montecchio",
   homeScore: 92,
   awayScore: 79,
   forfait: false,
@@ -38,7 +38,7 @@ const ours = (over: Partial<ExistingOurMatch> = {}): ExistingOurMatch => ({
   ourScore: null,
   theirScore: null,
   matchday: 1,
-  venue: "Breganze",
+  venue: "Polisportivo Gino Cosaro, Montecchio",
   groupId: "g1",
   ...over,
 });
@@ -120,17 +120,55 @@ describe("planSheetImport", () => {
     expect(rows.map((r) => r.matchday)).toEqual([1, 2]);
   });
 
+  it("casa o trasferta lo dice il campo, non l'ordine delle squadre", () => {
+    // Sul sito EISI siamo scritti per primi, ma si gioca a Meduna di Livenza.
+    const [away] = plan([
+      match({
+        number: 6400,
+        home: "Karibù Kapuleti",
+        away: "Baskin Breganze Space Jam",
+        venue: "Via Ca Michiel 24, Meduna di Livenza (TV)",
+        homeScore: 70,
+        awayScore: 65,
+      }),
+    ]);
+    expect(away).toMatchObject({ isHome: false, ourScore: 70, theirScore: 65 });
+    // Scritti per secondi, ma il campo è il nostro.
+    const [home] = plan([
+      match({
+        number: 6401,
+        home: "Baskin Breganze Space Jam",
+        away: "Karibù Kapuleti",
+        venue: "Polisportivo Gino Cosaro, Via del Vigo 11, Montecchio Maggiore (VI)",
+        homeScore: 60,
+        awayScore: 75,
+      }),
+    ]);
+    expect(home).toMatchObject({ isHome: true, ourScore: 75, theirScore: 60 });
+    // Senza campo resta l'ordine.
+    const [unknown] = plan([
+      match({
+        number: 6402,
+        home: "Karibù Kapuleti",
+        away: "Baskin Breganze Space Jam",
+        venue: null,
+      }),
+    ]);
+    expect(unknown.isHome).toBe(true);
+  });
+
   it("in trasferta gira il punteggio dalla nostra parte", () => {
     const [row] = plan([
       match({
         number: 16,
         home: "Baskin Breganze Space Jam",
         away: "Karibù Kapuleti",
+        venue: "Breganze",
         homeScore: 83,
         awayScore: 61,
       }),
     ]);
-    expect(row).toMatchObject({ isHome: false, opponentRef: "bre" });
+    expect(row).toMatchObject({ isHome: false, opponentRef: "bre", ourScore: 61, theirScore: 83 });
   });
 
   it("completa una partita già inserita senza punteggio", () => {

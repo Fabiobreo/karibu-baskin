@@ -15,6 +15,20 @@ export const CLUB_VENUE = {
 /** Indirizzo su una riga, come si scrive in un campo "Luogo". */
 export const CLUB_VENUE_LABEL = `${CLUB_VENUE.name}, ${CLUB_VENUE.street}, ${CLUB_VENUE.city}`;
 
+/**
+ * Il campo di gioco è il nostro? Serve all'import dall'EISI, dove casa e
+ * trasferta si capiscono solo dal campo: a Montecchio Maggiore giochiamo in
+ * casa. I campi arrivano scritti in tanti modi ("Polisportivo Gino Cosaro,
+ * Montecchio", "Campo MM di Via del Vigo, Montecchio Maggiore (VI)").
+ */
+export function isClubVenue(place: string): boolean {
+  const p = place
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  return /\bmontecchio\b/.test(p) || p.includes("gino cosaro") || p.includes("via del vigo");
+}
+
 /** Luogo da mostrare per un allenamento: il suo, oppure la sede del club. */
 export function trainingLocation(location: string | null | undefined): string {
   const l = location?.trim();

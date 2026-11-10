@@ -361,8 +361,7 @@ async function applyPlan(input: ApplyInput): Promise<{ createdOpponents: number 
     if (r.kind === "ours") {
       const opponentId = real(r.opponentRef);
       if (!r.ourTeamId || !opponentId) continue;
-      const ourScore = r.isHome ? r.homeScore : r.awayScore;
-      const theirScore = r.isHome ? r.awayScore : r.homeScore;
+      const { ourScore, theirScore } = r;
       const score =
         writesScore && ourScore !== null && theirScore !== null
           ? { ourScore, theirScore, result: deriveResult(ourScore, theirScore) }

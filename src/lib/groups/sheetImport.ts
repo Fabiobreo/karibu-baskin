@@ -1,3 +1,4 @@
+import { isClubVenue } from "@/lib/clubVenue";
 import { assignMatchdays, type SheetMatch } from "./eisiSheet";
 
 /**
@@ -68,7 +69,15 @@ export interface PlanRow {
   // Valori da scrivere (id delle avversarie nuove: `new:<nome>`).
   ourTeamId: string | null;
   opponentRef: string | null;
+  /**
+   * Casa o trasferta per una nostra partita. Lo dice il campo di gioco (a
+   * Montecchio = in casa), non l'ordine delle squadre: sul sito e nei fogli
+   * EISI la squadra scritta per prima spesso gioca fuori.
+   */
   isHome: boolean;
+  /** Il nostro punteggio e quello dell'avversaria, per le nostre partite. */
+  ourScore: number | null;
+  theirScore: number | null;
   homeRef: string | null;
   awayRef: string | null;
 }
@@ -79,7 +88,7 @@ export const NEW_PREFIX = "new:";
 export function normalizeTeamName(name: string): string {
   return name
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
@@ -218,6 +227,8 @@ export function planSheetImport(input: PlanInput): PlanRow[] {
       ourTeamId: null,
       opponentRef: null,
       isHome: true,
+      ourScore: null,
+      theirScore: null,
       homeRef: null,
       awayRef: null,
     };
@@ -241,14 +252,24 @@ export function planSheetImport(input: PlanInput): PlanRow[] {
 
     // ── Una nostra squadra in campo: è una partita di "Partite" ──────────────
     if (homeT.kind === "ours" || awayT.kind === "ours") {
-      const isHome = homeT.kind === "ours";
-      const ourTeamId = isHome
+      const oursFirst = homeT.kind === "ours";
+      const ourTeamId = oursFirst
         ? (homeT as { teamId: string }).teamId
         : (awayT as { teamId: string }).teamId;
-      const opponentRef = isHome ? refOf(m.away, awayT) : refOf(m.home, homeT);
-      const ourScore = isHome ? m.homeScore : m.awayScore;
-      const theirScore = isHome ? m.awayScore : m.homeScore;
-      const row = { ...base, kind: "ours" as const, ourTeamId, opponentRef, isHome };
+      const opponentRef = oursFirst ? refOf(m.away, awayT) : refOf(m.home, homeT);
+      const ourScore = oursFirst ? m.homeScore : m.awayScore;
+      const theirScore = oursFirst ? m.awayScore : m.homeScore;
+      // Senza campo di gioco resta l'ordine delle squadre.
+      const isHome = m.venue ? isClubVenue(m.venue) : oursFirst;
+      const row = {
+        ...base,
+        kind: "ours" as const,
+        ourTeamId,
+        opponentRef,
+        isHome,
+        ourScore,
+        theirScore,
+      };
 
       const candidates = opponentRef?.startsWith(NEW_PREFIX)
         ? []

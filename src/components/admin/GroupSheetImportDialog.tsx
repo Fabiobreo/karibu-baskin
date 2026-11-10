@@ -524,7 +524,9 @@ export default function GroupSheetImportDialog({
                             <TableCell>
                               <Typography variant="body2">
                                 {ACTION_LABEL[r.action]}
-                                {r.kind === "ours" && r.action !== "skip" && " · in Partite"}
+                                {r.kind === "ours" &&
+                                  r.action !== "skip" &&
+                                  ` · ${r.isHome ? "in casa" : "in trasferta"}, in Partite`}
                               </Typography>
                               {(r.changes.length > 0 || r.skipReason) && (
                                 <Typography variant="caption" color="text.secondary">

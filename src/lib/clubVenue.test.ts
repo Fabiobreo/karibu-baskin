@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isClubVenue,
   CLUB_VENUE,
   CLUB_VENUE_LABEL,
   mapsSearchUrl,
@@ -104,6 +105,23 @@ describe("mapsSearchUrl", () => {
   it("codifica il luogo nella query", () => {
     expect(mapsSearchUrl("Via del Vigo, 11")).toBe(
       "https://www.google.com/maps/search/?api=1&query=Via%20del%20Vigo%2C%2011"
+    );
+  });
+});
+
+describe("isClubVenue", () => {
+  it("riconosce Montecchio scritto in tanti modi", () => {
+    expect(isClubVenue("Polisportivo Gino Cosaro, Via del Vigo 11, Montecchio Maggiore (VI)")).toBe(
+      true
+    );
+    expect(isClubVenue("Polisportivo Gino Cosaro, Montecchio")).toBe(true);
+    expect(isClubVenue("Campo MM di Via del Vigo, Montecchio Maggiore (VI)")).toBe(true);
+  });
+
+  it("gli altri campi sono trasferta", () => {
+    expect(isClubVenue("Via Ca Michiel 24, Meduna di Livenza (TV)")).toBe(false);
+    expect(isClubVenue("Palestra Mario Lanzi, Viale Martiri della Libertà, Schio (VI)")).toBe(
+      false
     );
   });
 });
