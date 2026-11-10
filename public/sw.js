@@ -314,15 +314,26 @@ self.addEventListener("push", (e) => {
     : [];
 
   e.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: data.icon,
-      badge: "/badge.png",
-      tag: isLinkNotif ? "link-request" : undefined,
-      data: { url: data.url, type: data.type },
-      vibrate,
-      actions,
-    })
+    Promise.all([
+      self.registration.showNotification(data.title, {
+        body: data.body,
+        icon: data.icon,
+        badge: "/badge.png",
+        tag: isLinkNotif ? "link-request" : undefined,
+        data: { url: data.url, type: data.type },
+        vibrate,
+        actions,
+      }),
+      // Pagine aperte: la campanella si aggiorna subito, senza aspettare il
+      // prossimo giro del contatore. Valore uguale a PUSH_RECEIVED_MESSAGE
+      // in src/lib/pushMessages.ts (lo controlla serviceWorker.test.ts).
+      self.clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((clients) => {
+          for (const client of clients) client.postMessage({ type: "karibu:push-received" });
+        })
+        .catch(() => {}),
+    ])
   );
 });
 

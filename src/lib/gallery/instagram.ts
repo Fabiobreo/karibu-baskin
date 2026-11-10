@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import { uploadImage, deleteImage } from "@/lib/blob";
 
-// Versione Graph API. Aggiornare quando Meta deprecata quella in uso.
-const GRAPH_VERSION = "v21.0";
+// Versione Graph API (v21 chiude il 21/01/2027). Aggiornare quando Meta depreca quella in uso.
+const GRAPH_VERSION = "v26.0";
 const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_VERSION}`;
 
 // Quanti post recuperare ad ogni sync (default 24).

@@ -12,28 +12,13 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 import { recomputeRatingsSafely } from "@/lib/rating/recompute";
-import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
+import { reconcileMatchBadges } from "@/lib/rating/matchBadges";
 import { isRestrictedClubTeam, mixedMatchError } from "@/lib/matches/mixedTeam";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 import { isHistoricMatch } from "@/lib/matches/matchPhase";
 import { inBackground } from "@/lib/background";
 
 type Params = { params: Promise<{ matchId: string }> };
-
-/** Ricalcola i badge di chi ha statistiche in questa partita. */
-async function reconcileMatchBadges(matchId: string, notify: boolean): Promise<void> {
-  const players = await prisma.playerMatchStats.findMany({
-    where: { matchId },
-    select: { userId: true, childId: true },
-  });
-  await Promise.all(
-    players.map((s) => {
-      if (s.userId) return reconcilePlayerBadges({ userId: s.userId }, { notify });
-      if (s.childId) return reconcilePlayerBadges({ childId: s.childId }, { notify });
-      return null;
-    })
-  );
-}
 
 export async function GET(req: Request, { params }: Params) {
   const rl = checkRateLimit(getClientIp(req), "get-match", 60, 60_000);

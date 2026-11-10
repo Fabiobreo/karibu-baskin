@@ -42,3 +42,22 @@ export const GroupMatchUpdateSchema = z
       b.homeTeamId === undefined || b.awayTeamId === undefined || b.homeTeamId !== b.awayTeamId,
     { message: "Le squadre devono essere diverse" }
   );
+
+// ── Import dal foglio EISI (POST /api/groups/[groupId]/sheet-import) ─────────
+
+const SheetNameTargetSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("ours"), teamId: z.string().min(1) }),
+  z.object({ kind: z.literal("opponent"), opposingTeamId: z.string().min(1) }),
+  z.object({ kind: z.literal("new") }),
+  z.object({ kind: z.literal("skip") }),
+]);
+
+export const GroupSheetImportSchema = z.object({
+  url: z.string().trim().min(1, "Incolla il link del foglio").max(500),
+  /** Abbinamento scelto per ogni nome del foglio; quelli mancanti si propongono. */
+  names: z.record(z.string().max(200), SheetNameTargetSchema).optional(),
+  /** Numeri di gara in conflitto per cui vale il punteggio del foglio. */
+  useSheetScore: z.array(z.number().int().positive()).max(500).optional(),
+  /** false o assente = solo anteprima. */
+  apply: z.boolean().optional(),
+});

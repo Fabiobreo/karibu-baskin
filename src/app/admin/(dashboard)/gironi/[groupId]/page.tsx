@@ -2,16 +2,17 @@ import { notFound } from "next/navigation";
 import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
 import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
+import { hasRole } from "@/lib/authRoles";
 import AdminGironeWorkspaceClient from "@/components/admin/AdminGironeWorkspaceClient";
 import { generateGroupSlug } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Workspace Girone | Admin" };
+export const metadata: Metadata = { title: "Girone | Admin" };
 
 type Params = { params: Promise<{ groupId: string }> };
 
 export default async function AdminGironeWorkspacePage({ params }: Params) {
-  await requireAdminPage("/admin/gironi");
+  const { role } = await requireAdminPage("/admin/gironi");
   const { groupId } = await params;
 
   // Risolvi per slug o per id (cuid legacy)
@@ -27,6 +28,7 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         select: {
           id: true,
+          slug: true,
           date: true,
           isHome: true,
           matchday: true,
@@ -63,7 +65,7 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
     }
   }
 
-  const [opponents, teams, allGroups] = await Promise.all([
+  const [opponents, teams] = await Promise.all([
     prisma.opposingTeam.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true, slug: true, city: true },
@@ -75,20 +77,11 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
       orderBy: [{ season: "desc" }, { name: "asc" }],
       select: { id: true, name: true, season: true, color: true },
     }),
-    prisma.group.findMany({
-      orderBy: [{ season: "desc" }, { name: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        season: true,
-        championship: true,
-        competitiveTeams: { select: { competitiveTeamId: true } },
-      },
-    }),
   ]);
 
   return (
     <AdminGironeWorkspaceClient
+      isAdmin={hasRole(role, "ADMIN")}
       group={{
         id: group.id,
         name: group.name,
@@ -107,13 +100,6 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
       explicitTeams={group.groupTeams.map((gt) => gt.opposingTeam)}
       allOpponents={opponents}
       ourTeamsCatalog={teams}
-      allGroups={allGroups.map((g) => ({
-        id: g.id,
-        name: g.name,
-        season: g.season,
-        championship: g.championship,
-        competitiveTeamIds: g.competitiveTeams.map((c) => c.competitiveTeamId),
-      }))}
     />
   );
 }

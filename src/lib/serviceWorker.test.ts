@@ -379,3 +379,13 @@ describe("service worker · attivazione", () => {
     expect(sw.caches._names()).toEqual(["karibu-v13-pages"]);
   });
 });
+
+// ── Push e campanella ────────────────────────────────────────────────────────
+
+describe("service worker · push", () => {
+  it("avvisa le pagine aperte con lo stesso messaggio che ascolta la campanella", async () => {
+    const { PUSH_RECEIVED_MESSAGE } = await import("@/lib/pushMessages");
+    // sw.js non può importare moduli: il valore è scritto a mano anche lì.
+    expect(readFileSync(SW_PATH, "utf8")).toContain(`type: "${PUSH_RECEIVED_MESSAGE}"`);
+  });
+});
