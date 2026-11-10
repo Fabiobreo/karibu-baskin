@@ -167,11 +167,33 @@ export interface PlanInput {
    * sovrascrive senza dirlo.
    */
   useSheetScore: ReadonlySet<number>;
+  /**
+   * Tiene la giornata già salvata sulle partite che ci sono (anche corretta a
+   * mano); la giornata calcolata vale solo per quelle nuove.
+   */
+  keepMatchdays?: boolean;
+}
+
+const pairKey = (a: string, b: string) => [a, b].sort().join(" | ");
+
+/**
+ * Se la data è cambiata di molto (una gara rinviata di mesi) la vicinanza non
+ * basta. Quando nel foglio le due squadre si incontrano una volta sola e nel
+ * girone c'è una sola loro partita ancora libera, è quella.
+ */
+function onlyLeft<T extends { id: string }>(candidates: T[], taken: Set<string>): T | null {
+  const free = candidates.filter((c) => !taken.has(c.id));
+  return free.length === 1 ? free[0] : null;
 }
 
 export function planSheetImport(input: PlanInput): PlanRow[] {
   const { matches, names, groupId, existingOurs, existingOthers, useSheetScore } = input;
   const matchdays = assignMatchdays(matches);
+  const pairs = new Map<string, number>();
+  for (const m of matches) {
+    const k = pairKey(m.home, m.away);
+    pairs.set(k, (pairs.get(k) ?? 0) + 1);
+  }
   const takenOurs = new Set<string>();
   const takenOthers = new Set<string>();
 
@@ -231,7 +253,14 @@ export function planSheetImport(input: PlanInput): PlanRow[] {
       const candidates = opponentRef?.startsWith(NEW_PREFIX)
         ? []
         : existingOurs.filter((e) => e.teamId === ourTeamId && e.opponentId === opponentRef);
-      const found = closest(candidates, (e) => e.date, m.date, takenOurs);
+      const found =
+        closest(candidates, (e) => e.date, m.date, takenOurs) ??
+        (pairs.get(pairKey(m.home, m.away)) === 1
+          ? onlyLeft(
+              candidates.filter((e) => e.groupId === groupId),
+              takenOurs
+            )
+          : null);
       if (!found) return { ...row, action: "create" };
       takenOurs.add(found.id);
 
@@ -250,11 +279,13 @@ export function planSheetImport(input: PlanInput): PlanRow[] {
       if (!sameMinute(found.date, m.date)) changes.push("data e ora");
       if (found.isHome !== isHome) changes.push(isHome ? "in casa" : "in trasferta");
       if (found.groupId !== groupId) changes.push("aggiunta al girone");
-      if (found.matchday !== matchdays[i]) changes.push(`giornata ${matchdays[i]}`);
+      const matchday =
+        input.keepMatchdays && found.matchday !== null ? found.matchday : matchdays[i];
+      if (found.matchday !== matchday) changes.push(`giornata ${matchday}`);
       if (!found.venue && m.venue) changes.push("campo");
 
       if (action !== "conflict" && changes.length === 0) action = "same";
-      return { ...row, action, existingId: found.id, changes, existingScore };
+      return { ...row, matchday, action, existingId: found.id, changes, existingScore };
     }
 
     // ── Due avversarie: risultato del girone ─────────────────────────────────
@@ -269,7 +300,9 @@ export function planSheetImport(input: PlanInput): PlanRow[] {
             (e.homeTeamId === homeRef && e.awayTeamId === awayRef) ||
             (e.homeTeamId === awayRef && e.awayTeamId === homeRef)
         );
-    const found = closest(candidates, (e) => e.date, m.date, takenOthers);
+    const found =
+      closest(candidates, (e) => e.date, m.date, takenOthers) ??
+      (pairs.get(pairKey(m.home, m.away)) === 1 ? onlyLeft(candidates, takenOthers) : null);
     if (!found) return { ...row, action: "create" };
     takenOthers.add(found.id);
 
@@ -291,9 +324,10 @@ export function planSheetImport(input: PlanInput): PlanRow[] {
     }
     if (!sameMinute(found.date, m.date)) changes.push("data e ora");
     if (flipped) changes.push("casa e ospiti");
-    if (found.matchday !== matchdays[i]) changes.push(`giornata ${matchdays[i]}`);
+    const matchday = input.keepMatchdays && found.matchday !== null ? found.matchday : matchdays[i];
+    if (found.matchday !== matchday) changes.push(`giornata ${matchday}`);
     if (action !== "conflict" && changes.length === 0) action = "same";
-    return { ...row, action, existingId: found.id, changes, existingScore };
+    return { ...row, matchday, action, existingId: found.id, changes, existingScore };
   });
 }
 

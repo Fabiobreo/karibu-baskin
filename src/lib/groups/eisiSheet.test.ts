@@ -92,6 +92,30 @@ describe("parseEisiSheet", () => {
   });
 });
 
+describe("parseEisiSheet — campionato in corso", () => {
+  it("segnala le gare senza data invece di perderle in silenzio", () => {
+    const csv = [
+      "Campionato Baskin Senior EISI Veneto",
+      "Girone Gold Ovest - Stagione 2026/2027",
+      "1,I GIORNATA,,,,,,,,,,",
+      "Gara N.,Squadra A,,Squadra B,,Giorno,Data,Ora,,Risultato,,",
+      "1,Karibù Kapuleti,4,Sangio Wolves,9,dom,18 ott 2026,15:00,,,-,",
+      ",Montecchio,,,,,,,4,,,",
+      "2,Bears Baskin Isola,1,MBA Bassano Baskin,8,,da definire,,,,-,",
+    ].join("\n");
+    const sheet = parseEisiSheet(csv, "2026-27");
+    expect(sheet.matches).toHaveLength(1);
+    expect(sheet.matches[0]).toMatchObject({
+      homeScore: null,
+      awayScore: null,
+      venue: "Montecchio",
+    });
+    expect(sheet.warnings).toEqual([
+      'Gara 2 (Bears Baskin Isola – MBA Bassano Baskin) senza data ("da definire"): non importata, la prende un import successivo',
+    ]);
+  });
+});
+
 describe("assignMatchdays", () => {
   const d = (s: string) => new Date(s);
 

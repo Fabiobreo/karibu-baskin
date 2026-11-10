@@ -1,0 +1,1467 @@
+{
+  "leagues": [
+    {
+      "id": 479,
+      "name": "EMILIA-ROMAGNA - Girone Est"
+    },
+    {
+      "id": 478,
+      "name": "EMILIA-ROMAGNA - Girone Ovest"
+    },
+    {
+      "id": 406,
+      "name": "LOMBARDIA EST - Girone 1"
+    },
+    {
+      "id": 419,
+      "name": "LOMBARDIA NORD - Girone Gold"
+    },
+    {
+      "id": 440,
+      "name": "LOMBARDIA NORD - Girone Platinum"
+    },
+    {
+      "id": 429,
+      "name": "LOMBARDIA NORD - Girone Silver"
+    },
+    {
+      "id": 480,
+      "name": "LOMBARDIA SUD"
+    },
+    {
+      "id": 444,
+      "name": "VENETO - Girone Gold A"
+    },
+    {
+      "id": 454,
+      "name": "VENETO - Girone Gold B"
+    },
+    {
+      "id": 469,
+      "name": "VENETO - Girone Silver Est D"
+    },
+    {
+      "id": 474,
+      "name": "VENETO - Girone Silver Est E"
+    },
+    {
+      "id": 464,
+      "name": "VENETO - Girone Silver Ovest"
+    }
+  ],
+  "seasons": [
+    {
+      "id": 12,
+      "name": "2024"
+    },
+    {
+      "id": 8,
+      "name": "2025"
+    },
+    {
+      "id": 13,
+      "name": "2026"
+    },
+    {
+      "id": 393,
+      "name": "2026/2027"
+    }
+  ],
+  "events": [
+    {
+      "id": 6307,
+      "date_gmt": "2027-05-16T13:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [447],
+      "teams": [6257, 6243],
+      "day": "11",
+      "results": {
+        "6257": [],
+        "6243": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6306,
+      "date_gmt": "2027-05-16T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [447],
+      "teams": [6249, 6260],
+      "day": "11",
+      "results": {
+        "6249": [],
+        "6260": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6305,
+      "date_gmt": "2027-05-16T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [453],
+      "teams": [6253, 6247],
+      "day": "11",
+      "results": {
+        "6253": [],
+        "6247": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6304,
+      "date_gmt": "2027-05-16T07:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [453],
+      "teams": [6262, 6246],
+      "day": "11",
+      "results": {
+        "6262": [],
+        "6246": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6302,
+      "date_gmt": "2027-05-09T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6247, 6254],
+      "day": "10",
+      "results": {
+        "6247": [],
+        "6254": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6303,
+      "date_gmt": "2027-05-09T09:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6257, 6253],
+      "day": "10",
+      "results": {
+        "6257": [],
+        "6253": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6301,
+      "date_gmt": "2027-05-09T09:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [449],
+      "teams": [6244, 6262],
+      "day": "10",
+      "results": {
+        "6244": [],
+        "6262": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6300,
+      "date_gmt": "2027-04-18T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [449],
+      "teams": [6257, 6254],
+      "day": "10",
+      "results": {
+        "6257": [],
+        "6254": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6298,
+      "date_gmt": "2027-04-18T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [452],
+      "teams": [6249, 6251],
+      "day": "9",
+      "results": {
+        "6249": [],
+        "6251": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6299,
+      "date_gmt": "2027-04-18T07:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [449],
+      "teams": [6244, 6260],
+      "day": "10",
+      "results": {
+        "6244": [],
+        "6260": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6297,
+      "date_gmt": "2027-04-18T07:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [452],
+      "teams": [6243, 6262],
+      "day": "9",
+      "results": {
+        "6243": [],
+        "6262": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6295,
+      "date_gmt": "2027-04-04T13:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6262, 6249],
+      "day": "9",
+      "results": {
+        "6262": [],
+        "6249": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6294,
+      "date_gmt": "2027-04-04T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6260, 6247],
+      "day": "9",
+      "results": {
+        "6260": [],
+        "6247": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6296,
+      "date_gmt": "2027-04-04T09:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6253, 6251],
+      "day": "9",
+      "results": {
+        "6253": [],
+        "6251": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6293,
+      "date_gmt": "2027-04-04T07:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6254, 6246],
+      "day": "8",
+      "results": {
+        "6254": [],
+        "6246": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6292,
+      "date_gmt": "2027-03-14T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6247, 6244],
+      "day": "8",
+      "results": {
+        "6247": [],
+        "6244": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6290,
+      "date_gmt": "2027-03-14T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [453],
+      "teams": [6257, 6251],
+      "day": "8",
+      "results": {
+        "6257": [],
+        "6251": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6289,
+      "date_gmt": "2027-03-14T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [453],
+      "teams": [6262, 6253],
+      "day": "8",
+      "results": {
+        "6262": [],
+        "6253": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6291,
+      "date_gmt": "2027-03-14T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6246, 6260],
+      "day": "8",
+      "results": {
+        "6246": [],
+        "6260": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6308,
+      "date_gmt": "2027-03-07T14:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6254, 6260],
+      "day": "11",
+      "results": {
+        "6254": [],
+        "6260": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6288,
+      "date_gmt": "2027-02-28T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6262, 6251],
+      "day": "7",
+      "results": {
+        "6262": [],
+        "6251": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6287,
+      "date_gmt": "2027-02-28T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6253, 6243],
+      "day": "7",
+      "results": {
+        "6253": [],
+        "6243": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6286,
+      "date_gmt": "2027-02-21T14:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6249, 6244],
+      "day": "7",
+      "results": {
+        "6249": [],
+        "6244": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6285,
+      "date_gmt": "2027-02-21T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6260, 6253],
+      "day": "7",
+      "results": {
+        "6260": [],
+        "6253": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6284,
+      "date_gmt": "2027-02-21T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6254, 6251],
+      "day": "7",
+      "results": {
+        "6254": [],
+        "6251": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6283,
+      "date_gmt": "2027-02-14T16:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [445],
+      "teams": [6251, 6260],
+      "day": "6",
+      "results": {
+        "6251": [],
+        "6260": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6282,
+      "date_gmt": "2027-02-14T14:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [445],
+      "teams": [6243, 6254],
+      "day": "6",
+      "results": {
+        "6243": [],
+        "6254": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6281,
+      "date_gmt": "2027-02-14T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [453],
+      "teams": [6262, 6247],
+      "day": "6",
+      "results": {
+        "6262": [],
+        "6247": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6280,
+      "date_gmt": "2027-02-14T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [453],
+      "teams": [6257, 6246],
+      "day": "6",
+      "results": {
+        "6257": [],
+        "6246": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6278,
+      "date_gmt": "2027-01-24T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6247, 6243],
+      "day": "5",
+      "results": {
+        "6247": [],
+        "6243": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6276,
+      "date_gmt": "2027-01-24T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [447],
+      "teams": [6260, 6262],
+      "day": "5",
+      "results": {
+        "6260": [],
+        "6262": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6279,
+      "date_gmt": "2027-01-24T10:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [451],
+      "teams": [6257, 6244],
+      "day": "6",
+      "results": {
+        "6257": [],
+        "6244": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6277,
+      "date_gmt": "2027-01-24T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6246, 6253],
+      "day": "5",
+      "results": {
+        "6246": [],
+        "6253": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6275,
+      "date_gmt": "2027-01-24T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [447],
+      "teams": [6249, 6254],
+      "day": "5",
+      "results": {
+        "6249": [],
+        "6254": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6274,
+      "date_gmt": "2027-01-10T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6247, 6249],
+      "day": "5",
+      "results": {
+        "6247": [],
+        "6249": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6272,
+      "date_gmt": "2027-01-10T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [452],
+      "teams": [6257, 6260],
+      "day": "4",
+      "results": {
+        "6257": [],
+        "6260": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6273,
+      "date_gmt": "2027-01-10T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6246, 6244],
+      "day": "4",
+      "results": {
+        "6246": [],
+        "6244": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6271,
+      "date_gmt": "2027-01-10T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [452],
+      "teams": [6251, 6243],
+      "day": "4",
+      "results": {
+        "6251": [],
+        "6243": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6270,
+      "date_gmt": "2026-12-20T10:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [447],
+      "teams": [6249, 6253],
+      "day": "4",
+      "results": {
+        "6249": [],
+        "6253": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6269,
+      "date_gmt": "2026-12-13T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [452],
+      "teams": [6247, 6251],
+      "day": "4",
+      "results": {
+        "6247": [],
+        "6251": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6267,
+      "date_gmt": "2026-12-13T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [451],
+      "teams": [6254, 6244],
+      "day": "3",
+      "results": {
+        "6254": [],
+        "6244": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6268,
+      "date_gmt": "2026-12-13T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [452],
+      "teams": [6246, 6243],
+      "day": "3",
+      "results": {
+        "6246": [],
+        "6243": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6266,
+      "date_gmt": "2026-12-13T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [451],
+      "teams": [6257, 6262],
+      "day": "3",
+      "results": {
+        "6257": [],
+        "6262": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6265,
+      "date_gmt": "2026-11-29T16:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6257, 6249],
+      "day": "3",
+      "results": {
+        "6257": [],
+        "6249": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6264,
+      "date_gmt": "2026-11-29T14:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6244, 6253],
+      "day": "3",
+      "results": {
+        "6244": [],
+        "6253": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6263,
+      "date_gmt": "2026-11-29T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6254, 6262],
+      "day": "2",
+      "results": {
+        "6254": [],
+        "6262": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6261,
+      "date_gmt": "2026-11-29T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [450],
+      "teams": [6260, 6243],
+      "day": "2",
+      "results": {
+        "6260": [],
+        "6243": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6259,
+      "date_gmt": "2026-11-15T14:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [449],
+      "teams": [6251, 6244],
+      "day": "2",
+      "results": {
+        "6251": [],
+        "6244": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6258,
+      "date_gmt": "2026-11-15T14:00:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6247, 6257],
+      "day": "2",
+      "results": {
+        "6247": [],
+        "6257": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6256,
+      "date_gmt": "2026-11-15T10:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6246, 6249],
+      "day": "2",
+      "results": {
+        "6246": [],
+        "6249": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6255,
+      "date_gmt": "2026-11-15T08:30:00",
+      "status": "future",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [448],
+      "teams": [6253, 6254],
+      "day": "1",
+      "results": {
+        "6253": [],
+        "6254": [],
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6252,
+      "date_gmt": "2026-10-25T10:00:00",
+      "status": "publish",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6246, 6251],
+      "day": "1",
+      "results": {
+        "6246": {
+          "points": "77",
+          "outcome": ["win"]
+        },
+        "6251": {
+          "points": "69",
+          "outcome": ["loss"]
+        },
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6250,
+      "date_gmt": "2026-10-25T10:00:00",
+      "status": "publish",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [447],
+      "teams": [6249, 6243],
+      "day": "1",
+      "results": {
+        "6249": {
+          "points": "82",
+          "outcome": ["loss"]
+        },
+        "6243": {
+          "points": "96",
+          "outcome": ["win"]
+        },
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6245,
+      "date_gmt": "2026-10-11T09:00:00",
+      "status": "publish",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [445],
+      "teams": [6243, 6244],
+      "day": "1",
+      "results": {
+        "6243": {
+          "points": "81",
+          "outcome": ["win"]
+        },
+        "6244": {
+          "points": "51",
+          "outcome": ["loss"]
+        },
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    },
+    {
+      "id": 6248,
+      "date_gmt": "2026-10-11T08:00:00",
+      "status": "publish",
+      "leagues": [444],
+      "seasons": [393],
+      "venues": [446],
+      "teams": [6246, 6247],
+      "day": "1",
+      "results": {
+        "6246": {
+          "points": "90",
+          "outcome": ["win"]
+        },
+        "6247": {
+          "points": "75",
+          "outcome": ["loss"]
+        },
+        "0": {
+          "primo": "1T",
+          "secondo": "2T",
+          "terzo": "3T",
+          "quarto": "4T",
+          "supplementari": "TS",
+          "points": "Tot",
+          "outcome": "Esito"
+        }
+      }
+    }
+  ],
+  "teams": [
+    {
+      "id": 6262,
+      "title": {
+        "rendered": "Sangio Wolves Baskin"
+      }
+    },
+    {
+      "id": 6260,
+      "title": {
+        "rendered": "Baskin Schio Viola"
+      }
+    },
+    {
+      "id": 6257,
+      "title": {
+        "rendered": "Karibù Kapuleti"
+      }
+    },
+    {
+      "id": 6254,
+      "title": {
+        "rendered": "Baskin Schio Gialli"
+      }
+    },
+    {
+      "id": 6253,
+      "title": {
+        "rendered": "Supernova Baskin Valdagno"
+      }
+    },
+    {
+      "id": 6251,
+      "title": {
+        "rendered": "Noventa Baskin"
+      }
+    },
+    {
+      "id": 6249,
+      "title": {
+        "rendered": "Wildcats Baskin"
+      }
+    },
+    {
+      "id": 6247,
+      "title": {
+        "rendered": "Baskin Breganze Green Days"
+      }
+    },
+    {
+      "id": 6246,
+      "title": {
+        "rendered": "Baskin Breganze Space Jam"
+      }
+    },
+    {
+      "id": 6244,
+      "title": {
+        "rendered": "Baskin Padova Jump"
+      }
+    },
+    {
+      "id": 6243,
+      "title": {
+        "rendered": "Petrarca Baskin"
+      }
+    }
+  ],
+  "venues": [
+    {
+      "id": 453,
+      "name": "Pala Lupatotina Gas E Luce, Via Monte Ortigara, San Giovanni Lupatoto, (VR)"
+    },
+    {
+      "id": 449,
+      "name": "Palestra Einaudi, Via Marcanova 10 - Padova (PD)"
+    },
+    {
+      "id": 450,
+      "name": "Palestra Mario Lanzi, Viale Martiri della Libertà, Schio (VI)"
+    },
+    {
+      "id": 452,
+      "name": "Palestra Massimo Mazzetto, Via XXV Aprile, Noventa Padovana (PD)"
+    },
+    {
+      "id": 451,
+      "name": "Polisportivo Gino Cosaro, Via del Vigo 11, Montecchio Maggiore (VI)"
+    },
+    {
+      "id": 447,
+      "name": "Via Ca Michiel 24, Meduna di Livenza (TV)"
+    },
+    {
+      "id": 445,
+      "name": "Via delle scuole 1 Padova Zona Guizza (PD)"
+    },
+    {
+      "id": 448,
+      "name": "Via Pasubio, 131, Novale, Valdagno (VI)"
+    },
+    {
+      "id": 446,
+      "name": "Via Pieve 50, Breganze (VI)"
+    }
+  ]
+}

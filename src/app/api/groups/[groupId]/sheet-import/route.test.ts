@@ -138,4 +138,47 @@ describe("POST /api/groups/[groupId]/sheet-import", () => {
     );
     expect(p.$transaction).toHaveBeenCalledTimes(1);
   });
+
+  it("legge un girone dal sito EISI e riconosce Kapuleti", async () => {
+    const site = JSON.parse(
+      readFileSync(
+        join(__dirname, "../../../../../lib/groups/fixtures/eisi-site-veneto-gold-a-2026-27.json"),
+        "utf-8"
+      )
+    );
+    fetchMock.mockImplementation(async (input: string) => {
+      const path = new URL(input).pathname.split("/").pop();
+      const data = path === "events" ? site.events : site[path as keyof typeof site];
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { "content-type": "application/json", "x-wp-totalpages": "1" },
+      });
+    });
+    p.group.findFirst.mockResolvedValue({
+      id: "g-gold",
+      season: "2026-27",
+      competitiveTeams: [{ competitiveTeamId: "kap" }],
+    });
+    p.competitiveTeam.findMany.mockResolvedValue([{ id: "kap", name: "Kapuleti", color: null }]);
+    p.opposingTeam.findMany.mockResolvedValue([]);
+    p.match.findMany.mockResolvedValue([]);
+
+    const res = await post({ eisiLeagueId: 444 });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.title).toBe("VENETO - Girone Gold A · 2026/2027");
+    expect(body.names.find((n: any) => n.name === "Karibù Kapuleti").target).toEqual({
+      kind: "ours",
+      teamId: "kap",
+    });
+    expect(body.rows.filter((r: any) => r.kind === "ours")).toHaveLength(10);
+    expect(body.summary.create).toBe(55);
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes("leagues=444&seasons=393"))).toBe(
+      true
+    );
+  });
+
+  it("senza foglio né girone del sito risponde 400", async () => {
+    expect((await post({})).status).toBe(400);
+  });
 });

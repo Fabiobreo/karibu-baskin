@@ -56,6 +56,8 @@ const ROUTES: Record<string, Access> = {
   "events/[eventId]/responses": "panel",
   groups: "public",
   "groups/[groupId]": "public",
+  // Gironi del sito EISI per l'import: solo admin, come l'import stesso.
+  "groups/[groupId]/sheet-import": "admin",
   "link-requests": "self",
   matches: "public",
   "matches/[matchId]": "public",

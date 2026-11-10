@@ -1,16 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Alert,
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   FormControlLabel,
+  InputLabel,
   ListSubheader,
   MenuItem,
   Select,
@@ -23,6 +26,8 @@ import {
   TableHead,
   TableRow,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { format } from "date-fns";
@@ -37,10 +42,42 @@ interface GroupSheetImportDialogProps {
   onClose: () => void;
   groupId: string;
   groupName: string;
+  /** Stagione del girone ("2026-27"): dal 2026-27 l'EISI pubblica sul sito, prima sui fogli. */
+  groupSeason: string;
   onImported: (message: string) => void;
 }
 
 type Row = SheetImportResponse["rows"][number];
+type Source = "site" | "sheet";
+
+/** Dalla stagione 2026-27 calendario e risultati stanno su eisi.it. */
+function defaultSource(season: string): Source {
+  return Number(season.slice(0, 4)) >= 2026 ? "site" : "sheet";
+}
+
+/** Proposta di girone: quello del sito con più parole in comune con il nostro. */
+function guessLeague(leagues: Array<{ id: number; name: string }>, groupName: string): string {
+  const words = (t: string) =>
+    new Set(
+      t
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter((w) => w.length > 0 && w !== "girone")
+    );
+  const ours = words(groupName);
+  let best = "";
+  let bestScore = 0;
+  for (const l of leagues) {
+    const score = [...words(l.name)].filter((w) => ours.has(w)).length;
+    if (score > bestScore) {
+      best = String(l.id);
+      bestScore = score;
+    }
+  }
+  return best;
+}
 
 const ACTION_LABEL: Record<RowAction, string> = {
   create: "Nuova",
@@ -72,24 +109,46 @@ export default function GroupSheetImportDialog({
   onClose,
   groupId,
   groupName,
+  groupSeason,
   onImported,
 }: GroupSheetImportDialogProps) {
+  const [source, setSource] = useState<Source>(() => defaultSource(groupSeason));
   const [url, setUrl] = useState("");
+  const [leagueId, setLeagueId] = useState("");
   const [names, setNames] = useState<Record<string, NameTarget>>({});
   const [useSheet, setUseSheet] = useState<Set<number>>(new Set());
   const [onlyChanges, setOnlyChanges] = useState(true);
+  const [keepMatchdays, setKeepMatchdays] = useState(false);
   const [preview, setPreview] = useState<SheetImportResponse | null>(null);
+
+  const leagues = useQuery({
+    queryKey: ["eisi-leagues", groupId],
+    enabled: open && source === "site",
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const res = await fetch(`/api/groups/${groupId}/sheet-import`);
+      if (!res.ok) throw new Error(await readError(res));
+      return ((await res.json()) as { leagues: Array<{ id: number; name: string }> }).leagues;
+    },
+  });
+  // Il girone proposto vale finché lo staff non ne sceglie un altro.
+  const selectedLeague = leagueId || (leagues.data ? guessLeague(leagues.data, groupName) : "");
+  const ready = source === "site" ? !!selectedLeague : !!url.trim();
 
   const request = useMutation({
     mutationFn: async (vars: {
       names: Record<string, NameTarget>;
       useSheetScore: number[];
+      keepMatchdays: boolean;
       apply: boolean;
     }) => {
       const res = await fetch(`/api/groups/${groupId}/sheet-import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, ...vars }),
+        body: JSON.stringify({
+          ...(source === "site" ? { eisiLeagueId: Number(selectedLeague) } : { url }),
+          ...vars,
+        }),
       });
       if (!res.ok) throw new Error(await readError(res));
       return (await res.json()) as SheetImportResponse;
@@ -116,6 +175,7 @@ export default function GroupSheetImportDialog({
     setNames({});
     setUseSheet(new Set());
     setOnlyChanges(true);
+    setKeepMatchdays(false);
     request.reset();
   }
 
@@ -125,8 +185,18 @@ export default function GroupSheetImportDialog({
     onClose();
   }
 
-  function run(nextNames: Record<string, NameTarget>, nextUseSheet: Set<number>, apply: boolean) {
-    request.mutate({ names: nextNames, useSheetScore: [...nextUseSheet], apply });
+  function run(
+    nextNames: Record<string, NameTarget>,
+    nextUseSheet: Set<number>,
+    apply: boolean,
+    keep = keepMatchdays
+  ) {
+    request.mutate({
+      names: nextNames,
+      useSheetScore: [...nextUseSheet],
+      keepMatchdays: keep,
+      apply,
+    });
   }
 
   function changeName(name: string, value: string) {
@@ -167,38 +237,85 @@ export default function GroupSheetImportDialog({
 
   return (
     <ResponsiveDialog open={open} onClose={close} maxWidth="md" fullWidth>
-      <DialogTitle>Importa dal foglio EISI · {groupName}</DialogTitle>
+      <DialogTitle>Importa dall&apos;EISI · {groupName}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2.5}>
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              Incolla il link del foglio Google pubblicato dall&apos;EISI con calendario e risultati
-              del girone. Prima vedi cosa cambia, poi confermi. Le partite delle nostre squadre
-              finiscono in Partite (con convocazioni e statistiche), le altre nei risultati del
-              girone. Puoi ripetere l&apos;import quando il foglio si aggiorna.
+              Calendario e risultati del girone dall&apos;EISI: dalla stagione 2026/27 stanno sul
+              sito eisi.it, prima nei fogli Google pubblicati. Prima vedi cosa cambia, poi confermi.
+              Le partite delle nostre squadre finiscono in Partite (con convocazioni e statistiche),
+              le altre nei risultati del girone. Puoi ripetere l&apos;import quando escono risultati
+              nuovi.
             </Typography>
+            <ToggleButtonGroup
+              value={source}
+              exclusive
+              size="small"
+              sx={{ mb: 1.5 }}
+              onChange={(_, v: Source | null) => {
+                if (!v) return;
+                setSource(v);
+                setPreview(null);
+                request.reset();
+              }}
+              aria-label="Da dove leggere le gare"
+            >
+              <ToggleButton value="site">Sito eisi.it</ToggleButton>
+              <ToggleButton value="sheet">Foglio Google</ToggleButton>
+            </ToggleButtonGroup>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-              <TextField
-                label="Link del foglio"
-                placeholder="https://docs.google.com/spreadsheets/d/e/…/pubhtml?gid=…"
-                size="small"
-                fullWidth
-                value={url}
-                onChange={(e) => {
-                  setUrl(e.target.value);
-                  setPreview(null);
-                }}
-                disabled={request.isPending}
-              />
+              {source === "site" ? (
+                <FormControl size="small" fullWidth>
+                  <InputLabel id="eisi-league">Girone sul sito EISI</InputLabel>
+                  <Select
+                    labelId="eisi-league"
+                    label="Girone sul sito EISI"
+                    value={leagues.data ? selectedLeague : ""}
+                    onChange={(e) => {
+                      setLeagueId(e.target.value);
+                      setPreview(null);
+                    }}
+                    disabled={request.isPending || !leagues.data}
+                    endAdornment={
+                      leagues.isLoading ? <CircularProgress size={18} sx={{ mr: 3 }} /> : undefined
+                    }
+                  >
+                    {(leagues.data ?? []).map((l) => (
+                      <MenuItem key={l.id} value={String(l.id)}>
+                        {l.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : (
+                <TextField
+                  label="Link del foglio"
+                  placeholder="https://docs.google.com/spreadsheets/d/e/…/pubhtml?gid=…"
+                  size="small"
+                  fullWidth
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    setPreview(null);
+                  }}
+                  disabled={request.isPending}
+                />
+              )}
               <Button
                 variant={preview ? "outlined" : "contained"}
                 onClick={() => run(preview ? names : {}, useSheet, false)}
-                disabled={!url.trim() || request.isPending}
+                disabled={!ready || request.isPending}
                 sx={{ flexShrink: 0 }}
               >
-                {preview ? "Rileggi" : "Leggi il foglio"}
+                {preview ? "Rileggi" : "Leggi le gare"}
               </Button>
             </Stack>
+            {source === "site" && leagues.isError && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {leagues.error.message}
+              </Alert>
+            )}
           </Box>
 
           {request.isError && <Alert severity="error">{request.error.message}</Alert>}
@@ -215,6 +332,19 @@ export default function GroupSheetImportDialog({
                 gioca al più una volta per giornata. Si possono correggere dopo, partita per
                 partita.
               </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={keepMatchdays}
+                    disabled={request.isPending}
+                    onChange={(e) => {
+                      setKeepMatchdays(e.target.checked);
+                      run(names, useSheet, false, e.target.checked);
+                    }}
+                  />
+                }
+                label="Tieni le giornate già salvate (le ricalcolo solo per le partite nuove)"
+              />
               {preview.warnings.map((w) => (
                 <Alert key={w} severity="warning">
                   {w}

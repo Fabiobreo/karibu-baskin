@@ -192,9 +192,19 @@ export function parseEisiSheet(csv: string, season: string): ParsedSheet {
     const home = cleanName(r[COL.home] ?? "");
     const away = cleanName(r[COL.away] ?? "");
     if (!/^\d+$/.test(numberCell) || !home || !away) continue;
-    // Le righe "1, I GIORNATA" hanno il numero ma non la data.
+    // Le righe "1, I GIORNATA" hanno il numero ma non le squadre (né la data).
     const dayCell = r[COL.date] ?? "";
-    if (!DATE_RE.test(dayCell.trim())) continue;
+    if (!DATE_RE.test(dayCell.trim())) {
+      // Una gara vera ha accanto ai nomi il numero della squadra. Nel
+      // campionato in corso può non avere ancora la data: si dice, e la si
+      // importa quando il foglio la riporta.
+      if (/^\d+$/.test((r[COL.home + 1] ?? "").trim())) {
+        warnings.push(
+          `Gara ${numberCell} (${home} – ${away}) senza data${dayCell.trim() ? ` ("${dayCell.trim()}")` : ""}: non importata, la prende un import successivo`
+        );
+      }
+      continue;
+    }
 
     const number = Number(numberCell);
     const parsedDate = parseSheetDate(dayCell, r[COL.time] ?? "", season);

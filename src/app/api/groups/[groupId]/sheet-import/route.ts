@@ -14,6 +14,7 @@ import { isHistoricMatch } from "@/lib/matches/matchPhase";
 import { recomputeRatingsSafely } from "@/lib/rating/recompute";
 import { reconcileMatchBadges } from "@/lib/rating/matchBadges";
 import { parseEisiSheet, sheetCsvUrl, type ParsedSheet } from "@/lib/groups/eisiSheet";
+import { EisiSiteError, fetchEisiLeague, fetchEisiLeagues } from "@/lib/groups/eisiSite";
 import {
   NEW_PREFIX,
   normalizeTeamName,
@@ -63,6 +64,21 @@ function seasonRange(season: string): { gte: Date; lt: Date } | null {
   return { gte: new Date(Date.UTC(start, 7, 1)), lt: new Date(Date.UTC(start + 1, 8, 1)) };
 }
 
+/** I gironi del sito EISI, per scegliere da quale importare. */
+export async function GET(req: NextRequest) {
+  if (!(await isAdminUser())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+  const rl = checkRateLimit(getClientIp(req), "eisi-leagues", 30, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+  try {
+    return NextResponse.json({ leagues: await fetchEisiLeagues() });
+  } catch (err) {
+    const message = err instanceof EisiSiteError ? err.message : "Il sito EISI non risponde";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+}
+
 export async function POST(req: NextRequest, { params }: Params) {
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
@@ -79,8 +95,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     );
   }
   const body = parsed.data;
-  const csvUrl = sheetCsvUrl(body.url);
-  if (!csvUrl) {
+  const csvUrl = body.url ? sheetCsvUrl(body.url) : null;
+  if (body.eisiLeagueId === undefined && !csvUrl) {
     return NextResponse.json(
       {
         error:
@@ -103,15 +119,20 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   let sheet: ParsedSheet;
   try {
-    sheet = parseEisiSheet(await fetchSheet(csvUrl), group.season);
+    sheet =
+      body.eisiLeagueId !== undefined
+        ? await fetchEisiLeague(body.eisiLeagueId, group.season)
+        : parseEisiSheet(await fetchSheet(csvUrl!), group.season);
   } catch (err) {
     const message =
-      err instanceof SheetError ? err.message : "Non sono riuscito a leggere il foglio";
+      err instanceof SheetError || err instanceof EisiSiteError
+        ? err.message
+        : "Non sono riuscito a leggere le gare";
     return NextResponse.json({ error: message }, { status: 502 });
   }
   if (sheet.matches.length === 0) {
     return NextResponse.json(
-      { error: "Nel foglio non c'è nessuna gara nel formato EISI" },
+      { error: sheet.warnings[0] ?? "Nel foglio non c'è nessuna gara nel formato EISI" },
       { status: 422 }
     );
   }
@@ -196,6 +217,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     existingOurs,
     existingOthers,
     useSheetScore,
+    keepMatchdays: body.keepMatchdays ?? false,
   });
 
   let applied: SheetImportResponse["applied"];
@@ -222,7 +244,12 @@ export async function POST(req: NextRequest, { params }: Params) {
           action: "IMPORT_GROUP_SHEET",
           targetType: "Group",
           targetId: group.id,
-          after: { url: csvUrl, ...summarizePlan(rows), ...applied },
+          after: {
+            source:
+              body.eisiLeagueId !== undefined ? `eisi.it girone ${body.eisiLeagueId}` : csvUrl,
+            ...summarizePlan(rows),
+            ...applied,
+          },
         }),
         "audit group sheet import"
       );

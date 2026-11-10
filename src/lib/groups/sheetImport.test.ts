@@ -245,4 +245,36 @@ describe("planSheetImport", () => {
     expect(rows.map((r) => r.action)).toEqual(["skip", "skip"]);
     expect(summarizePlan(rows)).toEqual({ create: 0, update: 0, same: 0, conflict: 0, skip: 2 });
   });
+
+  it("ritrova una gara rinviata di mesi se le squadre si incontrano una volta sola", () => {
+    const [row] = plan(
+      [
+        match({
+          number: 3,
+          home: "Karibù Kapuleti",
+          away: "Baskin Breganze Space Jam",
+          date: new Date("2026-04-19T13:00:00Z"),
+        }),
+      ],
+      [ours({ date: new Date("2025-10-19T13:00:00Z") })]
+    );
+    expect(row).toMatchObject({ action: "update", existingId: "m1" });
+    expect(row.changes).toContain("data e ora");
+  });
+
+  it("con la scelta dello staff tiene le giornate già salvate", () => {
+    const m = match({ number: 3, home: "Karibù Kapuleti", away: "Baskin Breganze Space Jam" });
+    const existing = [ours({ ourScore: 92, theirScore: 79, matchday: 4 })];
+    const keep = planSheetImport({
+      matches: [m],
+      names,
+      groupId: "g1",
+      existingOurs: existing,
+      existingOthers: [],
+      useSheetScore: new Set(),
+      keepMatchdays: true,
+    });
+    expect(keep[0]).toMatchObject({ action: "same", matchday: 4 });
+    expect(plan([m], existing)[0]).toMatchObject({ action: "update", matchday: 1 });
+  });
 });

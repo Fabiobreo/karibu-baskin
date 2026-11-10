@@ -149,7 +149,7 @@ export default function AdminGironeWorkspaceClient({
               startIcon={<CloudDownloadIcon />}
               onClick={() => setSheetOpen(true)}
             >
-              Importa dal foglio EISI
+              Importa dall&apos;EISI
             </Button>
           ) : undefined
         }
@@ -263,6 +263,7 @@ export default function AdminGironeWorkspaceClient({
           onClose={() => setSheetOpen(false)}
           groupId={group.id}
           groupName={group.name}
+          groupSeason={group.season}
           onImported={(message) => {
             setSheetOpen(false);
             showToast({ message, severity: "success" });
