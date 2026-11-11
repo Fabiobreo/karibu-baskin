@@ -1182,7 +1182,11 @@
       "downloadPhoto": "Scarica",
       "close": "Chiudi",
       "prevPhoto": "Foto precedente",
-      "nextPhoto": "Foto successiva"
+      "nextPhoto": "Foto successiva",
+      "openInstagram": "Apri su Instagram",
+      "playVideo": "Guarda il video",
+      "videoTitle": "Video da Instagram",
+      "postAlt": "Foto Karibu Baskin"
     },
     "news": {
       "heroSubtitle": "Comunicazioni, aggiornamenti e sondaggi dalla squadra.",

@@ -241,7 +241,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
         : `Il tuo ruolo Baskin è cambiato in: ${roleName}.`,
       url: "/profilo",
     };
-    inBackground(sendPushToUser(userId, notifPayload), "push sport role update");
+    inBackground(
+      sendPushToUser(userId, { ...notifPayload, type: "SYSTEM" }),
+      "push sport role update"
+    );
     inBackground(
       createAppNotification({ type: "SYSTEM", targetUserId: userId, ...notifPayload }),
       "notification sport role update"

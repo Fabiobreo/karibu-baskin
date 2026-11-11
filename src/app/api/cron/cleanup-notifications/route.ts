@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
+import { PUSH_STAT_RETENTION_MONTHS } from "@/lib/notifications/pushStats";
+import { saveWeeklyActivitySnapshot } from "@/lib/metrics/loadEngagementMetrics";
 
 // Vercel Cron — eseguito ogni domenica alle 03:00 UTC
-// Elimina notifiche più vecchie di 90 giorni già lette da tutti
+// Elimina notifiche più vecchie di 90 giorni già lette da tutti, i contatori
+// delle push oltre 13 mesi, e salva le famiglie attive della settimana (UX-55:
+// dalle sessioni si sa solo l'ultimo uso, quindi la settimana va fotografata
+// adesso). È il cron settimanale: niente cron nuovi, sono già 7.
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization") ?? "";
@@ -39,5 +44,22 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ deletedNotifications: count, deletedExpiredLinks: expiredLinks });
+  const statsCutoff = new Date();
+  statsCutoff.setUTCMonth(statsCutoff.getUTCMonth() - PUSH_STAT_RETENTION_MONTHS);
+  const { count: deletedPushStats } = await prisma.pushDailyStat.deleteMany({
+    where: { day: { lt: statsCutoff } },
+  });
+
+  // Una fotografia mancata non deve far fallire la pulizia.
+  const weeklyActivity = await saveWeeklyActivitySnapshot().catch((err) => {
+    console.error("[cron cleanup] weekly activity", err);
+    return null;
+  });
+
+  return NextResponse.json({
+    deletedNotifications: count,
+    deletedExpiredLinks: expiredLinks,
+    deletedPushStats,
+    weeklyActivity,
+  });
 }

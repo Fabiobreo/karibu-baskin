@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
   path: "/privacy",
 });
 
-const LAST_UPDATE = "20 maggio 2026";
+const LAST_UPDATE = "11 novembre 2026";
 
 export default function PrivacyPage() {
   return (
@@ -262,6 +262,21 @@ export default function PrivacyPage() {
                 necessari al funzionamento dell&apos;autenticazione (Auth.js) e alla memorizzazione
                 delle preferenze (es. tema chiaro/scuro). Tali cookie non richiedono consenso
                 preventivo ai sensi del provvedimento del Garante del 10 giugno 2021.
+              </P>
+              <P>
+                Fra i cookie tecnici c&apos;è <strong>karibu-ref</strong>: se si arriva al sito da
+                un link del club con parametri di campagna (per esempio quello nella bio di
+                Instagram o il QR di un volantino), conserva per <strong>30 giorni</strong> solo la
+                fonte, il mezzo e la campagna del link (es. &ldquo;instagram, bio&rdquo;), senza
+                alcun identificativo. Serve a un solo scopo: se poi si scrive dal modulo contatti,
+                il messaggio che arriva alla società indica da quale canale si è arrivati. Non viene
+                usato per altro e non viene condiviso.
+              </P>
+              <P>
+                Quando una notifica push viene toccata, il sito aumenta di uno un contatore del tipo
+                di notifica per quel giorno (es. &ldquo;allenamenti&rdquo;), senza registrare chi
+                l&apos;ha aperta né da quale dispositivo: serve solo a capire quali notifiche sono
+                utili.
               </P>
               <P>
                 Il sito impiega inoltre <strong>Vercel Analytics</strong>, un sistema di rilevazione

@@ -1,6 +1,6 @@
 # UX-53 · Squadre dell'allenamento a specchio, anche su telefono
 
-**Ondata:** 6 · **Stima:** S · **Dipende da:** nessuno · **Stato:** in corso
+**Ondata:** 6 · **Stima:** S · **Dipende da:** nessuno · **Stato:** fatto (11/11/2026, su `develop`)
 
 Chiesto dal committente il 26/10/2026 (non nasce da un riaudit). Revisione a tre voci: UX senior, designer, product owner.
 

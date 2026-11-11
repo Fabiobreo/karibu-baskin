@@ -39,8 +39,8 @@ export async function notifyStaffOfNewUser(name: string): Promise<void> {
   const body = newUserPushBody(name);
   const url = "/admin/utenti";
   await Promise.all([
-    sendPushToUsers(staffIds, { title: "👤 Nuovo utente", body, url }).catch((err) =>
-      console.error("[push new user]", err)
+    sendPushToUsers(staffIds, { title: "👤 Nuovo utente", body, url, type: "SYSTEM" }).catch(
+      (err) => console.error("[push new user]", err)
     ),
     createTargetedAppNotifications(staffIds, { type: "SYSTEM", title: "Nuovo utente", body, url }),
   ]);

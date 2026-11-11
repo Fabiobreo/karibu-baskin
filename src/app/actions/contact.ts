@@ -6,6 +6,7 @@ import { getLocale } from "next-intl/server";
 import ContactNotificationEmail from "@/emails/ContactNotificationEmail";
 import ContactConfirmationEmail from "@/emails/ContactConfirmationEmail";
 import { inBackground } from "@/lib/background";
+import { REF_COOKIE, decodeReferral, describeReferral } from "@/lib/utm";
 
 // In-memory rate limit: max 3 submissions per IP per 10 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -50,8 +51,8 @@ export async function submitContactForm(
   prevState: ContactFormState,
   formData: FormData
 ): Promise<ContactFormState> {
-  const { headers } = await import("next/headers");
-  const [headersList, locale] = await Promise.all([headers(), getLocale()]);
+  const { headers, cookies } = await import("next/headers");
+  const [headersList, locale, cookieStore] = await Promise.all([headers(), getLocale(), cookies()]);
   const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const err = locale === "en" ? ERRORS.en : ERRORS.it;
 
@@ -86,7 +87,12 @@ export async function submitContactForm(
     // Fallback di sviluppo: nessun provider email configurato. Logghiamo il contenuto
     // solo in dev — mai in produzione, per non finire dati personali nei log/Sentry.
     if (process.env.NODE_ENV !== "production") {
-      console.log("[ContactForm]", { name, email, message });
+      console.log("[ContactForm]", {
+        name,
+        email,
+        message,
+        ref: cookieStore.get(REF_COOKIE)?.value,
+      });
       return { success: true };
     }
     // In produzione la chiave DEVE esserci. Rispondere `success` scarterebbe il
@@ -101,13 +107,17 @@ export async function submitContactForm(
 
   const resend = new Resend(apiKey);
 
+  // Da quale link è arrivato (UX-55): cookie tecnico `karibu-ref`, se c'è.
+  const ref = decodeReferral(cookieStore.get(REF_COOKIE)?.value);
+  const arrivedFrom = ref ? describeReferral(ref) : null;
+
   // 1. Notifica alla società (sempre italiano — va agli admin)
   const { error } = await resend.emails.send({
     from: fromAddress,
     to: [toEmail],
     replyTo: email,
     subject: `Nuovo messaggio dal sito: ${name}`,
-    react: ContactNotificationEmail({ senderName: name, senderEmail: email, message }),
+    react: ContactNotificationEmail({ senderName: name, senderEmail: email, message, arrivedFrom }),
   });
 
   if (error) {

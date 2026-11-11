@@ -1,6 +1,6 @@
 # UX-54 · Ritardatari nelle squadre senza avvisare tutti, equilibrio per lo staff
 
-**Ondata:** 6 · **Stima:** M · **Dipende da:** UX-53 · **Stato:** in corso
+**Ondata:** 6 · **Stima:** M · **Dipende da:** UX-53 · **Stato:** fatto (11/11/2026, su `develop`)
 
 Chiesto dal committente il 26/10/2026 (non nasce da un riaudit).
 

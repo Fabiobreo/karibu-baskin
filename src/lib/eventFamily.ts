@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { childLinkedAccounts } from "@/lib/familyLinks";
 
 /**
  * Famiglia di chi risponde a un evento: in famiglia risponde uno per tutti
@@ -88,8 +89,7 @@ export async function loadFamily(selfId: string): Promise<FamilyMember[]> {
   // 1: i miei figli e la mia scheda figlio → i loro genitori e account.
   for (const c of await childrenOf([selfId])) {
     children.set(c.id, c);
-    c.guardians.forEach((g) => userIds.add(g.userId));
-    if (c.userId) userIds.add(c.userId);
+    childLinkedAccounts(c).forEach((id) => userIds.add(id));
   }
   // 2: gli altri figli di quei genitori (fratelli). Non si risale oltre.
   const others = [...userIds].filter((id) => id !== selfId);

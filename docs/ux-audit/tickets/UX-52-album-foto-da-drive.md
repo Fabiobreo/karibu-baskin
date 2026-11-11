@@ -1,6 +1,6 @@
 # UX-52 · Album foto da una cartella Google Drive (fase 1)
 
-**Ondata:** 6 · **Stima:** L · **Dipende da:** nessuno · **Stato:** in corso (provato con una cartella vera, manca la PR)
+**Ondata:** 6 · **Stima:** L · **Dipende da:** nessuno · **Stato:** fatto (11/11/2026, su `develop`)
 
 Funzione nuova, chiesta dal committente il 07/10/2026. Non nasce da un riaudit.
 

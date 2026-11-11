@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { withGuardians } from "@/lib/person";
 import { logSkippedNotification, notificationsDisabled } from "./devSwitch";
 import { mergePrefs, type ControllableNotifType } from "./notifPrefs";
+import { recordPushSent } from "./pushStats";
 
 // Lazy-init: if VAPID keys are missing (e.g. during testing), push is disabled rather
 // than crashing every route that imports this module.
@@ -100,6 +101,8 @@ async function dispatchToSubs(
 
   await cleanupExpired(expired);
   const sent = results.filter((r) => r.status === "fulfilled").length;
+  // Contatore aggregato per tipo (UX-55): una riga per tipo e giorno.
+  await recordPushSent((JSON.parse(data) as { type?: string }).type, sent);
   return { sent, removed: expired.length };
 }
 

@@ -5,16 +5,24 @@ vi.mock("@/lib/db", () => ({
   prisma: {
     appNotification: { deleteMany: vi.fn() },
     linkRequest: { deleteMany: vi.fn() },
+    pushDailyStat: { deleteMany: vi.fn() },
   },
+}));
+
+vi.mock("@/lib/metrics/loadEngagementMetrics", () => ({
+  saveWeeklyActivitySnapshot: vi.fn(),
 }));
 
 import { GET } from "./route";
 import { prisma } from "@/lib/db";
+import { saveWeeklyActivitySnapshot } from "@/lib/metrics/loadEngagementMetrics";
 
 type PrismaMock = {
   appNotification: { deleteMany: Mock };
   linkRequest: { deleteMany: Mock };
+  pushDailyStat: { deleteMany: Mock };
 };
+const snapshot = saveWeeklyActivitySnapshot as unknown as Mock;
 const p = prisma as unknown as PrismaMock;
 
 function makeRequest(authHeader?: string, withCronHeader = false): Request {
@@ -32,6 +40,8 @@ describe("GET /api/cron/cleanup-notifications", () => {
     process.env.CRON_SECRET = "test-cron-secret";
     p.appNotification.deleteMany.mockResolvedValue({ count: 0 });
     p.linkRequest.deleteMany.mockResolvedValue({ count: 0 });
+    p.pushDailyStat.deleteMany.mockResolvedValue({ count: 0 });
+    snapshot.mockResolvedValue({ families: 10, activeFamilies: 6, activeUsers: 8 });
   });
 
   afterEach(() => {
@@ -104,5 +114,33 @@ describe("GET /api/cron/cleanup-notifications", () => {
     const json = await res.json();
     expect(json.deletedNotifications).toBe(0);
     expect(json.deletedExpiredLinks).toBe(0);
+  });
+
+  it("cancella i contatori delle push oltre 13 mesi e salva la settimana", async () => {
+    const res = await GET(
+      makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]
+    );
+    const cutoff: Date = p.pushDailyStat.deleteMany.mock.calls[0][0].where.day.lt;
+    const months =
+      (new Date().getUTCFullYear() - cutoff.getUTCFullYear()) * 12 +
+      new Date().getUTCMonth() -
+      cutoff.getUTCMonth();
+    expect(months).toBe(13);
+    expect(snapshot).toHaveBeenCalledTimes(1);
+    expect((await res.json()).weeklyActivity).toEqual({
+      families: 10,
+      activeFamilies: 6,
+      activeUsers: 8,
+    });
+  });
+
+  it("una fotografia non riuscita non ferma la pulizia", async () => {
+    snapshot.mockRejectedValue(new Error("db"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await GET(
+      makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).weeklyActivity).toBeNull();
   });
 });

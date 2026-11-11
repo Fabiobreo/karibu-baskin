@@ -15,10 +15,15 @@ const mocks = vi.hoisted(() => ({
   send: vi.fn(),
   captureMessage: vi.fn(),
   ip: "10.0.0.1",
+  ref: undefined as string | undefined,
 }));
 
 vi.mock("next/headers", () => ({
   headers: vi.fn(async () => new Headers({ "x-forwarded-for": mocks.ip })),
+  cookies: vi.fn(async () => ({
+    get: (name: string) =>
+      name === "karibu-ref" && mocks.ref !== undefined ? { value: mocks.ref } : undefined,
+  })),
 }));
 
 vi.mock("next-intl/server", () => ({
@@ -41,6 +46,7 @@ vi.mock("@/emails/ContactNotificationEmail", () => ({ default: vi.fn(() => null)
 vi.mock("@/emails/ContactConfirmationEmail", () => ({ default: vi.fn(() => null) }));
 
 import { submitContactForm } from "./contact";
+import ContactNotificationEmail from "@/emails/ContactNotificationEmail";
 
 let ipCounter = 0;
 
@@ -61,6 +67,7 @@ beforeEach(() => {
   // Il rate limit del form è in memoria e per IP (3 invii ogni 10 minuti): un
   // IP diverso per test li rende indipendenti l'uno dall'altro.
   mocks.ip = `10.0.0.${++ipCounter}`;
+  mocks.ref = undefined;
   mocks.send.mockResolvedValue({ error: null });
   vi.stubEnv("RESEND_API_KEY", "re_test_key");
   vi.stubEnv("NODE_ENV", "production");
@@ -159,5 +166,22 @@ describe("submitContactForm · validazione e limiti", () => {
     const fourth = await submitContactForm({}, form(valid));
     expect(fourth.error).toBeTruthy();
     expect(mocks.send).toHaveBeenCalledTimes(sentBefore);
+  });
+});
+
+describe("submitContactForm · provenienza (UX-55)", () => {
+  it("riporta allo staff da quale link è arrivato chi scrive", async () => {
+    mocks.ref = encodeURIComponent("volantino|print|");
+    await submitContactForm({}, form(valid));
+    expect(ContactNotificationEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ arrivedFrom: "volantino, print" })
+    );
+  });
+
+  it("senza cookie non dice nulla", async () => {
+    await submitContactForm({}, form(valid));
+    expect(ContactNotificationEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ arrivedFrom: null })
+    );
   });
 });

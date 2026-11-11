@@ -222,14 +222,14 @@ describe("service worker · rete assente", () => {
   });
 
   it("serve la pagina offline a una navigazione senza cache", async () => {
-    sw.caches._seed("karibu-v13-static", "/offline.html", makeResponse("OFFLINE"));
+    sw.caches._seed("karibu-v14-static", "/offline.html", makeResponse("OFFLINE"));
     const res = await fireFetch(sw, navigation("/classifiche")).response;
     expect(res?.body).toBe("OFFLINE");
   });
 
   it("preferisce la pagina in cache alla pagina offline", async () => {
-    sw.caches._seed("karibu-v13-static", "/offline.html", makeResponse("OFFLINE"));
-    sw.caches._seed("karibu-v13-pages", "/squadre", makeResponse("SQUADRE"));
+    sw.caches._seed("karibu-v14-static", "/offline.html", makeResponse("OFFLINE"));
+    sw.caches._seed("karibu-v14-pages", "/squadre", makeResponse("SQUADRE"));
     const res = await fireFetch(sw, navigation("/squadre")).response;
     expect(res?.body).toBe("SQUADRE");
   });
@@ -242,7 +242,7 @@ describe("service worker · rete assente", () => {
   ])("non serve mai offline.html a una richiesta di tipo %s", async (destination, url) => {
     // È il difetto che produceva ChunkLoadError e schermata 500: un documento
     // HTML consegnato dove è atteso JavaScript non è eseguibile.
-    sw.caches._seed("karibu-v13-static", "/offline.html", makeResponse("<!doctype html>"));
+    sw.caches._seed("karibu-v14-static", "/offline.html", makeResponse("<!doctype html>"));
     const { response } = fireFetch(sw, makeRequest(url, { destination }));
     await expect(response).rejects.toThrow();
   });
@@ -256,7 +256,7 @@ describe("service worker · rete assente", () => {
   });
 
   it("usa la cache delle API quando c'è", async () => {
-    sw.caches._seed("karibu-v13-api", "/api/sessions", makeResponse("[]"));
+    sw.caches._seed("karibu-v14-api", "/api/sessions", makeResponse("[]"));
     const res = await fireFetch(sw, makeRequest("/api/sessions")).response;
     expect(res?.body).toBe("[]");
   });
@@ -287,7 +287,7 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/squadre"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v13-pages")).toBe(0);
+    expect(sw.caches._size("karibu-v14-pages")).toBe(0);
   });
 
   it("non mette in cache le risposte redirette", async () => {
@@ -297,7 +297,7 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/la-squadra"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v13-pages")).toBe(0);
+    expect(sw.caches._size("karibu-v14-pages")).toBe(0);
   });
 
   it("non mette in cache le risposte opache", async () => {
@@ -305,7 +305,7 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/squadre"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v13-pages")).toBe(0);
+    expect(sw.caches._size("karibu-v14-pages")).toBe(0);
   });
 
   it("salva le pagine valide per l'offline", async () => {
@@ -313,11 +313,11 @@ describe("service worker · scrittura in cache", () => {
     const call = fireFetch(sw, navigation("/squadre"));
     await call.response;
     await call.settleWrites();
-    expect(sw.caches._size("karibu-v13-pages")).toBe(1);
+    expect(sw.caches._size("karibu-v14-pages")).toBe(1);
   });
 
   it("serve gli asset con hash dalla cache senza toccare la rete", async () => {
-    sw.caches._seed("karibu-v13-static", "/_next/static/chunks/abc.js", makeResponse("JS"));
+    sw.caches._seed("karibu-v14-static", "/_next/static/chunks/abc.js", makeResponse("JS"));
     const res = await fireFetch(
       sw,
       makeRequest("/_next/static/chunks/abc.js", { destination: "script" })
@@ -332,9 +332,9 @@ describe("service worker · scrittura in cache", () => {
 describe("service worker · messaggi dal client", () => {
   it("PURGE_SESSION_CACHES svuota pagine e API ma non gli asset statici", async () => {
     const sw = loadServiceWorker();
-    sw.caches._seed("karibu-v13-pages", "/profilo", makeResponse("privato"));
-    sw.caches._seed("karibu-v13-api", "/api/sessions", makeResponse("[]"));
-    sw.caches._seed("karibu-v13-static", "/logo.png", makeResponse("png"));
+    sw.caches._seed("karibu-v14-pages", "/profilo", makeResponse("privato"));
+    sw.caches._seed("karibu-v14-api", "/api/sessions", makeResponse("[]"));
+    sw.caches._seed("karibu-v14-static", "/logo.png", makeResponse("png"));
 
     const waits: Promise<unknown>[] = [];
     const port = { postMessage: vi.fn() };
@@ -345,7 +345,7 @@ describe("service worker · messaggi dal client", () => {
     });
     await Promise.allSettled(waits);
 
-    expect(sw.caches._names()).toEqual(["karibu-v13-static"]);
+    expect(sw.caches._names()).toEqual(["karibu-v14-static"]);
     expect(port.postMessage).toHaveBeenCalledWith({ ok: true });
   });
 
@@ -368,7 +368,7 @@ describe("service worker · attivazione", () => {
     const sw = loadServiceWorker();
     sw.caches._seed("karibu-v9-pages", "/admin/utenti", makeResponse("dati personali"));
     sw.caches._seed("karibu-v10-pages", "/squadre", makeResponse("vecchio"));
-    sw.caches._seed("karibu-v13-pages", "/squadre", makeResponse("nuovo"));
+    sw.caches._seed("karibu-v14-pages", "/squadre", makeResponse("nuovo"));
 
     const waits: Promise<unknown>[] = [];
     sw.dispatch("activate", { waitUntil: (p: Promise<unknown>) => waits.push(p) });
@@ -376,13 +376,49 @@ describe("service worker · attivazione", () => {
 
     // È così che l'HTML dell'area admin già salvato sui dispositivi sparisce al
     // primo aggiornamento, invece di restare lì per sempre.
-    expect(sw.caches._names()).toEqual(["karibu-v13-pages"]);
+    expect(sw.caches._names()).toEqual(["karibu-v14-pages"]);
   });
 });
 
 // ── Push e campanella ────────────────────────────────────────────────────────
 
 describe("service worker · push", () => {
+  function click(sw: ReturnType<typeof loadServiceWorker>, action: string, type: string) {
+    const waits: Promise<unknown>[] = [];
+    sw.dispatch("notificationclick", {
+      action,
+      notification: { close: vi.fn(), data: { url: "/allenamenti", type } },
+      waitUntil: (p: Promise<unknown>) => waits.push(p),
+    });
+    return Promise.all(waits);
+  }
+
+  it("conta l'apertura di una notifica toccata, con il solo tipo", async () => {
+    const sw = loadServiceWorker();
+    sw.fetchMock.mockResolvedValue(makeResponse(""));
+    await click(sw, "", "NEW_TRAINING");
+    expect(sw.fetchMock).toHaveBeenCalledWith(
+      "/api/push/opened",
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ type: "NEW_TRAINING" }) })
+    );
+    expect(sw.self.clients.openWindow).toHaveBeenCalledWith("/allenamenti");
+  });
+
+  it('non conta l\'apertura quando si tocca "Non più queste"', async () => {
+    const sw = loadServiceWorker();
+    sw.fetchMock.mockResolvedValue(makeResponse(""));
+    await click(sw, "mute", "NEW_TRAINING");
+    const urls = sw.fetchMock.mock.calls.map((c) => c[0]);
+    expect(urls).toEqual(["/api/users/me/notif-prefs"]);
+  });
+
+  it("una rete assente non fa fallire l'apertura", async () => {
+    const sw = loadServiceWorker();
+    sw.fetchMock.mockRejectedValue(new TypeError("offline"));
+    await expect(click(sw, "", "NEW_EVENT")).resolves.toBeDefined();
+    expect(sw.self.clients.openWindow).toHaveBeenCalledWith("/allenamenti");
+  });
+
   it("avvisa le pagine aperte con lo stesso messaggio che ascolta la campanella", async () => {
     const { PUSH_RECEIVED_MESSAGE } = await import("@/lib/pushMessages");
     // sw.js non può importare moduli: il valore è scritto a mano anche lì.

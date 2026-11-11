@@ -19,9 +19,16 @@ interface Props {
   senderName: string;
   senderEmail: string;
   message: string;
+  /** Provenienza dal cookie `karibu-ref` ("instagram, bio"), se c'è (UX-55). */
+  arrivedFrom?: string | null;
 }
 
-export default function ContactNotificationEmail({ senderName, senderEmail, message }: Props) {
+export default function ContactNotificationEmail({
+  senderName,
+  senderEmail,
+  message,
+  arrivedFrom,
+}: Props) {
   return (
     <Html lang="it">
       <Head />
@@ -155,6 +162,30 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
                   </Link>
                 </Column>
               </Row>
+              {arrivedFrom && (
+                <>
+                  <Hr style={{ borderColor: EMAIL.border, margin: "12px 0" }} />
+                  <Row>
+                    <Column>
+                      <Text
+                        style={{
+                          color: EMAIL.textSecondary,
+                          fontSize: 11,
+                          fontWeight: FONT_WEIGHT.semibold,
+                          textTransform: "uppercase" as const,
+                          letterSpacing: "0.08em",
+                          margin: "0 0 2px",
+                        }}
+                      >
+                        Arrivato da
+                      </Text>
+                      <Text style={{ color: EMAIL.text, fontSize: 14, margin: 0 }}>
+                        {arrivedFrom}
+                      </Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
             </Section>
 
             {/* Messaggio */}

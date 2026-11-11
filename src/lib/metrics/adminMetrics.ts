@@ -46,6 +46,16 @@ export function countActiveUsers(
   windowDays: number,
   maxAgeSeconds: number
 ): number {
+  return activeUserIds(sessions, now, windowDays, maxAgeSeconds).size;
+}
+
+/** Gli account di `countActiveUsers`, per contarli per famiglia. */
+export function activeUserIds(
+  sessions: AuthSessionRow[],
+  now: Date,
+  windowDays: number,
+  maxAgeSeconds: number
+): Set<string> {
   const maxAgeMs = maxAgeSeconds * 1000;
   const lower = now.getTime() + maxAgeMs - windowDays * DAY_MS;
   const upper = now.getTime() + maxAgeMs + DAY_MS; // tolleranza sugli orologi
@@ -54,7 +64,7 @@ export function countActiveUsers(
     const t = s.expires.getTime();
     if (t > lower && t <= upper) users.add(s.userId);
   }
-  return users.size;
+  return users;
 }
 
 // ── Allenamenti ───────────────────────────────────────────────────────────────
@@ -161,4 +171,223 @@ export function computeMatchMetrics(rows: MatchAvailabilityRow[]): MatchMetrics 
     responseRate: ratio(responses, expected),
     medianLeadDays: median(leads),
   };
+}
+
+// ── Coinvolgimento (UX-55) ────────────────────────────────────────────────────
+//
+// Ogni misura si calcola "a una data" (`asOf`): la pagina la chiede per oggi e
+// per quattro settimane fa, e mostra la differenza.
+
+/** Differenza fra due valori, `null` se uno dei due non è misurabile. */
+export function metricDelta(current: number | null, previous: number | null): number | null {
+  return current === null || previous === null ? null : current - previous;
+}
+
+export interface FamilyActivity {
+  families: number;
+  activeFamilies: number;
+  /** Famiglie attive sulle famiglie tesserate. */
+  rate: number | null;
+}
+
+/**
+ * Famiglie con almeno un account attivo. `familyOf` viene da `groupFamilies`
+ * (`@/lib/familyLinks`); un account attivo che non è in `familyOf` (un ospite)
+ * non conta.
+ */
+export function computeFamilyActivity(
+  familyOf: Map<string, string>,
+  active: Set<string>
+): FamilyActivity {
+  const families = new Set(familyOf.values());
+  const activeFamilies = new Set<string>();
+  for (const id of active) {
+    const f = familyOf.get(id);
+    if (f) activeFamilies.add(f);
+  }
+  return {
+    families: families.size,
+    activeFamilies: activeFamilies.size,
+    rate: ratio(activeFamilies.size, families.size),
+  };
+}
+
+/** Anticipo con cui si chiede la disponibilità: il primo promemoria parte 14 giorni prima. */
+export const AVAILABILITY_REMINDER_LEAD_DAYS = 14;
+
+export interface AvailabilityEngagementRow {
+  date: Date;
+  createdAt: Date;
+  /** Giocatori della rosa: chi dovrebbe rispondere. */
+  rosterSize: number;
+  /** Prima convocazione salvata (dal registro attività), se c'è. */
+  firstCallupAt: Date | null;
+  /** Risposte date dalla persona o da un genitore (non quelle segnate dallo staff). */
+  responses: { createdAt: Date }[];
+}
+
+export interface AvailabilityEngagement {
+  matches: number;
+  /** Rosa che ha risposto prima della prima convocazione. */
+  answeredBeforeCallupRate: number | null;
+  /** Ore mediane fra l'apertura della domanda e la risposta. */
+  medianResponseHours: number | null;
+}
+
+/**
+ * Quanto e quanto presto si risponde. La domanda si apre alla creazione della
+ * partita, o al primo promemoria se la partita è stata inserita molto prima
+ * (un calendario importato a inizio stagione): altrimenti il tempo di
+ * risposta misurerebbe solo quanto in anticipo si è caricato il calendario.
+ * Chi risponde prima dell'apertura conta zero. Senza convocazioni la scadenza
+ * è l'inizio della partita.
+ */
+export function computeAvailabilityEngagement(
+  rows: AvailabilityEngagementRow[]
+): AvailabilityEngagement {
+  let expected = 0;
+  let answered = 0;
+  const hours: number[] = [];
+  for (const m of rows) {
+    const opening = Math.max(
+      m.createdAt.getTime(),
+      m.date.getTime() - AVAILABILITY_REMINDER_LEAD_DAYS * DAY_MS
+    );
+    const deadline = m.firstCallupAt?.getTime() ?? m.date.getTime();
+    const inTime = m.responses.filter((r) => r.createdAt.getTime() < deadline);
+    expected += m.rosterSize;
+    // Risposte di chi è poi uscito dalla rosa: mai oltre il 100% per partita.
+    answered += Math.min(inTime.length, m.rosterSize);
+    for (const r of m.responses) {
+      hours.push(Math.max(0, r.createdAt.getTime() - opening) / HOUR_MS);
+    }
+  }
+  return {
+    matches: rows.length,
+    answeredBeforeCallupRate: ratio(answered, expected),
+    medianResponseHours: median(hours),
+  };
+}
+
+export interface RegistrationSource {
+  total: number;
+  byStaff: number;
+  /** Iscrizioni fatte dalla persona o dal genitore (anonime comprese). */
+  selfRate: number | null;
+}
+
+export function computeRegistrationSource(
+  registrationIds: string[],
+  staffAddedIds: Set<string>
+): RegistrationSource {
+  const byStaff = registrationIds.filter((id) => staffAddedIds.has(id)).length;
+  return {
+    total: registrationIds.length,
+    byStaff,
+    selfRate: ratio(registrationIds.length - byStaff, registrationIds.length),
+  };
+}
+
+export interface GuestFunnelRow {
+  createdAt: Date;
+  /** Primo allenamento a cui si è iscritto (lui o un figlio). */
+  firstTrainingAt: Date | null;
+  /** Passaggio da ospite ad atleta o genitore (registro attività). */
+  convertedAt: Date | null;
+}
+
+export interface GuestFunnel {
+  created: number;
+  trained: number;
+  converted: number;
+  /** Giorni mediani dalla creazione dell'account al primo allenamento. */
+  medianDaysToTraining: number | null;
+  /** Giorni mediani dal primo allenamento al tesseramento. */
+  medianDaysToConversion: number | null;
+}
+
+/**
+ * Da contatto a tesserato, per gli account ospiti creati nei `windowDays`
+ * giorni prima di `asOf`. Conta solo quello che era successo a `asOf`. "Con un
+ * allenamento" vuol dire da ospite: un allenamento dopo il tesseramento non è
+ * un passo dell'imbuto.
+ */
+export function computeGuestFunnel(
+  rows: GuestFunnelRow[],
+  asOf: Date,
+  windowDays: number
+): GuestFunnel {
+  const t = asOf.getTime();
+  const from = t - windowDays * DAY_MS;
+  const until = (d: Date | null) => (d && d.getTime() <= t ? d : null);
+  let created = 0;
+  let trained = 0;
+  let converted = 0;
+  const toTraining: number[] = [];
+  const toConversion: number[] = [];
+  for (const r of rows) {
+    const c = r.createdAt.getTime();
+    if (c < from || c > t) continue;
+    created += 1;
+    const conv = until(r.convertedAt);
+    const train = until(r.firstTrainingAt);
+    const asGuest = train && (!conv || train.getTime() <= conv.getTime()) ? train : null;
+    if (asGuest) {
+      trained += 1;
+      toTraining.push(Math.max(0, asGuest.getTime() - c) / DAY_MS);
+    }
+    if (conv) {
+      converted += 1;
+      if (asGuest) toConversion.push((conv.getTime() - asGuest.getTime()) / DAY_MS);
+    }
+  }
+  return {
+    created,
+    trained,
+    converted,
+    medianDaysToTraining: median(toTraining),
+    medianDaysToConversion: median(toConversion),
+  };
+}
+
+export interface NotificationOpenRow {
+  type: string;
+  pushSent: number;
+  pushOpened: number;
+  /** Notifiche in-app indirizzate a una persona, e quante lette. */
+  inAppSent: number;
+  inAppRead: number;
+}
+
+export interface NotificationOpenStat extends NotificationOpenRow {
+  pushRate: number | null;
+  inAppRate: number | null;
+}
+
+/**
+ * Tabella delle aperture per tipo, dalla quota di push aperte più bassa: in
+ * cima le candidate da tagliare. I tipi senza push inviate stanno in fondo.
+ */
+export function computeNotificationOpens(rows: NotificationOpenRow[]): NotificationOpenStat[] {
+  return rows
+    .map((r) => ({
+      ...r,
+      pushRate: ratio(r.pushOpened, r.pushSent),
+      inAppRate: ratio(r.inAppRead, r.inAppSent),
+    }))
+    .sort((a, b) => {
+      if (a.pushRate === null || b.pushRate === null) {
+        return (
+          Number(a.pushRate === null) - Number(b.pushRate === null) || b.inAppSent - a.inAppSent
+        );
+      }
+      return a.pushRate - b.pushRate || b.pushSent - a.pushSent;
+    });
+}
+
+/** Quota complessiva di push aperte. */
+export function overallPushOpenRate(rows: NotificationOpenRow[]): number | null {
+  const sent = rows.reduce((n, r) => n + r.pushSent, 0);
+  const opened = rows.reduce((n, r) => n + r.pushOpened, 0);
+  return ratio(opened, sent);
 }

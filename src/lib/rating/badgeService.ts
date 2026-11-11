@@ -240,6 +240,6 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
           ? `Hai sbloccato ${badgeIds.length} nuovi traguardi`
           : `${subjectName} ha sbloccato ${badgeIds.length} nuovi traguardi`;
 
-    await sendPushToUsers(ids, { title: pushTitle, body: pushBody, url });
+    await sendPushToUsers(ids, { title: pushTitle, body: pushBody, url, type: "BADGE_UNLOCKED" });
   }
 }

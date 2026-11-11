@@ -38,7 +38,7 @@ const securityHeaders = [
       ].join(" "),
       // Session Replay di Sentry gira in un worker creato da un blob.
       "worker-src 'self' blob:",
-      "frame-src https://maps.google.com https://www.google.com https://www.youtube-nocookie.com",
+      "frame-src https://maps.google.com https://www.google.com https://www.youtube-nocookie.com https://www.instagram.com",
       "frame-ancestors 'none'",
     ].join("; "),
   },

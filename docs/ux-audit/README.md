@@ -129,29 +129,22 @@ Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando
 
 Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti (UX-49 B scartata dal committente, UX-51 punto 2 non si fa: il logo del fotografo su fondo chiaro non esiste). Dei riaudit non resta nulla da fare: il passo successivo, su quel fronte, è un nuovo riaudit.
 
-Ondata 6: richieste del committente che non nascono da un riaudit (UX-52 del 07/10/2026, UX-53 e UX-54 del 26/10/2026):
+Ondata 6 (UX-52 del 07/10/2026, UX-53 e UX-54 del 26/10/2026, richieste del committente che non nascono da un riaudit): fatta l'11/11/2026.
 
-| Ticket                                                      | Titolo                                                                  | Stima | Dipende da | In attesa di |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------- | ----- | ---------- | ------------ |
-| [UX-52](tickets/UX-52-album-foto-da-drive.md)               | Album foto da una cartella Google Drive (fase 1)                        | L     |            |              |
-| [UX-53](tickets/UX-53-squadre-allenamento-a-specchio.md)    | Squadre dell'allenamento a specchio, anche su telefono                  | S     |            |              |
-| [UX-54](tickets/UX-54-ritardatari-ed-equilibrio-squadre.md) | Ritardatari nelle squadre senza avvisare tutti, equilibrio per lo staff | M     | UX-53      |              |
+Ondata 7: piano di engagement del committente (06/11/2026). Prima si misura (UX-55), poi si lavora sui tesserati (56-61), poi su chi non conosce il club (62-63) e sui sostenitori (64-65). UX-60 va pronto per fine maggio 2027. UX-55 è fatto (11/11/2026). L'email settimanale è stata scartata dal committente (06/11/2026): niente servizi oltre i piani gratuiti, e la quota di Resend serve al magic link.
 
-Ondata 7: piano di engagement del committente (06/11/2026). Prima si misura (UX-55), poi si lavora sui tesserati (56-61), poi su chi non conosce il club (62-63) e sui sostenitori (64-65). UX-60 va pronto per fine maggio 2027. L'email settimanale è stata scartata dal committente (06/11/2026): niente servizi oltre i piani gratuiti, e la quota di Resend serve al magic link.
-
-| Ticket                                                       | Titolo                                                         | Stima | Dipende da   | In attesa di                              |
-| ------------------------------------------------------------ | -------------------------------------------------------------- | ----- | ------------ | ----------------------------------------- |
-| [UX-55](tickets/UX-55-misurare-engagement.md)                | Misurare l'engagement: metriche, UTM, aperture delle notifiche | M     |              |                                           |
-| [UX-56](tickets/UX-56-condivisioni-che-riportano-al-sito.md) | Condivisioni che riportano al sito                             | M     | UX-55        |                                           |
-| [UX-57](tickets/UX-57-foto-su-partite-ed-eventi.md)          | Foto su partite ed eventi, avviso "Sono arrivate le foto"      | M     | UX-52        |                                           |
-| [UX-58](tickets/UX-58-dopo-la-partita.md)                    | Il dopo-partita: un appuntamento, non dati sparsi              | M     | UX-56, UX-57 | voto MVP delle famiglie (solo il punto 4) |
-| [UX-59](tickets/UX-59-traguardi-costanza-e-card.md)          | Traguardi di costanza agli allenamenti e card da condividere   | M     | UX-56        | soglie dei traguardi                      |
-| [UX-60](tickets/UX-60-la-tua-stagione.md)                    | "La tua stagione": riepilogo personale di fine stagione        | L     | UX-59        |                                           |
-| [UX-61](tickets/UX-61-giochi-quiz-e-pronostici.md)           | Giochi del club: quiz del Baskin e pronostico della partita    | L     | UX-55, UX-56 | nomi nel pronostico (solo il punto 3.5)   |
-| [UX-62](tickets/UX-62-seo-locale.md)                         | Farsi trovare: SEO locale e scheda Google                      | M     | UX-55        | accesso alla scheda Google (solo punto 1) |
-| [UX-63](tickets/UX-63-pagina-per-educatori.md)               | Pagina per scuole, educatori e servizi                         | M     | UX-55, UX-62 | testi e contatti del club                 |
-| [UX-64](tickets/UX-64-sostieni-il-club.md)                   | Sostieni il club: 5×1000, donazioni e volontari                | M     | UX-55        | dati fiscali e decisioni del club         |
-| [UX-65](tickets/UX-65-report-sponsor.md)                     | Report per gli sponsor e sponsor in evidenza                   | M     | UX-55        |                                           |
+| Ticket                                                       | Titolo                                                       | Stima | Dipende da   | In attesa di                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ----- | ------------ | ----------------------------------------- |
+| [UX-56](tickets/UX-56-condivisioni-che-riportano-al-sito.md) | Condivisioni che riportano al sito                           | M     | UX-55        |                                           |
+| [UX-57](tickets/UX-57-foto-su-partite-ed-eventi.md)          | Foto su partite ed eventi, avviso "Sono arrivate le foto"    | M     | UX-52        |                                           |
+| [UX-58](tickets/UX-58-dopo-la-partita.md)                    | Il dopo-partita: un appuntamento, non dati sparsi            | M     | UX-56, UX-57 | voto MVP delle famiglie (solo il punto 4) |
+| [UX-59](tickets/UX-59-traguardi-costanza-e-card.md)          | Traguardi di costanza agli allenamenti e card da condividere | M     | UX-56        | soglie dei traguardi                      |
+| [UX-60](tickets/UX-60-la-tua-stagione.md)                    | "La tua stagione": riepilogo personale di fine stagione      | L     | UX-59        |                                           |
+| [UX-61](tickets/UX-61-giochi-quiz-e-pronostici.md)           | Giochi del club: quiz del Baskin e pronostico della partita  | L     | UX-55, UX-56 | nomi nel pronostico (solo il punto 3.5)   |
+| [UX-62](tickets/UX-62-seo-locale.md)                         | Farsi trovare: SEO locale e scheda Google                    | M     | UX-55        | accesso alla scheda Google (solo punto 1) |
+| [UX-63](tickets/UX-63-pagina-per-educatori.md)               | Pagina per scuole, educatori e servizi                       | M     | UX-55, UX-62 | testi e contatti del club                 |
+| [UX-64](tickets/UX-64-sostieni-il-club.md)                   | Sostieni il club: 5×1000, donazioni e volontari              | M     | UX-55        | dati fiscali e decisioni del club         |
+| [UX-65](tickets/UX-65-report-sponsor.md)                     | Report per gli sponsor e sponsor in evidenza                 | M     | UX-55        |                                           |
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

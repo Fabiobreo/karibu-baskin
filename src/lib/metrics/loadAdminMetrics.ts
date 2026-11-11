@@ -104,25 +104,9 @@ export async function loadAdminMetrics(now: Date = new Date()): Promise<AdminMet
     prisma.eventAttendance.count({ where: { event: { date: { gte: since } } } }),
   ]);
 
-  // La Karibu di stagione non ha rosa: chi può rispondere sono i tesserati di
-  // tutte le squadre della sua stagione, contati una volta sola.
-  const mixedSeasons = [
-    ...new Set(matchRows.filter((m) => m.team.isMixed).map((m) => m.team.season)),
-  ];
-  const seasonMembers = new Map<string, number>();
-  if (mixedSeasons.length > 0) {
-    const memberships = await prisma.teamMembership.findMany({
-      where: { team: { season: { in: mixedSeasons }, isMixed: false } },
-      select: { userId: true, childId: true, team: { select: { season: true } } },
-    });
-    const seen = new Map<string, Set<string>>();
-    for (const m of memberships) {
-      const set = seen.get(m.team.season) ?? new Set<string>();
-      set.add(m.userId ? `u:${m.userId}` : `c:${m.childId}`);
-      seen.set(m.team.season, set);
-    }
-    for (const [season, set] of seen) seasonMembers.set(season, set.size);
-  }
+  const seasonMembers = await loadSeasonRosterSizes(
+    matchRows.filter((m) => m.team.isMixed).map((m) => m.team.season)
+  );
 
   return {
     generatedAt: now,
@@ -150,4 +134,27 @@ export async function loadAdminMetrics(now: Date = new Date()): Promise<AdminMet
       eventResponses,
     },
   };
+}
+
+/**
+ * Giocatori della Karibu di stagione, per stagione: non ha rosa, chi può
+ * rispondere sono i tesserati di tutte le squadre della sua stagione, contati
+ * una volta sola.
+ */
+export async function loadSeasonRosterSizes(seasons: string[]): Promise<Map<string, number>> {
+  const unique = [...new Set(seasons)];
+  const sizes = new Map<string, number>();
+  if (unique.length === 0) return sizes;
+  const memberships = await prisma.teamMembership.findMany({
+    where: { team: { season: { in: unique }, isMixed: false } },
+    select: { userId: true, childId: true, team: { select: { season: true } } },
+  });
+  const seen = new Map<string, Set<string>>();
+  for (const m of memberships) {
+    const set = seen.get(m.team.season) ?? new Set<string>();
+    set.add(m.userId ? `u:${m.userId}` : `c:${m.childId}`);
+    seen.set(m.team.season, set);
+  }
+  for (const [season, set] of seen) sizes.set(season, set.size);
+  return sizes;
 }

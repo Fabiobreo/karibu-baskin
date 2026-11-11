@@ -18,7 +18,7 @@
 //    errore al posto della pagina offline: il contrario di quello che una PWA
 //    deve fare. Il routing è deciso su `request.destination`, non per esclusione.
 
-const VERSION = "karibu-v13";
+const VERSION = "karibu-v14";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const API_CACHE = `${VERSION}-api`;
@@ -373,11 +373,23 @@ self.addEventListener("notificationclick", (e) => {
   }
 
   const url = e.notification.data?.url ?? "/";
+  const type = e.notification.data?.type;
   e.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
-      const existing = list.find((c) => c.url.includes(self.location.origin));
-      if (existing) return existing.focus().then((c) => c.navigate(url));
-      return clients.openWindow(url);
-    })
+    Promise.all([
+      clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+        const existing = list.find((c) => c.url.includes(self.location.origin));
+        if (existing) return existing.focus().then((c) => c.navigate(url));
+        return clients.openWindow(url);
+      }),
+      // Contatore aggregato delle aperture per tipo (UX-55): solo il tipo,
+      // nessun dato della persona. Se la rete non c'è, l'apertura non si conta.
+      type
+        ? fetch("/api/push/opened", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type }),
+          }).catch(() => {})
+        : Promise.resolve(),
+    ])
   );
 });

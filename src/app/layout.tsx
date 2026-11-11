@@ -20,6 +20,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
 import CookieBanner from "@/components/layout/CookieBanner";
+import ReferralCapture from "@/components/layout/ReferralCapture";
 import InstallPrompt from "@/components/layout/InstallPrompt";
 import MissingNameDialog from "@/components/layout/MissingNameDialog";
 import { auth } from "@/lib/authjs";
@@ -146,6 +147,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AppRouterCacheProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <ServiceWorkerRegistrar />
+            <ReferralCapture />
             <Providers session={session} colorMode={colorMode} colorScheme={colorScheme}>
               <ToastProvider>
                 <SkipToContent />

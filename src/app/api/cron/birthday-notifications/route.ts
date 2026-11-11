@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
   // congela la funzione. Ognuno ha il suo catch, così una push fallita non
   // ferma la notifica in-app.
   await Promise.all([
-    sendPushToUsers(memberIds, { title, body, url: "/" }).catch((err) =>
+    sendPushToUsers(memberIds, { title, body, url: "/", type: "BIRTHDAY" }).catch((err) =>
       console.error("[push] birthday", err)
     ),
     createTargetedAppNotifications(memberIds, { type: "BIRTHDAY", title, body, url: "/" }).catch(

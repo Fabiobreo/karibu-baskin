@@ -14,6 +14,7 @@ Documentazione dei flussi principali dell'applicazione.
 | [06-genitore-figlio.md](./06-genitore-figlio.md)         | Gestione figli, collegamento account, rivendicazione iscrizioni anonime |
 | [07-squadre-partite.md](./07-squadre-partite.md)         | Squadre agonistiche, partite ufficiali, statistiche                     |
 | [08-admin.md](./08-admin.md)                             | Pannello admin: utenti, allenamenti, restrizioni, partite               |
+| [link-con-utm.md](./link-con-utm.md)                     | Link con UTM per bio, volantini e siti di altri (per lo staff)          |
 
 ## Stack di riferimento rapido
 

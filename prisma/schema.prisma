@@ -773,6 +773,36 @@ model AppNotificationRead {
   @@index([userId])
 }
 
+// Aperture delle push per tipo e giorno (UX-55), solo contatori aggregati.
+// Nessun userId né endpoint, di proposito: serve a sapere se un tipo di
+// notifica funziona, non chi ha aperto cosa. `type` è un AppNotificationType
+// oppure "TEST" (la notifica di prova del profilo): una stringa perché il
+// tipo arriva dal service worker e si valida contro `PUSH_STAT_TYPES`.
+// `day` è la data a Roma. Le righe oltre 13 mesi le cancella il cron
+// cleanup-notifications.
+model PushDailyStat {
+  id     String   @id @default(cuid())
+  day    DateTime @db.Date
+  type   String
+  sent   Int      @default(0)
+  opened Int      @default(0)
+
+  @@unique([day, type])
+}
+
+// Famiglie attive nei sette giorni prima di `weekEnd` (UX-55). Una sessione
+// dice solo quando è stata usata l'ultima volta, quindi una settimana passata
+// non si ricostruisce: il cron settimanale cleanup-notifications ne salva il
+// conteggio. Solo numeri, nessun identificativo.
+model WeeklyActivityStat {
+  id             String   @id @default(cuid())
+  weekEnd        DateTime @unique @db.Date
+  families       Int
+  activeFamilies Int
+  activeUsers    Int
+  createdAt      DateTime @default(now())
+}
+
 // ── Statistiche giocatore per partita ────────────────────────────────────────
 
 model PlayerMatchStats {

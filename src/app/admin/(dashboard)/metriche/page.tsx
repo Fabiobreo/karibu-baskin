@@ -1,25 +1,19 @@
-import Link from "next/link";
-import { Box, Paper, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import PageHeader from "@/components/common/PageHeader";
+import MetricTile, { MetricSection } from "@/components/admin/MetricTile";
+import EngagementSection from "@/components/admin/EngagementSection";
 import {
   ACTIVE_WINDOW_DAYS,
   METRICS_WINDOW_DAYS,
   loadAdminMetrics,
 } from "@/lib/metrics/loadAdminMetrics";
+import { loadEngagementMetrics } from "@/lib/metrics/loadEngagementMetrics";
 import { requireAdminPage } from "@/lib/adminAccess";
-import { TYPE_SCALE } from "@/lib/typeScale";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { num, pct } from "@/lib/metrics/formatMetric";
 
 // Metriche sempre fresche: sono poche query aggregate, e un numero vecchio di
 // mezz'ora sarebbe più confuso che utile.
 export const dynamic = "force-dynamic";
-
-const percent = new Intl.NumberFormat("it-IT", { style: "percent", maximumFractionDigits: 0 });
-const decimal = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 });
-
-// "n.d." e non "0%": senza dati il rapporto non è misurabile, non è nullo.
-const pct = (v: number | null) => (v === null ? "n.d." : percent.format(v));
-const num = (v: number | null) => (v === null ? "n.d." : decimal.format(v));
 
 /**
  * Metriche d'uso (KB-32). Calcolate dai dati del gestionale, senza tracciare
@@ -28,7 +22,7 @@ const num = (v: number | null) => (v === null ? "n.d." : decimal.format(v));
 export default async function AdminMetrichePage() {
   // Le tessere che portano a un lavoro da fare sono link solo per lo staff.
   const { readOnly } = await requireAdminPage("/admin/metriche");
-  const m = await loadAdminMetrics();
+  const [m, engagement] = await Promise.all([loadAdminMetrics(), loadEngagementMetrics()]);
   const { community: c, training: t, matches: p, engagement: e } = m;
 
   return (
@@ -37,6 +31,8 @@ export default async function AdminMetrichePage() {
         title="Metriche"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Metriche" }]}
       />
+
+      <EngagementSection data={engagement} />
 
       <MetricSection title="Comunità">
         <MetricTile
@@ -107,7 +103,7 @@ export default async function AdminMetrichePage() {
         />
       </MetricSection>
 
-      <MetricSection title={`Coinvolgimento (ultimi ${METRICS_WINDOW_DAYS} giorni)`}>
+      <MetricSection title={`Sondaggi ed eventi (ultimi ${METRICS_WINDOW_DAYS} giorni)`}>
         <MetricTile
           value={String(e.pollVoters)}
           label="Persone che hanno votato un sondaggio"
@@ -120,85 +116,5 @@ export default async function AdminMetrichePage() {
         />
       </MetricSection>
     </Box>
-  );
-}
-
-function MetricSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <Box component="section">
-      <Typography
-        variant="overline"
-        component="h2"
-        sx={{ color: "text.secondary", display: "block", mb: 1 }}
-      >
-        {title}
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(3, 1fr)" },
-          gap: 2,
-        }}
-      >
-        {children}
-      </Box>
-    </Box>
-  );
-}
-
-function MetricTile({
-  value,
-  label,
-  caption,
-  href,
-  highlight,
-}: {
-  value: string;
-  label: string;
-  caption: string;
-  href?: string;
-  highlight?: boolean;
-}) {
-  const body = (
-    <Paper
-      elevation={1}
-      sx={{
-        p: 2.5,
-        height: "100%",
-        // Evidenza, non azione (UX-29): bordo nel colore del testo, niente tinta.
-        border: "2px solid",
-        borderColor: highlight ? "text.primary" : "transparent",
-      }}
-    >
-      <Typography
-        component="p"
-        sx={{
-          fontSize: TYPE_SCALE.xl4,
-          fontWeight: FONT_WEIGHT.bold,
-          lineHeight: 1,
-          color: "text.primary",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {value}
-      </Typography>
-      <Typography variant="subtitle2" sx={{ mt: 0.75 }}>
-        {label}
-      </Typography>
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ display: "block", mt: 0.5, lineHeight: 1.4 }}
-      >
-        {caption}
-      </Typography>
-    </Paper>
-  );
-  return href ? (
-    <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
-      {body}
-    </Link>
-  ) : (
-    body
   );
 }

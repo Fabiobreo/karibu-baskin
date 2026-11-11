@@ -1182,7 +1182,11 @@
       "downloadPhoto": "Download",
       "close": "Close",
       "prevPhoto": "Previous photo",
-      "nextPhoto": "Next photo"
+      "nextPhoto": "Next photo",
+      "openInstagram": "Open on Instagram",
+      "playVideo": "Play the video",
+      "videoTitle": "Video from Instagram",
+      "postAlt": "Karibu Baskin photo"
     },
     "news": {
       "heroSubtitle": "Communications, updates and polls from the team.",
