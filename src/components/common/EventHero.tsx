@@ -11,7 +11,6 @@ import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { eventStatus, isAllDay, type EventStatus } from "@/lib/events";
 import { mapsSearchUrl } from "@/lib/clubVenue";
-import { SITE_URL } from "@/lib/siteUrl";
 
 type StatusPillVariant = "inverted" | "outlined" | "muted";
 
@@ -79,7 +78,7 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
     ? null
     : `${formatRome(ev.date, "HH:mm")}${showEndTime ? `–${formatRome(ev.endDate!, "HH:mm")}` : ""}`;
 
-  const eventUrl = `${SITE_URL}/eventi/${ev.slug ?? ev.id}`;
+  const eventPath = `/eventi/${ev.slug ?? ev.id}`;
   const statusPill = STATUS_PILL[status.kind];
 
   return (
@@ -119,7 +118,7 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
           )}
         </>
       }
-      actions={<ShareSection title={ev.title} url={eventUrl} kind="event" dark />}
+      actions={<ShareSection title={ev.title} path={eventPath} kind="event" dark />}
     />
   );
 }

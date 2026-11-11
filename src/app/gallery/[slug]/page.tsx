@@ -9,11 +9,12 @@ import { hasRole, isMemberRole } from "@/lib/authRoles";
 import { buildMetadata } from "@/lib/seo";
 import { heroText } from "@/lib/heroStyles";
 import { canSeeAlbum, LISTED_ALBUM_WHERE } from "@/lib/gallery/albumRules";
-import { driveFolderUrl } from "@/lib/gallery/drive";
+import { driveFolderUrl, drivePhotoUrl } from "@/lib/gallery/drive";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
 import StaffManageButton from "@/components/common/StaffManageButton";
+import ShareSection from "@/components/common/ShareSection";
 import AlbumPhotoGrid from "@/components/gallery/AlbumPhotoGrid";
 import AlbumPagination from "@/components/gallery/AlbumPagination";
 import {
@@ -41,6 +42,7 @@ function findAlbum(slug: string) {
       photoCount: true,
       otherFiles: true,
       driveFolderId: true,
+      coverPhotoId: true,
       event: { select: { id: true, slug: true, title: true } },
       match: {
         select: {
@@ -54,6 +56,26 @@ function findAlbum(slug: string) {
     },
   });
 }
+
+/** Copertina per l'anteprima: quella scelta, o la prima foto visibile. */
+async function albumCoverImage(album: {
+  id: string;
+  coverPhotoId: string | null;
+}): Promise<string | undefined> {
+  const cover = await prisma.albumPhoto.findFirst({
+    where: album.coverPhotoId
+      ? { id: album.coverPhotoId, hidden: false }
+      : { albumId: album.id, hidden: false },
+    orderBy: { position: "asc" },
+    select: { driveFileId: true },
+  });
+  // Scelta nascosta nel frattempo: si ripiega sulla prima visibile.
+  if (!cover && album.coverPhotoId) return albumCoverImage({ ...album, coverPhotoId: null });
+  return cover ? drivePhotoUrl(cover.driveFileId, OG_WIDTH) : undefined;
+}
+
+/** Larghezza consigliata per le anteprime dei link. */
+const OG_WIDTH = 1200;
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const [{ slug }, { pagina }] = await Promise.all([params, searchParams]);
@@ -74,6 +96,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     path: albumPageHref(album.slug, page),
     // Un album riservato non si fa trovare dai motori di ricerca.
     noindex: album.visibility !== "PUBLIC",
+    // Anteprima del link (UX-56): la copertina scelta dallo staff, solo per
+    // gli album pubblici. Un'anteprima la vede chiunque riceva il link, quindi
+    // un album "Solo tesserati" resta con la card generica del sito.
+    image: album.visibility === "PUBLIC" ? await albumCoverImage(album) : undefined,
   });
 }
 
@@ -173,6 +199,15 @@ export default async function AlbumPage({ params, searchParams }: Props) {
                 >
                   {t("gallery.albumDownloadAll")}
                 </Button>
+              )}
+              {canSee && (
+                <ShareSection
+                  title={album.title}
+                  path={`/gallery/${album.slug}`}
+                  kind="album"
+                  membersOnly={album.visibility !== "PUBLIC"}
+                  dark
+                />
               )}
               {isStaff && (
                 <StaffManageButton

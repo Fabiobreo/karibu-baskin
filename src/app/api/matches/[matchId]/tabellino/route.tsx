@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/db";
 import { it } from "date-fns/locale";
 import { publicSubjects } from "@/lib/minors";
+import { shortAddress } from "@/lib/shareLinks";
 import { formatRome } from "@/lib/dateUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { BRAND, HERO, HERO_TEXT, MEDAL, OUTCOME } from "@/lib/palette";
@@ -456,20 +457,34 @@ export async function GET(_req: Request, { params }: Params) {
         </div>
       )}
 
-      {/* Footer */}
+      {/* Footer: l'indirizzo della partita (UX-56). Su uno schermo di 390 px
+          l'immagine è ridotta a un terzo, quindi 34 px diventano circa 12;
+          un indirizzo lungo va su due righe.
+          Uguale per chiunque la chieda: la cache CDN pubblica resta giusta. */}
       <div
         style={{
           display: "flex",
           justifyContent: "center",
           marginTop: "auto",
           paddingTop: 24,
-          fontSize: 20,
-          color: HERO_TEXT.muted,
-          fontWeight: FONT_WEIGHT.bold,
-          letterSpacing: 2,
+          width: "100%",
         }}
       >
-        karibubaskin.it
+        <div
+          style={{
+            display: "block",
+            maxWidth: "100%",
+            fontSize: 34,
+            color: HERO_TEXT.primary,
+            fontWeight: FONT_WEIGHT.semibold,
+            textAlign: "center",
+            lineHeight: 1.25,
+            // A capo invece dei puntini: un indirizzo tagliato non si digita.
+            wordBreak: "break-all",
+          }}
+        >
+          {shortAddress(`/partite/${match.slug ?? match.id}`)}
+        </div>
       </div>
     </div>,
     {

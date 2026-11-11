@@ -25,6 +25,7 @@ import Link from "next/link";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
 import PollWidget from "@/components/news/PollWidget";
+import ShareSection from "@/components/common/ShareSection";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -175,7 +176,7 @@ export default async function NewsSlugPage({ params }: Props) {
             )}
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
             <Typography variant="caption" color="text.secondary">
               {formatRome(new Date(post.publishedAt!), "d MMMM yyyy", { locale: dateLocale })}
             </Typography>
@@ -197,6 +198,11 @@ export default async function NewsSlugPage({ params }: Props) {
                 sx={{ ml: 0.5 }}
               />
             )}
+          </Box>
+
+          {/* Condivisione sotto titolo e data (UX-56). */}
+          <Box sx={{ mb: 3 }}>
+            <ShareSection title={post.title} path={`/news/${slug}`} kind="news" />
           </Box>
 
           <Divider sx={{ mb: 3 }} />

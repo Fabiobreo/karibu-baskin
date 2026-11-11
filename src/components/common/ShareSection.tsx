@@ -20,30 +20,73 @@ import { useToast } from "@/context/ToastContext";
 import { alpha } from "@mui/material/styles";
 import { socialBrandColor } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
+import { shareMessage, shareUrl, type ShareCampaign } from "@/lib/shareLinks";
+
+type ShareKind = "training" | "event" | "match" | "news" | "album";
+
+/** Campagna UTM di ogni tipo di pagina (UX-56). */
+const CAMPAIGN: Record<ShareKind, ShareCampaign> = {
+  training: "allenamento",
+  event: "evento",
+  match: "partita",
+  news: "news",
+  album: "album",
+};
+
+/** Frase prima del link nel messaggio di WhatsApp. */
+const WA_KEY = {
+  training: "waTraining",
+  event: "waEvent",
+  match: "waMatch",
+  news: "waNews",
+  album: "waAlbum",
+} as const satisfies Record<ShareKind, string>;
+
+/** Indicazione sotto il QR. */
+const QR_HINT_KEY = {
+  training: "qrHint",
+  event: "qrHintEvent",
+  match: "qrHintPage",
+  news: "qrHintPage",
+  album: "qrHintPage",
+} as const satisfies Record<ShareKind, string>;
 
 interface Props {
   title: string;
-  url: string;
-  /** Cosa si condivide: cambia il testo di WhatsApp e l'indicazione sotto il QR. */
-  kind?: "training" | "event";
+  /** Percorso della pagina (`/eventi/festa`): i link li costruisce il componente, con l'UTM di ogni bottone. */
+  path: string;
+  /** Cosa si condivide: testo di WhatsApp, campagna UTM e indicazione sotto il QR. */
+  kind?: ShareKind;
+  /** Album "Solo tesserati": il messaggio dice che serve l'accesso. */
+  membersOnly?: boolean;
   dark?: boolean; // stile per sfondi scuri
 }
 
 /** Bottone fantasma degli hero: stessa misura del "Gestisci" dello staff. */
 const HERO_BUTTON_SX = { color: "common.white", typography: "caption", px: 1.5 } as const;
 
-export default function ShareSection({ title, url, kind = "training", dark = false }: Props) {
+export default function ShareSection({
+  title,
+  path,
+  kind = "training",
+  membersOnly = false,
+  dark = false,
+}: Props) {
   const [qrOpen, setQrOpen] = useState(false);
   const { showToast } = useToast();
   const t = useTranslations("share");
   const tCommon = useTranslations("common");
 
-  const waText = `${t(kind === "event" ? "waEvent" : "waTraining", { title })}\n${url}`;
+  // Un link per bottone (UX-56): stessa pagina, provenienza diversa.
+  const campaign = CAMPAIGN[kind];
+  const waKey = kind === "album" && membersOnly ? "waAlbumMembers" : WA_KEY[kind];
+  const waText = shareMessage(t(waKey, { title }), shareUrl(path, campaign, "whatsapp"));
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+  const qrUrl = shareUrl(path, campaign, "qr");
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl(path, campaign, "link"));
       showToast({ message: t("linkCopied"), severity: "success", duration: 2000 });
     } catch {
       showToast({ message: t("linkCopyFailed"), severity: "error" });
@@ -145,10 +188,10 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
               mb: 2,
             }}
           >
-            <QRCodeSVG value={url} size={200} />
+            <QRCodeSVG value={qrUrl} size={200} />
           </Box>
           <Typography variant="body2" color="text.secondary">
-            {t(kind === "event" ? "qrHintEvent" : "qrHint")}
+            {t(QR_HINT_KEY[kind])}
           </Typography>
         </DialogContent>
       </Dialog>

@@ -12,12 +12,14 @@ import {
   computeNotificationOpens,
   computeRegistrationSource,
   overallPushOpenRate,
+  summarizeShareVisits,
   type AvailabilityEngagement,
   type FamilyActivity,
   type GuestFunnel,
   type NotificationOpenRow,
   type NotificationOpenStat,
   type RegistrationSource,
+  type ShareVisitSummary,
 } from "@/lib/metrics/adminMetrics";
 
 /**
@@ -34,6 +36,7 @@ export const AVAILABILITY_WINDOW_DAYS = 56;
 export const REGISTRATION_WINDOW_DAYS = 28;
 export const FUNNEL_WINDOW_DAYS = 182;
 export const NOTIFICATION_WINDOW_DAYS = 28;
+export const SHARE_WINDOW_DAYS = 28;
 
 const CONVERTED_ROLES = new Set(["ATHLETE", "PARENT"]);
 
@@ -59,6 +62,7 @@ export interface EngagementSection {
   funnel: Compared<GuestFunnel>;
   notifications: NotificationOpenStat[];
   pushOpenRate: Compared<number | null>;
+  shares: ShareVisitSummary;
 }
 
 const ago = (now: Date, days: number) => new Date(now.getTime() - days * DAY_MS);
@@ -356,13 +360,24 @@ async function loadNotifications(now: Date) {
   };
 }
 
+/** Visite arrivate da un bottone "Condividi" (UX-56), con il periodo prima. */
+async function loadShareVisits(now: Date): Promise<ShareVisitSummary> {
+  const since = ago(now, SHARE_WINDOW_DAYS);
+  const rows = await prisma.shareVisitStat.findMany({
+    where: { day: { gte: romeDay(ago(now, SHARE_WINDOW_DAYS + COMPARE_DAYS)) } },
+    select: { day: true, campaign: true, source: true, visits: true },
+  });
+  return summarizeShareVisits(rows, romeDay(since));
+}
+
 export async function loadEngagementMetrics(now: Date = new Date()): Promise<EngagementSection> {
-  const [weekly, availability, registrations, funnel, notifications] = await Promise.all([
+  const [weekly, availability, registrations, funnel, notifications, shares] = await Promise.all([
     loadWeekly(now),
     loadAvailability(now),
     loadRegistrations(now),
     loadFunnel(now),
     loadNotifications(now),
+    loadShareVisits(now),
   ]);
   return {
     families: { current: weekly.current, previous: weekly.previous },
@@ -371,5 +386,6 @@ export async function loadEngagementMetrics(now: Date = new Date()): Promise<Eng
     registrations,
     funnel,
     ...notifications,
+    shares,
   };
 }

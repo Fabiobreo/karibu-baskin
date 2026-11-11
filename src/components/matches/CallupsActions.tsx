@@ -15,10 +15,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { useNotifyCallups } from "@/hooks/useNotifyCallups";
 import { shareElementAsImage, shareFileName } from "@/lib/shareImage";
+import { shareUrl } from "@/lib/shareLinks";
+import { useShareOutcomeToast } from "@/hooks/useShareOutcomeToast";
 import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import CallupsShareCard, { type CallupsShareInfo } from "@/components/matches/CallupsShareCard";
 import type { CallupEntry } from "@/components/matches/matchDetailTypes";
@@ -43,7 +45,10 @@ export default function CallupsActions({
   canNotify,
 }: CallupsActionsProps) {
   const t = useTranslations("matches");
+  const tShare = useTranslations("share");
+  const locale = useLocale();
   const { showToast } = useToast();
+  const toastOutcome = useShareOutcomeToast();
   const notify = useNotifyCallups(matchId, callups.length);
   const cardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
@@ -55,10 +60,23 @@ export default function CallupsActions({
     if (!cardRef.current || sharing) return;
     setSharing(true);
     try {
-      await shareElementAsImage(cardRef.current, {
+      const outcome = await shareElementAsImage(cardRef.current, {
         title: t("shareCallupsSubject", { title: shareInfo.title }),
         fileName: shareFileName("convocati", shareInfo.title),
+        link: {
+          url: shareUrl(shareInfo.path, "convocati"),
+          text: tShare("msgCallups", {
+            title: shareInfo.title,
+            // "Sabato 12" apre la testata dell'immagine; dentro la frase, in
+            // italiano, il giorno va minuscolo.
+            when:
+              locale === "it"
+                ? shareInfo.when.replace(/^./, (c) => c.toLowerCase())
+                : shareInfo.when,
+          }),
+        },
       });
+      toastOutcome(outcome);
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
         console.error("[share callups]", err);

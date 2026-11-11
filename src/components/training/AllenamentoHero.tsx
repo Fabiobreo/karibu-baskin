@@ -17,7 +17,6 @@ import StaffManageButton from "@/components/common/StaffManageButton";
 import { mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { formatRoleNumbers } from "@/lib/roleList";
-import { SITE_URL } from "@/lib/siteUrl";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Session {
@@ -100,7 +99,7 @@ export default function AllenamientoHero({
   // Costruito dai dati e non da window.location: sul server l'URL non esiste, e
   // l'href di WhatsApp renderizzato senza link restava tale anche dopo
   // l'idratazione (React non corregge gli attributi in caso di mismatch).
-  const sessionUrl = `${SITE_URL}/allenamento/${session.dateSlug ?? session.id}`;
+  const sessionPath = `/allenamento/${session.dateSlug ?? session.id}`;
 
   // Stato delle iscrizioni quando sono chiuse: "a breve" se non si sono
   // ancora aperte e l'allenamento non e' passato, altrimenti "chiuse".
@@ -217,7 +216,7 @@ export default function AllenamientoHero({
           </HeroMeta>
         </>
       }
-      actions={<ShareSection title={session.title} url={sessionUrl} dark />}
+      actions={<ShareSection title={session.title} path={sessionPath} dark />}
     />
   );
 }

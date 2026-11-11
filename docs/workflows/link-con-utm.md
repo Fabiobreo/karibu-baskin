@@ -6,33 +6,37 @@ Chi apre il sito da uno di questi link e poi scrive dal modulo contatti fa arriv
 
 ## Link pronti da copiare
 
-I link qui sotto usano l'indirizzo attuale del sito, `https://karibu-baskin.vercel.app`. Se il sito passa a un dominio proprio, si cambia solo la prima parte.
+I link qui sotto usano l'indirizzo del sito, `https://www.karibubaskin.it` (anche `karibubaskin.it` funziona: porta lì).
 
-| Dove                                            | Link                                                                                               |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Bio di Instagram                                | `https://karibu-baskin.vercel.app/contatti?utm_source=instagram&utm_medium=bio#vieni-a-provare`    |
-| Pagina Facebook (link nelle informazioni)       | `https://karibu-baskin.vercel.app/contatti?utm_source=facebook&utm_medium=bio#vieni-a-provare`     |
-| Volantino stampato (testo o QR)                 | `https://karibu-baskin.vercel.app/contatti?utm_source=volantino&utm_medium=print#vieni-a-provare`  |
-| QR su manifesti, striscioni, bordo campo        | `https://karibu-baskin.vercel.app/contatti?utm_source=qr&utm_medium=print#vieni-a-provare`         |
-| Messaggio al Comune, alle scuole, ad altri siti | `https://karibu-baskin.vercel.app/contatti?utm_source=partner&utm_medium=referral#vieni-a-provare` |
-| Messaggio WhatsApp ai genitori di altre società | `https://karibu-baskin.vercel.app/contatti?utm_source=whatsapp&utm_medium=share#vieni-a-provare`   |
-| Email (newsletter di altri, firme)              | `https://karibu-baskin.vercel.app/contatti?utm_source=email&utm_medium=share#vieni-a-provare`      |
+| Dove                                            | Link                                                                                          |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Bio di Instagram                                | `https://www.karibubaskin.it/contatti?utm_source=instagram&utm_medium=bio#vieni-a-provare`    |
+| Pagina Facebook (link nelle informazioni)       | `https://www.karibubaskin.it/contatti?utm_source=facebook&utm_medium=bio#vieni-a-provare`     |
+| Volantino stampato (testo o QR)                 | `https://www.karibubaskin.it/contatti?utm_source=volantino&utm_medium=print#vieni-a-provare`  |
+| QR su manifesti, striscioni, bordo campo        | `https://www.karibubaskin.it/contatti?utm_source=qr&utm_medium=print#vieni-a-provare`         |
+| Messaggio al Comune, alle scuole, ad altri siti | `https://www.karibubaskin.it/contatti?utm_source=partner&utm_medium=referral#vieni-a-provare` |
+| Messaggio WhatsApp ai genitori di altre società | `https://www.karibubaskin.it/contatti?utm_source=whatsapp&utm_medium=share#vieni-a-provare`   |
+| Email (newsletter di altri, firme)              | `https://www.karibubaskin.it/contatti?utm_source=email&utm_medium=share#vieni-a-provare`      |
 
 Per un'iniziativa precisa si aggiunge la campagna, sempre minuscola e con i trattini, per esempio l'open day:
 
 ```
-https://karibu-baskin.vercel.app/contatti?utm_source=volantino&utm_medium=print&utm_campaign=open-day-2027#vieni-a-provare
+https://www.karibubaskin.it/contatti?utm_source=volantino&utm_medium=print&utm_campaign=open-day-2027#vieni-a-provare
 ```
 
 ## Le regole
 
-- **Fonti ammesse** (`utm_source`): `whatsapp`, `instagram`, `facebook`, `email`, `volantino`, `qr`, `partner`.
+- **Fonti ammesse** (`utm_source`): `whatsapp`, `instagram`, `facebook`, `email`, `volantino`, `qr`, `partner`, `link` (solo per "Copia link" dei bottoni del sito).
 - **Mezzi ammessi** (`utm_medium`): `share` (condivisione), `bio` (link nella bio), `print` (carta), `referral` (siti di altri).
 - **Campagna** (`utm_campaign`): libera, ma minuscola con trattini (`open-day-2027`, `5x1000-2027`).
 - Mai inventare varianti (`WhatsApp`, `wa`, `insta`): un valore scritto in due modi diventa due canali diversi.
 - L'ancora `#vieni-a-provare` sta sempre **in fondo**, dopo i parametri.
 
 Nel codice i link si costruiscono con `withUtm(path, { source, medium, campaign })` di `@/lib/utm`, che conosce gli stessi valori: un valore fuori elenco non compila.
+
+## I bottoni "Condividi" del sito (UX-56)
+
+I link che partono dai bottoni di condivisione del sito hanno già i parametri, messi in automatico: `utm_medium=share`, la fonte (`whatsapp` per il messaggio, `link` per "Copia link", `qr` per il QR) e la campagna di cosa si è condiviso (`tabellino`, `convocati`, `squadre`, `allenamento`, `evento`, `partita`, `news`, `album`, `profilo`). Non vanno scritti a mano. Le visite che arrivano da questi link si contano, solo come numero, in "Coinvolgimento" di `/admin/metriche`.
 
 ## Dove si leggono
 

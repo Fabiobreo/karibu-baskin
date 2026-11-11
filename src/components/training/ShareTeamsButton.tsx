@@ -7,7 +7,8 @@ import type { Locale } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
-import { SITE_HOST } from "@/lib/siteUrl";
+import { shareUrl, shortAddress } from "@/lib/shareLinks";
+import { useShareOutcomeToast } from "@/hooks/useShareOutcomeToast";
 import type { TeamsData } from "./TeamDisplay";
 import { ROLES, TEAM_META } from "@/lib/constants";
 import { BRAND, HERO_TEXT, NEUTRAL, ROLE_COLORS } from "@/lib/palette";
@@ -21,6 +22,8 @@ interface Props {
   sessionTitle: string;
   sessionDate?: string | Date;
   sessionEndTime?: string | Date | null;
+  /** Pagina dell'allenamento (`/allenamento/<dateSlug o id>`): link del messaggio e indirizzo sull'immagine. */
+  sessionPath: string;
 }
 
 function formatDateLine(
@@ -51,15 +54,26 @@ export default function ShareTeamsButton(props: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const tShare = useTranslations("share");
+  const dateLocale = useActiveDateLocale();
+  const toastOutcome = useShareOutcomeToast();
 
   async function handleShare() {
     if (!cardRef.current || loading) return;
     setLoading(true);
     try {
-      await shareElementAsImage(cardRef.current, {
+      const outcome = await shareElementAsImage(cardRef.current, {
         title: tShare("teamsSubject", { title: props.sessionTitle }),
         fileName: shareFileName("squadre", props.sessionTitle),
+        link: {
+          url: shareUrl(props.sessionPath, "squadre"),
+          text: tShare("msgTeams", {
+            day: props.sessionDate
+              ? format(new Date(props.sessionDate), "EEEE d MMMM", { locale: dateLocale })
+              : props.sessionTitle,
+          }),
+        },
       });
+      toastOutcome(outcome);
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
         console.error("[share teams]", err);
@@ -93,10 +107,11 @@ export default function ShareTeamsButton(props: Props) {
  * html2canvas non legge il tema.
  */
 const TeamsShareCard = forwardRef<HTMLDivElement, Props>(function TeamsShareCard(
-  { teams, coaches, sessionTitle, sessionDate, sessionEndTime },
+  { teams, coaches, sessionTitle, sessionDate, sessionEndTime, sessionPath },
   cardRef
 ) {
   const t = useTranslations("trainings");
+  const tShare = useTranslations("share");
   const dateLocale = useActiveDateLocale();
   const { roleLabel, teamColorLabel } = useEntityLabels();
 
@@ -311,26 +326,42 @@ const TeamsShareCard = forwardRef<HTMLDivElement, Props>(function TeamsShareCard
           </div>
         )}
 
-        {/* ── Footer branding ── */}
+        {/* ── Footer: indirizzo dell'allenamento (UX-56). A 390 px di schermo
+            l'immagine è ridotta a circa 0,6-0,75, quindi 18 px restano
+            leggibili. ── */}
         <div
           style={{
             background: BRAND.dark,
-            padding: "7px 14px",
+            padding: "9px 14px 11px",
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: "flex-end",
+            gap: 12,
           }}
         >
-          <span
-            style={{
-              fontSize: 9,
-              letterSpacing: 0.8,
-              color: HERO_TEXT.muted,
-              textTransform: "uppercase",
-            }}
-          >
-            {SITE_HOST}
-          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 11,
+                letterSpacing: 0.8,
+                color: HERO_TEXT.muted,
+                textTransform: "uppercase",
+              }}
+            >
+              {tShare("detailsOn")}
+            </div>
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: FONT_WEIGHT.semibold,
+                color: BRAND.white,
+                overflowWrap: "anywhere",
+                lineHeight: 1.3,
+              }}
+            >
+              {shortAddress(sessionPath)}
+            </div>
+          </div>
           <div style={{ display: "flex", gap: 3 }}>
             {meta.map((m) => (
               <div

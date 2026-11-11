@@ -72,6 +72,7 @@ export default function AdminSessionTeams({
         teams={teams}
         coaches={coaches}
         sessionTitle={sessionTitle}
+        sessionPath={`/allenamento/${sessionId}`}
         sessionDate={sessionDate}
         isStaff
         removingTeams={removing}

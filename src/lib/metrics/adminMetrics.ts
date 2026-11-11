@@ -391,3 +391,61 @@ export function overallPushOpenRate(rows: NotificationOpenRow[]): number | null 
   const opened = rows.reduce((n, r) => n + r.pushOpened, 0);
   return ratio(opened, sent);
 }
+
+// ── Visite dalle condivisioni (UX-56) ───────────────────────────────────────
+
+export interface ShareVisitRow {
+  day: Date;
+  campaign: string;
+  source: string;
+  visits: number;
+}
+
+export interface ShareVisitByCampaign {
+  campaign: string;
+  total: number;
+  whatsapp: number;
+  link: number;
+  qr: number;
+}
+
+export interface ShareVisitSummary {
+  total: number;
+  previousTotal: number;
+  /** Ultimo periodo, dalla campagna che porta più visite. */
+  byCampaign: ShareVisitByCampaign[];
+}
+
+/**
+ * Divide le righe di `ShareVisitStat` fra il periodo attuale (giorni da
+ * `split` in poi) e quello prima, e somma l'attuale per campagna e fonte.
+ */
+export function summarizeShareVisits(rows: ShareVisitRow[], split: Date): ShareVisitSummary {
+  const splitTime = split.getTime();
+  const byCampaign = new Map<string, ShareVisitByCampaign>();
+  let total = 0;
+  let previousTotal = 0;
+  for (const r of rows) {
+    if (r.day.getTime() < splitTime) {
+      previousTotal += r.visits;
+      continue;
+    }
+    total += r.visits;
+    let c = byCampaign.get(r.campaign);
+    if (!c) {
+      c = { campaign: r.campaign, total: 0, whatsapp: 0, link: 0, qr: 0 };
+      byCampaign.set(r.campaign, c);
+    }
+    c.total += r.visits;
+    if (r.source === "whatsapp" || r.source === "link" || r.source === "qr") {
+      c[r.source] += r.visits;
+    }
+  }
+  return {
+    total,
+    previousTotal,
+    byCampaign: [...byCampaign.values()].sort(
+      (a, b) => b.total - a.total || a.campaign.localeCompare(b.campaign)
+    ),
+  };
+}

@@ -31,6 +31,7 @@ import { slugify } from "@/lib/slugUtils";
 import { computeStandings } from "@/lib/season/standings";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import MatchTabellinoButton from "@/components/matches/MatchTabellinoButton";
+import ShareSection from "@/components/common/ShareSection";
 import MatchWhereWhen from "@/components/matches/MatchWhereWhen";
 import { matchSummary } from "@/lib/calendar/ics";
 import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
@@ -280,6 +281,8 @@ export default async function MatchDetailPage({ params }: Props) {
       : null;
 
   const hasScore = match.ourScore !== null && match.theirScore !== null;
+  // Indirizzo da condividere (UX-56): lo slug quando c'è, come il canonical.
+  const matchPath = `/partite/${match.slug ?? match.id}`;
   // eslint-disable-next-line react-hooks/purity -- Server Component, renders once
   const now = Date.now();
   // Fase (UX-50): futura, in corso (3 ore), risultato in arrivo, giocata.
@@ -486,6 +489,12 @@ export default async function MatchDetailPage({ params }: Props) {
     ? `${match.team.name} vs ${opponentName}`
     : `${opponentName} vs ${match.team.name}`;
 
+  // "Karibu – Thiene 42-38" per il messaggio del tabellino, casa prima.
+  const [homeName, awayName, homePts, awayPts] = match.isHome
+    ? [match.team.name, opponentName, match.ourScore, match.theirScore]
+    : [opponentName, match.team.name, match.theirScore, match.ourScore];
+  const scoreLine = `${homeName} – ${awayName} ${homePts}-${awayPts}`;
+
   const teamSeasonParam = match.team.season.replace("-", "");
   const teamSlug = slugify(match.team.name);
 
@@ -509,19 +518,26 @@ export default async function MatchDetailPage({ params }: Props) {
         hideTitle
         background={match.imageUrl ? heroImage(match.imageUrl) : heroBg}
         manage={
-          <>
+          // Una sola strada per gestire la partita: l'admin, come per
+          // allenamenti, eventi e squadre (UX-23).
+          isStaff && (
+            <StaffManageButton href={`/admin/partite?edit=${match.id}`} label={t("manage")} />
+          )
+        }
+        // Condivisione (UX-56): il link della partita, e a partita giocata
+        // anche l'immagine del risultato.
+        actions={
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <ShareSection title={matchupTitle} path={matchPath} kind="match" dark />
             {hasScore && (
               <MatchTabellinoButton
                 matchId={match.id}
+                path={matchPath}
+                scoreLine={scoreLine}
                 filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${formatRome(new Date(match.date), "yyyy-MM-dd")}.png`}
               />
             )}
-            {/* Una sola strada per gestire la partita: l'admin, come per
-                allenamenti, eventi e squadre (UX-23). */}
-            {isStaff && (
-              <StaffManageButton href={`/admin/partite?edit=${match.id}`} label={t("manage")} />
-            )}
-          </>
+          </Box>
         }
       >
         {/* Il tabellino e' il contenuto dell'entity hero della partita (UX-32). */}
@@ -950,6 +966,7 @@ export default async function MatchDetailPage({ params }: Props) {
                         locale: dateLocale,
                       }).replace(/^./, (c) => c.toUpperCase()),
                       place: location.label ?? t("whereWhen.locationTbc"),
+                      path: matchPath,
                     }
                   : undefined
               }

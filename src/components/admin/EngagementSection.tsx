@@ -15,6 +15,7 @@ import {
   AVAILABILITY_WINDOW_DAYS,
   NOTIFICATION_WINDOW_DAYS,
   REGISTRATION_WINDOW_DAYS,
+  SHARE_WINDOW_DAYS,
   type EngagementSection as EngagementData,
   type WeeklyActivityPoint,
 } from "@/lib/metrics/loadEngagementMetrics";
@@ -45,6 +46,19 @@ const TYPE_LABEL: Record<string, string> = {
   MATCH_AVAILABILITY: "Disponibilità",
   SUGGESTION: "Suggerimenti",
   TEST: "Notifica di prova",
+};
+
+/** Cosa si è condiviso (campagne di `@/lib/shareLinks`), per lo staff. */
+const SHARE_LABEL: Record<string, string> = {
+  tabellino: "Immagine del risultato",
+  convocati: "Immagine dei convocati",
+  squadre: "Immagine delle squadre",
+  allenamento: "Allenamento",
+  evento: "Evento",
+  partita: "Partita",
+  news: "News",
+  album: "Album foto",
+  profilo: "Profilo giocatore",
 };
 
 const dayMonth = new Intl.DateTimeFormat("it-IT", {
@@ -106,10 +120,17 @@ export default function EngagementSection({ data }: EngagementSectionProps) {
           delta={rateDelta(data.pushOpenRate.current, data.pushOpenRate.previous)}
           caption={`Ultimi ${NOTIFICATION_WINDOW_DAYS} giorni, tutti i tipi. Il dettaglio per tipo è qui sotto.`}
         />
+        <MetricTile
+          value={String(data.shares.total)}
+          label="Visite dalle condivisioni"
+          delta={countDelta(data.shares.total, data.shares.previousTotal)}
+          caption={`Ultimi ${SHARE_WINDOW_DAYS} giorni: persone arrivate sul sito toccando un link mandato con i bottoni "Condividi". Il dettaglio è qui sotto.`}
+        />
       </MetricSection>
 
       <WeeklyChart points={data.weekly} />
       <NotificationTable rows={data.notifications} />
+      <ShareTable rows={data.shares.byCampaign} />
     </>
   );
 }
@@ -233,6 +254,57 @@ function NotificationTable({ rows }: { rows: EngagementData["notifications"] }) 
         Le aperture sono sottostimate: su iOS e su alcuni Android una notifica aperta toccando il
         gruppo, o con il telefono senza rete, non viene contata. Il numero serve a confrontare i
         tipi fra loro, non come valore assoluto. Il sito conta solo quante, mai chi.
+      </Typography>
+    </Paper>
+  );
+}
+
+function ShareTable({ rows }: { rows: EngagementData["shares"]["byCampaign"] }) {
+  return (
+    <Paper elevation={1} sx={{ p: 2.5 }} component="section" aria-labelledby="share-visits">
+      <Typography id="share-visits" variant="subtitle2" component="h3">
+        Visite dalle condivisioni per cosa si è condiviso (ultimi {SHARE_WINDOW_DAYS} giorni)
+      </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+        &ldquo;Messaggio&rdquo; è il link partito con WhatsApp o con il foglio di condivisione del
+        telefono, &ldquo;Copia link&rdquo; quello copiato e incollato altrove, &ldquo;QR&rdquo;
+        quello inquadrato.
+      </Typography>
+      {rows.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          Nessuna visita da una condivisione nel periodo.
+        </Typography>
+      ) : (
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Cosa</TableCell>
+                <TableCell align="right">Visite</TableCell>
+                <TableCell align="right">Messaggio</TableCell>
+                <TableCell align="right">Copia link</TableCell>
+                <TableCell align="right">QR</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.campaign}>
+                  <TableCell component="th" scope="row">
+                    {SHARE_LABEL[row.campaign] ?? row.campaign}
+                  </TableCell>
+                  <TableCell align="right">{row.total}</TableCell>
+                  <TableCell align="right">{row.whatsapp}</TableCell>
+                  <TableCell align="right">{row.link}</TableCell>
+                  <TableCell align="right">{row.qr}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
+        Si conta una visita per scheda del browser; chi guarda solo l&apos;anteprima in WhatsApp,
+        senza toccarla, non conta. Il sito conta solo quante, mai chi.
       </Typography>
     </Paper>
   );

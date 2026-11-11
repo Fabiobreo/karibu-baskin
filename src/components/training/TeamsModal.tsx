@@ -20,6 +20,8 @@ interface Props {
   sessionTitle: string;
   sessionDate?: string | Date;
   sessionEndTime?: string | Date | null;
+  /** Pagina dell'allenamento, per il link della condivisione (UX-56). */
+  sessionPath: string;
   teamA: Athlete[];
   teamB: Athlete[];
   teamC?: Athlete[];
@@ -32,6 +34,7 @@ export default function TeamsModal({
   sessionTitle,
   sessionDate,
   sessionEndTime,
+  sessionPath,
   teamA,
   teamB,
   teamC,
@@ -62,6 +65,7 @@ export default function TeamsModal({
             sessionTitle={sessionTitle}
             sessionDate={sessionDate}
             sessionEndTime={sessionEndTime}
+            sessionPath={sessionPath}
           />
           <IconButton onClick={onClose} size="small" aria-label={tCommon("close")}>
             <CloseIcon />

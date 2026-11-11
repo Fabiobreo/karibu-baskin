@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { PUSH_STAT_RETENTION_MONTHS } from "@/lib/notifications/pushStats";
+import { SHARE_STAT_RETENTION_MONTHS } from "@/lib/metrics/shareStats";
 import { saveWeeklyActivitySnapshot } from "@/lib/metrics/loadEngagementMetrics";
 
 // Vercel Cron — eseguito ogni domenica alle 03:00 UTC
@@ -50,6 +51,12 @@ export async function GET(req: NextRequest) {
     where: { day: { lt: statsCutoff } },
   });
 
+  const shareCutoff = new Date();
+  shareCutoff.setUTCMonth(shareCutoff.getUTCMonth() - SHARE_STAT_RETENTION_MONTHS);
+  const { count: deletedShareStats } = await prisma.shareVisitStat.deleteMany({
+    where: { day: { lt: shareCutoff } },
+  });
+
   // Una fotografia mancata non deve far fallire la pulizia.
   const weeklyActivity = await saveWeeklyActivitySnapshot().catch((err) => {
     console.error("[cron cleanup] weekly activity", err);
@@ -60,6 +67,7 @@ export async function GET(req: NextRequest) {
     deletedNotifications: count,
     deletedExpiredLinks: expiredLinks,
     deletedPushStats,
+    deletedShareStats,
     weeklyActivity,
   });
 }

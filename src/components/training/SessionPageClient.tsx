@@ -508,6 +508,7 @@ export default function SessionPageClient({
                           teams={teams}
                           coaches={teamDisplayProps.coaches}
                           sessionTitle={session?.title}
+                          sessionPath={`/allenamento/${session?.dateSlug ?? sessionId}`}
                           sessionDate={session?.date}
                           sessionEndTime={session?.endTime}
                           isStaff={isStaff}
@@ -619,6 +620,7 @@ export default function SessionPageClient({
                               teams={teams}
                               coaches={teamDisplayProps.coaches}
                               sessionTitle={session?.title}
+                              sessionPath={`/allenamento/${session?.dateSlug ?? sessionId}`}
                               sessionDate={session?.date}
                               sessionEndTime={session?.endTime}
                               isStaff={isStaff}

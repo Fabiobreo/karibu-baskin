@@ -1,6 +1,6 @@
 # UX-56 · Condivisioni che riportano al sito
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55 (helper `withUtm`) · **Stato:** da fare
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55 (helper `withUtm`) · **Stato:** fatto (11/11/2026), manca la prova su telefoni veri (vedi "Esito")
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 
@@ -69,3 +69,22 @@ Verificare che ogni pagina condivisa abbia titolo, descrizione e immagine OG giu
 ## Fuori da questo ticket
 
 - Un accorciatore di link nostro (`/s/abc`): gli URL con UTM sono lunghi, ma in WhatsApp diventano un'anteprima e non si leggono. Se ne riparla solo se servono sui volantini (lì c'è il QR).
+
+## Esito (11/11/2026)
+
+Fatto, con le decisioni del committente dell'11/11/2026:
+
+- **Indirizzo:** il sito è `www.karibubaskin.it` (`karibubaskin.it` ci porta con un 308, percorso compreso). È il ripiego di `SITE_URL` in `@/lib/siteUrl`; sulle immagini si scrive la forma corta senza "www." (`SHORT_HOST`, `shortAddress()` in `@/lib/shareLinks`).
+- **Le visite si contano nel database** (il committente ha scelto questa strada, invece di affidarsi a Vercel Analytics): `ShareVisitStat` (giorno, campagna, fonte, numero; mai una colonna di persona o dispositivo), scritto da `POST /api/share/visit`, che `ReferralCapture` chiama una volta per scheda quando l'indirizzo ha `utm_medium=share` con fonte e campagna dell'elenco. Si legge in "Coinvolgimento" di `/admin/metriche` (riquadro "Visite dalle condivisioni" e tabella per cosa si è condiviso). Righe oltre 13 mesi cancellate dal cron domenicale.
+- **Tabellino:** non è più un'icona nello slot dello staff ma il bottone "Immagine del risultato", nella riga di condivisione dell'hero accanto a WhatsApp, Copia link e QR (la partita ora ha anche questi, sempre).
+- **Anteprima dell'album:** la copertina scelta dallo staff (o la prima foto visibile), solo per gli album pubblici; un album "Solo tesserati" tiene la card generica, perché l'anteprima la vede chiunque riceva il link.
+
+Note sul resto:
+
+- `shareElementAsImage` e `shareImageBlob` (`@/lib/shareImage`) sono l'unica logica di condivisione delle immagini; `MatchTabellinoButton` usa `shareImageBlob`. Se il foglio del telefono rifiuta (es. `NotAllowedError` quando l'immagine ha impiegato troppo), si ripiega sul download con il messaggio negli appunti.
+- `ShareSection` riceve il percorso (`path`), non più l'URL, e costruisce un link per bottone: `whatsapp`, `link` (nuova fonte di UX-55, "Copia link") e `qr`. Campagne: `tabellino`, `convocati`, `squadre`, `allenamento`, `evento`, `partita`, `news`, `album`, `profilo`.
+- Indirizzo nel tabellino: **a capo su due righe, non troncato con i puntini** come chiedeva il punto 2: un indirizzo tagliato non si può digitare. 34 px su 1.080, circa 12 px su uno schermo di 390.
+- La news non ha `PageHeader`: i bottoni stanno sotto titolo e data.
+- `PlayerShareButtons`: nel foglio del telefono il link passa solo come `url`, non più anche dentro il testo (WhatsApp lo scriveva due volte).
+
+**Da fare: prova su telefoni veri.** Non si può fare dal computer. Su un Android e su un iPhone, con WhatsApp: "Immagine del risultato" su una partita giocata, "Condividi" nei convocati (staff) e nelle squadre di un allenamento. Va controllato che il messaggio abbia l'immagine e, come didascalia, la frase con il link. Se su iPhone il testo si perde, si aggiunge la copia del link negli appunti prima di aprire il foglio, con l'avviso. Scrivere qui l'esito.

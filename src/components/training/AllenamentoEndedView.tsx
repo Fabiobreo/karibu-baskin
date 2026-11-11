@@ -62,6 +62,7 @@ export default function AllenamentoEndedView({
               teams={teams}
               coaches={teamDisplayProps.coaches}
               sessionTitle={sessionTitle}
+              sessionPath={`/allenamento/${sessionId}`}
               sessionDate={sessionDate}
               sessionEndTime={sessionEndTime}
               isStaff={isStaff}

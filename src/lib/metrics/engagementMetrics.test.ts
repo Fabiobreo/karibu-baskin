@@ -7,6 +7,7 @@ import {
   computeNotificationOpens,
   computeRegistrationSource,
   overallPushOpenRate,
+  summarizeShareVisits,
 } from "./adminMetrics";
 import { groupFamilies } from "@/lib/familyLinks";
 import { countDelta, duration, durationDelta, rateDelta } from "./formatMetric";
@@ -177,5 +178,29 @@ describe("confronto con il mese scorso", () => {
     expect(durationDelta(30, 24)).toBe("+6 ore rispetto al mese scorso");
     expect(duration(null)).toBe("n.d.");
     expect(duration(72)).toBe("3 gg");
+  });
+});
+
+describe("visite dalle condivisioni", () => {
+  it("divide i due periodi e somma per campagna e fonte", () => {
+    const split = at(-28);
+    const rows = [
+      { day: at(-1), campaign: "tabellino", source: "whatsapp", visits: 5 },
+      { day: at(-2), campaign: "tabellino", source: "link", visits: 1 },
+      { day: at(-3), campaign: "news", source: "qr", visits: 7 },
+      { day: at(-30), campaign: "news", source: "whatsapp", visits: 4 },
+    ];
+    expect(summarizeShareVisits(rows, split)).toEqual({
+      total: 13,
+      previousTotal: 4,
+      byCampaign: [
+        { campaign: "news", total: 7, whatsapp: 0, link: 0, qr: 7 },
+        { campaign: "tabellino", total: 6, whatsapp: 5, link: 1, qr: 0 },
+      ],
+    });
+  });
+
+  it("senza righe è tutto zero", () => {
+    expect(summarizeShareVisits([], now)).toEqual({ total: 0, previousTotal: 0, byCampaign: [] });
   });
 });

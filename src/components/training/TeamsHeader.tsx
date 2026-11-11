@@ -31,6 +31,7 @@ export default function TeamsHeader({
   sessionTitle,
   sessionDate,
   sessionEndTime,
+  sessionPath,
   isStaff,
   isEnded = false,
   removingTeams,
@@ -43,6 +44,8 @@ export default function TeamsHeader({
   sessionTitle?: string;
   sessionDate?: string | Date;
   sessionEndTime?: string | Date | null;
+  /** Pagina dell'allenamento, per il link della condivisione (UX-56). */
+  sessionPath: string;
   isStaff: boolean;
   isEnded?: boolean;
   removingTeams: boolean;
@@ -99,6 +102,7 @@ export default function TeamsHeader({
               sessionTitle={sessionTitle}
               sessionDate={sessionDate}
               sessionEndTime={sessionEndTime}
+              sessionPath={sessionPath}
             />
           )}
           {staffActions && removingTeams && (

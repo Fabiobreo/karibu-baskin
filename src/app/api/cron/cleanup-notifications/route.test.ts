@@ -6,6 +6,7 @@ vi.mock("@/lib/db", () => ({
     appNotification: { deleteMany: vi.fn() },
     linkRequest: { deleteMany: vi.fn() },
     pushDailyStat: { deleteMany: vi.fn() },
+    shareVisitStat: { deleteMany: vi.fn() },
   },
 }));
 
@@ -21,6 +22,7 @@ type PrismaMock = {
   appNotification: { deleteMany: Mock };
   linkRequest: { deleteMany: Mock };
   pushDailyStat: { deleteMany: Mock };
+  shareVisitStat: { deleteMany: Mock };
 };
 const snapshot = saveWeeklyActivitySnapshot as unknown as Mock;
 const p = prisma as unknown as PrismaMock;
@@ -41,6 +43,7 @@ describe("GET /api/cron/cleanup-notifications", () => {
     p.appNotification.deleteMany.mockResolvedValue({ count: 0 });
     p.linkRequest.deleteMany.mockResolvedValue({ count: 0 });
     p.pushDailyStat.deleteMany.mockResolvedValue({ count: 0 });
+    p.shareVisitStat.deleteMany.mockResolvedValue({ count: 0 });
     snapshot.mockResolvedValue({ families: 10, activeFamilies: 6, activeUsers: 8 });
   });
 

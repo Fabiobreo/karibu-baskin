@@ -3,7 +3,7 @@
 import { forwardRef } from "react";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
-import { SITE_HOST } from "@/lib/siteUrl";
+import { shortAddress } from "@/lib/shareLinks";
 import { BRAND, HERO_TEXT, NEUTRAL, ROLE_COLORS } from "@/lib/palette";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { groupCallupsByRole } from "@/lib/matches/callupGroups";
@@ -17,6 +17,8 @@ export interface CallupsShareInfo {
   when: string;
   /** Luogo da `matchLocation()`, o "Luogo da confermare". */
   place: string;
+  /** Pagina della partita (`/partite/<slug>`): link del messaggio e indirizzo in fondo all'immagine. */
+  path: string;
 }
 
 interface CallupsShareCardProps {
@@ -35,6 +37,7 @@ const INK = NEUTRAL.light;
 const CallupsShareCard = forwardRef<HTMLDivElement, CallupsShareCardProps>(
   function CallupsShareCard({ callups, info }, ref) {
     const t = useTranslations("matches");
+    const tShare = useTranslations("share");
     const { roleLabel } = useEntityLabels();
     const groups = groupCallupsByRole(callups);
 
@@ -126,26 +129,42 @@ const CallupsShareCard = forwardRef<HTMLDivElement, CallupsShareCardProps>(
             ))}
           </div>
 
+          {/* Indirizzo della partita (UX-56): a 390 px di schermo l'immagine
+              è ridotta a circa due terzi, quindi 16 px diventano 11. */}
           <div
             style={{
               background: BRAND.dark,
-              padding: "8px 22px",
+              padding: "10px 22px 12px",
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-end",
+              gap: 16,
             }}
           >
-            <span
-              style={{
-                fontSize: 10,
-                letterSpacing: 0.8,
-                color: HERO_TEXT.muted,
-                textTransform: "uppercase",
-              }}
-            >
-              {SITE_HOST}
-            </span>
-            <span style={{ fontSize: 11, color: HERO_TEXT.muted }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  letterSpacing: 0.8,
+                  color: HERO_TEXT.muted,
+                  textTransform: "uppercase",
+                }}
+              >
+                {tShare("detailsOn")}
+              </div>
+              <div
+                style={{
+                  fontSize: 16,
+                  fontWeight: FONT_WEIGHT.semibold,
+                  color: BRAND.white,
+                  overflowWrap: "anywhere",
+                  lineHeight: 1.3,
+                }}
+              >
+                {shortAddress(info.path)}
+              </div>
+            </div>
+            <span style={{ fontSize: 12, color: HERO_TEXT.muted, whiteSpace: "nowrap" }}>
               {t("shareCallupsCount", { count: callups.length })}
             </span>
           </div>

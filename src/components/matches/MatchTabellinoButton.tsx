@@ -1,72 +1,59 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import { IconButton, CircularProgress, Tooltip } from "@mui/material";
-import ShareIcon from "@mui/icons-material/Share";
+import { useState } from "react";
+import { Button, CircularProgress } from "@mui/material";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
-import { heroText } from "@/lib/heroStyles";
-
+import { useShareOutcomeToast } from "@/hooks/useShareOutcomeToast";
+import { shareImageBlob } from "@/lib/shareImage";
+import { shareUrl } from "@/lib/shareLinks";
 import { errorText } from "@/lib/networkError";
-interface Props {
+
+interface MatchTabellinoButtonProps {
   matchId: string;
   filename: string;
+  /** Pagina della partita (`/partite/<slug>`), per il link del messaggio. */
+  path: string;
+  /** "Karibu – Thiene 42-38", con chi gioca in casa prima. */
+  scoreLine: string;
 }
 
-// useSyncExternalStore evita il warning React-Compiler "set-state-in-effect":
-// la disponibilità di Web Share API è una capability del browser, non cambia mai
-// dopo il primo render.
-const emptySubscribe = () => () => {};
-const getCanShareSnapshot = () => "share" in navigator && "canShare" in navigator;
-const getCanShareServerSnapshot = () => false;
+/** Bottone fantasma degli hero, come quelli di `ShareSection dark`. */
+const HERO_BUTTON_SX = { color: "common.white", typography: "caption", px: 1.5 } as const;
 
-export default function MatchTabellinoButton({ matchId, filename }: Props) {
+/**
+ * "Immagine del risultato" (UX-56): il tabellino in PNG, condiviso con la
+ * frase e il link della partita. Sta nella riga di condivisione dell'hero,
+ * accanto a WhatsApp, Copia link e QR, con l'etichetta che la distingue da
+ * loro: questo bottone manda un'immagine, gli altri il link.
+ */
+export default function MatchTabellinoButton({
+  matchId,
+  filename,
+  path,
+  scoreLine,
+}: MatchTabellinoButtonProps) {
   const [loading, setLoading] = useState(false);
-  const canShare = useSyncExternalStore(
-    emptySubscribe,
-    getCanShareSnapshot,
-    getCanShareServerSnapshot
-  );
   const { showToast } = useToast();
+  const toastOutcome = useShareOutcomeToast();
   const t = useTranslations("share");
   const tCommon = useTranslations("common");
 
   async function handleClick() {
+    if (loading) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/matches/${matchId}/tabellino`);
       if (!res.ok) throw new Error(t("tabellinoError"));
-      const blob = await res.blob();
-      const file = new File([blob], filename, { type: "image/png" });
-
-      // Web Share API con file (mobile)
-      const nav = typeof navigator !== "undefined" ? navigator : null;
-      if (nav && "canShare" in nav && nav.canShare?.({ files: [file] }) && "share" in nav) {
-        try {
-          await nav.share({
-            files: [file],
-            title: "Tabellino partita",
-            text: "Tabellino Karibu Baskin",
-          });
-          return;
-        } catch (err) {
-          // L'utente ha annullato — non mostriamo errore
-          if (err instanceof Error && err.name === "AbortError") return;
-          // Altrimenti fallback a download
-        }
-      }
-
-      // Fallback: download del file
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast({ message: t("tabellinoDownloaded"), severity: "success" });
+      const outcome = await shareImageBlob(await res.blob(), {
+        title: scoreLine,
+        fileName: filename,
+        link: { url: shareUrl(path, "tabellino"), text: t("msgTabellino", { score: scoreLine }) },
+      });
+      toastOutcome(outcome);
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       showToast({
         message: errorText(err, tCommon("networkError"), tCommon("networkError")),
         severity: "error",
@@ -76,28 +63,20 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
     }
   }
 
-  const label = canShare ? t("shareTabellino") : t("downloadTabellino");
-
   return (
-    <Tooltip title={label}>
-      <IconButton
-        onClick={handleClick}
-        disabled={loading}
-        aria-label={label}
-        sx={{
-          // Sta sull'hero scuro della partita: bianchi velati da `heroText`.
-          color: heroText.primary,
-          bgcolor: heroText.surface,
-          border: `1px solid ${heroText.lineStrong}`,
-          "&:hover": { bgcolor: heroText.surfaceHover, borderColor: heroText.muted },
-        }}
-      >
-        {loading ? (
-          <CircularProgress size={18} sx={{ color: "common.white" }} />
-        ) : (
-          <ShareIcon sx={{ fontSize: 18 }} />
-        )}
-      </IconButton>
-    </Tooltip>
+    <Button
+      variant="outlined"
+      size="small"
+      color="inherit"
+      onClick={handleClick}
+      disabled={loading}
+      aria-busy={loading || undefined}
+      startIcon={
+        loading ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : <ImageOutlinedIcon />
+      }
+      sx={HERO_BUTTON_SX}
+    >
+      {t("tabellinoImage")}
+    </Button>
   );
 }

@@ -790,6 +790,20 @@ model PushDailyStat {
   @@unique([day, type])
 }
 
+// Visite arrivate da un bottone "Condividi" del sito (UX-56): giorno, cosa si
+// è condiviso (`campaign`: tabellino, convocati, news…) e da dove (`source`:
+// whatsapp, link, qr). Solo numeri, nessun identificativo di persona o
+// dispositivo, come PushDailyStat.
+model ShareVisitStat {
+  id       String   @id @default(cuid())
+  day      DateTime @db.Date
+  campaign String
+  source   String
+  visits   Int      @default(0)
+
+  @@unique([day, campaign, source])
+}
+
 // Famiglie attive nei sette giorni prima di `weekEnd` (UX-55). Una sessione
 // dice solo quando è stata usata l'ultima volta, quindi una settimana passata
 // non si ricostruisce: il cron settimanale cleanup-notifications ne salva il

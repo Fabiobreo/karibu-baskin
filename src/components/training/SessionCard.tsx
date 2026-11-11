@@ -510,6 +510,7 @@ export default function SessionCard({
       {hasTeams && (
         <TeamsModal
           open={teamsOpen}
+          sessionPath={href}
           onClose={() => setTeamsOpen(false)}
           sessionTitle={s.title}
           sessionDate={s.date}

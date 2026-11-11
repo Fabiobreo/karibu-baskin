@@ -14,6 +14,8 @@ export const UTM_SOURCES = [
   "volantino",
   "qr",
   "partner",
+  // "Copia link" dei bottoni di condivisione (UX-56): non si sa dove finirà.
+  "link",
 ] as const;
 export type UtmSource = (typeof UTM_SOURCES)[number];
 
