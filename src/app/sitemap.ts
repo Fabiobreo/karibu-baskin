@@ -6,6 +6,7 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { notMinorFilter } from "@/lib/minors";
 import { publicProfileUserFilter } from "@/lib/publicProfile";
 import { visibleAlbumWhere } from "@/lib/gallery/albumRules";
+import { QUIZ_READY } from "@/lib/content/baskinQuiz";
 
 const BASE = SITE_URL;
 
@@ -28,6 +29,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/news`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/eventi`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/gallery`, priority: 0.55, changeFrequency: "weekly" },
+    // Giochi (UX-61): quando il club ha rivisto le domande del quiz.
+    ...(QUIZ_READY
+      ? [
+          { url: `${BASE}/giochi`, priority: 0.5, changeFrequency: "weekly" as const },
+          { url: `${BASE}/giochi/quiz`, priority: 0.5, changeFrequency: "monthly" as const },
+        ]
+      : []),
     { url: `${BASE}/faq`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/guida`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/contatti`, priority: 0.5, changeFrequency: "monthly" },

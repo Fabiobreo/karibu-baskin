@@ -21,6 +21,7 @@ export const SHARE_CAMPAIGNS = [
   "profilo",
   "traguardo",
   "stagione",
+  "quiz",
 ] as const;
 export type ShareCampaign = (typeof SHARE_CAMPAIGNS)[number];
 

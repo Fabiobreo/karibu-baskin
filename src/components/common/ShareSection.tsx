@@ -22,7 +22,7 @@ import { socialBrandColor } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 import { shareMessage, shareUrl, type ShareCampaign } from "@/lib/shareLinks";
 
-type ShareKind = "training" | "event" | "match" | "news" | "album";
+type ShareKind = "training" | "event" | "match" | "news" | "album" | "quiz";
 
 /** Campagna UTM di ogni tipo di pagina (UX-56). */
 const CAMPAIGN: Record<ShareKind, ShareCampaign> = {
@@ -31,6 +31,7 @@ const CAMPAIGN: Record<ShareKind, ShareCampaign> = {
   match: "partita",
   news: "news",
   album: "album",
+  quiz: "quiz",
 };
 
 /** Frase prima del link nel messaggio di WhatsApp. */
@@ -40,6 +41,7 @@ const WA_KEY = {
   match: "waMatch",
   news: "waNews",
   album: "waAlbum",
+  quiz: "waQuiz",
 } as const satisfies Record<ShareKind, string>;
 
 /** Indicazione sotto il QR. */
@@ -49,6 +51,7 @@ const QR_HINT_KEY = {
   match: "qrHintPage",
   news: "qrHintPage",
   album: "qrHintPage",
+  quiz: "qrHintPage",
 } as const satisfies Record<ShareKind, string>;
 
 interface Props {
@@ -59,6 +62,8 @@ interface Props {
   kind?: ShareKind;
   /** Album "Solo tesserati": il messaggio dice che serve l'accesso. */
   membersOnly?: boolean;
+  /** Frase del messaggio al posto di quella del tipo (la sfida del quiz dice il punteggio). */
+  message?: string;
   dark?: boolean; // stile per sfondi scuri
 }
 
@@ -70,6 +75,7 @@ export default function ShareSection({
   path,
   kind = "training",
   membersOnly = false,
+  message,
   dark = false,
 }: Props) {
   const [qrOpen, setQrOpen] = useState(false);
@@ -80,7 +86,7 @@ export default function ShareSection({
   // Un link per bottone (UX-56): stessa pagina, provenienza diversa.
   const campaign = CAMPAIGN[kind];
   const waKey = kind === "album" && membersOnly ? "waAlbumMembers" : WA_KEY[kind];
-  const waText = shareMessage(t(waKey, { title }), shareUrl(path, campaign, "whatsapp"));
+  const waText = shareMessage(message ?? t(waKey, { title }), shareUrl(path, campaign, "whatsapp"));
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
   const qrUrl = shareUrl(path, campaign, "qr");
 

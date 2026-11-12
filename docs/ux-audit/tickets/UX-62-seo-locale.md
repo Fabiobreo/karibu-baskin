@@ -1,6 +1,6 @@
 # UX-62 · Farsi trovare: SEO locale e scheda Google
 
-**Ondata:** 7 (engagement) · **Stima:** M (di cui S di codice) · **Dipende da:** UX-55 (UTM) · **Stato:** da fare · **In attesa di:** accesso del club alla scheda Google (punto 1)
+**Ondata:** 7 (engagement) · **Stima:** M (di cui S di codice) · **Dipende da:** UX-55 (UTM) · **Stato:** codice fatto (12/11/2026) · **In attesa di:** approvazione dei testi del committente; il club completa la scheda Google che esiste già (punto 1)
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 
@@ -59,3 +59,29 @@ Lista in `docs/workflows/scheda-google.md` dei siti a cui chiedere un link (con 
 
 - URL localizzati o pagine in inglese indicizzate separatamente: la lingua è a cookie e gli URL restano uguali (scelta di CLAUDE.md).
 - Pubblicità a pagamento (Google Ads, sponsorizzate sui social): se il club la vuole, si fa fuori dal sito, con i link UTM di UX-55.
+
+## Esito (12/11/2026)
+
+Decisioni del committente (12/11/2026), sulle raccomandazioni proposte:
+
+- **Telefono pubblico:** uno solo, quello di Elisa (il primo del footer), `CLUB_PHONE` in `@/lib/clubContacts`. Lo stesso nel JSON-LD e sulla scheda Google.
+- **La scheda Google esiste già** (controllato il 12/11/2026): [Asd Karibu Baskin Montecchio Maggiore](https://maps.google.com/?cid=10043041815261947815), categoria "Associazione", indirizzo identico al sito, sito `karibubaskin.it` senza UTM, orari, 2 foto; mancano telefono, descrizione e recensioni. Non si sa chi la gestisce: la guida parte da lì. **Il nome resta quello della scheda** (cambiarlo fa ripartire la verifica), ed è già uguale a `CLUB_LEGAL_NAME`.
+- **Coordinate e link:** quelli del segnaposto della scheda, in `CLUB_VENUE_GEO` (`@/lib/clubVenue`) e `CLUB_GOOGLE_PROFILE_URL` (`@/lib/clubContacts`, link per `cid`), già nel JSON-LD.
+- **Tipo:** `["SportsOrganization", "SportsClub"]`, così i validatori leggono un'attività con una sede. **Niente orari nel JSON-LD:** gli allenamenti cambiano, gli orari stanno solo sulla scheda Google.
+- **Titoli e descrizioni restano in italiano** (come tutti i metadati del sito): Google arriva senza cookie e vede sempre l'italiano. In it e en vanno i testi delle pagine.
+- **Visite dalla scheda:** non si contano in `/admin/metriche`; bastano "Arrivato da: google, maps" nell'email dei contatti e Search Console.
+
+Fatto:
+
+1. **Guida** [`docs/workflows/scheda-google.md`](../../workflows/scheda-google.md): che cos'è la scheda, come controllare se esiste già (prima di crearne una), creare o rivendicare con l'account del club, dati da copiare identici, descrizione pronta, foto (permesso del fotografo, niente minori riconoscibili senza liberatoria), recensioni con il messaggio per i genitori e le risposte, post per gli eventi, link da altri siti con il messaggio pronto, Search Console (proprietà Dominio con record DNS, nessuna modifica al codice). UTM: fonte `google` e mezzo `maps` in `@/lib/utm`, link pronti anche in `link-con-utm.md`.
+2. **Dati strutturati:** l'associazione ha descrizione, immagine, telefono, `areaServed` (Montecchio Maggiore, Provincia di Vicenza), e `geo` e scheda Google nei `sameAs` appena ci sono (`CLUB_VENUE_GEO`, `CLUB_GOOGLE_PROFILE_URL`). Lo stesso blocco è in home e in `/contatti` (nel `layout.tsx`, perché la pagina è client). `/faq` ha `FAQPage` con tutte le domande, nella lingua della pagina (`faqPageJsonLd`). Test in `structuredData.test.ts`: indirizzo, telefono uguale al footer, FAQ in it e en, JSON valido senza `</script>` e senza `Person`.
+3. **Testi:** `/il-baskin` apre con un paragrafo (`pages.ilbaskin.lead`, it e en) che dice per chi è e dove si gioca, con il link "Vieni a provare"; titolo "Il Baskin, basket inclusivo a Vicenza". Descrizioni nuove per home (riprende "Basket inclusivo a Montecchio Maggiore"), `/il-baskin`, `/contatti` (titolo "Contatti e vieni a provare") e `/faq`. Nessuna etichetta citata dalla guida è cambiata.
+4. **Nome, indirizzo e telefono uguali ovunque:** `/contatti` prende telefoni ed email da `@/lib/clubContacts` (prima erano scritti a mano, "(+39) 349 297 2703").
+
+Verificato: `tsc`, `npm test`, `npm run lint`, `npm run a11y -- --only=anon` verdi; nel browser il JSON-LD di `/contatti` e `/faq` (9 domande) e i titoli delle pagine.
+
+**Da fare dopo:**
+
+- Il club scopre chi gestisce la scheda, aggiunge l'account del club come proprietario e la completa seguendo la guida (telefono, descrizione, link con UTM, foto, recensioni).
+- Il Rich Results Test di Google si può lanciare solo sull'indirizzo pubblico: dopo il deploy, su home, `/contatti` e `/faq`.
+- Search Console: dopo un mese annotare qui le ricerche da cui arriva il sito, per il confronto a tre mesi.

@@ -83,6 +83,10 @@ model User {
   // null = tutto abilitato (default)
   notifPrefs Json?
 
+  // Quiz del Baskin (UX-61): la migliore partita (0-5), solo per chi ha fatto
+  // l'accesso. null = mai giocato con l'accesso.
+  quizBest Int?
+
   accounts              Account[]
   authSessions          Session[]
   registrations         Registration[]
@@ -111,6 +115,7 @@ model User {
   eventRsvpsGiven       EventAttendance[]      @relation("EventAttendanceRespondedBy")
   eventOptionSelections EventOptionSelection[]
   eventGuestsAdded      EventGuest[]
+  matchPredictions      MatchPrediction[]
 }
 
 model Account {
@@ -602,12 +607,34 @@ model Match {
   mvps           MatchMvp[]
   availabilities MatchAvailability[]
   albums         PhotoAlbum[]
+  predictions    MatchPrediction[]
 
   @@index([teamId, date])
   @@index([opponentId])
   @@index([opponentTeamId])
   @@index([groupId])
   @@map("OfficialMatch")
+}
+
+// Pronostico di una partita (UX-61): chi vince e, se si vuole, il punteggio.
+// Uno per account (genitore e figlio con l'account pronosticano ciascuno il
+// suo), solo per i tesserati, fino all'orario d'inizio. Un gioco senza posta.
+// I risultati si mostrano solo come numeri: mai i nomi di chi ha pronosticato.
+model MatchPrediction {
+  id         String      @id @default(cuid())
+  matchId    String
+  userId     String
+  outcome    MatchResult
+  ourScore   Int?
+  theirScore Int?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@index([userId])
 }
 
 // Nota dello staff sull'avversaria in una partita giocata ("mancava il loro 5
@@ -807,6 +834,17 @@ model ShareVisitStat {
   visits   Int      @default(0)
 
   @@unique([day, campaign, source])
+}
+
+// Partite dei giochi completate (UX-61), per giorno e gioco. Solo per
+// curiosità (quale gioco piace), mai un obiettivo. Nessun identificativo.
+model GameDailyStat {
+  id    String   @id @default(cuid())
+  day   DateTime @db.Date
+  game  String
+  plays Int      @default(0)
+
+  @@unique([day, game])
 }
 
 // Famiglie attive nei sette giorni prima di `weekEnd` (UX-55). Una sessione

@@ -1,6 +1,14 @@
 import { SITE_URL } from "@/lib/siteUrl";
-import { CLUB_EMAIL, CLUB_LEGAL_NAME, CLUB_SOCIAL, CLUB_TAX_ID } from "@/lib/clubContacts";
-import { CLUB_VENUE, type MatchLocation } from "@/lib/clubVenue";
+import {
+  CLUB_EMAIL,
+  CLUB_GOOGLE_PROFILE_URL,
+  CLUB_LEGAL_NAME,
+  CLUB_PHONE,
+  CLUB_SOCIAL,
+  CLUB_TAX_ID,
+} from "@/lib/clubContacts";
+import { CLUB_VENUE, CLUB_VENUE_GEO, type MatchLocation } from "@/lib/clubVenue";
+import type { FaqCategory } from "@/lib/content/faqs";
 
 /**
  * Dati strutturati schema.org (JSON-LD) per le pagine pubbliche (KB-12).
@@ -34,22 +42,68 @@ const HOME_VENUE = {
 /** Riferimento compatto all'associazione, per `organizer` e `publisher`. */
 const organizationRef = { "@id": ORGANIZATION_ID };
 
+/**
+ * L'associazione, in home e in Contatti (UX-62). Due tipi insieme:
+ * `SportsOrganization` dice che è un club sportivo, `SportsClub` (un'attività
+ * locale) che ha una sede dove si va, con indirizzo, coordinate e telefono.
+ * Nome, indirizzo e telefono sono scritti come nel footer e sulla scheda
+ * Google: Google li confronta. Niente orari: gli allenamenti cambiano, stanno
+ * sulla scheda Google che il club aggiorna a mano.
+ */
 export function organizationJsonLd() {
   return {
     "@context": CONTEXT,
-    "@type": "SportsOrganization",
+    "@type": ["SportsOrganization", "SportsClub"],
     "@id": ORGANIZATION_ID,
     name: CLUB_LEGAL_NAME,
     alternateName: "Karibu Baskin",
+    description:
+      "Associazione sportiva di Baskin, il basket inclusivo: ragazzi e adulti con e senza disabilità giocano nella stessa squadra, a Montecchio Maggiore (Vicenza).",
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
+    image: `${SITE_URL}/opengraph-image`,
     sport: "Baskin",
     foundingDate: "2015",
     email: CLUB_EMAIL,
+    telephone: CLUB_PHONE.href.replace(/^tel:/, ""),
     taxID: CLUB_TAX_ID,
     location: HOME_VENUE,
     address: HOME_VENUE.address,
-    sameAs: [CLUB_SOCIAL.instagram, CLUB_SOCIAL.facebook, CLUB_SOCIAL.youtube],
+    ...(CLUB_VENUE_GEO
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: CLUB_VENUE_GEO.latitude,
+            longitude: CLUB_VENUE_GEO.longitude,
+          },
+        }
+      : {}),
+    areaServed: [
+      { "@type": "City", name: CLUB_VENUE.city },
+      { "@type": "AdministrativeArea", name: "Provincia di Vicenza" },
+    ],
+    sameAs: [
+      CLUB_SOCIAL.instagram,
+      CLUB_SOCIAL.facebook,
+      CLUB_SOCIAL.youtube,
+      ...(CLUB_GOOGLE_PROFILE_URL ? [CLUB_GOOGLE_PROFILE_URL] : []),
+    ],
+  };
+}
+
+/** Domande frequenti di `/faq` (UX-62), nella lingua della pagina. */
+export function faqPageJsonLd(categories: FaqCategory[]) {
+  return {
+    "@context": CONTEXT,
+    "@type": "FAQPage",
+    url: `${SITE_URL}/faq`,
+    mainEntity: categories.flatMap((c) =>
+      c.items.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      }))
+    ),
   };
 }
 

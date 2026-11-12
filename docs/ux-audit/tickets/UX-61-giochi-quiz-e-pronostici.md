@@ -1,6 +1,6 @@
 # UX-61 · Giochi del club: quiz del Baskin e pronostico della partita
 
-**Ondata:** 7 (engagement) · **Stima:** L (quiz M, pronostico M: si possono fare in due PR) · **Dipende da:** UX-55, UX-56 · **Stato:** da fare · **In attesa di:** decisione sui nomi nel pronostico (punto 3.5)
+**Ondata:** 7 (engagement) · **Stima:** L (quiz M, pronostico M: si possono fare in due PR) · **Dipende da:** UX-55, UX-56 · **Stato:** fatto (12/11/2026) · **In attesa di:** revisione delle domande del quiz da parte del club (bandiera `QUIZ_READY`)
 
 Richiesta del committente del 06/11/2026 (piano di engagement). Sostituisce la vecchia UX-61 (email settimanale), tolta dal committente lo stesso giorno per non uscire dal piano gratuito di Resend.
 
@@ -73,7 +73,7 @@ Quello che conta è che:
 
 - Nella pagina della partita giocata, nella sezione "Per te" di UX-58 (o sotto il tabellino se UX-58 non è ancora fatto): "Avevi detto: vinciamo noi. Ci hai preso!" e, per chi aveva messo il punteggio, quanto ci è andato vicino. Per tutti i tesserati: "28 persone hanno fatto il pronostico: 20 hanno detto vittoria, 5 pareggio, 3 sconfitta."
 - Nel profilo, nella stagione: "Pronostici giusti: 7 su 10". Solo personale.
-- **Decisione aperta per il committente:** mostrare anche i nomi di chi ha indovinato il punteggio esatto?
+- **Decisione del committente (12/11/2026): A, solo numeri.** La domanda era: mostrare anche i nomi di chi ha indovinato il punteggio esatto?
   - **A.** No, solo numeri. (Raccomandata: nessun problema con i minori, nessuna gara.)
   - **B.** Sì, solo adulti tesserati e solo fra i tesserati ("Hanno indovinato il punteggio esatto: Paolo, Giulia"), con `publicSubjects` per togliere i minori.
 
@@ -102,3 +102,33 @@ Un contatore leggero, per sapere se i giochi piacciono e quale domanda del quiz 
 
 - Altri giochi solo per divertimento (vedi le proposte nella risposta al committente del 06/11/2026): un ticket a parte quando il committente li sceglie.
 - Giochi per lo staff o in palestra (sono attività, non siti).
+
+## Com'è stato fatto (12/11/2026)
+
+Proposta discussa prima di scrivere codice. Il committente ha scelto **A** al punto 3.5: solo numeri, nessun nome. Le altre decisioni, prese con la raccomandazione proposta:
+
+- **Menu:** "Giochi" sta nel menu **"Il Baskin"** (accanto a "Cos'è il Baskin" e "Gallery"), perché il menu "Il club" del ticket non esiste ("Chi siamo" è sotto Squadre). La voce, la sitemap e l'indicizzazione di `/giochi` e `/giochi/quiz` si accendono con `QUIZ_READY` (in `@/lib/content/baskinQuiz`). Finché è spenta il quiz lo vedono solo allenatori e admin (anteprima, con la riga "Anteprima per lo staff"); `/giochi` esiste già con la sola card del pronostico, e il pronostico funziona dalla pagina della partita e dalla home.
+- **Esito del pronostico:** una sezione "Il tuo pronostico" a sé, subito dopo "Per te", e non dentro "Per te", che compare solo a chi ha un familiare in campo.
+- **Punteggio "vicino":** solo due frasi, "E hai indovinato il punteggio esatto!" oppure "Per il punteggio: N punti di differenza in tutto" (somma delle due differenze). Niente punti né formule.
+- **Traguardo "Indovino":** non fatto, come dice il ticket.
+
+**Quiz.** 40 domande (18 facili, 22 medie; argomenti `ruoli`, `campo`, `canestri`, `storia`, `club`) in `@/lib/content/baskinQuiz.ts`, scritte dai testi che il sito ha già: regole e ruoli di `/il-baskin`, storia del Baskin, storia e valori del club (che si rileggono su `/il-club`, senza copiarne i testi). Id, livello, risposta giusta e pagina "Scopri di più" stanno una volta sola; i testi it/en in due dizionari con le stesse chiavi (il tipo lo impone). Le pagine "Scopri di più" sono un elenco chiuso (`QUIZ_SOURCES`), con le ancore nuove `#in-breve`, `#campo`, `#ruoli`, `#regole`, `#origini` su `/il-baskin`; `baskinQuiz.test.ts` controlla che pagina e ancora esistano. **Le regole contraddittorie fra `/il-baskin` e "Lo sapevi" non sono entrate nel quiz:** "Lo sapevi" dice "4 periodi da 10 minuti" e chiama il Ruolo 5 "il tutor", le regole dicono 8 minuti; il quiz segue `/il-baskin`. Da chiarire con il club.
+
+Regole pure in `@/lib/games/quiz` (test in `quiz.test.ts`): ogni partita nasce da un **codice** (6 caratteri), seme del PRNG Mulberry32, estratto da `teamGenerator.ts` e `matchSimulator.ts` in `@/lib/seededRandom` (stesso comportamento). Così "Sfida un amico" manda proprio le domande appena fatte: `/giochi/quiz?sfida=<codice>&p=<punteggio>`, e qualunque codice dà 5 domande valide. Per non ripetere, `pickFreshCode` prova fino a 600 codici e tiene quello che non ripete la partita appena finita e ripete meno domande già viste in questa visita (`sessionStorage`, dentro try/catch; quando un livello finisce si ricomincia). Il punteggio nel link lo sceglie chi condivide (spunta "Metti il mio punteggio nel messaggio", accesa di default). Campagna UTM nuova `quiz` (`SHARE_CAMPAIGNS`, etichetta "Sfida del quiz" nelle metriche); `ShareSection` ha `kind="quiz"` e la prop `message`.
+
+Componenti in `@/components/games/`. `BaskinQuiz` parte solo nel browser (le domande dipendono da `sessionStorage`). `QuizQuestionStep` è un `fieldset` con la domanda come `legend` e un `RadioGroup` vero, "Conferma", poi l'esito in una regione `role="status"` sempre presente (icona e parola; verde e rosso come valenza); il fuoco va sul testo di ogni domanda nuova e, dopo "Conferma", su "Avanti". Si torna indietro a rileggere. `QuizResult`: "Hai risposto bene a N domande su 5", tre toni (lo 0 è "Adesso sai 5 cose nuove sul baskin"), la riga di chi ha sfidato se ha messo il punteggio, la migliore partita per i tesserati, "Da rileggere" con le spiegazioni delle risposte sbagliate, "Sfida un amico", "Torna ai giochi". Provato da tastiera e a 375 px.
+
+**Pronostico.** Modello `MatchPrediction` (unico su partita e account, cascade), campo `User.quizBest`, contatore `GameDailyStat` (giorno, gioco, partite; nessun identificativo): migration `20261112180000_games_quiz_prediction`. Regole pure in `@/lib/games/prediction` (`predictionWindow`: apre 3 giorni prima, chiude all'orario d'inizio, `none` per le amichevoli interne; `predictionVerdict`, `predictionTotals`, `predictionRecord`; test in `prediction.test.ts`), letture in `loadPredictions.ts` (solo il proprio pronostico e i totali). Schema Zod `PredictionSchema` in `@/lib/schemas/games` (punteggio tutto o niente, coerente con chi vince). `GET/PUT /api/matches/[matchId]/prediction` solo tesserati (`member` in `routeAccess.test.ts`), 409 fuori dalla finestra, totali solo dopo l'inizio (`route.test.ts`).
+
+- **Pagina della partita futura:** sotto "Dove e quando", `MatchPredictionCard` (`#pronostico`): "Chi vince?" con "Vince Karibu / Pareggio / Vince <avversaria>" (i nomi delle squadre al posto di "noi" e "loro"), "E il punteggio?" apre i due campi. Dopo il salvataggio "Hai detto: Vince Karibu, 40 a 35. Puoi cambiarlo fino al fischio d'inizio." e "Cambia". All'anonimo "Accedi per fare il tuo pronostico" con "Accedi", all'ospite "Lo potrai fare quando lo staff conferma il tuo account", prima dell'apertura "Il pronostico apre <giorno e ora>".
+- **Dopo l'inizio** (tesserati): `MatchPredictionResult` con cosa si era detto, "Ci hai preso!" / "Stavolta no.", il punteggio, e "N persone hanno fatto il pronostico" con i tre conteggi. Prima dell'inizio i totali non sono né nella pagina né nella GET.
+- **Home:** sulla card della prossima partita la riga "Fai il tuo pronostico" (`loadPendingPredictions`, in parallelo con le convocazioni) per i tesserati che non l'hanno fatto, finché è aperto. Nessuna notifica.
+- **Profilo:** "Pronostici giusti in questa stagione: 7 su 10" (`PredictionRecordLine`, sotto "Le tue stagioni"), solo con almeno una partita giocata con un proprio pronostico.
+
+**Metriche.** In `/admin/metriche` la sezione "Giochi": partite del quiz completate (`POST /api/games/quiz/played`, rate limit), tesserati con una migliore partita salvata (`PUT /api/users/me/quiz-best`, salva solo se più alta, condizione nell'`updateMany`) e i pronostici delle ultime 3 partite, solo numeri (`loadGameMetrics`). Il cron domenicale `cleanup-notifications` cancella le righe di `GameDailyStat` oltre 13 mesi, come le condivisioni (nessun cron nuovo).
+
+**Guida:** capitolo "Giochi" (`#giochi`, it e en) nel gruppo "Il resto dell'app". **a11y:** `/giochi` (anonimo) e `/giochi/quiz` (admin, anteprima) nelle pagine di `npm run a11y`.
+
+**Da fare prima di accendere `QUIZ_READY`:** il club rilegge le 40 domande (in particolare quelle sul club: le due squadre del 2025, il torneo dei 10 anni, la pandemia) e chiarisce la durata dei tempi. Il capitolo "Giochi" della guida parla già del quiz. Quando il quiz è online, `/giochi/quiz` si può spostare fra le pagine anonime di `npm run a11y`.
+
+**Non verificato:** TalkBack e VoiceOver veri (provati tastiera, ordine del fuoco e regione live nel browser del computer).

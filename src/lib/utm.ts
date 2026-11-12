@@ -14,13 +14,18 @@ export const UTM_SOURCES = [
   "volantino",
   "qr",
   "partner",
+  // Scheda Google del club (UX-62), con `medium: "maps"`.
+  "google",
   // "Copia link" dei bottoni di condivisione (UX-56): non si sa dove finirà.
   "link",
 ] as const;
 export type UtmSource = (typeof UTM_SOURCES)[number];
 
-/** `share` condivisione dal sito, `bio` link nella bio, `print` carta, `referral` siti di altri. */
-export const UTM_MEDIUMS = ["share", "bio", "print", "referral"] as const;
+/**
+ * `share` condivisione dal sito, `bio` link nella bio, `print` carta,
+ * `referral` siti di altri, `maps` la scheda Google del club (UX-62).
+ */
+export const UTM_MEDIUMS = ["share", "bio", "print", "referral", "maps"] as const;
 export type UtmMedium = (typeof UTM_MEDIUMS)[number];
 
 /** Campagna: minuscole, cifre e trattini (`open-day-2027`, `5x1000-2027`). */

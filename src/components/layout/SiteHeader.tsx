@@ -1,4 +1,5 @@
 "use client";
+import { QUIZ_READY } from "@/lib/content/baskinQuiz";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -82,6 +83,8 @@ const PARTITE_HREFS = [
 const IL_BASKIN_HREFS: { key: string; href: string; disabled?: boolean; badge?: string }[] = [
   { key: "whatIsBaskin", href: "/il-baskin" },
   { key: "gallery", href: "/gallery" },
+  // Giochi (UX-61): in menu quando il club ha rivisto le domande del quiz.
+  ...(QUIZ_READY ? [{ key: "games", href: "/giochi" }] : []),
 ];
 
 const CONTATTI_HREFS = [
@@ -162,7 +165,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
     (pathname?.startsWith("/partite") ?? false);
   // "Chi siamo" (`/il-club`) sta nel menu Squadre (UX-36b).
   const squadreActive = (pathname?.startsWith("/squadre") ?? false) || pathname === "/il-club";
-  const ilBaskinActive = pathname === "/il-baskin" || pathname === "/gallery";
+  const ilBaskinActive =
+    pathname === "/il-baskin" ||
+    pathname === "/gallery" ||
+    (pathname?.startsWith("/giochi") ?? false);
   const contattiActive = CONTATTI_HREFS.some((l) => l.href === pathname);
 
   // Squadre della stagione corrente per i link dinamici del dropdown

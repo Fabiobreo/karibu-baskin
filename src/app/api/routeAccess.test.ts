@@ -64,6 +64,8 @@ const ROUTES: Record<string, Access> = {
   "matches/[matchId]/callups": "public",
   // .ics di una partita (UX-50): squadre, orario e luogo, nessun nome.
   "matches/[matchId]/event.ics": "public",
+  // Pronostico (UX-61): il proprio e, dopo l'inizio, i totali senza nomi.
+  "matches/[matchId]/prediction": "member",
   "matches/[matchId]/mvps": "public",
   "matches/[matchId]/stats": "public",
   "matches/[matchId]/tabellino": "public",

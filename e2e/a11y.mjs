@@ -328,6 +328,8 @@ async function main() {
         ["il-baskin", "/il-baskin"],
         ["il-club", "/il-club"],
         ["guida", "/guida"],
+        // Giochi (UX-61): il quiz finché non è online lo vede solo lo staff (profilo admin).
+        ["giochi", "/giochi"],
         ["contatti", "/contatti"],
         ["login", "/login"],
         ["eventi", "/eventi"],
@@ -353,6 +355,7 @@ async function main() {
         ["partite", "/admin/partite"],
         ["utenti", "/admin/utenti"],
         ["statistiche-partita", targets.matchStats],
+        ["quiz", "/giochi/quiz"],
       ],
     },
   ].filter((p) => !ONLY || ONLY.includes(p.name));

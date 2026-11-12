@@ -9,7 +9,8 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { prisma } from "@/lib/db";
 import { withDbRetry } from "@/lib/dbRetry";
 import ProssimePartiteCards from "./ProssimePartiteCards";
-import { loadHomeCallupStatus } from "@/lib/matches/homeCallupStatus";
+import { loadHomeCallupStatus, type HomeCallupStatus } from "@/lib/matches/homeCallupStatus";
+import { loadPendingPredictions } from "@/lib/games/loadPredictions";
 import { getLocale, getTranslations } from "next-intl/server";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -86,21 +87,37 @@ export default async function ProssimePartiteHome({ viewer = null }: ProssimePar
     ] ?? type;
   const both = matches.length > 0 && weekendResults.length > 0;
 
-  const statuses = viewer
-    ? await withDbRetry(() =>
-        loadHomeCallupStatus(
-          viewer.id,
-          viewer.name,
-          matches.map((m) => m.id),
-          now
-        )
-      )
-    : {};
+  const [statuses, pendingPredictions] = viewer
+    ? await Promise.all([
+        withDbRetry(() =>
+          loadHomeCallupStatus(
+            viewer.id,
+            viewer.name,
+            matches.map((m) => m.id),
+            now
+          )
+        ),
+        // Pronostico aperto e non ancora fatto (UX-61).
+        withDbRetry(() =>
+          loadPendingPredictions(
+            viewer.id,
+            matches.map((m) => ({
+              id: m.id,
+              date: m.date,
+              opponentId: m.opponent?.id ?? null,
+              opponentTeamId: m.opponentTeam?.id ?? null,
+            })),
+            now.getTime()
+          )
+        ),
+      ])
+    : [{} as Record<string, HomeCallupStatus>, new Set<string>()];
 
   const cardData = matches.map((m) => ({
     ...m,
     isImminent: m.date <= imminentLimit,
     callupStatus: statuses[m.id] ?? null,
+    predictionPending: pendingPredictions.has(m.id),
   }));
 
   return (

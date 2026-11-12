@@ -56,6 +56,10 @@ export async function GET(req: NextRequest) {
   const { count: deletedShareStats } = await prisma.shareVisitStat.deleteMany({
     where: { day: { lt: shareCutoff } },
   });
+  // Partite dei giochi (UX-61): stessa durata dei contatori delle condivisioni.
+  const { count: deletedGameStats } = await prisma.gameDailyStat.deleteMany({
+    where: { day: { lt: shareCutoff } },
+  });
 
   // Una fotografia mancata non deve far fallire la pulizia.
   const weeklyActivity = await saveWeeklyActivitySnapshot().catch((err) => {
@@ -68,6 +72,7 @@ export async function GET(req: NextRequest) {
     deletedExpiredLinks: expiredLinks,
     deletedPushStats,
     deletedShareStats,
+    deletedGameStats,
     weeklyActivity,
   });
 }

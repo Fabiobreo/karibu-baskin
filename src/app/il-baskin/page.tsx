@@ -1,4 +1,13 @@
-import { Box, Container, Typography, Grid2 as Grid, Paper, Stack } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid2 as Grid,
+  Paper,
+  Stack,
+  Link as MuiLink,
+} from "@mui/material";
+import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { visuallyHidden } from "@mui/utils";
 import { columnSx } from "@/lib/layout";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -23,9 +32,9 @@ import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
-  title: "Il Baskin",
+  title: "Il Baskin, basket inclusivo a Vicenza",
   description:
-    "Che cos'è il Baskin: le regole, i cinque ruoli e perché è uno sport in cui può giocare davvero chiunque.",
+    "Il baskin è il basket inclusivo: ragazzi e adulti con e senza disabilità giocano nella stessa squadra. Regole, ruoli e dove provarlo a Montecchio Maggiore (Vicenza).",
   path: "/il-baskin",
 });
 
@@ -82,8 +91,16 @@ export default async function IlBaskinPage() {
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
         <Stack spacing={{ xs: 4, md: 6 }} sx={columnSx("reading")}>
+          {/* Per chi e' e dove si gioca (UX-62): e' la frase che cerca chi arriva da Google. */}
+          <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+            {t("ilbaskin.lead")}{" "}
+            <MuiLink href={TRY_IT_HREF} sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+              {t("ilbaskin.leadCta")}
+            </MuiLink>
+          </Typography>
+
           {/* Tre cose da sapere: chi legge solo questo ha gia' capito lo sport. */}
-          <Box component="section">
+          <Box component="section" id="in-breve" sx={{ scrollMarginTop: 80 }}>
             <Typography variant="overline" color="text.secondary">
               {t("ilbaskin.inBrief")}
             </Typography>
@@ -110,7 +127,7 @@ export default async function IlBaskinPage() {
           </Box>
 
           {/* Il campo */}
-          <Box component="section">
+          <Box component="section" id="campo" sx={{ scrollMarginTop: 80 }}>
             <Typography variant="overline" color="text.secondary">
               {t("ilbaskin.whereWePlay")}
             </Typography>
@@ -121,7 +138,7 @@ export default async function IlBaskinPage() {
           </Box>
 
           {/* I ruoli */}
-          <Box component="section">
+          <Box component="section" id="ruoli" sx={{ scrollMarginTop: 80 }}>
             <Typography variant="overline" color="text.secondary">
               {t("ilbaskin.thePlayers")}
             </Typography>
@@ -265,7 +282,7 @@ export default async function IlBaskinPage() {
           </Box>
 
           {/* Regole */}
-          <Box component="section">
+          <Box component="section" id="regole" sx={{ scrollMarginTop: 80 }}>
             <Typography variant="overline" color="text.secondary">
               {t("ilbaskin.howItWorks")}
             </Typography>
@@ -338,7 +355,7 @@ export default async function IlBaskinPage() {
           </Box>
 
           {/* Storia: per chi vuole saperne di piu', dopo il come si gioca. */}
-          <Box component="section">
+          <Box component="section" id="origini" sx={{ scrollMarginTop: 80 }}>
             <Typography variant="overline" color="text.secondary">
               {t("ilbaskin.origins")}
             </Typography>

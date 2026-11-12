@@ -12,6 +12,16 @@ export const CLUB_VENUE = {
   province: "VI",
 } as const;
 
+/**
+ * Coordinate per i dati strutturati (UX-62): quelle del segnaposto della
+ * scheda Google del club, così sito e mappa indicano lo stesso punto. Se il
+ * club sposta il segnaposto, si aggiornano qui.
+ */
+export const CLUB_VENUE_GEO: { latitude: number; longitude: number } | null = {
+  latitude: 45.4989316,
+  longitude: 11.4074057,
+};
+
 /** Indirizzo su una riga, come si scrive in un campo "Luogo". */
 export const CLUB_VENUE_LABEL = `${CLUB_VENUE.name}, ${CLUB_VENUE.street}, ${CLUB_VENUE.city}`;
 

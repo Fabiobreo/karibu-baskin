@@ -26,8 +26,9 @@ import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
+  // Riprende la riga sotto il nome nell'hero (UX-33, UX-62).
   description:
-    "Iscriviti agli allenamenti e scopri le squadre del Karibu Baskin di Montecchio Maggiore.",
+    "Basket inclusivo a Montecchio Maggiore (Vicenza): ragazzi e adulti con e senza disabilità giocano nella stessa squadra. Vieni a provare un allenamento.",
   path: "/",
 });
 

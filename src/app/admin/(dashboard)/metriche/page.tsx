@@ -8,6 +8,8 @@ import {
   loadAdminMetrics,
 } from "@/lib/metrics/loadAdminMetrics";
 import { loadEngagementMetrics } from "@/lib/metrics/loadEngagementMetrics";
+import { loadGameMetrics } from "@/lib/metrics/loadGameMetrics";
+import { formatRome } from "@/lib/dateUtils";
 import { requireAdminPage } from "@/lib/adminAccess";
 import { num, pct } from "@/lib/metrics/formatMetric";
 
@@ -22,7 +24,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminMetrichePage() {
   // Le tessere che portano a un lavoro da fare sono link solo per lo staff.
   const { readOnly } = await requireAdminPage("/admin/metriche");
-  const [m, engagement] = await Promise.all([loadAdminMetrics(), loadEngagementMetrics()]);
+  const [m, engagement, games] = await Promise.all([
+    loadAdminMetrics(),
+    loadEngagementMetrics(),
+    loadGameMetrics(METRICS_WINDOW_DAYS),
+  ]);
   const { community: c, training: t, matches: p, engagement: e } = m;
 
   return (
@@ -114,6 +120,23 @@ export default async function AdminMetrichePage() {
           label="Risposte agli eventi"
           caption="Ci sarò, forse o no, sugli eventi del periodo."
         />
+      </MetricSection>
+
+      {/* Giochi (UX-61): solo curiosità, non un obiettivo. */}
+      <MetricSection title={`Giochi (ultimi ${METRICS_WINDOW_DAYS} giorni)`}>
+        <MetricTile
+          value={String(games.quizPlays)}
+          label="Partite del quiz completate"
+          caption={`Anche senza account. ${games.quizPlayers} tesserati hanno una migliore partita salvata.`}
+        />
+        {games.predictions.map((g) => (
+          <MetricTile
+            key={`${g.title}-${g.date.toISOString()}`}
+            value={String(g.count)}
+            label={`Pronostici: ${g.title}`}
+            caption={`Partita del ${formatRome(g.date, "d/M/yyyy")}. Solo il numero: chi ha pronosticato non si vede.`}
+          />
+        ))}
       </MetricSection>
     </Box>
   );

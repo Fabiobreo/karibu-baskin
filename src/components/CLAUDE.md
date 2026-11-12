@@ -12,6 +12,7 @@ Tutti i componenti riutilizzabili vanno qui, organizzati per **dominio/feature**
 | `teams/`         | Squadre agonistiche, gironi, classifiche, avversarie             |
 | `news/`          | Post + sondaggi (`Post*`, `Poll*`, `LatestNewsHero`)             |
 | `gallery/`       | Album da Drive, feed Instagram, video YouTube, lightbox          |
+| `games/`         | Giochi del club: quiz del Baskin, pronostico della partita       |
 | `rating/`        | TrueSkill, badge, tracker sviluppo                               |
 | `calendar/`      | Calendario + sottoscrizione .ics                                 |
 | `profile/`       | Profilo utente, avatar, collegamento figli, prefs notifiche      |

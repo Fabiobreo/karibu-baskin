@@ -13,8 +13,22 @@ export const CLUB_PHONES = [
   { name: "Andrea", label: "335 531 0195", href: "tel:+393355310195" },
 ] as const;
 
+/**
+ * Telefono pubblico del club (UX-62): uno solo, lo stesso nei dati strutturati
+ * e sulla scheda Google, che lo confronta con quello del sito.
+ */
+export const CLUB_PHONE = CLUB_PHONES[0];
+
 export const CLUB_SOCIAL = {
   instagram: "https://www.instagram.com/karibubaskin",
   facebook: "https://www.facebook.com/karibubaskin",
   youtube: "https://youtube.com/@karibubaskin",
 } as const;
+
+/**
+ * Scheda Google del club (Google Maps, UX-62): "Asd Karibu Baskin Montecchio
+ * Maggiore", trovata il 12/11/2026. Link stabile per `cid`; entra nei `sameAs`
+ * del JSON-LD. Come curarla: `docs/workflows/scheda-google.md`.
+ */
+export const CLUB_GOOGLE_PROFILE_URL: string | null =
+  "https://maps.google.com/?cid=10043041815261947815";

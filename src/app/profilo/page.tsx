@@ -50,7 +50,9 @@ import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 import ProfileBadges from "@/components/profile/ProfileBadges";
+import { isMemberRole } from "@/lib/authRoles";
 import SeasonRecapLinks from "@/components/profile/SeasonRecapLinks";
+import PredictionRecordLine from "@/components/games/PredictionRecordLine";
 import { buildMetadata } from "@/lib/seo";
 import PageHeader from "@/components/common/PageHeader";
 import NextTrainingCard, {
@@ -523,6 +525,12 @@ export default async function ProfiloPage({
       <Suspense fallback={null}>
         <SeasonRecapLinks userId={user.id} />
       </Suspense>
+      {/* Pronostici giusti della stagione (UX-61): solo tesserati, solo propri. */}
+      {isMemberRole(session.user.appRole) && (
+        <Suspense fallback={null}>
+          <PredictionRecordLine userId={user.id} season={currentSeason} />
+        </Suspense>
+      )}
       {claimCard}
 
       {isAthlete && (

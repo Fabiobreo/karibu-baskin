@@ -1,6 +1,6 @@
 "use client";
 
-import { CLUB_AFFILIATION } from "@/lib/clubContacts";
+import { CLUB_AFFILIATION, CLUB_EMAIL, CLUB_PHONES } from "@/lib/clubContacts";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -39,15 +39,16 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
+// Gli stessi dati del footer e dei dati strutturati (UX-62): Google confronta
+// nome, indirizzo e telefono del sito con quelli della scheda del club.
 const CONTACTS = [
-  { icon: <PhoneIcon />, label: "Elisa", value: "(+39) 349 297 2703", href: "tel:+393492972703" },
-  { icon: <PhoneIcon />, label: "Andrea", value: "(+39) 335 531 0195", href: "tel:+393355310195" },
-  {
-    icon: <EmailIcon />,
-    label: "Email",
-    value: "asdkaribubaskin@gmail.com",
-    href: "mailto:asdkaribubaskin@gmail.com",
-  },
+  ...CLUB_PHONES.map((p) => ({
+    icon: <PhoneIcon />,
+    label: p.name,
+    value: p.label,
+    href: p.href,
+  })),
+  { icon: <EmailIcon />, label: "Email", value: CLUB_EMAIL, href: `mailto:${CLUB_EMAIL}` },
 ];
 
 const SOCIAL = [

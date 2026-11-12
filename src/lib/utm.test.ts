@@ -15,6 +15,12 @@ describe("withUtm", () => {
     );
   });
 
+  it("ha il link della scheda Google (UX-62)", () => {
+    expect(withUtm("/", { source: "google", medium: "maps" })).toBe(
+      `${SITE_URL}/?utm_source=google&utm_medium=maps`
+    );
+  });
+
   it("aggiunge la campagna se c'è", () => {
     const url = new URL(
       withUtm("/", { source: "volantino", medium: "print", campaign: "open-day-2027" })

@@ -19,6 +19,7 @@ export type GuideIcon =
   | "event"
   | "calendar"
   | "news"
+  | "games"
   | "profile"
   | "privacy"
   | "help";
@@ -265,6 +266,19 @@ const GUIDE_IT: Guide = {
             "In «Gallery» trovi le foto e i video del club.",
           ],
           links: [{ href: "/news", label: "Leggi le news" }],
+        },
+        {
+          id: "giochi",
+          icon: "games",
+          title: "Giochi",
+          steps: [
+            "In «Giochi» ci sono il quiz sul baskin e il pronostico della partita. Sono giochi per divertirsi: non ci sono classifiche e non c'è fretta.",
+            "Il quiz ha 5 domande. Scegli una risposta e tocca «Conferma»: leggi subito se è giusta, con la spiegazione.",
+            "Con «Sfida un amico» gli mandi le stesse 5 domande. Se vuoi, nel messaggio c'è anche il tuo punteggio.",
+            "Il pronostico apre 3 giorni prima di una partita, nella sua pagina. Scegli chi vince e, se vuoi, il punteggio.",
+            "Puoi cambiarlo fino al fischio d'inizio. Dopo la partita leggi se ci hai preso e quante persone hanno detto cosa, senza nomi.",
+          ],
+          links: [{ href: "/giochi", label: "Vai ai giochi" }],
         },
         {
           id: "profilo",
@@ -531,6 +545,19 @@ const GUIDE_EN: Guide = {
             'Under "Gallery" you find the club\'s photos and videos.',
           ],
           links: [{ href: "/news", label: "Read the news" }],
+        },
+        {
+          id: "giochi",
+          icon: "games",
+          title: "Games",
+          steps: [
+            'Under "Games" there are the Baskin quiz and the game prediction. They are games for fun: no rankings and no rush.',
+            'The quiz has 5 questions. Choose an answer and tap "Confirm": you read straight away whether it is right, with the explanation.',
+            'With "Challenge a friend" you send them the same 5 questions. If you like, your score is in the message too.',
+            "The prediction opens 3 days before a game, on its page. Choose who wins and, if you like, the score.",
+            "You can change it until tip-off. After the game you read whether you got it right and how many people said what, with no names.",
+          ],
+          links: [{ href: "/giochi", label: "Go to games" }],
         },
         {
           id: "profilo",

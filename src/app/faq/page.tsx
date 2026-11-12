@@ -7,13 +7,15 @@ import PageHero from "@/components/common/PageHero";
 import FaqAccordion from "@/components/common/FaqAccordion";
 import { getFaqs } from "@/lib/content/faqs";
 import { buildMetadata } from "@/lib/seo";
+import JsonLd from "@/components/common/JsonLd";
+import { faqPageJsonLd } from "@/lib/structuredData";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   title: "FAQ",
   description:
-    "Le domande più frequenti su come iniziare a giocare a Baskin con il Karibu di Montecchio Maggiore.",
+    "Domande frequenti sul baskin, il basket inclusivo, e su come iniziare a giocare con il Karibu di Montecchio Maggiore (Vicenza).",
   path: "/faq",
 });
 
@@ -23,6 +25,7 @@ export default async function FaqPage() {
 
   return (
     <>
+      <JsonLd data={faqPageJsonLd(FAQS)} />
       <PageHero column="reading" title={t("faq.heroTitle")} subtitle={t("faq.heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>

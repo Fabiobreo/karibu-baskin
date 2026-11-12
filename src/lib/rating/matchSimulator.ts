@@ -10,30 +10,11 @@
 // nessun DB: è logica pura, testabile in isolamento.
 
 import { TRUESKILL } from "./trueskill";
+import { mulberry32, stringToSeed } from "@/lib/seededRandom";
 
 /** Approssimazione logistica di Φ(x) — errore < 0.003 nell'intero dominio. */
 function normcdf(x: number): number {
   return 1 / (1 + Math.exp(-1.7 * x));
-}
-
-// PRNG deterministico (Mulberry32) + hash stringa→seed. Copia locale minima per
-// non accoppiare questo modulo a season/teamGenerator (dove sono privati).
-function mulberry32(seed: number) {
-  return function () {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function stringToSeed(s: string): number {
-  let hash = 0;
-  for (let i = 0; i < s.length; i++) {
-    hash = (Math.imul(31, hash) + s.charCodeAt(i)) | 0;
-  }
-  return hash >>> 0;
 }
 
 /** Variabile normale standard via Box-Muller, alimentata da un PRNG seedato. */

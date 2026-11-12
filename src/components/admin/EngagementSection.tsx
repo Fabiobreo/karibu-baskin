@@ -63,6 +63,7 @@ const SHARE_LABEL: Record<string, string> = {
   profilo: "Profilo giocatore",
   traguardo: "Immagine di un traguardo",
   stagione: 'Immagine "La tua stagione"',
+  quiz: "Sfida del quiz",
 };
 
 const dayMonth = new Intl.DateTimeFormat("it-IT", {

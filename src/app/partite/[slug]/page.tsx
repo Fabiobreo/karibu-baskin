@@ -54,6 +54,10 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { canNotifyCallups } from "@/lib/notifications/renotifyRules";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import MatchPredictionCard from "@/components/games/MatchPredictionCard";
+import MatchPredictionResult from "@/components/games/MatchPredictionResult";
+import { predictionOpensAt, predictionVerdict, predictionWindow } from "@/lib/games/prediction";
+import { loadOwnPrediction, loadPredictionTotals } from "@/lib/games/loadPredictions";
 
 export const revalidate = 3600;
 
@@ -297,6 +301,9 @@ export default async function MatchDetailPage({ params }: Props) {
     internal: !!match.opponentTeamId,
   });
   const showWhereWhenBlock = showWhereWhen(match.date, phase, now);
+  // Pronostico (UX-61): niente nelle amichevoli interne; prima dell'inizio la
+  // card per tutti (chi non è tesserato legge come fare), dopo solo i tesserati.
+  const predWindow = predictionWindow(match, now);
 
   // Disponibilità self-service: per partite future, mostra i toggle a chi è
   // membro di una delle squadre della partita (o genitore di un figlio membro).
@@ -380,6 +387,8 @@ export default async function MatchDetailPage({ params }: Props) {
     family,
     linkedAlbums,
     nextUp,
+    ownPrediction,
+    predTotals,
   ] = await Promise.all([
     opponentWhere
       ? prisma.match.findMany({
@@ -430,6 +439,11 @@ export default async function MatchDetailPage({ params }: Props) {
     loadLinkedAlbums({ matchId: match.id }, viewerIsMember),
     // "E adesso" (UX-58): solo a partita giocata.
     hasScore ? loadNextUp(match.team, new Date(now)) : Promise.resolve(null),
+    viewerId && predWindow !== "none"
+      ? loadOwnPrediction(match.id, viewerId)
+      : Promise.resolve(null),
+    // I totali solo dopo l'inizio: prima non sono nel payload, per non influenzare.
+    viewerId && predWindow === "closed" ? loadPredictionTotals(match.id) : Promise.resolve(null),
   ]);
   // "Per te" (UX-58): i giocatori della famiglia di chi guarda, solo tesserati
   // e solo a partita giocata. viewerId è già null per chi non è tesserato.
@@ -847,6 +861,17 @@ export default async function MatchDetailPage({ params }: Props) {
               <MatchForYouSection rows={forYouRows} teamColor={playersTeamColor} />
             </Box>
           )}
+          {predTotals && (
+            <Box sx={{ mb: { xs: 4, md: 5 } }}>
+              <MatchPredictionResult
+                teamName={match.team.name}
+                opponentName={opponentName}
+                prediction={ownPrediction}
+                verdict={ownPrediction ? predictionVerdict(ownPrediction, match) : null}
+                totals={predTotals}
+              />
+            </Box>
+          )}
           {mvpEntries.length > 0 && (
             <Box sx={{ mb: { xs: 4, md: 5 } }}>
               <MatchMvpSection mvps={mvpEntries} teamColor={playersTeamColor} />
@@ -873,6 +898,24 @@ export default async function MatchDetailPage({ params }: Props) {
                 })}
                 date={match.date}
                 location={location}
+              />
+            </Box>
+          )}
+          {(predWindow === "open" || predWindow === "notYet") && (
+            <Box sx={{ mb: { xs: 3, md: 4 } }}>
+              <MatchPredictionCard
+                matchId={match.id}
+                path={matchPath}
+                teamName={match.team.name}
+                opponentName={opponentName}
+                viewer={viewerIsMember ? "member" : session?.user ? "guest" : "anonymous"}
+                window={predWindow}
+                opensAt={formatRome(
+                  predictionOpensAt(match.date),
+                  locale === "en" ? "EEEE d MMMM 'at' HH:mm" : "EEEE d MMMM 'alle' HH:mm",
+                  { locale: dateLocale }
+                )}
+                initial={ownPrediction}
               />
             </Box>
           )}

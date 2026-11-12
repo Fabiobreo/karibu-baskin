@@ -1,4 +1,5 @@
 "use client";
+import ScoreboardIcon from "@mui/icons-material/Scoreboard";
 import Link from "next/link";
 import { Box, Typography, Paper, Chip, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -29,6 +30,8 @@ export interface MatchCardData {
   opponentTeam: { id: string; name: string } | null;
   /** Solo per i tesserati: convocazione propria o dei figli, risposta mancante. */
   callupStatus?: HomeCallupStatus | null;
+  /** Solo per i tesserati: il pronostico è aperto e non l'ha ancora fatto (UX-61). */
+  predictionPending?: boolean;
 }
 
 function relativeLabel(
@@ -89,6 +92,30 @@ function CallupStatusLine({ status }: { status: HomeCallupStatus }) {
       )}
       <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
         {text}
+      </Typography>
+    </Box>
+  );
+}
+
+/** "Fai il tuo pronostico" (UX-61): neutro, con l'icona; nessuna notifica, solo qui. */
+function PredictionLine() {
+  const t = useTranslations("pages.games.prediction");
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 0.75,
+        mt: 1.5,
+        pt: 1.5,
+        borderTop: "1px solid",
+        borderColor: "divider",
+        color: "text.secondary",
+      }}
+    >
+      <ScoreboardIcon sx={{ fontSize: 18 }} aria-hidden="true" />
+      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+        {t("homeRow")}
       </Typography>
     </Box>
   );
@@ -252,6 +279,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                   </Typography>
                 </Box>
                 {m.callupStatus && <CallupStatusLine status={m.callupStatus} />}
+                {m.predictionPending && <PredictionLine />}
               </Box>
             </Paper>
           </Link>
