@@ -21,12 +21,14 @@ import {
   ALBUM_PAGE_SIZE,
   albumPageCount,
   albumPageHref,
+  albumPageOfIndex,
   parseAlbumPage,
 } from "@/lib/gallery/albumPages";
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ pagina?: string | string[] }>;
+  /** `foto`: id di una foto da aprire nel lightbox (dalla fascia "Foto", UX-57). */
+  searchParams: Promise<{ pagina?: string | string[]; foto?: string | string[] }>;
 }
 
 /** L'album come esiste per il pubblico: raggiungibile e con almeno una foto visibile. */
@@ -104,7 +106,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function AlbumPage({ params, searchParams }: Props) {
-  const [{ slug }, { pagina }] = await Promise.all([params, searchParams]);
+  const [{ slug }, { pagina, foto }] = await Promise.all([params, searchParams]);
   const [album, session, t, locale] = await Promise.all([
     findAlbum(slug),
     auth(),
@@ -130,7 +132,12 @@ export default async function AlbumPage({ params, searchParams }: Props) {
   // Si disegna una pagina da 60; il lightbox riceve l'elenco di tutti i file
   // (poche decine di byte a foto) e le scorre tutte.
   const pages = albumPageCount(photos.length);
-  const page = parseAlbumPage(pagina, pages);
+  // `?foto=<id>`: si apre il lightbox su quella foto, nella pagina che la
+  // contiene. Un id che non c'è più (foto nascosta o tolta) apre l'album e basta.
+  const fotoId = Array.isArray(foto) ? foto[0] : foto;
+  const fotoIndex = fotoId ? photos.findIndex((p) => p.id === fotoId) : -1;
+  const page =
+    fotoIndex >= 0 && !pagina ? albumPageOfIndex(fotoIndex) : parseAlbumPage(pagina, pages);
   const offset = (page - 1) * ALBUM_PAGE_SIZE;
   const pagePhotos = photos.slice(offset, offset + ALBUM_PAGE_SIZE);
 
@@ -241,6 +248,8 @@ export default async function AlbumPage({ params, searchParams }: Props) {
               photos={pagePhotos}
               offset={offset}
               allFileIds={photos.map((p) => p.driveFileId)}
+              initialOpenIndex={fotoIndex >= 0 ? fotoIndex : null}
+              page={page}
             />
             <AlbumPagination
               slug={album.slug}

@@ -7,6 +7,7 @@ import { isDriveConfigured } from "@/lib/gallery/drive";
 import { loadAlbumCards } from "@/lib/gallery/albums";
 import type { Metadata } from "next";
 import { requireAdminPage } from "@/lib/adminAccess";
+import { MEMBER_APP_ROLES } from "@/lib/authRoles";
 
 export const metadata: Metadata = { title: "Gestione Gallery | Admin" };
 export const revalidate = 0;
@@ -23,7 +24,7 @@ const day = new Intl.DateTimeFormat("it-IT", {
 
 export default async function AdminGalleryPage() {
   const { readOnly } = await requireAdminPage("/admin/gallery");
-  const [posts, albums, events, matches] = await Promise.all([
+  const [posts, albums, events, matches, memberCount] = await Promise.all([
     prisma.instagramPost.findMany({
       orderBy: { timestamp: "desc" },
       select: {
@@ -53,6 +54,7 @@ export default async function AdminGalleryPage() {
         opponentTeam: { select: { name: true } },
       },
     }),
+    prisma.user.count({ where: { appRole: { in: MEMBER_APP_ROLES } } }),
   ]);
 
   const linkOptions: AlbumLinkOption[] = [
@@ -78,6 +80,7 @@ export default async function AdminGalleryPage() {
       initialAlbums={albums}
       linkOptions={linkOptions}
       driveConfigured={isDriveConfigured()}
+      memberCount={memberCount}
       readOnly={readOnly}
       instagram={{
         initialPosts: posts.map((p) => ({ ...p, timestamp: p.timestamp.toISOString() })),

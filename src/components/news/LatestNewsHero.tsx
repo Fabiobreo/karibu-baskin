@@ -6,6 +6,8 @@ import NewspaperIcon from "@mui/icons-material/Newspaper";
 import { getTranslations } from "next-intl/server";
 import FeaturedCard from "@/components/news/FeaturedCard";
 import SideCard from "@/components/news/SideCard";
+import HomeAlbumRow from "@/components/gallery/HomeAlbumRow";
+import { loadHomeAlbum } from "@/lib/gallery/albums";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -19,8 +21,13 @@ export type PostItem = {
   poll: { id: string; closesAt: Date | null } | null;
 };
 
-export default async function LatestNewsHero() {
-  const [posts, t, tm] = await Promise.all([
+interface LatestNewsHeroProps {
+  /** Chi guarda è tesserato: decide quale album può comparire sotto le news. */
+  viewerIsMember: boolean;
+}
+
+export default async function LatestNewsHero({ viewerIsMember }: LatestNewsHeroProps) {
+  const [posts, album, t, tm] = await Promise.all([
     withDbRetry(() =>
       prisma.post.findMany({
         where: { publishedAt: { not: null } },
@@ -37,11 +44,20 @@ export default async function LatestNewsHero() {
         },
       })
     ),
+    // "Nuove foto" (UX-57): l'ultimo album uscito, nella stessa sezione.
+    loadHomeAlbum(viewerIsMember),
     getTranslations("home"),
     getTranslations("matches"),
   ]);
 
-  if (posts.length === 0) return null;
+  const albumRow = album && <HomeAlbumRow album={album} />;
+  if (posts.length === 0) {
+    return albumRow ? (
+      <Box sx={{ bgcolor: "action.hover", py: { xs: 4, md: 6 } }}>
+        <Container maxWidth="lg">{albumRow}</Container>
+      </Box>
+    ) : null;
+  }
 
   const [featured, ...rest] = posts;
   const side = rest.slice(0, 3);
@@ -108,6 +124,8 @@ export default async function LatestNewsHero() {
             </Typography>
           </Link>
         </Box>
+
+        {albumRow && <Box sx={{ mt: 3 }}>{albumRow}</Box>}
       </Container>
     </Box>
   );

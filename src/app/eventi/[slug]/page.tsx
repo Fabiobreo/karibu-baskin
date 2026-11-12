@@ -7,7 +7,9 @@ import JsonLd from "@/components/common/JsonLd";
 import EventHero from "@/components/common/EventHero";
 import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
-import { canViewAdminPanel, hasRole } from "@/lib/authRoles";
+import { canViewAdminPanel, hasRole, isMemberRole } from "@/lib/authRoles";
+import { loadLinkedAlbums } from "@/lib/gallery/albums";
+import AlbumStrip from "@/components/gallery/AlbumStrip";
 import EventPoster from "@/components/common/EventPoster";
 import EventRsvp from "@/components/common/EventRsvp";
 import EventResponsesPanel from "@/components/common/EventResponsesPanel";
@@ -80,10 +82,13 @@ export default async function EventoPage({ params }: Props) {
   // La famiglia serve prima delle risposte, ma il conteggio parte subito.
   const userId = session?.user?.id ?? null;
   const optionIds = ev.options.map((o) => o.id);
-  const [family, going, responses] = await Promise.all([
+  const viewerIsMember = isMemberRole(session?.user?.appRole);
+  const [family, going, responses, linkedAlbums] = await Promise.all([
     userId ? loadFamily(userId) : [],
     prisma.eventAttendance.count({ where: { eventId: ev.id, status: "GOING" } }),
     canSeeResponses ? loadEventResponses(ev.id) : null,
+    // Fascia "Foto" (UX-57): gli album collegati a questo evento.
+    loadLinkedAlbums({ eventId: ev.id }, viewerIsMember),
   ]);
   const rsvp = userId
     ? await loadFamilyRsvp(ev.id, userId, family, optionIds)
@@ -145,6 +150,15 @@ export default async function EventoPage({ params }: Props) {
                 <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
                   {ev.description}
                 </Typography>
+              )}
+
+              {linkedAlbums.length > 0 && (
+                <AlbumStrip
+                  albums={linkedAlbums}
+                  of="event"
+                  viewer={viewerIsMember ? "member" : session?.user ? "guest" : "anonymous"}
+                  returnTo={`/eventi/${ev.slug ?? ev.id}`}
+                />
               )}
 
               <EventRsvp

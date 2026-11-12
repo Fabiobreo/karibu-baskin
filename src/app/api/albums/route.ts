@@ -8,6 +8,9 @@ import { AlbumCreateSchema } from "@/lib/schemas/photoAlbum";
 import { listDriveFolder, parseDriveFolderId } from "@/lib/gallery/drive";
 import { createAlbum, loadAlbumCard } from "@/lib/gallery/albums";
 import { albumErrorResponse } from "@/lib/gallery/albumApi";
+import { announceAlbum } from "@/lib/gallery/albumNotify";
+import { canNotifyAlbum } from "@/lib/notifications/renotifyRules";
+import { prisma } from "@/lib/db";
 
 // Crea un album da una cartella Drive: salva l'indice delle foto, non i file.
 export async function POST(req: NextRequest) {
@@ -53,6 +56,20 @@ export async function POST(req: NextRequest) {
       declaredById: actor.id,
     });
 
+    // "Avvisa le famiglie": solo se chiesto e per un album recente (UX-57).
+    const date = new Date(body.date);
+    const notified =
+      body.notify &&
+      canNotifyAlbum({ date, unreachableAt: null, photoCount: listing.photos.length }, Date.now());
+    if (notified) {
+      const album = await prisma.photoAlbum.update({
+        where: { id },
+        data: { lastNotifiedAt: new Date() },
+        select: { slug: true, title: true, photoCount: true },
+      });
+      inBackground(announceAlbum(album, "new"), "notification album");
+    }
+
     inBackground(
       logAudit({
         actorId: actor.id,
@@ -64,6 +81,7 @@ export async function POST(req: NextRequest) {
           visibility: body.visibility,
           driveFolderId: folderId,
           photos: listing.photos.length,
+          notified,
           // Chi ha dichiarato di avere il permesso di chi ha scattato le foto.
           permissionDeclaredBy: actor.name ?? actor.id,
         },

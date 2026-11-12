@@ -714,6 +714,7 @@ enum AppNotificationType {
   MATCH_CALLUP // convocato (o non più convocato) per una partita
   MATCH_AVAILABILITY // disponibilità segnata dallo staff, o un convocato che dice di no
   SUGGESTION // suggerimento nuovo o nota/risposta su un suggerimento
+  ALBUM_PUBLISHED // "Sono arrivate le foto": album nuovo, avviso facoltativo dello staff (UX-57)
 }
 
 // Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione
@@ -1142,6 +1143,8 @@ model PhotoAlbum {
   // Valorizzato quando la cartella non risponde piu' (condivisione tolta o
   // cartella eliminata): l'album sparisce dal pubblico, le foto restano a DB.
   unreachableAt DateTime?
+  // Ultimo avviso "Sono arrivate le foto" (UX-57); null = mai avvisato.
+  lastNotifiedAt DateTime?
 
   // Collegamento facoltativo, al piu' uno dei due.
   eventId String?

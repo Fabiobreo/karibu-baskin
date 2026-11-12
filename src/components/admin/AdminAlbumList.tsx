@@ -1,5 +1,5 @@
 "use client";
-import type { RefObject } from "react";
+import { useState, type RefObject } from "react";
 import { Box, Paper, Typography } from "@mui/material";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
@@ -11,6 +11,7 @@ import { driveFolderUrl, drivePhotoUrl } from "@/lib/gallery/drive";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
 import type { AlbumCard } from "@/lib/gallery/albums";
+import { canNotifyAlbum } from "@/lib/notifications/renotifyRules";
 
 interface AdminAlbumListProps {
   albums: AlbumCard[];
@@ -19,6 +20,8 @@ interface AdminAlbumListProps {
   onSync: (album: AlbumCard) => void;
   onEdit: (album: AlbumCard) => void;
   onPhotos: (album: AlbumCard) => void;
+  /** "Avvisa le famiglie…" / "Avvisa di nuovo…" (UX-57). */
+  onNotify: (album: AlbumCard) => void;
   onDelete: (album: AlbumCard) => Promise<boolean>;
   focusAfterDelete: RefObject<HTMLElement | null>;
   /** Dirigente: solo i link per aprire l'album, sul sito e su Drive. */
@@ -39,10 +42,13 @@ export default function AdminAlbumList({
   onSync,
   onEdit,
   onPhotos,
+  onNotify,
   onDelete,
   focusAfterDelete,
   readOnly = false,
 }: AdminAlbumListProps) {
+  // Fissato al montaggio: basta a decidere se un album è dell'ultimo mese.
+  const [now] = useState(() => Date.now());
   if (albums.length === 0) {
     return (
       <EmptyState
@@ -151,6 +157,16 @@ export default function AdminAlbumList({
                     : [
                         { label: "Modifica", onClick: () => onEdit(album) },
                         { label: "Foto", onClick: () => onPhotos(album) },
+                        ...(canNotifyAlbum(album, now)
+                          ? [
+                              {
+                                label: album.lastNotifiedAt
+                                  ? "Avvisa di nuovo…"
+                                  : "Avvisa le famiglie…",
+                                onClick: () => onNotify(album),
+                              },
+                            ]
+                          : []),
                         { label: "Apri sul sito", href: `/gallery/${album.slug}`, external: true },
                       ]),
                   {

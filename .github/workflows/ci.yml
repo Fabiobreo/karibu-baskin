@@ -34,7 +34,9 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Install Playwright browsers (per Storybook/vitest browser)
-        run: npx playwright install chromium --with-deps
+        # Se i mirror apt di Ubuntu non rispondono (capita sui runner) si scarica
+        # solo il browser: le librerie che servono a Chromium sono già nell'immagine.
+        run: npx playwright install chromium --with-deps || npx playwright install chromium
 
       - name: Test
         run: npm test
@@ -60,7 +62,9 @@ jobs:
         run: npx prisma generate
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        # Se i mirror apt di Ubuntu non rispondono (capita sui runner) si scarica
+        # solo il browser: le librerie che servono a Chromium sono già nell'immagine.
+        run: npx playwright install chromium --with-deps || npx playwright install chromium
 
       - name: Run E2E tests
         run: npm run test:e2e

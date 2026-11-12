@@ -11,6 +11,8 @@ import AlbumPhotosDialog from "@/components/admin/AlbumPhotosDialog";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import type { AlbumCard } from "@/lib/gallery/albums";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { notifyConfirm } from "@/lib/adminRowActions";
 
 import { errorText } from "@/lib/networkError";
 type GallerySection = "album" | "instagram";
@@ -20,6 +22,8 @@ interface AdminGalleryViewProps {
   initialAlbums: AlbumCard[];
   linkOptions: AlbumLinkOption[];
   driveConfigured: boolean;
+  /** Tesserati che riceverebbero "Sono arrivate le foto" (prima delle preferenze). */
+  memberCount: number;
   instagram: React.ComponentProps<typeof AdminGalleryClient>;
   /** Dirigente: album e post si guardano, non si aggiornano né si moderano. */
   readOnly?: boolean;
@@ -34,6 +38,7 @@ export default function AdminGalleryView({
   initialAlbums,
   linkOptions,
   driveConfigured,
+  memberCount,
   instagram,
   readOnly = false,
 }: AdminGalleryViewProps) {
@@ -49,6 +54,7 @@ export default function AdminGalleryView({
   const [formAlbum, setFormAlbum] = useState<AlbumCard | null | undefined>(undefined);
   const [photosAlbum, setPhotosAlbum] = useState<AlbumCard | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const { openConfirm, ConfirmDialog } = useConfirmDialog();
 
   // `?album=<id>` (da "Gestisci" sulla pagina pubblica) apre la modifica.
   useEffect(() => {
@@ -99,6 +105,33 @@ export default function AdminGalleryView({
     } finally {
       setSyncingId(null);
     }
+  }
+
+  async function sendNotify(album: AlbumCard) {
+    try {
+      const res = await fetch(`/api/albums/${album.id}/notify`, { method: "POST" });
+      if (!res.ok) throw new Error(await readError(res));
+      const { lastNotifiedAt } = (await res.json()) as { lastNotifiedAt: string };
+      replaceAlbum({ ...album, lastNotifiedAt });
+      showToast({ message: "Avviso inviato", severity: "success" });
+    } catch (err) {
+      showToast({ message: errorText(err, "Avviso non inviato"), severity: "error" });
+    }
+  }
+
+  /** "Avvisa le famiglie…" / "Avvisa di nuovo…": la notifica non si ritira, prima si chiede. */
+  function askNotify(album: AlbumCard) {
+    const c = notifyConfirm({
+      title: album.title,
+      lastNotifiedAt: album.lastNotifiedAt,
+      now: Date.now(),
+      audience: "ai tesserati",
+      firstTitle: "Avvisare le famiglie?",
+    });
+    openConfirm(c.title, c.message, () => void sendNotify(album), {
+      confirmLabel: c.confirmLabel,
+      confirmColor: "primary",
+    });
   }
 
   async function remove(album: AlbumCard): Promise<boolean> {
@@ -158,6 +191,7 @@ export default function AdminGalleryView({
           onSync={sync}
           onEdit={setFormAlbum}
           onPhotos={setPhotosAlbum}
+          onNotify={askNotify}
           onDelete={remove}
           focusAfterDelete={titleRef}
           readOnly={readOnly}
@@ -174,6 +208,7 @@ export default function AdminGalleryView({
           album={formAlbum}
           linkOptions={linkOptions}
           driveConfigured={driveConfigured}
+          memberCount={memberCount}
           onClose={() => setFormAlbum(undefined)}
           onSaved={(saved, created) => {
             setAlbums((prev) =>
@@ -193,6 +228,7 @@ export default function AdminGalleryView({
           }
         />
       )}
+      {ConfirmDialog}
     </Box>
   );
 }

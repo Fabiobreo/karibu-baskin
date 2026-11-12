@@ -28,6 +28,7 @@ import { RADIUS } from "@/lib/radius";
 import type { AlbumCard } from "@/lib/gallery/albums";
 
 import { errorText } from "@/lib/networkError";
+import { canNotifyAlbum } from "@/lib/notifications/renotifyRules";
 /** Un evento o una partita a cui collegare l'album. */
 export interface AlbumLinkOption {
   kind: "event" | "match";
@@ -41,6 +42,8 @@ interface AlbumFormDialogProps {
   album: AlbumCard | null;
   linkOptions: AlbumLinkOption[];
   driveConfigured: boolean;
+  /** Tesserati che riceverebbero l'avviso, prima delle loro preferenze. */
+  memberCount: number;
   onClose: () => void;
   onSaved: (album: AlbumCard, created: boolean) => void;
 }
@@ -89,6 +92,7 @@ export default function AlbumFormDialog({
   album,
   linkOptions,
   driveConfigured,
+  memberCount,
   onClose,
   onSaved,
 }: AlbumFormDialogProps) {
@@ -109,10 +113,20 @@ export default function AlbumFormDialog({
       ) ?? null
   );
   const [permission, setPermission] = useState(false);
+  // "Avvisa le famiglie" (UX-57): spenta di default, decisione del committente.
+  const [notify, setNotify] = useState(false);
+  const [now] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const showFields = editing || !!preview;
+  // Un album più vecchio di un mese non si annuncia.
+  const canNotify =
+    !!day &&
+    canNotifyAlbum(
+      { date: fromDateInput(day), unreachableAt: null, photoCount: preview?.photoCount ?? 0 },
+      now
+    );
 
   async function readFolder() {
     setBusy(true);
@@ -160,12 +174,19 @@ export default function AlbumFormDialog({
         : await fetch("/api/albums", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...common, link, permissionDeclared: true }),
+            body: JSON.stringify({
+              ...common,
+              link,
+              permissionDeclared: true,
+              notify: canNotify && notify,
+            }),
           });
       if (!res.ok) throw new Error(await readError(res));
       const saved: AlbumCard = await res.json();
       showToast({
-        message: editing ? "Album aggiornato" : `Album creato: ${saved.photoCount} foto`,
+        message: editing
+          ? "Album aggiornato"
+          : `Album creato: ${saved.photoCount} foto${saved.lastNotifiedAt ? ", avviso inviato" : ""}`,
         severity: "success",
       });
       onSaved(saved, !editing);
@@ -345,6 +366,30 @@ export default function AlbumFormDialog({
                   }
                   label="Ho il permesso di chi ha scattato le foto di mostrarle sul sito"
                 />
+              )}
+
+              {!editing && (
+                <Box>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={canNotify && notify}
+                        disabled={!canNotify}
+                        onChange={(e) => setNotify(e.target.checked)}
+                      />
+                    }
+                    label="Avvisa le famiglie"
+                  />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", pl: 4 }}
+                  >
+                    {canNotify
+                      ? `Notifica “Sono arrivate le foto” ai ${memberCount} tesserati (atleti, genitori e staff), tranne chi ha spento “Nuove foto”. Anche se l'album è pubblico, non arriva a chi non è tesserato.`
+                      : "La data dell'album è di più di un mese fa: non si avvisa."}
+                  </Typography>
+                </Box>
               )}
             </>
           )}

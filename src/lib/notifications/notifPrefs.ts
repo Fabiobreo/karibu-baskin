@@ -1,10 +1,16 @@
-export type ControllableNotifType = "NEW_TRAINING" | "TEAMS_READY" | "MATCH_RESULT" | "NEW_POST";
+export type ControllableNotifType =
+  | "NEW_TRAINING"
+  | "TEAMS_READY"
+  | "MATCH_RESULT"
+  | "NEW_POST"
+  | "ALBUM_PUBLISHED";
 
 export const CONTROLLABLE_TYPES: ControllableNotifType[] = [
   "NEW_TRAINING",
   "TEAMS_READY",
   "MATCH_RESULT",
   "NEW_POST",
+  "ALBUM_PUBLISHED",
 ];
 
 export const NOTIF_TYPE_LABELS: Record<ControllableNotifType, string> = {
@@ -12,6 +18,7 @@ export const NOTIF_TYPE_LABELS: Record<ControllableNotifType, string> = {
   TEAMS_READY: "Squadre pronte",
   MATCH_RESULT: "Risultato partita",
   NEW_POST: "Nuova news / sondaggio",
+  ALBUM_PUBLISHED: "Nuove foto",
 };
 
 export const NOTIF_TYPE_DESC: Record<ControllableNotifType, string> = {
@@ -19,6 +26,7 @@ export const NOTIF_TYPE_DESC: Record<ControllableNotifType, string> = {
   TEAMS_READY: "Quando le squadre per un allenamento a cui sei iscritto/a sono pronte",
   MATCH_RESULT: "Quando viene inserito il risultato di una partita",
   NEW_POST: "Quando viene pubblicato un articolo o un sondaggio nella bacheca",
+  ALBUM_PUBLISHED: "Quando escono le foto di una partita o di un evento",
 };
 
 export interface NotifPrefs {
@@ -27,8 +35,20 @@ export interface NotifPrefs {
 }
 
 export const DEFAULT_PREFS: NotifPrefs = {
-  push: { NEW_TRAINING: true, TEAMS_READY: true, MATCH_RESULT: true, NEW_POST: true },
-  inApp: { NEW_TRAINING: true, TEAMS_READY: true, MATCH_RESULT: true, NEW_POST: true },
+  push: {
+    NEW_TRAINING: true,
+    TEAMS_READY: true,
+    MATCH_RESULT: true,
+    NEW_POST: true,
+    ALBUM_PUBLISHED: true,
+  },
+  inApp: {
+    NEW_TRAINING: true,
+    TEAMS_READY: true,
+    MATCH_RESULT: true,
+    NEW_POST: true,
+    ALBUM_PUBLISHED: true,
+  },
 };
 
 export function mergePrefs(stored: unknown): NotifPrefs {

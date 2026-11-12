@@ -25,6 +25,10 @@ interface AlbumPhotoGridProps {
   offset: number;
   /** I file Drive di tutte le foto dell'album, in ordine: il lightbox le scorre tutte. */
   allFileIds: string[];
+  /** Foto da aprire subito (da `?foto=`, UX-57): posizione nell'album, da 0. */
+  initialOpenIndex?: number | null;
+  /** Pagina che si sta guardando: l'indirizzo a cui si torna togliendo `?foto=`. */
+  page?: number;
 }
 
 /** Larghezze chieste a Google: miniatura (e il doppio per gli schermi densi) e lightbox. */
@@ -51,19 +55,31 @@ export default function AlbumPhotoGrid({
   photos,
   offset,
   allFileIds,
+  initialOpenIndex = null,
+  page = 1,
 }: AlbumPhotoGridProps) {
   const t = useTranslations("pages");
   const router = useRouter();
   // Posizione nell'album (non nella pagina) della foto aperta nel lightbox.
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(initialOpenIndex);
   // Foto su cui riportare il fuoco quando arriva la pagina che la contiene.
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   // Finché il lightbox non è sparito del tutto la pagina dietro è bloccata, e
   // quando si sblocca il browser ne riaggiusta lo scorrimento: portarsi sulla
   // foto prima di allora non serve, si finisce altrove.
-  const [lightboxGone, setLightboxGone] = useState(true);
+  const [lightboxGone, setLightboxGone] = useState(initialOpenIndex === null);
   const listRef = useRef<HTMLUListElement>(null);
+  const openedFromUrl = useRef(initialOpenIndex !== null);
   const total = allFileIds.length;
+
+  // Aperto da `?foto=`: il lightbox resta aperto, l'indirizzo torna quello
+  // dell'album, così "indietro" e la condivisione non riaprono la foto.
+  useEffect(() => {
+    if (initialOpenIndex === null) return;
+    router.replace(albumPageHref(slug, page), { scroll: false });
+    // Solo al primo montaggio: dopo la sostituzione `initialOpenIndex` diventa null.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const prev = useCallback(
     () => setOpenIndex((i) => (i === null ? i : (i - 1 + total) % total)),
@@ -78,7 +94,13 @@ export default function AlbumPhotoGrid({
     setOpenIndex(null);
     if (index === null) return;
     const inPage = index >= offset && index < offset + photos.length;
-    if (inPage) return;
+    // Arrivati da `?foto=` il fuoco non era su una miniatura: lo si porta lì.
+    const fromUrl = openedFromUrl.current;
+    openedFromUrl.current = false;
+    if (inPage) {
+      if (fromUrl) setFocusIndex(index);
+      return;
+    }
     setFocusIndex(index);
     // Senza tornare in cima: la foto su cui ci si è fermati riceve il fuoco.
     router.push(albumPageHref(slug, albumPageOfIndex(index)), { scroll: false });

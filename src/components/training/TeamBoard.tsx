@@ -251,7 +251,9 @@ function MirrorTeamBoard({
           justifyContent: "center",
           bgcolor: "action.selected",
           typography: "caption",
-          color: "text.secondary",
+          // text.primary, non text.secondary: sul fondo action.selected del
+          // tema scuro il grigio secondario si ferma a 4,32:1.
+          color: "text.primary",
         }}
       >
         {t("teamsVersus")}

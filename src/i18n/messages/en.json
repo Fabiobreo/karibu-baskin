@@ -90,7 +90,9 @@
     "MATCH_RESULT": "Match result",
     "MATCH_RESULT_desc": "When a match result is entered",
     "NEW_POST": "New post or poll",
-    "NEW_POST_desc": "When an article or poll is published on the board"
+    "NEW_POST_desc": "When an article or poll is published on the board",
+    "ALBUM_PUBLISHED": "New photos",
+    "ALBUM_PUBLISHED_desc": "When the photos of a match or an event come out"
   },
   "notifPanel": {
     "pushTitle": "Notifications on this device",
@@ -1776,8 +1778,18 @@
       "teams": "the teams",
       "callups": "the call-ups",
       "albums": "the other albums",
-      "photos": "the photos in this album"
+      "photos": "the photos in this album",
+      "photosShort": "the photos"
     }
+  },
+  "albumStrip": {
+    "title": "Photos",
+    "seeAll": "{count, plural, one {See the photo} other {See all # photos}}",
+    "photoAlt": "Photo {index} of {total}: {title}",
+    "hiddenMatch": "{count, plural, one {There is a photo of this match.} other {There are # photos of this match.}}",
+    "hiddenEvent": "{count, plural, one {There is a photo of this event.} other {There are # photos of this event.}}",
+    "homeEyebrow": "New photos",
+    "homeMeta": "{count, plural, one {# photo} other {# photos}} · {day}"
   },
   "imageUploader": {
     "tooLarge": "The file is larger than 5 MB.",

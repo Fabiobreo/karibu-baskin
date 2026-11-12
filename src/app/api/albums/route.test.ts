@@ -2,7 +2,17 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
-vi.mock("@/lib/db", () => ({ prisma: {} }));
+vi.mock("@/lib/db", () => ({
+  prisma: {
+    photoAlbum: {
+      update: vi.fn().mockResolvedValue({ slug: "torneo", title: "Torneo", photoCount: 2 }),
+    },
+  },
+}));
+
+vi.mock("@/lib/gallery/albumNotify", () => ({
+  announceAlbum: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock("@/lib/apiAuth", () => ({
   staffGuard: vi.fn().mockResolvedValue(null),
@@ -38,6 +48,8 @@ import { logAudit } from "@/lib/audit";
 import { createAlbum } from "@/lib/gallery/albums";
 import { DriveError, listDriveFolder } from "@/lib/gallery/drive";
 import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { announceAlbum } from "@/lib/gallery/albumNotify";
 
 const FOLDER_ID = "1AbC_dEf-GhIjKlMnOpQrStUvWxYz01234";
 const listing = {
@@ -121,6 +133,34 @@ describe("POST /api/albums", () => {
         }),
       })
     );
+  });
+
+  it('senza la spunta "Avvisa" (default) non parte nessun avviso', async () => {
+    const res = await POST(post(valid));
+    expect(res.status).toBe(201);
+    expect(announceAlbum).not.toHaveBeenCalled();
+    expect(logAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ after: expect.objectContaining({ notified: false }) })
+    );
+  });
+
+  it("con la spunta accesa avvisa per un album recente e lo scrive nell'audit", async () => {
+    const res = await POST(post({ ...valid, date: new Date().toISOString(), notify: true }));
+    expect(res.status).toBe(201);
+    expect(prisma.photoAlbum.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { lastNotifiedAt: expect.any(Date) } })
+    );
+    expect(announceAlbum).toHaveBeenCalledWith(expect.objectContaining({ slug: "torneo" }), "new");
+    expect(logAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ after: expect.objectContaining({ notified: true }) })
+    );
+  });
+
+  it("non avvisa per un album con data di più di un mese fa, anche con la spunta", async () => {
+    const old = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString();
+    const res = await POST(post({ ...valid, date: old, notify: true }));
+    expect(res.status).toBe(201);
+    expect(announceAlbum).not.toHaveBeenCalled();
   });
 
   it("risponde 422 se la cartella non è condivisa o non ha foto", async () => {

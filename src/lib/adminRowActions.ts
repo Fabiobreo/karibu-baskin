@@ -40,13 +40,15 @@ export function notifyConfirm(opts: {
   now: number;
   /** "a tutti" (default) o, per un allenamento riservato, "a chi può iscriversi". */
   audience?: string;
+  /** Titolo della conferma per il primo avviso (default "Avvisare tutti?"). */
+  firstTitle?: string;
 }): { title: string; message: string; confirmLabel: string } {
-  const { title, lastNotifiedAt, now, audience = "a tutti" } = opts;
+  const { title, lastNotifiedAt, now, audience = "a tutti", firstTitle = "Avvisare tutti?" } = opts;
   const sends = `Parte una notifica ${audience} per "${title}".`;
   const noUndo = "La notifica non si può ritirare.";
   if (!lastNotifiedAt) {
     return {
-      title: "Avvisare tutti?",
+      title: firstTitle,
       message: `${sends} Finora non è partito nessun avviso. ${noUndo}`,
       confirmLabel: "Avvisa",
     };

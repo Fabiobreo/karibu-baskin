@@ -18,7 +18,7 @@
 //    errore al posto della pagina offline: il contrario di quello che una PWA
 //    deve fare. Il routing è deciso su `request.destination`, non per esclusione.
 
-const VERSION = "karibu-v14";
+const VERSION = "karibu-v15";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const API_CACHE = `${VERSION}-api`;
@@ -295,7 +295,9 @@ self.addEventListener("message", (e) => {
 
 // ── Push notifications ─────────────────────────────────────────────────────
 
-const MUTABLE_TYPES = ["NEW_TRAINING", "TEAMS_READY", "MATCH_RESULT"];
+// Stessi valori dei tipi in CONTROLLABLE_TYPES il cui `type` di push coincide con
+// la chiave della preferenza (NEW_POST no: le sue push arrivano anche come NEW_POLL).
+const MUTABLE_TYPES = ["NEW_TRAINING", "TEAMS_READY", "MATCH_RESULT", "ALBUM_PUBLISHED"];
 
 self.addEventListener("push", (e) => {
   if (!e.data) return;

@@ -74,7 +74,7 @@ export default async function HomePage({
 
   const newsBlock = (
     <Suspense fallback={<HomeSectionSkeleton variant="news" />}>
-      <LatestNewsHero />
+      <LatestNewsHero viewerIsMember={isMember} />
     </Suspense>
   );
 

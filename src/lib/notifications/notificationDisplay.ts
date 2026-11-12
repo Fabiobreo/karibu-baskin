@@ -25,6 +25,8 @@ const CONTENT_FIELD: Record<AppNotificationType, "title" | "body"> = {
   MATCH_AVAILABILITY: "body",
   // "Nuovo suggerimento", "Lo staff ha risposto…": il titolo è il tipo, il contenuto è nel testo.
   SUGGESTION: "body",
+  // "Sono arrivate le foto": il titolo è il tipo, il titolo dell'album è nel testo.
+  ALBUM_PUBLISHED: "body",
   MATCH_RESULT: "title",
   LINK_REQUEST: "title",
   LINK_RESPONSE: "title",

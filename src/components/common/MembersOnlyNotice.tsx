@@ -6,7 +6,13 @@ import { useTranslations } from "next-intl";
 import { loginHref } from "@/lib/loginReturn";
 
 /** Cosa resta nascosto: decide la parola nella frase ("i nomi", "le squadre"…). */
-export type MembersOnlySubject = "names" | "teams" | "callups" | "albums" | "photos";
+export type MembersOnlySubject =
+  | "names"
+  | "teams"
+  | "callups"
+  | "albums"
+  | "photos"
+  | "photosShort";
 
 interface MembersOnlyNoticeProps {
   /** `anonymous` = senza accesso (gli si chiede di accedere); `guest` = account in attesa di conferma. */

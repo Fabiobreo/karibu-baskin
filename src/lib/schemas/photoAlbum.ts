@@ -25,6 +25,8 @@ export const AlbumCreateSchema = z
     permissionDeclared: z.literal(true, {
       message: "Serve il permesso di chi ha scattato le foto",
     }),
+    // "Avvisa le famiglie" (UX-57): spenta di default.
+    notify: z.boolean().default(false),
   })
   .refine(oneLink, { message: ONE_LINK_MESSAGE });
 

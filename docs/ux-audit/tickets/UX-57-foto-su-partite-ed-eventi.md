@@ -1,6 +1,6 @@
 # UX-57 · Foto su partite ed eventi, avviso "Sono arrivate le foto" (album fase 2)
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-52 · **Stato:** da fare
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-52 · **Stato:** fatto (11/11/2026)
 
 Richiesta del committente del 06/11/2026 (piano di engagement). Riprende due punti che UX-52 aveva lasciato fuori dalla fase 1: la fascia "Foto" sulle pagine di evento e partita, e la notifica alla pubblicazione.
 
@@ -62,3 +62,12 @@ Componente `AlbumStrip` in `@/components/gallery/` (Server Component, dati da un
 - La preferenza "Nuove foto" si spegne dal profilo e dal bottone "Silenzia" della notifica.
 - Con `DISABLE_NOTIFICATIONS=true` si prova il flusso senza avvisare nessuno.
 - Tema chiaro e scuro, telefono a 390 px, target da 44 px; `npx tsc --noEmit`, `npm test`, `npm run a11y` verdi.
+
+## Com'è stato fatto (11/11/2026)
+
+- **Fascia "Foto"**: `AlbumStrip` (`@/components/gallery/AlbumStrip`) con i dati di `loadLinkedAlbums` (`@/lib/gallery/albums`). Sulla partita sta in cima alla colonna del contenuto, sotto l'intestazione con il tabellino; sull'evento dopo la descrizione. A chi non può vedere un album riservato arriva solo il numero delle foto ("Ci sono 84 foto di questa partita.") con l'avviso di `MembersOnlyNotice`: niente titolo, slug né id di foto. La parola "tesserati" non compare in pagina, come in tutti gli avvisi pubblici.
+- **`?foto=<id>`** sulla pagina dell'album: apre il lightbox su quella foto e la pagina che la contiene, poi l'indirizzo torna quello dell'album (indietro e condivisione non riaprono la foto). Alla chiusura il fuoco va sulla miniatura.
+- **Avviso**: `ALBUM_PUBLISHED` (migration `20261111180000_album_notify`, con `PhotoAlbum.lastNotifiedAt`), testi e invio in `@/lib/gallery/albumNotify` (titolo "Sono arrivate le foto", promemoria "Hai visto le foto?", testo "<album> · 84 foto"). **A chi arriva, deciso con il committente:** a tutti i tesserati (`MEMBER_APP_ROLES`), anche per un album pubblico, con la preferenza "Nuove foto" che vale per tutti: i convocati e chi va a un evento sono già tesserati, e chi spegne "Nuove foto" non riceve più niente. Il "fotografo nel testo" è rimasto fuori: non è salvato da nessuna parte (eventualmente un campo dell'album, più avanti).
+- **Quando**: spunta "Avvisa le famiglie" nel modulo del nuovo album, spenta, disattivata se la data è di più di un mese fa (`canNotifyAlbum` in `renotifyRules.ts`, controllata anche dall'API); "Avvisa le famiglie…" / "Avvisa di nuovo…" nel "⋯" della riga (`POST /api/albums/[id]/notify`, dieci minuti fra due avvisi). "Aggiorna" e il cron non avvisano. Audit: `notified` in `CREATE_ALBUM`, `SEND_NOTIFICATION` per gli avvisi manuali.
+- **Preferenza** "Nuove foto" in `CONTROLLABLE_TYPES` e nei `MUTABLE_TYPES` del service worker (`karibu-v15`).
+- **Home**: la riga `HomeAlbumRow` sta nella sezione news, sotto "Tutte le news" (`loadHomeAlbum`, in cache per richiesta, letta nello stesso `Promise.all` delle news). Se non ci sono news compare da sola.

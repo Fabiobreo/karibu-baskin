@@ -3,6 +3,8 @@ import { isPublicTeam } from "@/lib/matches/mixedTeam";
 import JsonLd from "@/components/common/JsonLd";
 import { sportsEventJsonLd } from "@/lib/structuredData";
 import { isMemberRole } from "@/lib/authRoles";
+import { loadLinkedAlbums } from "@/lib/gallery/albums";
+import AlbumStrip from "@/components/gallery/AlbumStrip";
 import { publicSubjects } from "@/lib/minors";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { auth } from "@/lib/authjs";
@@ -372,54 +374,62 @@ export default async function MatchDetailPage({ params }: Props) {
   // Figli di chi guarda (e la sua scheda): nella distinta le loro righe hanno
   // l'etichetta "Famiglia". Solo per i tesserati, che vedono i convocati.
   const viewerId = viewerIsMember ? (session?.user?.id ?? null) : null;
-  const [prevMatchesRaw, ourGroupMatchesRaw, groupMatchesRaw, availabilityEntities, family] =
-    await Promise.all([
-      opponentWhere
-        ? prisma.match.findMany({
-            where: { id: { not: match.id }, teamId: match.team.id, ...opponentWhere },
-            select: {
-              id: true,
-              slug: true,
-              date: true,
-              ourScore: true,
-              theirScore: true,
-              result: true,
-              isHome: true,
-            },
-            orderBy: { date: "desc" },
-            take: 5,
-          })
-        : Promise.resolve([]),
-      match.groupId
-        ? prisma.match.findMany({
-            where: { groupId: match.groupId, teamId: match.team.id },
-            select: {
-              ourScore: true,
-              theirScore: true,
-              teamId: true,
-              opponent: { select: { id: true, name: true } },
-            },
-          })
-        : Promise.resolve([]),
-      match.groupId
-        ? prisma.groupMatch.findMany({
-            where: { groupId: match.groupId },
-            select: {
-              homeScore: true,
-              awayScore: true,
-              homeTeam: { select: { id: true, name: true } },
-              awayTeam: { select: { id: true, name: true } },
-            },
-          })
-        : Promise.resolve([]),
-      loadAvailabilityEntities(),
-      viewerId
-        ? prisma.child.findMany({
-            where: { OR: [guardianOf(viewerId), { userId: viewerId }] },
-            select: { id: true, userId: true },
-          })
-        : Promise.resolve([]),
-    ]);
+  const [
+    prevMatchesRaw,
+    ourGroupMatchesRaw,
+    groupMatchesRaw,
+    availabilityEntities,
+    family,
+    linkedAlbums,
+  ] = await Promise.all([
+    opponentWhere
+      ? prisma.match.findMany({
+          where: { id: { not: match.id }, teamId: match.team.id, ...opponentWhere },
+          select: {
+            id: true,
+            slug: true,
+            date: true,
+            ourScore: true,
+            theirScore: true,
+            result: true,
+            isHome: true,
+          },
+          orderBy: { date: "desc" },
+          take: 5,
+        })
+      : Promise.resolve([]),
+    match.groupId
+      ? prisma.match.findMany({
+          where: { groupId: match.groupId, teamId: match.team.id },
+          select: {
+            ourScore: true,
+            theirScore: true,
+            teamId: true,
+            opponent: { select: { id: true, name: true } },
+          },
+        })
+      : Promise.resolve([]),
+    match.groupId
+      ? prisma.groupMatch.findMany({
+          where: { groupId: match.groupId },
+          select: {
+            homeScore: true,
+            awayScore: true,
+            homeTeam: { select: { id: true, name: true } },
+            awayTeam: { select: { id: true, name: true } },
+          },
+        })
+      : Promise.resolve([]),
+    loadAvailabilityEntities(),
+    viewerId
+      ? prisma.child.findMany({
+          where: { OR: [guardianOf(viewerId), { userId: viewerId }] },
+          select: { id: true, userId: true },
+        })
+      : Promise.resolve([]),
+    // Fascia "Foto" (UX-57): gli album collegati a questa partita.
+    loadLinkedAlbums({ matchId: match.id }, viewerIsMember),
+  ]);
   const callupViewer = viewerId
     ? {
         userId: viewerId,
@@ -898,6 +908,16 @@ export default async function MatchDetailPage({ params }: Props) {
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
+          {linkedAlbums.length > 0 && (
+            <Box sx={{ mb: { xs: 4, md: 5 } }}>
+              <AlbumStrip
+                albums={linkedAlbums}
+                of="match"
+                viewer={viewerIsMember ? "member" : session?.user ? "guest" : "anonymous"}
+                returnTo={`/partite/${match.slug ?? match.id}`}
+              />
+            </Box>
+          )}
           {showWhereWhenBlock && (
             <Box sx={{ mb: publicPreview ? 2 : { xs: 3, md: 4 } }}>
               <MatchWhereWhen

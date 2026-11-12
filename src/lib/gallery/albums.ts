@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { Prisma, type AlbumVisibility } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 import { DriveError, listDriveFolder, type DriveFolderListing } from "./drive";
-import { planPhotoSync } from "./albumRules";
+import { canSeeAlbum, LISTED_ALBUM_WHERE, planPhotoSync, visibleAlbumWhere } from "./albumRules";
 
 /**
  * Album foto da cartelle Google Drive (UX-52): scritture e letture condivise
@@ -39,15 +40,21 @@ export interface AlbumCard {
   driveFolderId: string;
   syncedAt: string;
   unreachableAt: string | null;
+  /** Ultimo avviso "Sono arrivate le foto"; null = mai avvisato. */
+  lastNotifiedAt: string | null;
   eventId: string | null;
   matchId: string | null;
   /** File Drive della copertina; null se non c'è nessuna foto visibile. */
   coverFileId: string | null;
 }
 
-export async function loadAlbumCards(where: Prisma.PhotoAlbumWhereInput): Promise<AlbumCard[]> {
+export async function loadAlbumCards(
+  where: Prisma.PhotoAlbumWhereInput,
+  take?: number
+): Promise<AlbumCard[]> {
   const albums = await prisma.photoAlbum.findMany({
     where,
+    take,
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
     select: {
       id: true,
@@ -60,6 +67,7 @@ export async function loadAlbumCards(where: Prisma.PhotoAlbumWhereInput): Promis
       driveFolderId: true,
       syncedAt: true,
       unreachableAt: true,
+      lastNotifiedAt: true,
       eventId: true,
       matchId: true,
       coverPhotoId: true,
@@ -95,6 +103,7 @@ export async function loadAlbumCards(where: Prisma.PhotoAlbumWhereInput): Promis
     driveFolderId: a.driveFolderId,
     syncedAt: a.syncedAt.toISOString(),
     unreachableAt: a.unreachableAt?.toISOString() ?? null,
+    lastNotifiedAt: a.lastNotifiedAt?.toISOString() ?? null,
     eventId: a.eventId,
     matchId: a.matchId,
     coverFileId:
@@ -317,3 +326,104 @@ export async function syncRecentAlbums({
   }
   return result;
 }
+
+// ── Album collegati a una partita o a un evento (UX-57) ───────────────────────
+
+/** Miniature della fascia "Foto": 4 su desktop, 2 su telefono. */
+export const LINKED_ALBUM_THUMBS = 4;
+
+export interface LinkedAlbumPhoto {
+  id: string;
+  driveFileId: string;
+  width: number;
+  height: number;
+}
+
+export type LinkedAlbum =
+  | {
+      canSee: true;
+      id: string;
+      slug: string;
+      title: string;
+      photoCount: number;
+      photos: LinkedAlbumPhoto[];
+    }
+  /**
+   * Album "Solo tesserati" per chi non lo è: si sa solo che c'è. Niente slug,
+   * titolo né foto, come nella pagina dell'album.
+   */
+  | { canSee: false; id: string; photoCount: number };
+
+/**
+ * Gli album sul sito collegati a una partita o a un evento, dal più vecchio:
+ * con due fotografi l'ordine resta quello in cui sono usciti. Le foto si
+ * leggono solo per chi può vedere l'album.
+ */
+export async function loadLinkedAlbums(
+  link: { matchId: string } | { eventId: string },
+  viewerIsMember: boolean
+): Promise<LinkedAlbum[]> {
+  const albums = await prisma.photoAlbum.findMany({
+    where: { ...link, ...LISTED_ALBUM_WHERE },
+    orderBy: [{ date: "asc" }, { createdAt: "asc" }],
+    select: { id: true, slug: true, title: true, photoCount: true, visibility: true },
+  });
+  return Promise.all(
+    albums.map(async (album): Promise<LinkedAlbum> => {
+      if (!canSeeAlbum(album.visibility, viewerIsMember)) {
+        return { canSee: false, id: album.id, photoCount: album.photoCount };
+      }
+      const photos = await prisma.albumPhoto.findMany({
+        where: { albumId: album.id, hidden: false },
+        orderBy: { position: "asc" },
+        take: LINKED_ALBUM_THUMBS,
+        select: { id: true, driveFileId: true, width: true, height: true },
+      });
+      return {
+        canSee: true,
+        id: album.id,
+        slug: album.slug,
+        title: album.title,
+        photoCount: album.photoCount,
+        photos,
+      };
+    })
+  );
+}
+
+// ── Ultimo album in home (UX-57) ──────────────────────────────────────────────
+
+/** Un album resta "nuovo" in home per due settimane. */
+export const HOME_ALBUM_DAYS = 14;
+
+export interface HomeAlbum {
+  slug: string;
+  title: string;
+  date: string;
+  photoCount: number;
+  coverFileId: string | null;
+}
+
+/**
+ * L'album più recente che chi guarda può aprire, uscito da non più di 14
+ * giorni (per data dell'album o, se lo staff l'ha pubblicato dopo, per data di
+ * creazione). In cache per richiesta.
+ */
+export const loadHomeAlbum = cache(async (viewerIsMember: boolean): Promise<HomeAlbum | null> => {
+  const since = new Date(Date.now() - HOME_ALBUM_DAYS * 24 * 60 * 60 * 1000);
+  const [card] = await loadAlbumCards(
+    {
+      ...visibleAlbumWhere(viewerIsMember),
+      OR: [{ date: { gte: since } }, { createdAt: { gte: since } }],
+    },
+    1
+  );
+  if (!card) return null;
+  return {
+    slug: card.slug,
+    title: card.title,
+    date: card.date,
+    photoCount: card.photoCount,
+    coverFileId: card.coverFileId,
+  };
+});

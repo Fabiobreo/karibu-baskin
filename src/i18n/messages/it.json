@@ -90,7 +90,9 @@
     "MATCH_RESULT": "Risultato partita",
     "MATCH_RESULT_desc": "Quando viene inserito il risultato di una partita",
     "NEW_POST": "Nuova news o nuovo sondaggio",
-    "NEW_POST_desc": "Quando viene pubblicato un articolo o un sondaggio nella bacheca"
+    "NEW_POST_desc": "Quando viene pubblicato un articolo o un sondaggio nella bacheca",
+    "ALBUM_PUBLISHED": "Nuove foto",
+    "ALBUM_PUBLISHED_desc": "Quando escono le foto di una partita o di un evento"
   },
   "notifPanel": {
     "pushTitle": "Notifiche su questo dispositivo",
@@ -1776,8 +1778,18 @@
       "teams": "le squadre",
       "callups": "i convocati",
       "albums": "gli altri album",
-      "photos": "le foto di questo album"
+      "photos": "le foto di questo album",
+      "photosShort": "le foto"
     }
+  },
+  "albumStrip": {
+    "title": "Foto",
+    "seeAll": "{count, plural, one {Guarda la foto} other {Guarda tutte le # foto}}",
+    "photoAlt": "Foto {index} di {total}: {title}",
+    "hiddenMatch": "{count, plural, one {C'è una foto di questa partita.} other {Ci sono # foto di questa partita.}}",
+    "hiddenEvent": "{count, plural, one {C'è una foto di questo evento.} other {Ci sono # foto di questo evento.}}",
+    "homeEyebrow": "Nuove foto",
+    "homeMeta": "{count, plural, one {# foto} other {# foto}} · {day}"
   },
   "imageUploader": {
     "tooLarge": "Il file supera il limite di 5 MB.",

@@ -27,3 +27,18 @@ export function canNotifyCallups(
 ): boolean {
   return callupCount > 0 && new Date(matchDate).getTime() > now;
 }
+
+/**
+ * Un album si annuncia ("Sono arrivate le foto", UX-57) solo se è recente: la
+ * sua data non è più vecchia di un mese. Vale per il primo avviso e per
+ * "Avvisa di nuovo".
+ */
+export const ALBUM_NOTIFY_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+export function canNotifyAlbum(
+  album: { date: string | Date; unreachableAt: string | Date | null; photoCount: number },
+  now: number
+): boolean {
+  if (album.unreachableAt || album.photoCount === 0) return false;
+  return now - new Date(album.date).getTime() <= ALBUM_NOTIFY_MAX_AGE_MS;
+}
