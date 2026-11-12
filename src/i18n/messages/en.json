@@ -14,7 +14,11 @@
     "registeredAction": "Open the training session",
     "allSetTitle": "You are all set",
     "allSetBody": "Nothing to do for now: we will let you know when sign-ups open.",
-    "allSetAction": "See the calendar"
+    "allSetAction": "See the calendar",
+    "seasonRecapTitle": "Your {season} season is ready",
+    "seasonRecapTitleChild": "{name}'s {season} season is ready",
+    "seasonRecapBody": "Training, matches and achievements, one by one. To look at and to share.",
+    "seasonRecapAction": "See the season"
   },
   "footer": {
     "sponsorsTitle": "Our sponsors",
@@ -1282,6 +1286,7 @@
         "LINK_REQUEST": "Family",
         "LINK_RESPONSE": "Family",
         "BIRTHDAY": "Birthday",
+        "SEASON_RECAP": "Your season",
         "SYSTEM": "Notice"
       },
       "opens": "Open",
@@ -1859,5 +1864,84 @@
     "msgOther": "{name} reached the achievement \"{badge}\" {emoji} with Karibu Baskin!",
     "minorNote": "You are sharing {name}'s name. Only send the image to people you know.",
     "error": "Image not created. Try again."
+  },
+  "seasonRecap": {
+    "title": "Your {season} season",
+    "titleOther": "{name}'s {season} season",
+    "subtitle": "How it went, one by one.",
+    "breadcrumbProfile": "My profile",
+    "previewBanner": "Staff preview: this season's recaps are not published yet, so nobody else can see this page.",
+    "forWhom": "Whose season",
+    "forSelf": "You",
+    "empty": {
+      "title": "Nothing to tell, for now",
+      "text": "The recap is built from the attendance taken at training and from match stats: there are none for this season."
+    },
+    "intro": {
+      "kicker": "{season} season",
+      "teams": "With {teams}",
+      "noTeam": "With Karibu Baskin"
+    },
+    "trainings": {
+      "title": "Training",
+      "count": "{count, plural, one {training session with us} other {training sessions with us}}",
+      "tone_always": "Almost always in the gym: {attended} out of {total}!",
+      "tone_steady": "{attended} out of {total}: great consistency.",
+      "tone_lots": "A season in the gym, one session after another.",
+      "tone_some": "Every session is a step forward."
+    },
+    "matches": {
+      "title": "Matches",
+      "count": "{count, plural, one {match played} other {matches played}}",
+      "points": "{count, plural, =0 {Every match in the Karibu shirt counts.} one {and # point scored} other {and # points scored}}"
+    },
+    "best": {
+      "title": "{who, select, self {Your best match} other {Best match}}",
+      "points": "{count, plural, one {# point} other {# points}}",
+      "lineVs": "Against {opponent}, on {date}.",
+      "line": "On {date}."
+    },
+    "mvp": {
+      "title": "MVP",
+      "count": "{count, plural, one {Once} other {# times}}",
+      "line": "Player of the match, chosen by the coaches."
+    },
+    "badges": {
+      "title": "Achievements",
+      "count": "{count, plural, one {new achievement this year} other {new achievements this year}}"
+    },
+    "club": {
+      "title": "Together this year",
+      "line": "All of Karibu Baskin, {season} season:",
+      "trainings": "{count, plural, one {training session} other {training sessions}}",
+      "matches": "{count, plural, one {match} other {matches}}",
+      "points": "{count, plural, one {point scored} other {points scored}}"
+    },
+    "share": {
+      "title": "{who, select, self {Share your season} other {Share their season}}",
+      "intro": "An image for stories and WhatsApp status, with the first name and three numbers.",
+      "button": "Share",
+      "sharing": "Preparing the image...",
+      "subject": "{season} season",
+      "msgSelf": "My {season} season with Karibu Baskin 🏀",
+      "msgOther": "{name}'s {season} season with Karibu Baskin 🏀",
+      "hint": "The link goes to the club website, not to this page, which stays private.",
+      "error": "Image not created. Try again."
+    },
+    "image": {
+      "kicker": "My {season} season",
+      "trainings": "{count, plural, one {training} other {trainings}}",
+      "matches": "{count, plural, one {match} other {matches}}",
+      "points": "{count, plural, one {point} other {points}}",
+      "badges": "{count, plural, one {achievement} other {achievements}}"
+    },
+    "profileCard": {
+      "title": "Your {season} season is ready",
+      "titleOther": "{name}'s {season} season is ready",
+      "text": "Training, matches and achievements, one by one.",
+      "cta": "Take a look",
+      "listTitle": "Your seasons",
+      "listItem": "{season} season"
+    }
   }
 }

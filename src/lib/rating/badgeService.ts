@@ -32,8 +32,6 @@ export type PlayerRef =
  */
 export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
   const where = ref.userId ? { userId: ref.userId } : { childId: ref.childId };
-  const playerKey = ref.userId ? `u:${ref.userId}` : `c:${ref.childId}`;
-
   const [rawStats, mvpCount, memberships, sportRole, trainings, currentSeason] = await Promise.all([
     prisma.playerMatchStats.findMany({
       where,
@@ -79,11 +77,33 @@ export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
     season: s.match.team.season,
   }));
 
+  const topScorerCount = (await topScorerSeasons(ref, sportRole, memberships)).length;
+
+  return { matchStats, trainings, currentSeason, mvpCount, topScorerCount, sportRole };
+}
+
+/**
+ * Stagioni in cui il giocatore è stato il 1° marcatore del proprio ruolo in una
+ * sua squadra (una voce per squadra): il traguardo "Top scorer" e, per il
+ * riepilogo di fine stagione (UX-60), la stagione in cui è arrivato.
+ */
+export async function topScorerSeasons(
+  ref: PlayerRef,
+  sportRole: number | null,
+  memberships?: { team: { id: string; season: string } }[]
+): Promise<string[]> {
+  const playerKey = ref.userId ? `u:${ref.userId}` : `c:${ref.childId}`;
+  if (!memberships) {
+    memberships = await prisma.teamMembership.findMany({
+      where: ref.userId ? { userId: ref.userId } : { childId: ref.childId },
+      select: { team: { select: { id: true, season: true } } },
+    });
+  }
   // topScorerCount: per ogni (squadra, stagione) di cui il giocatore è membro,
   // verifica se è il 1° marcatore DEL PROPRIO RUOLO (prestiti esclusi). Il
   // confronto è limitato ai giocatori dello stesso ruolo Baskin: paragonare i
   // punti tra ruoli diversi (R1 vs R5) non sarebbe equo.
-  let topScorerCount = 0;
+  const seasons: string[] = [];
   const pairs = memberships.map((m) => ({ teamId: m.team.id, season: m.team.season }));
   if (pairs.length > 0 && sportRole != null) {
     const relevant = await prisma.playerMatchStats.findMany({
@@ -129,21 +149,23 @@ export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
       agg.set(key, (agg.get(key) ?? 0) + s.points);
     }
     // Trova il massimo per ciascun (teamId, season) e conta i primati del giocatore
-    const maxByTeamSeason = new Map<string, { points: number; playerKey: string }>();
+    const maxByTeamSeason = new Map<
+      string,
+      { points: number; playerKey: string; season: string }
+    >();
     for (const [key, points] of agg) {
       const [teamId, season, pk] = key.split("::");
       const ts = `${teamId}::${season}`;
       const cur = maxByTeamSeason.get(ts);
       if (points > 0 && (!cur || points > cur.points)) {
-        maxByTeamSeason.set(ts, { points, playerKey: pk });
+        maxByTeamSeason.set(ts, { points, playerKey: pk, season });
       }
     }
     for (const top of maxByTeamSeason.values()) {
-      if (top.playerKey === playerKey) topScorerCount += 1;
+      if (top.playerKey === playerKey) seasons.push(top.season);
     }
   }
-
-  return { matchStats, trainings, currentSeason, mvpCount, topScorerCount, sportRole };
+  return seasons;
 }
 
 /**

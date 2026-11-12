@@ -32,6 +32,8 @@ const CONTENT_FIELD: Record<AppNotificationType, "title" | "body"> = {
   LINK_RESPONSE: "title",
   BIRTHDAY: "title",
   SYSTEM: "title",
+  // "La tua stagione 2026-27 è pronta" (UX-60): il titolo è già il contenuto.
+  SEASON_RECAP: "title",
 };
 
 /**
@@ -48,6 +50,7 @@ const LABELLED_TYPES = [
   "LINK_REQUEST",
   "LINK_RESPONSE",
   "BIRTHDAY",
+  "SEASON_RECAP",
 ] as const;
 export type NotificationTypeLabelKey = (typeof LABELLED_TYPES)[number] | "SYSTEM";
 

@@ -20,6 +20,7 @@ export const SHARE_CAMPAIGNS = [
   "album",
   "profilo",
   "traguardo",
+  "stagione",
 ] as const;
 export type ShareCampaign = (typeof SHARE_CAMPAIGNS)[number];
 

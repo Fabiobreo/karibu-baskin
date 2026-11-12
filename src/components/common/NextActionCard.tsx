@@ -5,10 +5,12 @@ import FamilyTeamChips from "@/components/training/FamilyTeamChips";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 import PlaceIcon from "@mui/icons-material/Place";
 import { useLocale, useTranslations } from "next-intl";
 import type { ActionSession, NextAction } from "@/lib/nextAction";
 import { trainingLocation } from "@/lib/clubVenue";
+import { recapPath } from "@/lib/season/recapPaths";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -83,6 +85,18 @@ export default function NextActionCard({ action }: NextActionCardProps) {
       cta = { label: t("registeredAction"), href: action.session.href, primary: false };
       break;
     }
+    case "seasonRecap":
+      icon = <CelebrationIcon />;
+      title = action.childId
+        ? t("seasonRecapTitleChild", { season: action.season, name: action.firstName })
+        : t("seasonRecapTitle", { season: action.season });
+      body = t("seasonRecapBody");
+      cta = {
+        label: t("seasonRecapAction"),
+        href: recapPath(action.season, action.childId),
+        primary: true,
+      };
+      break;
     case "allSet":
       title = t("allSetTitle");
       body = t("allSetBody");

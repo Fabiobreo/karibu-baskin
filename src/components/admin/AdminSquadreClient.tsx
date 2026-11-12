@@ -53,6 +53,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { TEAM_LABEL } from "@/lib/palette";
 import RowActions, { type RowAction } from "@/components/admin/RowActions";
 import { teamMenuEntries } from "@/lib/adminRowActions";
+import SeasonRecapPublishPanel from "@/components/admin/SeasonRecapPublishPanel";
 import { useToast } from "@/context/ToastContext";
 import { TOUCH_CHIP_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
@@ -100,7 +101,7 @@ type Team = {
   _count: { memberships: number; matches: number };
 };
 
-type SeasonRecord = { label: string; isCurrent: boolean };
+type SeasonRecord = { label: string; isCurrent: boolean; recapPublishedAt?: Date | string | null };
 type Props = {
   teams: Team[];
   /** Le Karibu di stagione gia' create (una per stagione, al massimo). */
@@ -188,6 +189,20 @@ export default function AdminSquadreClient({
         )
     );
     setSettingCurrent(false);
+    // "La tua stagione" (UX-60): la stagione lasciata va chiusa a mano.
+    const left = seasons.find((s) => s.isCurrent && s.label < activeSeason);
+    if (isAdmin && left && !left.recapPublishedAt) {
+      showToast({
+        message: `Ricorda di pubblicare i riepiloghi della stagione ${left.label}`,
+        severity: "info",
+      });
+    }
+  }
+
+  function handleRecapChange(season: string, publishedAt: string | null) {
+    setSeasons((prev) =>
+      prev.map((s) => (s.label === season ? { ...s, recapPublishedAt: publishedAt } : s))
+    );
   }
 
   // Dialog nuova stagione
@@ -502,6 +517,19 @@ export default function AdminSquadreClient({
           )}
         </Box>
       </Box>
+
+      {/* "La tua stagione" (UX-60): riepiloghi personali, per le stagioni che esistono a database. */}
+      {!readOnly && seasons.some((s) => s.label === activeSeason) && (
+        <SeasonRecapPublishPanel
+          season={activeSeason}
+          publishedAt={(() => {
+            const at = seasons.find((s) => s.label === activeSeason)?.recapPublishedAt;
+            return at ? new Date(at).toISOString() : null;
+          })()}
+          isAdmin={isAdmin}
+          onChange={handleRecapChange}
+        />
+      )}
 
       {/* Stagione a squadra unica: il club gioca il campionato come Karibu */}
       {activeSeason && (

@@ -14,7 +14,11 @@
     "registeredAction": "Apri l'allenamento",
     "allSetTitle": "Sei a posto",
     "allSetBody": "Per ora non c'è niente da fare: ti avvisiamo quando si aprono le iscrizioni.",
-    "allSetAction": "Vedi il calendario"
+    "allSetAction": "Vedi il calendario",
+    "seasonRecapTitle": "La tua stagione {season} è pronta",
+    "seasonRecapTitleChild": "La stagione {season} di {name} è pronta",
+    "seasonRecapBody": "Allenamenti, partite e traguardi, voce per voce. Da guardare e da condividere.",
+    "seasonRecapAction": "Guarda la stagione"
   },
   "footer": {
     "sponsorsTitle": "I nostri sponsor",
@@ -1282,6 +1286,7 @@
         "LINK_REQUEST": "Famiglia",
         "LINK_RESPONSE": "Famiglia",
         "BIRTHDAY": "Compleanno",
+        "SEASON_RECAP": "La tua stagione",
         "SYSTEM": "Avviso"
       },
       "opens": "Apri",
@@ -1859,5 +1864,84 @@
     "msgOther": "{name} ha raggiunto il traguardo \"{badge}\" {emoji} con il Karibu Baskin!",
     "minorNote": "Stai condividendo il nome di {name}. Manda l'immagine solo a chi conosci.",
     "error": "Immagine non creata. Riprova."
+  },
+  "seasonRecap": {
+    "title": "La tua stagione {season}",
+    "titleOther": "La stagione {season} di {name}",
+    "subtitle": "Com'è andata, voce per voce.",
+    "breadcrumbProfile": "Il mio profilo",
+    "previewBanner": "Anteprima per lo staff: i riepiloghi di questa stagione non sono ancora pubblicati, quindi nessun altro vede questa pagina.",
+    "forWhom": "Di chi è la stagione",
+    "forSelf": "Tu",
+    "empty": {
+      "title": "Niente da raccontare, per ora",
+      "text": "Il riepilogo nasce dalle presenze segnate agli allenamenti e dalle statistiche delle partite: per questa stagione non ce ne sono."
+    },
+    "intro": {
+      "kicker": "Stagione {season}",
+      "teams": "Con {teams}",
+      "noTeam": "Con il Karibu Baskin"
+    },
+    "trainings": {
+      "title": "Allenamenti",
+      "count": "{count, plural, one {allenamento con noi} other {allenamenti con noi}}",
+      "tone_always": "Quasi sempre in palestra: {attended} su {total}!",
+      "tone_steady": "{attended} su {total}: una bella costanza.",
+      "tone_lots": "Una stagione in palestra, un allenamento dopo l'altro.",
+      "tone_some": "Ogni allenamento è un passo avanti."
+    },
+    "matches": {
+      "title": "Partite",
+      "count": "{count, plural, one {partita giocata} other {partite giocate}}",
+      "points": "{count, plural, =0 {Ogni partita con la maglia del Karibu conta.} one {e # punto segnato} other {e # punti segnati}}"
+    },
+    "best": {
+      "title": "{who, select, self {La tua partita più bella} other {La partita più bella}}",
+      "points": "{count, plural, one {# punto} other {# punti}}",
+      "lineVs": "Contro {opponent}, il {date}.",
+      "line": "Il {date}."
+    },
+    "mvp": {
+      "title": "MVP",
+      "count": "{count, plural, one {Una volta} other {# volte}}",
+      "line": "Migliore in campo, secondo gli allenatori."
+    },
+    "badges": {
+      "title": "Traguardi",
+      "count": "{count, plural, one {traguardo nuovo quest'anno} other {traguardi nuovi quest'anno}}"
+    },
+    "club": {
+      "title": "Insieme quest'anno",
+      "line": "Tutto il Karibu Baskin, stagione {season}:",
+      "trainings": "{count, plural, one {allenamento} other {allenamenti}}",
+      "matches": "{count, plural, one {partita} other {partite}}",
+      "points": "{count, plural, one {punto segnato} other {punti segnati}}"
+    },
+    "share": {
+      "title": "{who, select, self {Condividi la tua stagione} other {Condividi la sua stagione}}",
+      "intro": "Un'immagine per le storie e lo stato di WhatsApp, con il nome di battesimo e tre numeri.",
+      "button": "Condividi",
+      "sharing": "Preparo l'immagine...",
+      "subject": "Stagione {season}",
+      "msgSelf": "La mia stagione {season} con il Karibu Baskin 🏀",
+      "msgOther": "La stagione {season} di {name} con il Karibu Baskin 🏀",
+      "hint": "Il link porta al sito del club, non a questa pagina, che resta privata.",
+      "error": "Immagine non creata. Riprova."
+    },
+    "image": {
+      "kicker": "La mia stagione {season}",
+      "trainings": "{count, plural, one {allenamento} other {allenamenti}}",
+      "matches": "{count, plural, one {partita} other {partite}}",
+      "points": "{count, plural, one {punto} other {punti}}",
+      "badges": "{count, plural, one {traguardo} other {traguardi}}"
+    },
+    "profileCard": {
+      "title": "La tua stagione {season} è pronta",
+      "titleOther": "La stagione {season} di {name} è pronta",
+      "text": "Allenamenti, partite e traguardi, voce per voce.",
+      "cta": "Guarda",
+      "listTitle": "Le tue stagioni",
+      "listItem": "Stagione {season}"
+    }
   }
 }

@@ -362,6 +362,9 @@ model Season {
   label     String   @id // es. "2025-26"
   isCurrent Boolean  @default(false)
   createdAt DateTime @default(now())
+  // "La tua stagione" (UX-60): quando l'admin ha pubblicato i riepiloghi
+  // personali. Null = non ancora: la pagina del riepilogo risponde 404.
+  recapPublishedAt DateTime?
 }
 
 model CompetitiveTeam {
@@ -715,6 +718,7 @@ enum AppNotificationType {
   MATCH_AVAILABILITY // disponibilità segnata dallo staff, o un convocato che dice di no
   SUGGESTION // suggerimento nuovo o nota/risposta su un suggerimento
   ALBUM_PUBLISHED // "Sono arrivate le foto": album nuovo, avviso facoltativo dello staff (UX-57)
+  SEASON_RECAP // "La tua stagione è pronta": riepiloghi di fine stagione pubblicati (UX-60)
 }
 
 // Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione

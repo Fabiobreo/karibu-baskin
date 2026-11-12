@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { splitOwnChild } from "@/lib/registrationSubjects";
 import { prisma } from "@/lib/db";
+import { loadRecapLinks } from "@/lib/season/loadSeasonRecap";
 import { followedInNextAction, guardianOf } from "@/lib/guardians";
 import { familyTeams, type FamilyTeam } from "@/lib/trainingTeams";
 import { parseTeamsData } from "@/lib/schemas";
@@ -34,6 +35,14 @@ export type NextAction =
       self: boolean;
       /** Squadre gia' fatte: in quale sta ciascuno (vuoto se non ci sono). */
       teams?: FamilyTeam[];
+    }
+  | {
+      /** "La tua stagione è pronta" (UX-60): al posto di "Sei a posto", per 30 giorni. */
+      kind: "seasonRecap";
+      season: string;
+      /** Null = il proprio; altrimenti il primo figlio con dei dati. */
+      childId: string | null;
+      firstName: string;
     }
   | { kind: "allSet" };
 
@@ -259,7 +268,7 @@ export const loadNextAction = cache(async function loadNextAction(
     location: s.location,
   });
 
-  return pickNextAction({
+  const action = pickNextAction({
     appRole,
     pendingAvailabilities: pending,
     subjects,
@@ -292,4 +301,16 @@ export const loadNextAction = cache(async function loadNextAction(
         }
       : null,
   });
+  if (action.kind !== "allSet") return action;
+  // Niente di più urgente: se c'è un riepilogo di fine stagione appena uscito, è lui.
+  const fresh = (await loadRecapLinks(userId)).find((r) => r.fresh);
+  const person = fresh?.people[0];
+  return fresh && person
+    ? {
+        kind: "seasonRecap",
+        season: fresh.season,
+        childId: person.childId,
+        firstName: person.firstName,
+      }
+    : action;
 });

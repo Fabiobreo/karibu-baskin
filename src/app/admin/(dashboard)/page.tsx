@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
-import { Box, Typography, Paper, Chip } from "@mui/material";
+import { Alert, Box, Button, Typography, Paper, Chip } from "@mui/material";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
+import { countUnmarkedTrainings } from "@/lib/season/loadSeasonRecap";
 
 import PersonIcon from "@mui/icons-material/Person";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -46,6 +48,7 @@ export default async function AdminPage() {
     recentAnonymous,
     sessionsIncomplete,
     newSuggestionsCount,
+    unmarkedTrainings,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.findMany({
@@ -103,6 +106,8 @@ export default async function AdminPage() {
     }),
     // Suggerimenti nuovi (non ancora letti)
     prisma.suggestion.count({ where: { status: "NUOVO" } }),
+    // "La tua stagione" (UX-60): da aprile, gli allenamenti senza presenze segnate.
+    getCurrentSeasonLabel().then((season) => countUnmarkedTrainings(season, now)),
   ]);
 
   // Unisce utenti e figli, ordina per data e prende i 5 più recenti
@@ -128,6 +133,22 @@ export default async function AdminPage() {
         subtitle="Cosa richiede attenzione, e da dove si gestisce il resto."
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
       />
+
+      {unmarkedTrainings > 0 && (
+        <Alert
+          severity="warning"
+          action={
+            <Button color="inherit" size="small" href="/admin/allenamenti?sezione=da-completare">
+              Segna le presenze
+            </Button>
+          }
+        >
+          {unmarkedTrainings === 1
+            ? "C'è un allenamento di questa stagione senza presenze segnate."
+            : `Ci sono ${unmarkedTrainings} allenamenti di questa stagione senza presenze segnate.`}{" "}
+          A fine stagione il riepilogo &ldquo;La tua stagione&rdquo; di ognuno nasce dalle presenze.
+        </Alert>
+      )}
 
       {/* I due numeri che contano. Erano due card fra tredici identiche, e il
           "15 da completare" era scritto due volte nella stessa card. */}

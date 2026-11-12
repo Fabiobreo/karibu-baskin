@@ -146,7 +146,7 @@ export default [
   {
     // Eccezioni alla scala delle dimensioni (UX-31): qui il testo non passa dal
     // tema MUI. Email (i client non gestiscono bene i rem), immagini a
-    // dimensione fissa (Open Graph, tabellino, squadre, convocati e traguardi per
+    // dimensione fissa (Open Graph, tabellino, squadre, convocati, traguardi e stagione per
     // html2canvas): i px sono quelli del disegno. I pesi invece restano sulla scala (FONT_WEIGHT).
     files: [
       "src/emails/**",
@@ -155,6 +155,7 @@ export default [
       "src/components/training/ShareTeamsButton.tsx",
       "src/components/matches/CallupsShareCard.tsx",
       "src/components/rating/BadgeShareCard.tsx",
+      "src/components/profile/SeasonRecapShareCard.tsx",
     ],
     rules: {
       "no-restricted-syntax": [

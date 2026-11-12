@@ -50,6 +50,7 @@ import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 import ProfileBadges from "@/components/profile/ProfileBadges";
+import SeasonRecapLinks from "@/components/profile/SeasonRecapLinks";
 import { buildMetadata } from "@/lib/seo";
 import PageHeader from "@/components/common/PageHeader";
 import NextTrainingCard, {
@@ -518,6 +519,10 @@ export default async function ProfiloPage({
           )}
         </>
       )}
+      {/* "Le tue stagioni" (UX-60): solo con dei riepiloghi pubblicati. */}
+      <Suspense fallback={null}>
+        <SeasonRecapLinks userId={user.id} />
+      </Suspense>
       {claimCard}
 
       {isAthlete && (

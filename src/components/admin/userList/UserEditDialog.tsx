@@ -18,6 +18,7 @@ import {
 import HistoryIcon from "@mui/icons-material/History";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 import MergeIcon from "@mui/icons-material/Merge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -620,6 +621,14 @@ export default function UserEditDialog({
           sx={{ mr: "auto" }}
         >
           Profilo
+        </Button>
+        {/* "La tua stagione" (UX-60): lo staff controlla i numeri prima di pubblicare. */}
+        <Button
+          href={`/profilo/stagione/${currentSeason}?${row.kind === "user" ? "utente" : "per"}=${row.id}`}
+          target="_blank"
+          startIcon={<CelebrationIcon />}
+        >
+          Anteprima riepilogo
         </Button>
         <Button onClick={onClose}>Annulla</Button>
         <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>

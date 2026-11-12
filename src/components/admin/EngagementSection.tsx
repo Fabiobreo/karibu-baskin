@@ -45,6 +45,8 @@ const TYPE_LABEL: Record<string, string> = {
   MATCH_CALLUP: "Convocazioni",
   MATCH_AVAILABILITY: "Disponibilità",
   SUGGESTION: "Suggerimenti",
+  ALBUM_PUBLISHED: "Nuove foto",
+  SEASON_RECAP: "La tua stagione",
   TEST: "Notifica di prova",
 };
 
@@ -60,6 +62,7 @@ const SHARE_LABEL: Record<string, string> = {
   album: "Album foto",
   profilo: "Profilo giocatore",
   traguardo: "Immagine di un traguardo",
+  stagione: 'Immagine "La tua stagione"',
 };
 
 const dayMonth = new Intl.DateTimeFormat("it-IT", {

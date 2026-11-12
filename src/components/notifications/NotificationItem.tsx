@@ -14,6 +14,7 @@ import CakeIcon from "@mui/icons-material/Cake";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -52,6 +53,7 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "MATCH_CALLUP") return <HowToRegIcon fontSize="small" sx={ICON_SX} />;
   if (type === "MATCH_AVAILABILITY") return <EventAvailableIcon fontSize="small" sx={ICON_SX} />;
   if (type === "SUGGESTION") return <LightbulbIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "SEASON_RECAP") return <CelebrationIcon fontSize="small" sx={ICON_SX} />;
   return <NotificationsIcon fontSize="small" sx={ICON_SX} />;
 }
 
