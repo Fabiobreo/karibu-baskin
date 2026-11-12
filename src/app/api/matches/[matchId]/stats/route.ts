@@ -3,9 +3,7 @@ import { prisma } from "@/lib/db";
 import { isAdminUser, isMember } from "@/lib/apiAuth";
 import { publicSubjects } from "@/lib/minors";
 import { PlayerStatsBatchSchema, computePoints } from "@/lib/schemas";
-import { sendPushToUsers } from "@/lib/notifications/webpush";
-import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
-import { playerRecipientIds } from "@/lib/notifications/recipients";
+import { notifyMatchStats } from "@/lib/notifications/statsNotify";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
@@ -68,6 +66,17 @@ export async function PUT(req: Request, { params }: Params) {
   // Partita di oltre un mese fa: si sta inserendo lo storico, nessuno va avvisato.
   const notify = !isHistoricMatch(loanLookup.match.date, Date.now());
 
+  // Chi aveva già una riga: correggere le statistiche non avvisa di nuovo
+  // (UX-58), salvo un traguardo nuovo.
+  const existingRows = await prisma.playerMatchStats.findMany({
+    where: { matchId },
+    select: { userId: true, childId: true },
+  });
+  const hadRow = (s: { userId?: string | null; childId?: string | null }) =>
+    existingRows.some(
+      (r) => (s.userId && r.userId === s.userId) || (s.childId && r.childId === s.childId)
+    );
+
   // Upsert ogni riga
   const results = await Promise.all(
     body.map((s) => {
@@ -122,58 +131,78 @@ export async function PUT(req: Request, { params }: Params) {
     );
   }
 
-  // Sblocco badge dopo la risposta per ogni giocatore con stats aggiornate
+  // Dopo la risposta: badge e un avviso solo per persona (UX-58). I traguardi
+  // sbloccati da questo salvataggio non partono con un avviso loro: entrano
+  // in quello delle statistiche ("6 punti e un traguardo nuovo").
   if (saved.length > 0) {
-    for (const s of body) {
+    inBackground(
+      afterStatsSaved(matchId, body, { notify, hadRow }),
+      notify ? "badges and notification match stats" : "badges match stats"
+    );
+  }
+
+  return NextResponse.json(saved);
+}
+
+async function afterStatsSaved(
+  matchId: string,
+  rows: { userId?: string | null; childId?: string | null; points?: number | null }[],
+  opts: {
+    notify: boolean;
+    hadRow: (s: { userId?: string | null; childId?: string | null }) => boolean;
+  }
+): Promise<void> {
+  const players = await Promise.all(
+    rows.map(async (s) => {
       const ref = s.userId
         ? ({ userId: s.userId } as const)
         : s.childId
           ? ({ childId: s.childId } as const)
           : null;
-      if (ref) inBackground(reconcilePlayerBadges(ref, { notify }), "badges match stats");
+      if (!ref) return null;
+      const badgeIds = await reconcilePlayerBadges(ref, { notify: false }).catch((err) => {
+        console.error("[badges match stats]", err);
+        return [] as string[];
+      });
+      return { ...s, badgeIds };
+    })
+  );
+  if (!opts.notify) return;
+
+  // Solo chi entra per la prima volta nelle statistiche o sblocca un traguardo:
+  // agli altri la partita è già arrivata con il risultato.
+  const toNotify = players
+    .filter((p) => p !== null)
+    .filter((p) => !opts.hadRow(p) || p.badgeIds.length > 0);
+  if (toNotify.length === 0) return;
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: {
+      slug: true,
+      opponent: { select: { name: true } },
+      opponentTeam: { select: { name: true } },
+    },
+  });
+  if (!match) return;
+  const savedPoints = await prisma.playerMatchStats.findMany({
+    where: { matchId },
+    select: { userId: true, childId: true, points: true },
+  });
+  await notifyMatchStats(
+    toNotify.map((p) => ({
+      userId: p.userId,
+      childId: p.childId,
+      badgeIds: p.badgeIds,
+      points:
+        savedPoints.find(
+          (r) => (p.userId && r.userId === p.userId) || (p.childId && r.childId === p.childId)
+        )?.points ?? 0,
+    })),
+    {
+      opponentName: match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario",
+      // Ancora sulla sezione "Per te" della pagina partita.
+      url: `/partite/${match.slug ?? matchId}#per-te`,
     }
-  }
-
-  // Notifica push + in-app dopo la risposta, solo agli atleti con stats
-  if (saved.length > 0 && notify) {
-    // Push e in-app partono insieme; la catena finisce quando sono finiti
-    // entrambi, così `after()` tiene viva la funzione per tutti e due.
-    inBackground(
-      prisma.match
-        .findUnique({
-          where: { id: matchId },
-          select: {
-            team: { select: { name: true } },
-            opponent: { select: { name: true } },
-            opponentTeam: { select: { name: true } },
-            slug: true,
-          },
-        })
-        .then(async (match) => {
-          if (!match) return;
-          const title = "Statistiche disponibili";
-          const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
-          const text = `Le statistiche di ${match.team.name} vs ${opponentName} sono online.`;
-          const url = `/partite/${match.slug ?? matchId}`;
-          // Solo chi ha una riga di statistiche (per un figlio, i genitori):
-          // agli altri la partita è già arrivata con il risultato.
-          const ids = await playerRecipientIds(body);
-          const push = { title, body: text, url, type: "MATCH_RESULT" };
-          await Promise.all([
-            sendPushToUsers(ids, push, "MATCH_RESULT").catch((err) =>
-              console.error("[push match stats]", err)
-            ),
-            createTargetedAppNotifications(ids, {
-              title,
-              body: text,
-              url,
-              type: "MATCH_RESULT",
-            }).catch((err) => console.error("[notification match stats]", err)),
-          ]);
-        }),
-      "notification match stats"
-    );
-  }
-
-  return NextResponse.json(saved);
+  );
 }

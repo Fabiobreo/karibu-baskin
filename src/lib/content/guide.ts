@@ -215,6 +215,7 @@ const GUIDE_IT: Guide = {
             "Quando lo staff fa le convocazioni le risposte si chiudono: restano quelle date fino a quel momento, e chi non ha risposto resta senza risposta. Se poi c'è un problema, per esempio stai male, scrivi allo staff.",
             "Nella pagina della partita trovi «Dove e quando» e il bottone «Aggiungi al calendario».",
             "In «Partite» trovi anche risultati, classifiche e marcatori.",
+            "Dopo la partita, in cima alla sua pagina, «Per te» dice com'è andata a te e ai tuoi figli: punti e traguardi nuovi. Quando lo staff inserisce le statistiche ti arriva un avviso solo, con tutto dentro.",
           ],
           links: [
             { href: "/profilo/disponibilita", label: "Le mie disponibilità" },
@@ -477,6 +478,7 @@ const GUIDE_EN: Guide = {
             "Once the staff picks the squad, answers are closed: they stay as they were at that moment, and if you did not answer you stay without an answer. If something comes up later, for example you are ill, write to the staff.",
             'The match page shows "Where and when" and the "Add to calendar" button.',
             'Under "Matches" you also find results, standings and scorers.',
+            'After the match, at the top of its page, "For you" tells you how it went for you and your children: points and new milestones. When the staff adds the stats you get a single notice with everything in it.',
           ],
           links: [
             { href: "/profilo/disponibilita", label: "My availabilities" },

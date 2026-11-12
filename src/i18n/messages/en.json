@@ -483,7 +483,22 @@
     "availabilityLocked": "The squad has been picked: this answer stays. If something is wrong, write to the staff.",
     "lockedYes": "You said yes",
     "lockedNo": "You said no",
-    "lockedNone": "You did not answer"
+    "lockedNone": "You did not answer",
+    "afterMatch": {
+      "forYouTitle": "For you",
+      "statsComing": "Called up. Stats coming soon.",
+      "playedNoPoints": "On court, no points this time",
+      "points": "{count, plural, one {# point} other {# points}}",
+      "shots": "{made} of {attempted} shots",
+      "you": "you",
+      "newBadge": "New milestone: {label}",
+      "nextUpTitle": "What's next",
+      "nextMatch": "The team's next match",
+      "nextTraining": "No matches scheduled: the next training",
+      "shareHint": "Someone missed it? Send them the match.",
+      "weekendTitle": "This weekend's results",
+      "weekendUpcoming": "Coming up"
+    }
   },
   "teams": {
     "heroTitle": "Teams",

@@ -13,7 +13,10 @@ export default function MatchStatsTab({
   matchId,
   isStaff,
   teamColor = null,
+  embedded = false,
 }: {
+  /** Dentro una sezione della partita giocata (UX-58): il bottone dello staff sta nel titolo. */
+  embedded?: boolean;
   teamColor?: string | null;
   stats: MatchStatRow[];
   matchId: string;
@@ -23,8 +26,8 @@ export default function MatchStatsTab({
   const hasStats = stats.length > 0;
 
   return (
-    <Box sx={{ pt: 3 }}>
-      {isStaff && (
+    <Box sx={{ pt: embedded ? 0 : 3 }}>
+      {isStaff && !embedded && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button
             href={`/admin/partite/${matchId}/statistiche`}
@@ -37,7 +40,7 @@ export default function MatchStatsTab({
         </Box>
       )}
       {!hasStats ? (
-        <Box sx={{ textAlign: "center", py: 8 }}>
+        <Box sx={{ textAlign: "center", py: embedded ? 4 : 8 }}>
           <LeaderboardIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />
           <Typography variant="h6" color="text.secondary">
             {t("noStats")}

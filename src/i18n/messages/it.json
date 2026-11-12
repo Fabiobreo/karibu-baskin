@@ -483,7 +483,22 @@
     "availabilityLocked": "Le convocazioni sono fatte: la risposta resta questa. Se c'è un problema, scrivi allo staff.",
     "lockedYes": "Hai detto di sì",
     "lockedNo": "Hai detto di no",
-    "lockedNone": "Non hai risposto"
+    "lockedNone": "Non hai risposto",
+    "afterMatch": {
+      "forYouTitle": "Per te",
+      "statsComing": "Era fra i convocati. Statistiche in arrivo.",
+      "playedNoPoints": "In campo, senza punti questa volta",
+      "points": "{count, plural, one {# punto} other {# punti}}",
+      "shots": "{made} tiri su {attempted}",
+      "you": "tu",
+      "newBadge": "Nuovo traguardo: {label}",
+      "nextUpTitle": "E adesso",
+      "nextMatch": "La prossima partita della squadra",
+      "nextTraining": "Nessuna partita in calendario: il prossimo allenamento",
+      "shareHint": "Chi non c'era? Mandagli la partita.",
+      "weekendTitle": "Risultati del fine settimana",
+      "weekendUpcoming": "In programma"
+    }
   },
   "teams": {
     "heroTitle": "Squadre",

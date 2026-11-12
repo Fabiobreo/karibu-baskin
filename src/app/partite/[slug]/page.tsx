@@ -5,6 +5,10 @@ import { sportsEventJsonLd } from "@/lib/structuredData";
 import { isMemberRole } from "@/lib/authRoles";
 import { loadLinkedAlbums } from "@/lib/gallery/albums";
 import AlbumStrip from "@/components/gallery/AlbumStrip";
+import MatchForYouSection from "@/components/matches/sections/MatchForYouSection";
+import MatchMvpSection, { type MvpEntry } from "@/components/matches/sections/MatchMvpSection";
+import MatchNextUpSection from "@/components/matches/sections/MatchNextUpSection";
+import { loadForYouRows, loadNextUp } from "@/lib/matches/afterMatch";
 import { publicSubjects } from "@/lib/minors";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { auth } from "@/lib/authjs";
@@ -13,7 +17,6 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { Container, Typography, Box, Link as MuiLink } from "@mui/material";
 import { columnSx } from "@/lib/layout";
-import { alpha } from "@mui/material/styles";
 import { heroGradient, heroImage, heroResultColor, heroText, heroTint } from "@/lib/heroStyles";
 import { Fragment } from "react";
 import EntityHero from "@/components/common/EntityHero";
@@ -25,7 +28,6 @@ import MatchAvailabilityCard, {
   type MatchAvailabilityEntity,
 } from "@/components/matches/MatchAvailabilityCard";
 import MatchCountdown from "@/components/matches/MatchCountdown";
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -45,16 +47,12 @@ import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import RoleBadge from "@/components/common/RoleBadge";
 import StatusPill from "@/components/common/StatusPill";
 import { getEntityLabels } from "@/lib/entityLabels";
-import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { canNotifyCallups } from "@/lib/notifications/renotifyRules";
-import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const revalidate = 3600;
@@ -381,6 +379,7 @@ export default async function MatchDetailPage({ params }: Props) {
     availabilityEntities,
     family,
     linkedAlbums,
+    nextUp,
   ] = await Promise.all([
     opponentWhere
       ? prisma.match.findMany({
@@ -429,7 +428,37 @@ export default async function MatchDetailPage({ params }: Props) {
       : Promise.resolve([]),
     // Fascia "Foto" (UX-57): gli album collegati a questa partita.
     loadLinkedAlbums({ matchId: match.id }, viewerIsMember),
+    // "E adesso" (UX-58): solo a partita giocata.
+    hasScore ? loadNextUp(match.team, new Date(now)) : Promise.resolve(null),
   ]);
+  // "Per te" (UX-58): i giocatori della famiglia di chi guarda, solo tesserati
+  // e solo a partita giocata. viewerId è già null per chi non è tesserato.
+  const forYouRows =
+    hasScore && viewerId
+      ? await loadForYouRows({
+          viewerId,
+          family,
+          stats: match.playerStats,
+          callups,
+          matchDate: match.date,
+        })
+      : [];
+  // Avatar nella tinta della squadra; neutri nelle amichevoli interne, dove i
+  // giocatori stanno su due squadre nostre.
+  const playersTeamColor = match.opponentTeamId ? null : match.team.color;
+  const mvpEntries: MvpEntry[] = match.mvps.flatMap((m) => {
+    const person = m.user ?? m.child;
+    if (!person) return [];
+    return [
+      {
+        id: m.id,
+        name: person.name ?? "—",
+        image: m.user?.image ?? null,
+        sportRole: person.sportRole,
+        slug: m.user?.slug ?? m.user?.id ?? m.child?.slug ?? m.child?.id ?? null,
+      },
+    ];
+  });
   const callupViewer = viewerId
     ? {
         userId: viewerId,
@@ -810,104 +839,19 @@ export default async function MatchDetailPage({ params }: Props) {
         />
       )}
 
-      {match.mvps.length > 0 && (
-        <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>
-          <Box sx={columnSx("main")}>
-            <Box
-              sx={{
-                p: 2.5,
-                borderRadius: RADIUS.lg,
-                // Era una card color crema con bordo oro, fuori palette e
-                // sbagliata in dark: ora e' una superficie del tema col bordo
-                // della medaglia.
-                bgcolor: "action.hover",
-                border: "1px solid",
-                borderColor: "medal.gold",
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 1.5,
-                  justifyContent: "center",
-                }}
-              >
-                <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-                <Typography
-                  variant="overline"
-                  fontWeight={FONT_WEIGHT.bold}
-                  sx={{ color: "medal.gold" }}
-                >
-                  {t("mvp")}
-                </Typography>
-                <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  justifyContent: "center",
-                }}
-              >
-                {match.mvps.map((m) => {
-                  const person = m.user ?? m.child;
-                  if (!person) return null;
-                  const role = person.sportRole;
-                  const name = person.name ?? "—";
-                  const slug = m.user?.slug ?? m.user?.id ?? m.child?.slug ?? m.child?.id ?? null;
-                  const content = (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        px: 1.5,
-                        py: 0.75,
-                        borderRadius: RADIUS.md,
-                        bgcolor: "background.paper",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        cursor: slug ? "pointer" : "default",
-                        transition: "transform 0.15s",
-                        ...(slug ? onHover({ transform: "translateY(-2px)" }) : {}),
-                      }}
-                    >
-                      <EmojiEventsIcon sx={{ color: "medal.gold", fontSize: 20 }} />
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          fontWeight={FONT_WEIGHT.bold}
-                          sx={{ color: "text.primary" }}
-                        >
-                          {name}
-                        </Typography>
-                        {role && (
-                          <Box sx={{ mt: 0.25 }}>
-                            <RoleBadge role={role} />
-                          </Box>
-                        )}
-                      </Box>
-                    </Box>
-                  );
-                  return slug ? (
-                    <Link key={m.id} href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
-                      {content}
-                    </Link>
-                  ) : (
-                    <Box key={m.id}>{content}</Box>
-                  );
-                })}
-              </Box>
-            </Box>
-          </Box>
-        </Container>
-      )}
-
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
+          {/* Dopo-partita (UX-58): per te, MVP, foto, poi statistiche e convocati. */}
+          {forYouRows.length > 0 && (
+            <Box sx={{ mb: { xs: 4, md: 5 } }}>
+              <MatchForYouSection rows={forYouRows} teamColor={playersTeamColor} />
+            </Box>
+          )}
+          {mvpEntries.length > 0 && (
+            <Box sx={{ mb: { xs: 4, md: 5 } }}>
+              <MatchMvpSection mvps={mvpEntries} teamColor={playersTeamColor} />
+            </Box>
+          )}
           {linkedAlbums.length > 0 && (
             <Box sx={{ mb: { xs: 4, md: 5 } }}>
               <AlbumStrip
@@ -961,7 +905,7 @@ export default async function MatchDetailPage({ params }: Props) {
           ) : (
             <MatchDetailTabs
               ourTeamColor={match.team.color}
-              playersTeamColor={match.opponentTeamId ? null : match.team.color}
+              playersTeamColor={playersTeamColor}
               notes={match.notes}
               stats={match.playerStats}
               callups={callups}
@@ -991,6 +935,11 @@ export default async function MatchDetailPage({ params }: Props) {
                   : undefined
               }
             />
+          )}
+          {hasScore && (
+            <Box sx={{ mt: { xs: 5, md: 6 } }}>
+              <MatchNextUpSection next={nextUp} share={{ title: matchupTitle, path: matchPath }} />
+            </Box>
           )}
         </Box>
       </Container>

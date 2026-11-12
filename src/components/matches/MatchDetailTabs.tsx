@@ -18,6 +18,13 @@ import CallupsActions from "@/components/matches/CallupsActions";
 import type { CallupsShareInfo } from "@/components/matches/CallupsShareCard";
 import type { CallupViewer } from "@/components/matches/sections/CallupsListSection";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { Button } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import MatchSectionTitle from "@/components/matches/sections/MatchSectionTitle";
+import TopScorersSection from "@/components/matches/sections/TopScorersSection";
+import CallupsListSection from "@/components/matches/sections/CallupsListSection";
+import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
+import StandingsSection from "@/components/matches/sections/StandingsSection";
 
 interface Props {
   notes: string | null;
@@ -159,6 +166,78 @@ export default function MatchDetailTabs({
           {actions}
         </Box>
         {callupsContent("h3")}
+      </Box>
+    );
+  }
+
+  // Partita giocata (UX-58): niente schede, le sezioni una sotto l'altra
+  // nell'ordine in cui le cerca chi apre la pagina. Statistiche, poi convocati,
+  // poi precedenti e classifica. "Per te", MVP e foto stanno sopra (pagina),
+  // "E adesso" sotto.
+  if (hasScore) {
+    const hasContext =
+      prevMatches.length > 0 || (groupStandings !== null && groupStandings.length > 0);
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 4, md: 5 } }}>
+        <Box component="section" aria-labelledby="match-stats-title">
+          <MatchSectionTitle
+            id="match-stats-title"
+            icon={<LeaderboardIcon />}
+            action={
+              isStaff ? (
+                <Button
+                  href={`/admin/partite/${matchId}/statistiche`}
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                >
+                  {hasStats ? t("editStats") : t("addStats")}
+                </Button>
+              ) : undefined
+            }
+          >
+            {`${t("tabStats")}${hasStats ? ` (${allStats.length})` : ""}`}
+          </MatchSectionTitle>
+          <TopScorersSection top3={stats.slice(0, 3)} teamColor={playersTeamColor} />
+          <MatchStatsTab
+            stats={allStats}
+            matchId={matchId}
+            isStaff={isStaff}
+            teamColor={playersTeamColor}
+            embedded
+          />
+        </Box>
+
+        <Box component="section" aria-labelledby="match-callups-title">
+          <MatchSectionTitle id="match-callups-title" icon={<GroupsIcon />} action={actions}>
+            {callupsLabel}
+          </MatchSectionTitle>
+          <CallupsListSection
+            callups={callupsWithStats}
+            canSeeCallups={canSeeCallups}
+            hasScore={hasScore}
+            teamColor={playersTeamColor}
+            viewer={viewer}
+          />
+        </Box>
+
+        {hasContext && (
+          <Box>
+            <HeadToHeadSection
+              prevMatches={prevMatches}
+              opponentName={opponentName}
+              headingComponent="h2"
+            />
+            {groupStandings && (
+              <StandingsSection
+                standings={groupStandings}
+                groupName={groupName}
+                ourTeamColor={ourTeamColor}
+                headingComponent="h2"
+              />
+            )}
+          </Box>
+        )}
       </Box>
     );
   }

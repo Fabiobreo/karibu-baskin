@@ -1,6 +1,6 @@
 # UX-58 · Il dopo-partita: un appuntamento, non dati sparsi
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-56, UX-57 · **Stato:** da fare · **In attesa di:** decisione sul voto MVP delle famiglie (punto 4)
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-56, UX-57 · **Stato:** fatto (12/11/2026)
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 
@@ -49,7 +49,7 @@ Per due giorni dopo l'ultima partita del fine settimana (fino al martedì sera, 
 - **B.** Voto dei tesserati, risultato mostrato solo come "il pubblico ha scelto…" accanto all'MVP dello staff, senza percentuali né classifica dei voti. Un voto per famiglia, solo fra chi ha giocato.
 - **C.** Voto su un momento e non su una persona ("l'azione più bella"), con le foto dell'album come opzioni. Richiede UX-57 e un album con le foto giuste: più bello, più lavoro per lo staff.
 
-Fino alla decisione questo punto non si implementa; gli altri sì.
+**Decisione del committente (12/11/2026): A.** Niente voto: resta l'MVP dello staff.
 
 ## Criteri di accettazione
 
@@ -60,3 +60,17 @@ Fino alla decisione questo punto non si implementa; gli altri sì.
 - La sezione "E adesso" mostra la prossima partita della squadra; senza partite in calendario, il prossimo allenamento; senza nessuno dei due, non c'è.
 - Il martedì sera dopo le 23:59 la home torna senza la riga dei risultati del fine settimana (test sulla funzione pura che decide la finestra).
 - Testi in `it.json` ed `en.json`; `npx tsc --noEmit`, `npm test`, `npm run a11y` verdi.
+
+## Com'è stato fatto (12/11/2026)
+
+**Pagina della partita giocata.** Con il risultato, `MatchDetailTabs` non mostra più le schede Convocati/Statistiche: le sezioni stanno una sotto l'altra, tutte con lo stesso titolo (`MatchSectionTitle`). Ordine: tabellino, **Per te** (`MatchForYouSection`, ancora `#per-te`), **MVP** (`MatchMvpSection`, con `TeamAvatar`, neutri nelle amichevoli interne), **Foto** (`AlbumStrip`), **Statistiche** (top marcatori e tabella, il bottone dello staff nel titolo), **Convocati**, poi precedenti e classifica del girone (spostati qui dalla scheda Convocati), infine **E adesso** (`MatchNextUpSection`). Le partite non giocate restano come prima.
+
+- _Per te_: dati da `loadForYouRows` in `@/lib/matches/afterMatch`, solo per un tesserato con sé stesso o qualcuno della famiglia (schede figlio e scheda propria; una scheda collegata a un account è la stessa persona) fra statistiche o convocati. Riga: punti e tiri ("15 punti · 3 tiri su 5"), "In campo, senza punti questa volta", oppure "Statistiche in arrivo" se era convocato e le statistiche non ci sono. Link al profilo con la regola di `withProfileLink`.
+- _Traguardi di una partita_: il database non dice con quale partita è arrivato un traguardo, quindi si calcolano (`badgesUnlockedByMatch` in `@/lib/rating/badgesOfMatch`): quelli che si hanno contando le partite fino a questa e non contando solo quelle prima, MVP compresi. Il primo marcatore di stagione resta fuori: non dipende da una partita.
+- _E adesso_: `loadNextUp`, la prossima partita della squadra (riga `UpcomingMatchRow`, la stessa della pagina squadra) o il prossimo allenamento; sotto, "Chi non c'era? Mandagli la partita." con `ShareSection`. Senza partita né allenamento resta solo la condivisione.
+
+**Un avviso solo.** La rotta delle statistiche chiama `reconcilePlayerBadges` con `notify: false` e mette i traguardi nuovi nell'avviso delle statistiche (`@/lib/notifications/statsNotify`): "Marco ha segnato 6 punti contro Thiene", sotto "Un traguardo nuovo: 10 partite 🔟"; in seconda persona a chi ha l'account, "ha giocato" senza punti, un avviso solo per chi ha due figli in partita. Porta a `#per-te`. Parte solo per chi entra nelle statistiche per la prima volta: correggere non avvisa di nuovo, salvo un traguardo nuovo. Il tipo resta `MATCH_RESULT` (stessa preferenza, confronto con le misure di UX-55). MVP, backfill e cambio di risultato avvisano dei traguardi come prima. Partite storiche: nessun avviso.
+
+**Home.** `ProssimePartiteHome` apre con i risultati del fine settimana (`PlayedMatchRow`) dal venerdì al martedì alle 23:59 (`weekendResultsWindow` in `@/lib/matches/weekendResults`, test anche sul cambio dell'ora). La sezione compare anche senza prossime partite, e allora il link porta ai risultati.
+
+**Da misurare:** aperture di `MATCH_RESULT` e `BADGE_UNLOCKED` in `/admin/metriche`, 4 settimane prima e 4 dopo il rilascio.

@@ -19,6 +19,9 @@ vi.mock("@/lib/db", () => ({
     child: {
       findMany: vi.fn(),
     },
+    user: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -238,7 +241,7 @@ describe("PUT /api/matches/[matchId]/stats", () => {
 });
 
 // Le statistiche di una partita di oltre un mese fa sono storico inserito a
-// posteriori: si salvano, ma "Statistiche disponibili" non parte.
+// posteriori: si salvano, ma l'avviso delle statistiche non parte.
 describe("PUT /api/matches/[matchId]/stats · notifiche", () => {
   const DAY = 24 * 60 * 60 * 1000;
   const matchMock = (prisma as unknown as { match: { findUnique: Mock } }).match.findUnique;
@@ -261,31 +264,68 @@ describe("PUT /api/matches/[matchId]/stats · notifiche", () => {
       makeParams("match-1")
     );
 
+  const userMock = (prisma as unknown as { user: { findMany: Mock } }).user.findMany;
+  // Prima lettura: le righe già salvate; seconda: i punti dopo il salvataggio.
+  const rowsBeforeAndAfter = (before: object[], after: object[]) =>
+    p.playerMatchStats.findMany.mockResolvedValueOnce(before).mockResolvedValueOnce(after);
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAdmin.mockResolvedValue(true);
     p.playerMatchStats.upsert.mockResolvedValue(stat1);
+    (reconcilePlayerBadges as Mock).mockResolvedValue([]);
+    // Niente risposte "Once" rimaste in coda da un test all'altro.
+    p.playerMatchStats.findMany.mockReset().mockResolvedValue([]);
+    userMock.mockResolvedValue([{ id: "user-1", name: "Mario Rossi", childAccount: null }]);
   });
 
-  it("partita recente: avvisa solo chi ha una riga, rispettando la preferenza", async () => {
+  it("partita recente: un avviso personale con i punti, rispettando la preferenza", async () => {
     matchOn(new Date(Date.now() - 2 * DAY));
+    rowsBeforeAndAfter([], [{ userId: "user-1", childId: null, points: 6 }]);
     expect((await putStats()).status).toBe(200);
     await vi.waitFor(() => expect(sendPushToUsers).toHaveBeenCalledOnce());
-    const [ids, , notifType] = (sendPushToUsers as Mock).mock.calls[0];
+    const [ids, payload, notifType] = (sendPushToUsers as Mock).mock.calls[0];
     expect(ids).toEqual(["user-1"]);
+    expect(payload.title).toBe("Hai segnato 6 punti contro Avversari FC");
+    expect(payload.url).toBe("/partite/match-1#per-te");
     expect(notifType).toBe("MATCH_RESULT");
     expect((createTargetedAppNotifications as Mock).mock.calls[0][0]).toEqual(["user-1"]);
-    expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify: true });
+    // I traguardi non avvisano da soli: entrano in questo avviso.
+    expect(reconcilePlayerBadges).toHaveBeenCalledWith({ userId: "user-1" }, { notify: false });
+  });
+
+  it("un traguardo sbloccato entra nello stesso avviso: uno, non due", async () => {
+    matchOn(new Date(Date.now() - 2 * DAY));
+    rowsBeforeAndAfter([], [{ userId: "user-1", childId: null, points: 6 }]);
+    (reconcilePlayerBadges as Mock).mockResolvedValue(["dieci_partite"]);
+    await putStats();
+    await vi.waitFor(() => expect(sendPushToUsers).toHaveBeenCalledOnce());
+    expect((sendPushToUsers as Mock).mock.calls[0][1].body).toBe(
+      "Un traguardo nuovo: 10 partite 🔟"
+    );
+    expect(createTargetedAppNotifications).toHaveBeenCalledOnce();
+  });
+
+  it("correggere statistiche già salvate non avvisa di nuovo", async () => {
+    matchOn(new Date(Date.now() - 2 * DAY));
+    p.playerMatchStats.findMany.mockResolvedValueOnce([{ userId: "user-1", childId: null }]);
+    await putStats();
+    await vi.waitFor(() => expect(reconcilePlayerBadges).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(sendPushToUsers).not.toHaveBeenCalled();
   });
 
   it("per un figlio avvisa i genitori", async () => {
     matchOn(new Date(Date.now() - 2 * DAY));
+    rowsBeforeAndAfter([], [{ userId: null, childId: "child-1", points: 2 }]);
     (prisma as unknown as { child: { findMany: Mock } }).child.findMany.mockResolvedValue([
-      { userId: null, guardians: [{ userId: "mamma" }] },
+      { id: "child-1", name: "Luca", userId: null, guardians: [{ userId: "mamma" }] },
     ]);
     expect((await putStats([{ childId: "child-1", twoPointers: 1 }])).status).toBe(200);
     await vi.waitFor(() => expect(sendPushToUsers).toHaveBeenCalledOnce());
-    expect((sendPushToUsers as Mock).mock.calls[0][0]).toEqual(["mamma"]);
+    const [ids, payload] = (sendPushToUsers as Mock).mock.calls[0];
+    expect(ids).toEqual(["mamma"]);
+    expect(payload.title).toBe("Luca ha segnato 2 punti contro Avversari FC");
   });
 
   it("partita di oltre un mese fa: salva senza avvisare", async () => {

@@ -110,11 +110,14 @@ export default function ShareSection({
             dark
               ? HERO_BUTTON_SX
               : {
-                  borderColor: socialBrandColor.whatsapp,
-                  color: socialBrandColor.whatsapp,
+                  // Il verde del marchio sul testo non arriva a 4,5:1 su fondo
+                  // chiaro (UX-58, axe): testo neutro, verde sull'icona e sul
+                  // bordo al passaggio. Il nome "WhatsApp" resta il segnale.
+                  borderColor: "divider",
+                  color: "text.primary",
+                  "& .MuiButton-startIcon": { color: socialBrandColor.whatsapp },
                   "&:hover": {
-                    borderColor: socialBrandColor.whatsappDark,
-                    color: socialBrandColor.whatsappDark,
+                    borderColor: socialBrandColor.whatsapp,
                     backgroundColor: alpha(socialBrandColor.whatsapp, 0.06),
                   },
                 }
