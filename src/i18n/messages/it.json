@@ -706,6 +706,36 @@
     "minorsHidden": "Per tutela dei minori, la classifica pubblica non mostra gli atleti minorenni."
   },
   "badges": {
+    "primo_allenamento": {
+      "label": "Primo allenamento",
+      "description": "Fare il primo allenamento. Contano le presenze segnate dagli allenatori",
+      "achieved": "{who, select, self {Hai fatto il tuo primo allenamento} other {Ha fatto il suo primo allenamento}}"
+    },
+    "dieci_allenamenti": {
+      "label": "10 allenamenti",
+      "description": "Fare 10 allenamenti",
+      "achieved": "{who, select, self {Hai fatto 10 allenamenti} other {Ha fatto 10 allenamenti}}"
+    },
+    "venticinque_allenamenti": {
+      "label": "25 allenamenti",
+      "description": "Fare 25 allenamenti",
+      "achieved": "{who, select, self {Hai fatto 25 allenamenti} other {Ha fatto 25 allenamenti}}"
+    },
+    "cinquanta_allenamenti": {
+      "label": "50 allenamenti",
+      "description": "Fare 50 allenamenti",
+      "achieved": "{who, select, self {Hai fatto 50 allenamenti} other {Ha fatto 50 allenamenti}}"
+    },
+    "mese_pieno": {
+      "label": "Mese pieno",
+      "description": "Non saltare nessun allenamento per un mese intero, con almeno 4 allenamenti",
+      "achieved": "{who, select, self {Non hai saltato nessun allenamento per un mese intero} other {Non ha saltato nessun allenamento per un mese intero}}"
+    },
+    "stagione_fedele": {
+      "label": "Stagione fedele",
+      "description": "Fare almeno 8 allenamenti su 10 in una stagione",
+      "achieved": "{who, select, self {Hai fatto almeno 8 allenamenti su 10 in una stagione} other {Ha fatto almeno 8 allenamenti su 10 in una stagione}}"
+    },
     "esordiente": {
       "label": "Esordiente",
       "description": "Giocare la prima partita ufficiale",
@@ -839,7 +869,8 @@
     "vittorie": "Vittorie",
     "presenza": "Presenza",
     "premi": "Premi",
-    "speciali": "Speciali"
+    "speciali": "Speciali",
+    "allenamenti": "Allenamenti"
   },
   "events": {
     "heroTitle": "Eventi",
@@ -1816,5 +1847,17 @@
     "removeConfirm": "Vuoi rimuovere questa immagine? Non si può annullare.",
     "cancel": "Annulla",
     "removeAction": "Rimuovi"
+  },
+  "badgeShare": {
+    "share": "Condividi",
+    "sharing": "Preparo l'immagine...",
+    "ariaLabel": "Condividi il traguardo {badge}",
+    "kicker": "Traguardo",
+    "reached": "{name} ha raggiunto il traguardo",
+    "subject": "Traguardo: {badge}",
+    "msgSelf": "Ho raggiunto il traguardo \"{badge}\" {emoji} con il Karibu Baskin!",
+    "msgOther": "{name} ha raggiunto il traguardo \"{badge}\" {emoji} con il Karibu Baskin!",
+    "minorNote": "Stai condividendo il nome di {name}. Manda l'immagine solo a chi conosci.",
+    "error": "Immagine non creata. Riprova."
   }
 }

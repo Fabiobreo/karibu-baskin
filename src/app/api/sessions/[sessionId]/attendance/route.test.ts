@@ -2,6 +2,10 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("@/lib/background", () => ({ inBackground: vi.fn() }));
+vi.mock("@/lib/rating/trainingBadges", () => ({
+  reconcileTrainingBadges: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/db", () => ({
   prisma: {
     registration: { findMany: vi.fn(), update: vi.fn() },
@@ -16,6 +20,7 @@ vi.mock("@/lib/apiAuth", () => ({
 import { PUT } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { reconcileTrainingBadges } from "@/lib/rating/trainingBadges";
 
 type PrismaMock = {
   registration: { findMany: Mock; update: Mock };
@@ -100,5 +105,13 @@ describe("PUT /api/sessions/[sessionId]/attendance", () => {
       where: { id: "r3" },
       data: { attended: null },
     });
+  });
+
+  it("ricalcola i traguardi solo se c'è qualche presente (UX-59)", async () => {
+    p.registration.findMany.mockResolvedValue([{ id: "r1" }]);
+    await PUT(...makePUT({ attendance: [{ regId: "r1", attended: false }] }));
+    expect(reconcileTrainingBadges).not.toHaveBeenCalled();
+    await PUT(...makePUT({ attendance: [{ regId: "r1", attended: true }] }));
+    expect(reconcileTrainingBadges).toHaveBeenCalledWith("s1");
   });
 });

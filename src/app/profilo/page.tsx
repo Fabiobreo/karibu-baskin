@@ -670,6 +670,8 @@ export default async function ProfiloPage({
             <ProfileBadges
               // I traguardi di un figlio con un account sono dell'account.
               player={c.userId ? { userId: c.userId } : { childId: c.id }}
+              self={false}
+              anchorKey={c.userId ?? c.id}
               title={t("childAchievements", { name: c.name })}
               nextTitle={t("nextAchievements")}
             />

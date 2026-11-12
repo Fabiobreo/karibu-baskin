@@ -2,6 +2,10 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("@/lib/background", () => ({ inBackground: vi.fn() }));
+vi.mock("@/lib/rating/trainingBadges", () => ({
+  reconcileTrainingBadges: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/db", () => ({
   prisma: {
     registration: { findUnique: vi.fn(), update: vi.fn() },

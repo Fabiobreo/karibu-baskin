@@ -8,7 +8,7 @@ import { withUtm, type UtmSource } from "@/lib/utm";
  * "Coinvolgimento" di `/admin/metriche`).
  */
 
-/** Cosa si è condiviso. Elenco chiuso: un valore nuovo va anche in `SHARE_CAMPAIGN_LABEL`. */
+/** Cosa si è condiviso. Elenco chiuso: un valore nuovo va anche nelle etichette di `EngagementSection`. */
 export const SHARE_CAMPAIGNS = [
   "tabellino",
   "convocati",
@@ -19,6 +19,7 @@ export const SHARE_CAMPAIGNS = [
   "news",
   "album",
   "profilo",
+  "traguardo",
 ] as const;
 export type ShareCampaign = (typeof SHARE_CAMPAIGNS)[number];
 
@@ -50,6 +51,7 @@ export function shareUrl(
 /** "karibubaskin.it/partite/karibu-thiene": l'indirizzo da leggere su un'immagine. */
 export function shortAddress(path: string): string {
   const clean = path.split(/[?#]/)[0].replace(/\/$/, "");
+  if (clean === "") return SHORT_HOST;
   return `${SHORT_HOST}${clean.startsWith("/") ? clean : `/${clean}`}`;
 }
 

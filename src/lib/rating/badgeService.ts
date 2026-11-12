@@ -1,5 +1,22 @@
 import { prisma } from "@/lib/db";
-import { computeBadges, getBadgeById, type StatsInput } from "@/lib/rating/badges";
+import {
+  computeBadges,
+  getBadgeById,
+  type StatsInput,
+  type TrainingRecord,
+} from "@/lib/rating/badges";
+import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
+import { loadTeamPeriods, wasMemberAt, type TeamPeriod } from "@/lib/matches/teamHistory";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
+import {
+  badgeNotificationUrl,
+  badgeSharePath,
+  firstNameOf,
+  type BadgeShareSubject,
+} from "@/lib/rating/badgeShare";
+import { isMinor, isMinorChild } from "@/lib/minors";
+import { userHasPublicProfile } from "@/lib/publicProfile";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 
@@ -17,7 +34,7 @@ export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
   const where = ref.userId ? { userId: ref.userId } : { childId: ref.childId };
   const playerKey = ref.userId ? `u:${ref.userId}` : `c:${ref.childId}`;
 
-  const [rawStats, mvpCount, memberships, sportRole] = await Promise.all([
+  const [rawStats, mvpCount, memberships, sportRole, trainings, currentSeason] = await Promise.all([
     prisma.playerMatchStats.findMany({
       where,
       select: {
@@ -44,6 +61,8 @@ export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
       : prisma.child
           .findUnique({ where: { id: ref.childId }, select: { sportRole: true } })
           .then((c) => c?.sportRole ?? null),
+    loadTrainingRecords(ref),
+    getCurrentSeasonLabel(),
   ]);
 
   const matchStats = rawStats.map((s) => ({
@@ -124,7 +143,106 @@ export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
     }
   }
 
-  return { matchStats, mvpCount, topScorerCount, sportRole };
+  return { matchStats, trainings, currentSeason, mvpCount, topScorerCount, sportRole };
+}
+
+/**
+ * Allenamenti per i traguardi di costanza (UX-59): quelli in cui lo staff ha
+ * segnato le presenze, se la persona poteva iscriversi (ruolo e squadra di
+ * quel giorno) o se c'era. Persona unica (`@/lib/person`): account e scheda
+ * figlio collegata sommano le presenze.
+ */
+export async function loadTrainingRecords(ref: PlayerRef): Promise<TrainingRecord[]> {
+  // Le due chiavi della persona, e il suo ruolo Baskin (l'account prima della scheda).
+  let userId: string | null = null;
+  let childId: string | null = null;
+  let sportRole: number | null = null;
+  if (ref.userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: ref.userId },
+      select: {
+        id: true,
+        sportRole: true,
+        childAccount: { select: { id: true, sportRole: true } },
+      },
+    });
+    if (!user) return [];
+    userId = user.id;
+    childId = user.childAccount?.id ?? null;
+    sportRole = user.sportRole ?? user.childAccount?.sportRole ?? null;
+  } else {
+    const child = await prisma.child.findUnique({
+      where: { id: ref.childId },
+      select: { id: true, sportRole: true, user: { select: { id: true, sportRole: true } } },
+    });
+    if (!child) return [];
+    childId = child.id;
+    userId = child.user?.id ?? null;
+    sportRole = child.user?.sportRole ?? child.sportRole ?? null;
+  }
+  const keys = [...(userId ? [{ userId }] : []), ...(childId ? [{ childId }] : [])];
+
+  const [sessions, present, periodsByKey] = await Promise.all([
+    prisma.trainingSession.findMany({
+      where: { registrations: { some: { attended: { not: null } } } },
+      select: { id: true, date: true, allowedRoles: true, restrictTeamId: true, openRoles: true },
+    }),
+    prisma.registration.findMany({
+      where: { OR: keys, attended: true },
+      select: { sessionId: true },
+    }),
+    loadTeamPeriods(userId ? [userId] : [], childId ? [childId] : []),
+  ]);
+  const presentIds = new Set(present.map((r) => r.sessionId));
+  const periods: TeamPeriod[] = [...periodsByKey.values()].flat();
+
+  // Squadre coinvolte: quelle riservatarie e quelle della persona, per la
+  // Karibu di stagione (riservata a tutti i giocatori della stagione).
+  const teamIds = [
+    ...new Set([
+      ...sessions.map((s) => s.restrictTeamId).filter((x): x is string => !!x),
+      ...periods.map((p) => p.teamId),
+    ]),
+  ];
+  const teams = teamIds.length
+    ? await prisma.competitiveTeam.findMany({
+        where: { id: { in: teamIds } },
+        select: { id: true, season: true, isMixed: true },
+      })
+    : [];
+  const teamById = new Map(teams.map((t) => [t.id, t]));
+
+  const memberOf = (teamId: string, date: Date): boolean => {
+    const team = teamById.get(teamId);
+    if (!team?.isMixed) return wasMemberAt(periods, teamId, date);
+    return periods.some((p) => {
+      const own = teamById.get(p.teamId);
+      return (
+        own != null &&
+        !own.isMixed &&
+        own.season === team.season &&
+        wasMemberAt(periods, p.teamId, date)
+      );
+    });
+  };
+
+  const records: TrainingRecord[] = [];
+  for (const s of sessions) {
+    const attended = presentIds.has(s.id);
+    // "ATHLETE": conta se poteva iscriversi come giocatore, anche per lo staff
+    // che gioca (un admin passerebbe ovunque e perderebbe il "Mese pieno").
+    const eligible =
+      sportRole != null &&
+      checkRegistrationAllowed(
+        s,
+        "ATHLETE",
+        sportRole,
+        s.restrictTeamId ? memberOf(s.restrictTeamId, s.date) : false
+      ).allowed;
+    if (!attended && !eligible) continue;
+    records.push({ date: s.date, season: getCurrentSeason(s.date), attended });
+  }
+  return records;
 }
 
 /**
@@ -171,7 +289,6 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
   let selfId: string | null = null;
   let guardianIds: string[] = [];
   let subjectName: string | null = null;
-  let profileSlug: string | null = null;
 
   if (ref.userId) {
     const user = await prisma.user.findUnique({
@@ -179,7 +296,6 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
       select: {
         id: true,
         name: true,
-        slug: true,
         childAccount: { select: { guardians: { select: { userId: true } } } },
       },
     });
@@ -187,14 +303,11 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
     selfId = user.id;
     guardianIds = user.childAccount?.guardians.map((g) => g.userId) ?? [];
     subjectName = user.name;
-    profileSlug = user.slug ?? user.id;
   } else {
     const child = await prisma.child.findUnique({
       where: { id: ref.childId },
       select: {
         name: true,
-        slug: true,
-        id: true,
         userId: true,
         guardians: { select: { userId: true } },
       },
@@ -203,11 +316,11 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
     selfId = child.userId;
     guardianIds = child.guardians.map((g) => g.userId);
     subjectName = child.name;
-    profileSlug = child.slug ?? child.id;
   }
   guardianIds = guardianIds.filter((id) => id !== selfId);
 
-  const url = `/giocatori/${profileSlug}`;
+  // L'avviso porta al traguardo nel profilo (UX-59), dove c'è "Condividi".
+  const ownerKey = (ref.userId ?? ref.childId) as string;
   const audiences = [
     { ids: selfId ? [selfId] : [], isSelf: true },
     { ids: guardianIds, isSelf: false },
@@ -222,7 +335,13 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
         ? `Hai sbloccato il traguardo "${badge.label}" 🎉`
         : `${subjectName} ha sbloccato il traguardo "${badge.label}" 🎉`;
       for (const targetUserId of ids) {
-        await createAppNotification({ type: "BADGE_UNLOCKED", title, body, url, targetUserId });
+        await createAppNotification({
+          type: "BADGE_UNLOCKED",
+          title,
+          body,
+          url: badgeNotificationUrl(badgeId, ownerKey, isSelf),
+          targetUserId,
+        });
       }
     }
 
@@ -240,6 +359,61 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
           ? `Hai sbloccato ${badgeIds.length} nuovi traguardi`
           : `${subjectName} ha sbloccato ${badgeIds.length} nuovi traguardi`;
 
+    const url =
+      badgeIds.length === 1
+        ? badgeNotificationUrl(badgeIds[0], ownerKey, isSelf)
+        : isSelf
+          ? "/profilo"
+          : "/profilo?tab=famiglia";
     await sendPushToUsers(ids, { title: pushTitle, body: pushBody, url, type: "BADGE_UNLOCKED" });
   }
+}
+
+/**
+ * Chi compare sulla card di un traguardo (UX-59): nome di battesimo, se è
+ * minorenne e la pagina del link. `self` = il proprio profilo.
+ */
+export async function loadBadgeShareSubject(
+  ref: PlayerRef,
+  self: boolean
+): Promise<BadgeShareSubject | null> {
+  if (ref.userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: ref.userId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        birthDate: true,
+        appRole: true,
+        sportRole: true,
+        _count: { select: { matchStats: true } },
+      },
+    });
+    if (!user) return null;
+    const minor = isMinor(user.birthDate);
+    const isPublic = userHasPublicProfile({
+      appRole: user.appRole,
+      sportRole: user.sportRole,
+      matchesPlayed: user._count.matchStats,
+    });
+    return {
+      firstName: firstNameOf(user.name),
+      minor,
+      path: badgeSharePath({ minor, profileSlug: isPublic ? (user.slug ?? user.id) : null }),
+      self,
+    };
+  }
+  const child = await prisma.child.findUnique({
+    where: { id: ref.childId },
+    select: { id: true, name: true, slug: true, birthDate: true },
+  });
+  if (!child) return null;
+  const minor = isMinorChild(child.birthDate);
+  return {
+    firstName: firstNameOf(child.name),
+    minor,
+    path: badgeSharePath({ minor, profileSlug: child.slug ?? child.id }),
+    self,
+  };
 }

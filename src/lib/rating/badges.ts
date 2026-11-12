@@ -1,3 +1,5 @@
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
+
 export type BadgeTier = "bronze" | "silver" | "gold";
 
 /**
@@ -13,6 +15,7 @@ export function medalTier(tier: BadgeTier) {
 }
 
 export type BadgeCategory =
+  | "allenamenti"
   | "punti"
   | "precisione"
   | "continuita"
@@ -48,8 +51,25 @@ export type MatchStat = {
   season: string;
 };
 
+/**
+ * Un allenamento in cui lo staff ha segnato le presenze (almeno una persona
+ * segnata), visto da un giocatore (UX-59). Ci sono quelli a cui poteva
+ * iscriversi e quelli a cui è venuto: un allenamento riservato a un'altra
+ * squadra, a cui non è venuto, non c'è.
+ */
+export type TrainingRecord = {
+  date: Date;
+  season: string;
+  /** Presenza segnata dallo staff (`Registration.attended = true`). */
+  attended: boolean;
+};
+
 export type StatsInput = {
   matchStats: MatchStat[];
+  /** Allenamenti con le presenze segnate (UX-59). Assente = nessuno. */
+  trainings?: TrainingRecord[];
+  /** Stagione in corso: "Stagione fedele" guarda solo le stagioni finite. */
+  currentSeason?: string;
   mvpCount: number;
   topScorerCount: number; // stagioni come 1° marcatore
   sportRole?: number | null; // ruolo Baskin, per i badge riservati a ruoli specifici
@@ -76,6 +96,80 @@ const longestStreak = (s: MatchStat[], pred: (m: MatchStat) => boolean): number 
   }
   return best;
 };
+// ── Allenamenti (UX-59) ──────────────────────────────────────────────────
+/** Mese solare di Roma ("2026-03"): un allenamento delle 23:30 resta nel suo mese. */
+const ROME_MONTH = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Rome",
+  year: "numeric",
+  month: "2-digit",
+});
+const romeMonth = (d: Date) => ROME_MONTH.format(d).slice(0, 7);
+
+/** Un mese conta se ha almeno tanti allenamenti con le presenze segnate. */
+export const FULL_MONTH_MIN_TRAININGS = 4;
+/** "Stagione fedele": quota di presenze, dal primo allenamento della stagione in cui c'era. */
+export const LOYAL_SEASON_RATIO = 0.8;
+/** …su almeno tanti allenamenti: chi arriva a maggio non la prende con due presenze. */
+export const LOYAL_SEASON_MIN_TRAININGS = 10;
+
+const trainingsOf = (s: StatsInput) => s.trainings ?? [];
+const presences = (s: StatsInput) => trainingsOf(s).filter((t) => t.attended).length;
+
+/** C'è un mese con almeno 4 allenamenti in cui è venuto a tutti? */
+export function hasFullMonth(trainings: TrainingRecord[]): boolean {
+  const months = new Map<string, { total: number; attended: number }>();
+  for (const t of trainings) {
+    const key = romeMonth(t.date);
+    const m = months.get(key) ?? { total: 0, attended: 0 };
+    m.total += 1;
+    if (t.attended) m.attended += 1;
+    months.set(key, m);
+  }
+  return [...months.values()].some(
+    (m) => m.total >= FULL_MONTH_MIN_TRAININGS && m.attended === m.total
+  );
+}
+
+/**
+ * C'è una stagione finita in cui è venuto ad almeno l'80% degli allenamenti?
+ * Si conta dal suo primo allenamento di quella stagione, così chi arriva a
+ * gennaio può prenderla anche lui.
+ */
+export function hasLoyalSeason(trainings: TrainingRecord[], currentSeason: string): boolean {
+  const bySeason = new Map<string, TrainingRecord[]>();
+  for (const t of trainings) {
+    if (t.season >= currentSeason) continue;
+    bySeason.set(t.season, [...(bySeason.get(t.season) ?? []), t]);
+  }
+  for (const list of bySeason.values()) {
+    const sorted = [...list].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const first = sorted.findIndex((t) => t.attended);
+    if (first < 0) continue;
+    const counted = sorted.slice(first);
+    if (counted.length < LOYAL_SEASON_MIN_TRAININGS) continue;
+    const attended = counted.filter((t) => t.attended).length;
+    if (attended / counted.length >= LOYAL_SEASON_RATIO) return true;
+  }
+  return false;
+}
+
+const presenceBadge = (
+  id: string,
+  label: string,
+  target: number,
+  emoji: string,
+  tier: BadgeTier
+) => ({
+  id,
+  label,
+  description: target === 1 ? "Fare il primo allenamento" : `Fare ${target} allenamenti`,
+  emoji,
+  tier,
+  category: "allenamenti" as const,
+  check: (s: StatsInput) => presences(s) >= target,
+  progress: (s: StatsInput) => ({ current: Math.min(presences(s), target), target }),
+});
+
 const isR5 = (role: number | null | undefined) => role === 5;
 const isR4orR5 = (role: number | null | undefined) => role === 4 || role === 5;
 
@@ -93,6 +187,32 @@ const BADGE_DEFS: Array<{
   progress?: (s: StatsInput) => { current: number; target: number };
   appliesTo?: (sportRole: number | null | undefined) => boolean;
 }> = [
+  // ── Allenamenti (UX-59) ────────────────────────────────────────────────────
+  // Contano solo le presenze segnate dagli allenatori alla chiusura
+  // dell'allenamento: una presenza non segnata non si sa.
+  presenceBadge("primo_allenamento", "Primo allenamento", 1, "👟", "bronze"),
+  presenceBadge("dieci_allenamenti", "10 allenamenti", 10, "💪", "bronze"),
+  presenceBadge("venticinque_allenamenti", "25 allenamenti", 25, "🎽", "silver"),
+  presenceBadge("cinquanta_allenamenti", "50 allenamenti", 50, "🎖️", "gold"),
+  {
+    id: "mese_pieno",
+    label: "Mese pieno",
+    description: "Non saltare nessun allenamento per un mese intero, con almeno 4 allenamenti",
+    emoji: "📅",
+    tier: "silver",
+    category: "allenamenti",
+    check: (s) => hasFullMonth(trainingsOf(s)),
+  },
+  {
+    id: "stagione_fedele",
+    label: "Stagione fedele",
+    description: "Fare almeno 8 allenamenti su 10 in una stagione",
+    emoji: "💛",
+    tier: "gold",
+    category: "allenamenti",
+    check: (s) => hasLoyalSeason(trainingsOf(s), s.currentSeason ?? getCurrentSeason()),
+  },
+
   // ── Presenza ───────────────────────────────────────────────────────────────
   {
     id: "esordiente",
@@ -432,10 +552,12 @@ export const BADGE_CATEGORY_ORDER: BadgeCategory[] = [
   "continuita",
   "vittorie",
   "presenza",
+  "allenamenti",
   "premi",
   "speciali",
 ];
 export const BADGE_CATEGORY_LABELS: Record<BadgeCategory, string> = {
+  allenamenti: "Allenamenti",
   punti: "Punti",
   precisione: "Precisione",
   continuita: "Continuità",

@@ -6,6 +6,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { StaffRegistrationCreateSchema } from "@/lib/schemas";
 import { inBackground } from "@/lib/background";
+import { reconcileTrainingBadges } from "@/lib/rating/trainingBadges";
 
 type Params = { params: Promise<{ sessionId: string }> };
 
@@ -109,6 +110,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       }),
       "audit add registration"
     );
+    // Traguardi di costanza (UX-59): per lo storico (oltre un mese) senza avvisi.
+    if (registration.attended === true) {
+      inBackground(reconcileTrainingBadges(sessionId), "badges allenamento");
+    }
 
     return NextResponse.json(registration, { status: 201 });
   } catch (err) {

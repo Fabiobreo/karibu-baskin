@@ -3,6 +3,10 @@ import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 
+vi.mock("@/lib/background", () => ({ inBackground: vi.fn() }));
+vi.mock("@/lib/rating/trainingBadges", () => ({
+  reconcileTrainingBadges: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/db", () => ({
   prisma: {
     trainingSession: { findUnique: vi.fn() },

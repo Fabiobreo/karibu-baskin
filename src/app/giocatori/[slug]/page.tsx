@@ -33,6 +33,7 @@ import { sportRoleLabel as sportRoleLabelRaw, roleColorSx, roleColor } from "@/l
 import RoleBadge from "@/components/common/RoleBadge";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadgeState } from "@/lib/rating/badges";
+import { loadTrainingRecords } from "@/lib/rating/badgeService";
 import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
@@ -414,12 +415,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   // Medaglie e data di sblocco dei badge (da EarnedBadge, per "Sbloccato il …")
   // dipendono solo dal giocatore: partono insieme.
-  const [medals, earnedBadgeRows] = await Promise.all([
+  const [medals, earnedBadgeRows, trainings] = await Promise.all([
     loadMedals(),
     prisma.earnedBadge.findMany({
       where: childRow ? { childId: player.id } : { userId: player.id },
       select: { badgeId: true, unlockedAt: true },
     }),
+    loadTrainingRecords(childRow ? { childId: player.id } : { userId: player.id }),
   ]);
 
   const { earned: earnedBadges, locked: lockedBadges } = computeBadgeState({
@@ -436,6 +438,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       date: ms.match.date,
       season: ms.match.team.season,
     })),
+    trainings,
+    currentSeason,
     mvpCount: player._count.matchMvps,
     topScorerCount: medals.filter((m) => m.rank === 1).length,
     sportRole: player.sportRole,

@@ -5,11 +5,15 @@ import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { badgeAnchorId, type BadgeShareSubject } from "@/lib/rating/badgeShare";
+import BadgeShareButton from "@/components/rating/BadgeShareButton";
 
 export type EarnedBadgeView = Badge & {
   /** Frase del traguardo raggiunto ("Hai segnato 10 punti in una partita"). */
   achieved?: string;
   unlockedAtLabel?: string | null;
+  /** Data per la card da condividere ("12 novembre 2026"). */
+  shareDate?: string | null;
 };
 
 interface BadgeShowcaseProps {
@@ -23,6 +27,13 @@ interface BadgeShowcaseProps {
   emptyLabel?: string;
   /** Quanti badge "in arrivo" mostrare al massimo. */
   maxNext?: number;
+  /**
+   * Solo nel proprio profilo e in quello dei figli (UX-59): "Condividi" su
+   * ogni traguardo sbloccato. Mai sul profilo pubblico.
+   */
+  share?: BadgeShareSubject;
+  /** Chiave del figlio nelle ancore (`#traguardo-<id>-<chiave>`); assente per i propri. */
+  anchorKey?: string;
 }
 
 /**
@@ -36,8 +47,11 @@ export default function BadgeShowcase({
   nextTitle,
   emptyLabel,
   maxNext = 3,
+  share,
+  anchorKey,
 }: BadgeShowcaseProps) {
   const t = useTranslations("badgeProgress");
+  const tShare = useTranslations("badgeShare");
   // Prossimi traguardi: i bloccati più vicini al completamento.
   const next = [...locked]
     .filter((b) => b.target > 0)
@@ -52,6 +66,12 @@ export default function BadgeShowcase({
         {title}
       </Typography>
       {earned.length > 0 && <BadgeTierLegend />}
+      {/* Per un minore lo ricorda una volta sola, sopra i bottoni (UX-59). */}
+      {share?.minor && earned.length > 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {tShare("minorNote", { name: share.firstName })}
+        </Typography>
+      )}
 
       {earned.length > 0 ? (
         // Griglia e non chip affiancati: con la frase sempre visibile ogni
@@ -65,10 +85,13 @@ export default function BadgeShowcase({
         >
           {earned.map((badge) => {
             const c = medalTier(badge.tier);
+            const anchorId = badgeAnchorId(badge.id, anchorKey);
             return (
               <Box
                 key={badge.id}
+                id={share ? anchorId : undefined}
                 sx={{
+                  scrollMarginTop: 96,
                   display: "flex",
                   alignItems: "center",
                   gap: 0.75,
@@ -83,7 +106,7 @@ export default function BadgeShowcase({
                 <Typography sx={{ fontSize: TYPE_SCALE.lg, lineHeight: 1 }}>
                   {badge.emoji}
                 </Typography>
-                <Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{
                       fontSize: TYPE_SCALE.sm,
@@ -107,6 +130,14 @@ export default function BadgeShowcase({
                     </Typography>
                   )}
                 </Box>
+                {share && (
+                  <BadgeShareButton
+                    badge={badge}
+                    subject={share}
+                    date={badge.shareDate ?? null}
+                    anchorId={anchorId}
+                  />
+                )}
               </Box>
             );
           })}

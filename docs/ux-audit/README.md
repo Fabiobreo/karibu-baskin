@@ -131,17 +131,16 @@ Al 03/10/2026 tutti i ticket delle ondate 0-5 sono fatti (UX-49 B scartata dal c
 
 Ondata 6 (UX-52 del 07/10/2026, UX-53 e UX-54 del 26/10/2026, richieste del committente che non nascono da un riaudit): fatta l'11/11/2026.
 
-Ondata 7: piano di engagement del committente (06/11/2026). Prima si misura (UX-55), poi si lavora sui tesserati (56-61), poi su chi non conosce il club (62-63) e sui sostenitori (64-65). UX-60 va pronto per fine maggio 2027. UX-55, UX-56 e UX-57 sono fatti (11/11/2026), UX-58 il 12/11/2026 (senza voto MVP delle famiglie: scartato dal committente). L'email settimanale è stata scartata dal committente (06/11/2026): niente servizi oltre i piani gratuiti, e la quota di Resend serve al magic link.
+Ondata 7: piano di engagement del committente (06/11/2026). Prima si misura (UX-55), poi si lavora sui tesserati (56-61), poi su chi non conosce il club (62-63) e sui sostenitori (64-65). UX-60 va pronto per fine maggio 2027. UX-55, UX-56 e UX-57 sono fatti (11/11/2026), UX-58 il 12/11/2026 (senza voto MVP delle famiglie: scartato dal committente), UX-59 il 12/11/2026. L'email settimanale è stata scartata dal committente (06/11/2026): niente servizi oltre i piani gratuiti, e la quota di Resend serve al magic link.
 
-| Ticket                                              | Titolo                                                       | Stima | Dipende da   | In attesa di                              |
-| --------------------------------------------------- | ------------------------------------------------------------ | ----- | ------------ | ----------------------------------------- |
-| [UX-59](tickets/UX-59-traguardi-costanza-e-card.md) | Traguardi di costanza agli allenamenti e card da condividere | M     | UX-56        | soglie dei traguardi                      |
-| [UX-60](tickets/UX-60-la-tua-stagione.md)           | "La tua stagione": riepilogo personale di fine stagione      | L     | UX-59        |                                           |
-| [UX-61](tickets/UX-61-giochi-quiz-e-pronostici.md)  | Giochi del club: quiz del Baskin e pronostico della partita  | L     | UX-55, UX-56 | nomi nel pronostico (solo il punto 3.5)   |
-| [UX-62](tickets/UX-62-seo-locale.md)                | Farsi trovare: SEO locale e scheda Google                    | M     | UX-55        | accesso alla scheda Google (solo punto 1) |
-| [UX-63](tickets/UX-63-pagina-per-educatori.md)      | Pagina per scuole, educatori e servizi                       | M     | UX-55, UX-62 | testi e contatti del club                 |
-| [UX-64](tickets/UX-64-sostieni-il-club.md)          | Sostieni il club: 5×1000, donazioni e volontari              | M     | UX-55        | dati fiscali e decisioni del club         |
-| [UX-65](tickets/UX-65-report-sponsor.md)            | Report per gli sponsor e sponsor in evidenza                 | M     | UX-55        |                                           |
+| Ticket                                             | Titolo                                                      | Stima | Dipende da   | In attesa di                              |
+| -------------------------------------------------- | ----------------------------------------------------------- | ----- | ------------ | ----------------------------------------- |
+| [UX-60](tickets/UX-60-la-tua-stagione.md)          | "La tua stagione": riepilogo personale di fine stagione     | L     | UX-59        |                                           |
+| [UX-61](tickets/UX-61-giochi-quiz-e-pronostici.md) | Giochi del club: quiz del Baskin e pronostico della partita | L     | UX-55, UX-56 | nomi nel pronostico (solo il punto 3.5)   |
+| [UX-62](tickets/UX-62-seo-locale.md)               | Farsi trovare: SEO locale e scheda Google                   | M     | UX-55        | accesso alla scheda Google (solo punto 1) |
+| [UX-63](tickets/UX-63-pagina-per-educatori.md)     | Pagina per scuole, educatori e servizi                      | M     | UX-55, UX-62 | testi e contatti del club                 |
+| [UX-64](tickets/UX-64-sostieni-il-club.md)         | Sostieni il club: 5×1000, donazioni e volontari             | M     | UX-55        | dati fiscali e decisioni del club         |
+| [UX-65](tickets/UX-65-report-sponsor.md)           | Report per gli sponsor e sponsor in evidenza                | M     | UX-55        |                                           |
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

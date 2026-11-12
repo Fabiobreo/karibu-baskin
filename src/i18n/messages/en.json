@@ -706,6 +706,36 @@
     "minorsHidden": "To protect minors, the public leaderboard does not show underage athletes."
   },
   "badges": {
+    "primo_allenamento": {
+      "label": "First training",
+      "description": "Come to your first training session. Attendance is marked by the coaches",
+      "achieved": "{who, select, self {You came to your first training session} other {Came to their first training session}}"
+    },
+    "dieci_allenamenti": {
+      "label": "10 trainings",
+      "description": "Come to 10 training sessions",
+      "achieved": "{who, select, self {You came to 10 training sessions} other {Came to 10 training sessions}}"
+    },
+    "venticinque_allenamenti": {
+      "label": "25 trainings",
+      "description": "Come to 25 training sessions",
+      "achieved": "{who, select, self {You came to 25 training sessions} other {Came to 25 training sessions}}"
+    },
+    "cinquanta_allenamenti": {
+      "label": "50 trainings",
+      "description": "Come to 50 training sessions",
+      "achieved": "{who, select, self {You came to 50 training sessions} other {Came to 50 training sessions}}"
+    },
+    "mese_pieno": {
+      "label": "Full month",
+      "description": "Don't miss a single training session for a whole month, with at least 4 sessions",
+      "achieved": "{who, select, self {You didn't miss a single training session for a whole month} other {Didn't miss a single training session for a whole month}}"
+    },
+    "stagione_fedele": {
+      "label": "Loyal season",
+      "description": "Come to at least 8 training sessions out of 10 in a season",
+      "achieved": "{who, select, self {You came to at least 8 training sessions out of 10 in a season} other {Came to at least 8 training sessions out of 10 in a season}}"
+    },
     "esordiente": {
       "label": "Debutant",
       "description": "Play your first official match",
@@ -839,7 +869,8 @@
     "vittorie": "Wins",
     "presenza": "Appearances",
     "premi": "Awards",
-    "speciali": "Special"
+    "speciali": "Special",
+    "allenamenti": "Training"
   },
   "events": {
     "heroTitle": "Events",
@@ -1816,5 +1847,17 @@
     "removeConfirm": "Remove this image? This cannot be undone.",
     "cancel": "Cancel",
     "removeAction": "Remove"
+  },
+  "badgeShare": {
+    "share": "Share",
+    "sharing": "Preparing the image...",
+    "ariaLabel": "Share the achievement {badge}",
+    "kicker": "Achievement",
+    "reached": "{name} reached the achievement",
+    "subject": "Achievement: {badge}",
+    "msgSelf": "I reached the achievement \"{badge}\" {emoji} with Karibu Baskin!",
+    "msgOther": "{name} reached the achievement \"{badge}\" {emoji} with Karibu Baskin!",
+    "minorNote": "You are sharing {name}'s name. Only send the image to people you know.",
+    "error": "Image not created. Try again."
   }
 }

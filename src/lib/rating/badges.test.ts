@@ -86,14 +86,14 @@ describe("computeAllBadges", () => {
   it("ritorna i badge applicabili (esclusi quelli riservati ad altri ruoli)", () => {
     // emptyInput non ha sportRole → i badge R5/R4-R5 sono esclusi.
     const all = computeAllBadges(emptyInput);
-    expect(all).toHaveLength(22);
+    expect(all).toHaveLength(28);
     expect(all.every((b) => b.earned === false)).toBe(true);
     expect(all.some((b) => b.id === "mira_acciaio")).toBe(false);
   });
 
   it("include i badge riservati agli R5 quando il giocatore è R5", () => {
     const all = computeAllBadges({ ...emptyInput, sportRole: 5 });
-    expect(all).toHaveLength(25);
+    expect(all).toHaveLength(31);
     expect(all.some((b) => b.id === "mira_acciaio")).toBe(true);
     expect(all.some((b) => b.id === "cecchino_perfetto")).toBe(true);
     expect(all.some((b) => b.id === "fair_play")).toBe(true);
@@ -167,5 +167,105 @@ describe("getBadgeById", () => {
   });
   it("ritorna undefined per id sconosciuto", () => {
     expect(getBadgeById("inesistente")).toBeUndefined();
+  });
+});
+
+describe("traguardi degli allenamenti (UX-59)", () => {
+  const training = (date: string, attended = true, season = "2025-26") => ({
+    date: new Date(date),
+    season,
+    attended,
+  });
+  /** `n` allenamenti, uno a settimana dal 1° ottobre 2025. */
+  const weekly = (n: number, attended: (i: number) => boolean = () => true) =>
+    Array.from({ length: n }, (_, i) =>
+      training(new Date(Date.UTC(2025, 9, 1 + i * 7, 17)).toISOString(), attended(i))
+    );
+  const ids = (input: Partial<StatsInput>) =>
+    computeBadges({ ...emptyInput, currentSeason: "2026-27", ...input }).map((b) => b.id);
+
+  it("10 presenze e nessuna partita: primo allenamento e 10 allenamenti", () => {
+    const got = ids({ trainings: weekly(10) });
+    expect(got).toContain("primo_allenamento");
+    expect(got).toContain("dieci_allenamenti");
+    expect(got).not.toContain("venticinque_allenamenti");
+  });
+
+  it("le soglie 25 e 50", () => {
+    expect(ids({ trainings: weekly(25) })).toContain("venticinque_allenamenti");
+    expect(ids({ trainings: weekly(49) })).not.toContain("cinquanta_allenamenti");
+    expect(ids({ trainings: weekly(50) })).toContain("cinquanta_allenamenti");
+  });
+
+  it("le assenze e gli allenamenti senza presenza non contano", () => {
+    const got = ids({ trainings: weekly(12, (i) => i < 9) });
+    expect(got).toContain("primo_allenamento");
+    expect(got).not.toContain("dieci_allenamenti");
+  });
+
+  it("senza allenamenti nessun traguardo, e la barra parte da zero", () => {
+    expect(ids({})).toEqual([]);
+    const locked = computeBadgeState(emptyInput).locked.find((b) => b.id === "dieci_allenamenti");
+    expect(locked).toMatchObject({ current: 0, target: 10 });
+  });
+
+  it("mese pieno: tutti e 4 gli allenamenti di un mese", () => {
+    const month = [
+      training("2025-11-03T17:00:00Z"),
+      training("2025-11-10T17:00:00Z"),
+      training("2025-11-17T17:00:00Z"),
+      training("2025-11-24T17:00:00Z"),
+    ];
+    expect(ids({ trainings: month })).toContain("mese_pieno");
+    const missed = month.map((t, i) => (i === 2 ? { ...t, attended: false } : t));
+    expect(ids({ trainings: missed })).not.toContain("mese_pieno");
+  });
+
+  it("mese pieno: un allenamento riservato a un'altra squadra non rompe il mese", () => {
+    // 4 allenamenti nel mese, uno riservato a un'altra squadra: chi carica i
+    // dati lo lascia fuori (non poteva iscriversi), quindi restano 3 su 3…
+    const three = [
+      training("2025-11-03T17:00:00Z"),
+      training("2025-11-10T17:00:00Z"),
+      training("2025-11-17T17:00:00Z"),
+    ];
+    // …e un mese di 3 non basta per la regola dei 4: serve il quarto a cui
+    // poteva venire. Con l'allenamento congiunto del 24 il mese è pieno.
+    expect(ids({ trainings: three })).not.toContain("mese_pieno");
+    expect(ids({ trainings: [...three, training("2025-11-24T17:00:00Z")] })).toContain(
+      "mese_pieno"
+    );
+  });
+
+  it("mese pieno: il mese è quello di Roma", () => {
+    // 31 ottobre alle 23:30 UTC è già il 1° novembre a Roma.
+    const nov = [
+      training("2025-10-31T23:30:00Z"),
+      training("2025-11-10T17:00:00Z"),
+      training("2025-11-17T17:00:00Z"),
+      training("2025-11-24T17:00:00Z"),
+    ];
+    expect(ids({ trainings: nov })).toContain("mese_pieno");
+  });
+
+  it("stagione fedele: 80% di una stagione finita", () => {
+    expect(ids({ trainings: weekly(20, (i) => i % 5 !== 0) })).toContain("stagione_fedele");
+    expect(ids({ trainings: weekly(20, (i) => i % 4 !== 0) })).not.toContain("stagione_fedele");
+  });
+
+  it("stagione fedele: non nella stagione in corso", () => {
+    const got = computeBadges({
+      ...emptyInput,
+      currentSeason: "2025-26",
+      trainings: weekly(20),
+    }).map((b) => b.id);
+    expect(got).not.toContain("stagione_fedele");
+  });
+
+  it("stagione fedele: si conta dal primo allenamento in cui c'era", () => {
+    // Arriva al 9° allenamento e poi non ne perde uno: 12 su 12 da lì.
+    expect(ids({ trainings: weekly(20, (i) => i >= 8) })).toContain("stagione_fedele");
+    // Arriva troppo tardi: meno di 10 allenamenti da contare.
+    expect(ids({ trainings: weekly(20, (i) => i >= 12) })).not.toContain("stagione_fedele");
   });
 });

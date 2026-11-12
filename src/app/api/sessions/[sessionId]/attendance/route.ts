@@ -3,6 +3,8 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { inBackground } from "@/lib/background";
+import { reconcileTrainingBadges } from "@/lib/rating/trainingBadges";
 
 /**
  * Presenze di un allenamento salvate tutte insieme (UX-13): la chiusura
@@ -60,6 +62,10 @@ export async function PUT(
         })
       )
     );
+    // Traguardi di costanza dei presenti (UX-59), dopo la risposta.
+    if (items.some((i) => i.attended === true)) {
+      inBackground(reconcileTrainingBadges(sessionId), "badges allenamento");
+    }
     return NextResponse.json({ updated: items.length });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

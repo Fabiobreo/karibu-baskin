@@ -1,6 +1,6 @@
 # UX-59 · Traguardi di costanza agli allenamenti e card da condividere
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-56 (helper di condivisione) · **Stato:** da fare · **In attesa di:** conferma del committente sulle soglie (punto 1)
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-56 (helper di condivisione) · **Stato:** fatto (12/11/2026)
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 
@@ -13,26 +13,36 @@ Richiesta del committente del 06/11/2026 (piano di engagement).
 
 ### 1. Nuova categoria "Allenamenti"
 
-Proposta di soglie (da confermare con il committente prima di implementare, poi scriverle qui):
+Soglie confermate dal committente il 12/11/2026. Il DB di sviluppo non aveva abbastanza presenze vere per tararle (16 allenamenti con presenze segnate, nessuno oltre 4 presenze): sono ricavate dal calendario, circa un allenamento a settimana per squadra, 30-35 a stagione. 25 presenze sono una stagione piena, 50 due.
 
-| id                  | Etichetta         | Regola                                                                      | Emoji | Livello |
-| ------------------- | ----------------- | --------------------------------------------------------------------------- | ----- | ------- |
-| `primo_allenamento` | Primo allenamento | 1 presenza segnata                                                          | 👟    | bronze  |
-| `dieci_allenamenti` | 10 allenamenti    | 10 presenze                                                                 | 💪    | bronze  |
-| `venticinque_all`   | 25 allenamenti    | 25 presenze                                                                 | 🔥    | silver  |
-| `cinquanta_all`     | 50 allenamenti    | 50 presenze                                                                 | 🏅    | gold    |
-| `mese_pieno`        | Mese pieno        | presente a tutti gli allenamenti di un mese solare con almeno 4 allenamenti | 📅    | silver  |
-| `stagione_fedele`   | Stagione fedele   | presente ad almeno l'80% degli allenamenti di una stagione conclusa         | 🌟    | gold    |
+| id                        | Etichetta         | Regola                                                                                      | Emoji | Livello |
+| ------------------------- | ----------------- | ------------------------------------------------------------------------------------------- | ----- | ------- |
+| `primo_allenamento`       | Primo allenamento | 1 presenza segnata                                                                          | 👟    | bronze  |
+| `dieci_allenamenti`       | 10 allenamenti    | 10 presenze                                                                                 | 💪    | bronze  |
+| `venticinque_allenamenti` | 25 allenamenti    | 25 presenze                                                                                 | 🎽    | silver  |
+| `cinquanta_allenamenti`   | 50 allenamenti    | 50 presenze                                                                                 | 🎖️    | gold    |
+| `mese_pieno`              | Mese pieno        | presente a tutti gli allenamenti di un mese solare (di Roma) con almeno 4 allenamenti       | 📅    | silver  |
+| `stagione_fedele`         | Stagione fedele   | presente ad almeno l'80% degli allenamenti di una stagione finita, su almeno 10 allenamenti | 💛    | gold    |
+
+Emoji diverse da quelle del ticket dove erano già usate da altri traguardi (🔥 "In fiamme", 🏅 "Vincente", 🌟 "MVP").
+
+Decisioni del 12/11/2026:
+
+- Per "Mese pieno" e "Stagione fedele" contano solo gli allenamenti in cui lo staff ha segnato le presenze (almeno una persona segnata): un allenamento mai chiuso non è un'assenza per tutti.
+- "Poteva iscriversi" si decide con la squadra **di quel giorno** (`@/lib/matches/teamHistory`), non con quella di adesso; un allenamento riservato alla Karibu di stagione vale per tutti i giocatori della stagione. Chi è venuto conta sempre, anche se non era tra gli ammessi.
+- "Stagione fedele" si conta dal primo allenamento della persona in quella stagione, così chi arriva a gennaio può prenderla; servono almeno 10 allenamenti da contare. Una stagione è finita quando non è più quella in corso (`getCurrentSeasonLabel`): il traguardo arriva alla prima chiusura di un allenamento della stagione nuova. Nessun cron.
+- "Condividi" sta in `/profilo` (propri e figli, scheda Famiglia). Non nella vetrina `/profilo/traguardi`: le tessere sul telefono sono due per riga e il bottone non ci sta.
+- La frase sui minori compare una volta sopra i traguardi, non sotto ogni bottone.
 
 - Si contano solo le presenze con `attended = true`; quelle non segnate (`NULL`) non contano, perché non si sa. Lo dice la descrizione del badge ("Presenze segnate dagli allenatori").
 - "Mese pieno" e "Stagione fedele" contano solo gli allenamenti **a cui la persona poteva iscriversi** (`checkRegistrationAllowed` con i suoi dati: un allenamento riservato a un'altra squadra non deve rompere la serie).
 - Persona unica (`@/lib/person`): le presenze della scheda figlio e dell'account collegato si sommano, come il resto dei dati sportivi.
 - Nuova categoria `allenamenti` in `BadgeCategory`, `BADGE_CATEGORY_ORDER` (dopo `presenza`) e `BADGE_CATEGORY_LABELS`; etichette e descrizioni tradotte come quelle esistenti (decisione "Traguardi": le emoji restano).
-- `StatsInput` riceve `trainingAttendance: { sessionId, date, eligible: boolean }[]`; `loadBadgeInput` in `badgeService.ts` la carica. Test in `badges.test.ts` per ogni soglia, per i `NULL` e per il mese con un allenamento riservato.
+- `StatsInput` riceve `trainings: { date, season, attended }[]` (solo gli allenamenti a cui poteva iscriversi o a cui è venuto) e `currentSeason`; li carica `loadTrainingRecords` in `badgeService.ts`, usato da `loadBadgeInput` e dal profilo pubblico. Test in `badges.test.ts` per ogni soglia, per i `NULL` e per il mese con un allenamento riservato.
 
 ### 2. Quando si ricalcola
 
-- Al salvataggio delle presenze: `PUT /api/sessions/[sessionId]/attendance` e "Salva e concludi" di `TrainingCloseForm` chiamano `reconcilePlayerBadges` per i presenti, con `inBackground`.
+- Al salvataggio delle presenze (`PUT /api/sessions/[sessionId]/attendance`, che usa anche "Salva e concludi" di `TrainingCloseForm`; `PATCH /api/registrations/[regId]/attendance`; iscrizione dallo staff con "Segna presente") parte `reconcileTrainingBadges` (`@/lib/rating/trainingBadges`) per i presenti, con `inBackground`.
 - Per allenamenti di oltre un mese fa (inserimento di storico con `ManageParticipantsDialog`) **nessuna notifica**, come per le partite storiche.
 - **Backfill obbligatorio al deploy:** prima che qualcuno salvi delle presenze, eseguire `POST /api/admin/badges/backfill` (esiste già, senza notifiche), altrimenti alla prima chiusura di allenamento ogni atleta riceve in blocco i badge storici. Scriverlo nel paragrafo dei badge di `CLAUDE.md`, accanto all'avvertenza che c'è già.
 
