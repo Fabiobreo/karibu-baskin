@@ -44,6 +44,7 @@ import {
 } from "@/lib/games/sfida";
 import {
   buildSfida,
+  seasonShortfall,
   seasonTeamsPlayable,
   sfidaSearchParams,
   type SfidaPlayerView,
@@ -72,7 +73,8 @@ interface SfidaGameProps {
   initial: SfidaState;
   initialOutcome: SfidaOutcome | null;
   /** La partita intera non si poteva fare: si parte dal sei contro sei, e lo si dice. */
-  initialNotice?: "fullNotPossible" | null;
+  /** Avviso già tradotto, se la sfida di partenza non è quella chiesta. */
+  initialNotice?: string | null;
 }
 
 type Sheet = { side: 0 | 1; quarter: number | null; out: string | null };
@@ -105,7 +107,7 @@ export default function SfidaGame({
 
   const [state, setState] = useState<SfidaState>(initial);
   const [outcome, setOutcome] = useState<SfidaOutcome | null>(initialOutcome);
-  const [notice, setNotice] = useState<string | null>(initialNotice ? t(initialNotice) : null);
+  const [notice, setNotice] = useState<string | null>(initialNotice);
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [renaming, setRenaming] = useState<0 | 1 | null>(null);
   const [convocati, setConvocati] = useState<0 | 1 | null>(null);
@@ -133,7 +135,15 @@ export default function SfidaGame({
       msg = t("fullNotPossible");
     }
     if (!next) return;
-    if (grouping === "season" && next.grouping === "mixed") msg = t("seasonNeedsTwo");
+    if (grouping === "season" && next.grouping === "mixed") {
+      const short = seasonShortfall(ctx, mode);
+      msg =
+        short?.kind === "oneTeam"
+          ? t("seasonOneTeam")
+          : short?.kind === "team"
+            ? t("seasonTeamShort", { team: short.team, reason: t(`shortfall.${short.reason}`) })
+            : t("seasonNeedsTwo");
+    }
     setNotice(msg);
     update(next);
   }

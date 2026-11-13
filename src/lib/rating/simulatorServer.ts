@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { simulateMatch, type SimResult } from "./matchSimulator";
 import { validateLineup, type LineupPlayerLike } from "./lineupRules";
 import { buildSimSeed, parseSimPlayerKey } from "./simulatorShared";
-import { MAX_QUARTERS_EACH, QUARTERS } from "@/lib/games/sfida";
+import { QUARTERS } from "@/lib/games/sfida";
 import { mulberry32, stringToSeed } from "@/lib/seededRandom";
 
 export type SimulationOutcome =
@@ -103,7 +103,7 @@ export type FullMatchOutcome =
 /**
  * Partita intera in 4 tempi (UX-69): ogni tempo è una sfida fra due formazioni
  * valide, con il suo seme, e i punti si sommano. Ogni persona sta da un lato
- * solo e gioca al massimo tre tempi. Al client vanno i soli punteggi: niente
+ * solo. Al client vanno i soli punteggi: niente
  * probabilità per tempo, che confrontate fra tempi con e senza qualcuno
  * direbbero troppo sul suo livello.
  */
@@ -121,14 +121,6 @@ export async function runMatchSimulation(
   for (const lineup of [...quartersA, ...quartersB]) {
     if (new Set(lineup).size !== lineup.length) return { ok: false, reason: "invalid-keys" };
   }
-  for (const side of [quartersA, quartersB]) {
-    const count = new Map<string, number>();
-    for (const k of side.flat()) count.set(k, (count.get(k) ?? 0) + 1);
-    if ([...count.values()].some((n) => n > MAX_QUARTERS_EACH)) {
-      return { ok: false, reason: "invalid-lineup" };
-    }
-  }
-
   const byKey = await loadRated([...sideA, ...sideB]);
   if (!byKey) return { ok: false, reason: "invalid-keys" };
 

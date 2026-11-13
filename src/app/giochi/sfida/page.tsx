@@ -13,6 +13,7 @@ import { loadGameSettings } from "@/lib/games/loadGameSettings";
 import {
   buildSfida,
   parseSfidaLink,
+  seasonShortfall,
   type SfidaContext,
   type SfidaPlayerView,
   type SfidaState,
@@ -132,13 +133,23 @@ export default async function SfidaPage({ searchParams }: Props) {
   let initial = parseSfidaLink(sp, ctx);
   const initialOutcome = initial ? await linkOutcome(initial) : null;
   if (!initialOutcome) initial = null;
-  let notice: "fullNotPossible" | null = null;
+  let notice: string | null = null;
   if (!initial) {
     const rand = mulberry32(freshSeed());
     initial = buildSfida(ctx, { mode: "full", grouping: "season" }, rand);
     if (!initial) {
       initial = buildSfida(ctx, { mode: "six", grouping: "season" }, rand);
-      if (initial) notice = "fullNotPossible";
+      if (initial) notice = t("fullNotPossible");
+    }
+    // Squadre della stagione chieste ma non bastano: si dice perché.
+    if (initial?.grouping === "mixed") {
+      const short = seasonShortfall(ctx, initial.mode);
+      if (short?.kind === "team") {
+        notice = t("seasonTeamShort", {
+          team: short.team,
+          reason: t(`shortfall.${short.reason}`),
+        });
+      }
     }
   }
 

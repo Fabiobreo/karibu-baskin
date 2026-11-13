@@ -165,15 +165,15 @@ describe("runMatchSimulation (partita intera, UX-69)", () => {
     expect(one).toEqual(two);
   });
 
-  it("rifiuta chi gioca da tutti e due i lati o più di tre tempi", async () => {
+  it("rifiuta chi gioca da tutti e due i lati", async () => {
     const shared = quarters(B);
     shared[0] = [...shared[0].slice(1), `user-${A[1].id}`];
     expect((await runMatchSimulation(quarters(A), shared, 1)).ok).toBe(false);
-    const greedy = quarters(A).map(() => quarters(A)[0]);
-    expect(await runMatchSimulation(greedy, quarters(B), 1)).toEqual({
-      ok: false,
-      reason: "invalid-lineup",
-    });
+  });
+
+  it("accetta chi gioca tutti e quattro i tempi", async () => {
+    const same = quarters(A).map(() => quarters(A)[0]);
+    expect((await runMatchSimulation(same, quarters(B), 1)).ok).toBe(true);
   });
 
   it("rifiuta un tempo non valido", async () => {

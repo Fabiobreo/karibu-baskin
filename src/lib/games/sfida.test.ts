@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { validateLineup } from "@/lib/rating/lineupRules";
 import { mulberry32 } from "@/lib/seededRandom";
 import {
-  MAX_QUARTERS_EACH,
   quarterPlan,
   quartersPlayed,
   randomLineup,
+  rosterShortfall,
   splitMixed,
   swapOptions,
   type SfidaPlayer,
@@ -54,7 +54,7 @@ describe("randomLineup", () => {
 });
 
 describe("quarterPlan", () => {
-  it("4 tempi validi, tutti in campo da uno a tre tempi", () => {
+  it("4 tempi validi, tutti in campo almeno un tempo", () => {
     const r = roster();
     for (let seed = 1; seed < 40; seed++) {
       const plan = quarterPlan(r, mulberry32(seed));
@@ -64,13 +64,27 @@ describe("quarterPlan", () => {
       const played = quartersPlayed(plan!);
       for (const p of r) {
         expect(played.get(p.key)).toBeGreaterThanOrEqual(1);
-        expect(played.get(p.key)).toBeLessThanOrEqual(MAX_QUARTERS_EACH);
       }
     }
   });
-  it("null con una rosa troppo corta: in 6 si giocherebbero tutti e 4 i tempi", () => {
+  it("senza massimo: un pivot solo gioca tutti e quattro i tempi", () => {
+    const r = [
+      P(1, "FEMALE"),
+      P(3),
+      P(3, "FEMALE"),
+      P(4, "FEMALE"),
+      P(4),
+      P(5),
+      P(5, "FEMALE"),
+      P(5),
+    ];
+    const plan = quarterPlan(r, mulberry32(2));
+    expect(plan).not.toBeNull();
+    expect(quartersPlayed(plan!).get(r[0].key)).toBe(4);
+  });
+  it("in 6 giocano tutti sempre; in 5 non si fa", () => {
     const six = [P(1), P(3), P(4, "FEMALE"), P(5), P(5, "FEMALE"), P(4)];
-    expect(quarterPlan(six, mulberry32(1))).toBeNull();
+    expect(quarterPlan(six, mulberry32(1))).not.toBeNull();
     expect(quarterPlan([P(1), P(3), P(4, "FEMALE"), P(5), P(4)], mulberry32(1))).toBeNull();
   });
 });
@@ -117,17 +131,28 @@ describe("swapOptions", () => {
     const { options } = swapOptions({ lineup: [pivot], out: null, bench: [P(2), P(5)] });
     expect(options.map((o) => o.player.sportRole)).toEqual([5]);
   });
-  it("partita intera: chi gioca un tempo solo non esce, chi ne ha tre non entra", () => {
+  it("partita intera: chi gioca un tempo solo non esce, gli altri si cambiano", () => {
     const extra = P(4, "FEMALE");
-    const played = new Map(lineup.map((p) => [p.key, 2]));
+    const played = new Map(lineup.map((p) => [p.key, 4]));
     played.set(four.key, 1);
     expect(swapOptions({ lineup, out: four, bench: [extra], played }).blockedBy).toBe(
       "lastQuarter"
     );
     played.set(four.key, 2);
-    played.set(extra.key, 3);
+    played.set(extra.key, 4);
     const r = swapOptions({ lineup, out: four, bench: [extra], played });
-    expect(r.options).toHaveLength(0);
-    expect(r.blockedBy).toBe("maxQuarters");
+    expect(r.options.map((o) => o.player)).toEqual([extra]);
+  });
+});
+
+describe("rosterShortfall", () => {
+  it("dice cosa manca a una rosa", () => {
+    const ok = [P(1), P(3), P(4, "FEMALE"), P(5), P(5, "FEMALE"), P(4)];
+    expect(rosterShortfall(ok)).toBeNull();
+    expect(rosterShortfall([P(3), P(3), P(4, "FEMALE"), P(5), P(5, "FEMALE"), P(4)])).toBe("pivot");
+    expect(rosterShortfall([P(1), P(4), P(4, "FEMALE"), P(5), P(5, "FEMALE"), P(4)])).toBe("three");
+    expect(rosterShortfall([P(1), P(3), P(4, "FEMALE"), P(5), P(4), P(4)])).toBe("fives");
+    expect(rosterShortfall([P(1), P(3), P(4), P(5), P(5), P(4)])).toBe("gender");
+    expect(rosterShortfall([P(1), P(3), P(5, "FEMALE"), P(5)])).toBe("players");
   });
 });

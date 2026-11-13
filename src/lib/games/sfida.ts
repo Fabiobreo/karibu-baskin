@@ -1,4 +1,5 @@
 import { MAX_ROLE_SUM, validateLineup } from "@/lib/rating/lineupRules";
+import { mulberry32 } from "@/lib/seededRandom";
 
 /**
  * La Sfida (UX-69): formazioni pronte, cambi possibili e piano dei 4 tempi.
@@ -8,9 +9,12 @@ import { MAX_ROLE_SUM, validateLineup } from "@/lib/rating/lineupRules";
  */
 
 export const QUARTERS = 4;
-/** In una partita intera ognuno gioca almeno un tempo e al massimo tre. */
+/**
+ * In una partita intera ognuno gioca almeno un tempo. Nessun massimo: come in
+ * una partita vera, il pivot unico gioca tutti e quattro i tempi. Il
+ * generatore fa comunque riposare chi ha già giocato, quando può.
+ */
 export const MIN_QUARTERS_EACH = 1;
-export const MAX_QUARTERS_EACH = 3;
 /** Rosa massima di una squadra, come nel regolamento. */
 export const MAX_ROSTER = 14;
 /** Nome di una squadra scritto a mano. */
@@ -84,8 +88,8 @@ export function randomLineup<T extends SfidaPlayer>(
 
 /**
  * Le formazioni dei 4 tempi di una rosa: tutte valide, ognuno in campo almeno
- * un tempo e al massimo tre. `null` se la rosa non basta (pochi ruolo 5, pivot
- * o ruoli 3, o troppa gente per 24 posti).
+ * un tempo. `null` se la rosa non basta per una formazione o se non si riesce
+ * a far giocare tutti (troppa gente, o troppi dello stesso ruolo per 24 posti).
  */
 export function quarterPlan<T extends SfidaPlayer>(
   roster: readonly T[],
@@ -104,9 +108,9 @@ export function quarterPlan<T extends SfidaPlayer>(
         rand,
         (p) => {
           const n = played.get(p.key) ?? 0;
-          if (n >= MAX_QUARTERS_EACH) return 0;
-          // Chi non ha ancora giocato pesa sempre di più, fino all'ultimo tempo.
-          return n === 0 ? 4 + 8 / left : 1 / (1 + n);
+          // Chi non ha ancora giocato pesa sempre di più, fino all'ultimo
+          // tempo; chi ha già giocato tanto pesa poco, ma resta scelto se serve.
+          return n === 0 ? 4 + 8 / left : 1 / (1 + n) ** 2;
         },
         40
       );
@@ -167,14 +171,7 @@ export function shuffle<T>(items: readonly T[], rand: () => number): T[] {
 }
 
 /** Perché qualcuno non può entrare al posto di un altro. */
-export type SwapBlock =
-  | "pivot"
-  | "sum"
-  | "three"
-  | "fives"
-  | "gender"
-  | "maxQuarters"
-  | "lastQuarter";
+export type SwapBlock = "pivot" | "sum" | "three" | "fives" | "gender" | "lastQuarter";
 
 export interface SwapOption<T> {
   player: T;
@@ -233,10 +230,6 @@ export function swapOptions<T extends SfidaPlayer>(args: {
 
   for (const p of bench.filter(canPlaySfida)) {
     if (lineup.includes(p)) continue;
-    if (played && (played.get(p.key) ?? 0) >= MAX_QUARTERS_EACH) {
-      block("maxQuarters");
-      continue;
-    }
     const b = fits([...rest, p]);
     if (b) block(b);
     else options.push({ player: p, from: "bench" });
@@ -258,4 +251,26 @@ export function swapOptions<T extends SfidaPlayer>(args: {
     }
   }
   return { options, blockedBy };
+}
+
+/** Perché una rosa non riesce a fare una formazione (UX-69). */
+export type RosterShortfall = "players" | "pivot" | "three" | "fives" | "gender";
+
+/**
+ * Il primo motivo per cui una rosa non fa una formazione valida, da dire a chi
+ * gioca ("manca un pivot"); `null` se ci riesce. Controlla i ruoli in ordine,
+ * poi il genere fra i 4 e i 5; se tutto c'è ma non torna, sono pochi giocatori.
+ */
+export function rosterShortfall(roster: readonly SfidaPlayer[]): RosterShortfall | null {
+  const pool = roster.filter(canPlaySfida);
+  if (randomLineup(pool, mulberry32(11)) !== null) return null;
+  const role = (r: number) => pool.filter((p) => p.sportRole === r);
+  if (!pool.some(isPivot)) return "pivot";
+  if (role(3).length === 0) return "three";
+  if (role(5).length < 2) return "fives";
+  const high = [...role(4), ...role(5)];
+  if (!high.some((p) => p.gender === "FEMALE") || !high.some((p) => p.gender === "MALE")) {
+    return "gender";
+  }
+  return "players";
 }

@@ -5,6 +5,7 @@ import {
   buildSfida,
   cleanSideName,
   parseSfidaLink,
+  seasonShortfall,
   sfidaSearchParams,
   type SfidaContext,
   type SfidaPlayerView,
@@ -101,5 +102,32 @@ describe("cleanSideName", () => {
   it("toglie a capo e spazi, tiene 20 caratteri", () => {
     expect(cleanSideName("  I   Rimbalzi\nFelici  ")).toBe("I Rimbalzi Felici");
     expect(cleanSideName("x".repeat(40))).toHaveLength(20);
+  });
+});
+
+describe("seasonShortfall", () => {
+  it("una squadra sola, o il motivo della squadra che non basta", () => {
+    expect(seasonShortfall(ctx(["kap"]), "six")).toEqual({ kind: "oneTeam" });
+    const c = ctx(["kap", "mon"]);
+    expect(seasonShortfall(c, "full")).toBeNull();
+    const noPivot = {
+      ...c,
+      players: c.players.filter((p) => !(p.teamIds[0] === "mon" && (p.sportRole ?? 0) <= 2)),
+    };
+    expect(seasonShortfall(noPivot, "full")).toEqual({
+      kind: "team",
+      team: "mon",
+      reason: "pivot",
+    });
+  });
+  it("partita intera con un pivot solo per squadra: si fa", () => {
+    const c = ctx(["kap", "mon"]);
+    const onePivot = {
+      ...c,
+      players: c.players.filter((p) => p.sportRole !== 2),
+    };
+    expect(seasonShortfall(onePivot, "full")).toBeNull();
+    const s = buildSfida(onePivot, { mode: "full", grouping: "season" }, mulberry32(8))!;
+    expect(s.grouping).toBe("season");
   });
 });

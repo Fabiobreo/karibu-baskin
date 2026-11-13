@@ -6,7 +6,9 @@ import {
   quarterPlan,
   randomLineup,
   shuffle,
+  rosterShortfall,
   splitMixed,
+  type RosterShortfall,
   type SfidaGrouping,
   type SfidaMode,
   type SfidaPlayer,
@@ -76,9 +78,47 @@ export function seasonTeamsPlayable(ctx: SfidaContext, mode: SfidaMode): SfidaTe
     const roster = ctx.players.filter((p) => p.teamIds.includes(t.id));
     const rand = mulberry32(7);
     return mode === "full"
-      ? quarterPlan(roster, rand, 20) !== null
+      ? fullMatchRoster(roster, rand) !== null
       : randomLineup(roster, rand) !== null;
   });
+}
+
+/**
+ * Convocati e 4 tempi per una rosa: prima tutti (fino a 14), poi convocazioni
+ * più corte, finché i tempi tornano. Con tanti giocatori dello stesso ruolo
+ * non tutti trovano un tempo, e allora qualcuno resta a casa.
+ */
+export function fullMatchRoster<T extends SfidaPlayer>(
+  players: readonly T[],
+  rand: () => number
+): { roster: T[]; plan: T[][] } | null {
+  const pool = players.filter(canPlaySfida);
+  for (const size of [MAX_ROSTER, 12, 10, 8, 6]) {
+    if (size > pool.length && size !== MAX_ROSTER) continue;
+    for (let i = 0; i < (pool.length > size ? 4 : 1); i++) {
+      const roster = shuffle(pool, rand).slice(0, size);
+      const plan = quarterPlan(roster, rand, 60);
+      if (plan) return { roster, plan };
+    }
+  }
+  return null;
+}
+
+/** Perché "Squadre della stagione" non si può fare (UX-69), da dire in un avviso. */
+export type SeasonShortfall =
+  | { kind: "oneTeam" }
+  | { kind: "team"; team: string; reason: RosterShortfall };
+
+export function seasonShortfall(ctx: SfidaContext, mode: SfidaMode): SeasonShortfall | null {
+  const playable = seasonTeamsPlayable(ctx, mode);
+  if (playable.length >= 2) return null;
+  const withPlayers = ctx.teams.filter((t) =>
+    ctx.players.some((p) => p.teamIds.includes(t.id) && canPlaySfida(p))
+  );
+  if (withPlayers.length < 2) return { kind: "oneTeam" };
+  const short = withPlayers.find((t) => !playable.includes(t))!;
+  const roster = ctx.players.filter((p) => p.teamIds.includes(short.id));
+  return { kind: "team", team: short.name, reason: rosterShortfall(roster) ?? "players" };
 }
 
 function twoNames(names: readonly string[], rand: () => number): [string, string] {
@@ -93,12 +133,12 @@ function fillSide(
   rand: () => number
 ): SfidaSide | null {
   const pool = players.filter((p) => base.pool.includes(p.key) && canPlaySfida(p));
-  const roster = shuffle(pool, rand).slice(0, MAX_ROSTER);
   if (mode === "full") {
-    const plan = quarterPlan(roster, rand);
-    if (!plan) return null;
-    return { ...base, roster: keysOf(roster), lineup: [], quarters: plan.map(keysOf) };
+    const full = fullMatchRoster(pool, rand);
+    if (!full) return null;
+    return { ...base, roster: keysOf(full.roster), lineup: [], quarters: full.plan.map(keysOf) };
   }
+  const roster = shuffle(pool, rand).slice(0, MAX_ROSTER);
   const lineup = randomLineup(pool, rand);
   if (!lineup) return null;
   return { ...base, roster: keysOf(roster), lineup: keysOf(lineup), quarters: [] };
@@ -108,8 +148,7 @@ function fillSide(
  * Due lati pronti da giocare. Con "Squadre della stagione" due squadre vere a
  * caso fra quelle che bastano da sole; altrimenti (o se non ce ne sono due)
  * tutti mescolati, con nomi casuali e le casacche. `null` se nemmeno i
- * mescolati bastano. La partita intera ripiega sul sei contro sei solo se lo
- * chiede chi chiama (`allowFallback`).
+ * mescolati bastano.
  */
 export function buildSfida(
   ctx: SfidaContext,
