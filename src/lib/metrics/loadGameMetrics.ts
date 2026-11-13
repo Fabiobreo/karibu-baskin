@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { romeDay } from "@/lib/notifications/pushStatTypes";
 import { PREDICTABLE_MATCH_WHERE } from "@/lib/games/loadPredictions";
+import { QUIZ_GAME_PREFIX } from "@/lib/games/gameStats";
 
 /**
  * Giochi in `/admin/metriche` (UX-61): solo per curiosità, per sapere se
@@ -11,9 +12,11 @@ import { PREDICTABLE_MATCH_WHERE } from "@/lib/games/loadPredictions";
 const RECENT_MATCHES = 3;
 
 export interface GameMetrics {
-  /** Partite del quiz completate nel periodo. */
+  /** Partite dei quiz completate nel periodo, tutti i quiz insieme. */
   quizPlays: number;
-  /** Quanti tesserati hanno la loro migliore partita salvata. */
+  /** Partite completate nel periodo per quiz (id del quiz → partite, UX-67). */
+  quizPlaysById: Record<string, number>;
+  /** Quanti tesserati hanno almeno una migliore partita salvata. */
   quizPlayers: number;
   /** Ultime partite iniziate con il pronostico, dalla più recente. */
   predictions: { title: string; date: Date; count: number }[];
@@ -21,12 +24,13 @@ export interface GameMetrics {
 
 export async function loadGameMetrics(windowDays: number, now = new Date()): Promise<GameMetrics> {
   const from = romeDay(new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000));
-  const [plays, quizPlayers, matches] = await Promise.all([
-    prisma.gameDailyStat.aggregate({
-      where: { game: "quiz", day: { gte: from } },
+  const [plays, players, matches] = await Promise.all([
+    prisma.gameDailyStat.groupBy({
+      by: ["game"],
+      where: { game: { startsWith: QUIZ_GAME_PREFIX }, day: { gte: from } },
       _sum: { plays: true },
     }),
-    prisma.user.count({ where: { quizBest: { not: null } } }),
+    prisma.quizBest.groupBy({ by: ["userId"] }),
     prisma.match.findMany({
       where: { ...PREDICTABLE_MATCH_WHERE, date: { lte: now } },
       orderBy: { date: "desc" },
@@ -39,9 +43,13 @@ export async function loadGameMetrics(windowDays: number, now = new Date()): Pro
       },
     }),
   ]);
+  const quizPlaysById = Object.fromEntries(
+    plays.map((g) => [g.game.slice(QUIZ_GAME_PREFIX.length), g._sum.plays ?? 0])
+  );
   return {
-    quizPlays: plays._sum.plays ?? 0,
-    quizPlayers,
+    quizPlays: Object.values(quizPlaysById).reduce((a, b) => a + b, 0),
+    quizPlaysById,
+    quizPlayers: players.length,
     predictions: matches.map((m) => ({
       title: `${m.team.name} – ${m.opponent?.name ?? ""}`,
       date: m.date,

@@ -59,7 +59,14 @@ export type AuditAction =
   | "DELETE_ALBUM"
   | "HIDE_ALBUM_PHOTO"
   | "PUBLISH_SEASON_RECAP"
-  | "UNPUBLISH_SEASON_RECAP";
+  | "UNPUBLISH_SEASON_RECAP"
+  | "UPDATE_GAME_SETTING"
+  | "CREATE_QUIZ"
+  | "UPDATE_QUIZ"
+  | "DELETE_QUIZ"
+  | "CREATE_QUIZ_QUESTION"
+  | "UPDATE_QUIZ_QUESTION"
+  | "DELETE_QUIZ_QUESTION";
 
 interface LogAuditInput {
   actorId: string;

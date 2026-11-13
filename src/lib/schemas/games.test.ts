@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { PredictionSchema, QuizBestSchema } from "./games";
+import { PredictionSchema, QuizBestSchema, QuizPlayedSchema } from "./games";
 
 describe("QuizBestSchema", () => {
   it("accetta solo interi da 0 a 5", () => {
-    expect(QuizBestSchema.safeParse({ score: 0 }).success).toBe(true);
-    expect(QuizBestSchema.safeParse({ score: 5 }).success).toBe(true);
-    expect(QuizBestSchema.safeParse({ score: 6 }).success).toBe(false);
-    expect(QuizBestSchema.safeParse({ score: -1 }).success).toBe(false);
-    expect(QuizBestSchema.safeParse({ score: 2.5 }).success).toBe(false);
-    expect(QuizBestSchema.safeParse({ score: "4" }).success).toBe(false);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 0 }).success).toBe(true);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 5 }).success).toBe(true);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 6 }).success).toBe(false);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: -1 }).success).toBe(false);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 2.5 }).success).toBe(false);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: "4" }).success).toBe(false);
   });
 });
 
@@ -55,5 +55,24 @@ describe("PredictionSchema", () => {
   it("rifiuta un risultato che non esiste", () => {
     expect(PredictionSchema.safeParse({ outcome: "MAYBE" }).success).toBe(false);
     expect(PredictionSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("QuizPlayedSchema", () => {
+  it("accetta fino a 5 risposte da 0 a 2", () => {
+    expect(
+      QuizPlayedSchema.safeParse({ quizId: "baskin", answers: [{ id: "nato", pick: 1 }] }).success
+    ).toBe(true);
+    expect(QuizPlayedSchema.safeParse({ quizId: "baskin", answers: [] }).success).toBe(true);
+    expect(
+      QuizPlayedSchema.safeParse({ quizId: "baskin", answers: [{ id: "nato", pick: 3 }] }).success
+    ).toBe(false);
+    expect(
+      QuizPlayedSchema.safeParse({
+        quizId: "baskin",
+        answers: Array.from({ length: 6 }, (_, i) => ({ id: `q${i}`, pick: 0 })),
+      }).success
+    ).toBe(false);
+    expect(QuizPlayedSchema.safeParse({ answers: [] }).success).toBe(false);
   });
 });

@@ -63,3 +63,20 @@ export async function panelGuard(): Promise<NextResponse | null> {
   }
   return null;
 }
+
+/**
+ * Guardia per le scritture dell'admin che finiscono nel registro attività
+ * (giochi e quiz, UX-67): l'id di chi agisce, oppure la risposta da
+ * restituire (401 senza sessione, 403 a chi non è admin).
+ */
+export async function adminActor(): Promise<{ actorId: string } | { error: NextResponse }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: NextResponse.json({ error: "Non autenticato" }, { status: 401 }) };
+  }
+  const role = session.user.appRole as AppRole | undefined;
+  if (!role || !hasRole(role, "ADMIN")) {
+    return { error: NextResponse.json({ error: "Non autorizzato" }, { status: 403 }) };
+  }
+  return { actorId: session.user.id };
+}

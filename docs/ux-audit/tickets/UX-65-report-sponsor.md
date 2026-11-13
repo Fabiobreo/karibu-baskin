@@ -1,6 +1,6 @@
 # UX-65 · Report per gli sponsor e sponsor in evidenza
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55 · **Stato:** da fare
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55 · **Stato:** scartato dal committente (12/11/2026): per un club piccolo i clic sui loghi sarebbero pochi e il rinnovo degli sponsor passa dal rapporto, non dai numeri
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 

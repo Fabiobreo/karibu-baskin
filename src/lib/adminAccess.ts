@@ -33,6 +33,8 @@ export async function requireAdminPage(
   const role = session?.user?.appRole as AppRole | undefined;
   if (!session?.user || !canViewAdminPanel(role)) redirect("/admin/login");
   const readOnly = !isStaffRole(role);
-  if (readOnly && (staffOnly || !canOpenAdminSection(role, href))) redirect(ADMIN_HOME);
+  // `canOpenAdminSection` chiude al dirigente le sezioni non sue e
+  // all'allenatore quelle dell'admin (`adminOnly` in ADMIN_NAV).
+  if ((readOnly && staffOnly) || !canOpenAdminSection(role, href)) redirect(ADMIN_HOME);
   return { session, role: role as AppRole, readOnly };
 }

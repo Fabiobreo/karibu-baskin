@@ -583,8 +583,6 @@
     "streakLosses": "{count, plural, one {loss} other {losses}}",
     "streakDraws": "{count, plural, one {draw} other {draws}}",
     "consecutive": "In a row",
-    "simChallengeTitle": "Match Simulator",
-    "simChallengeDesc": "Build two teams of 6 players from the squad and find out who would win.",
     "minorsHidden": "{count, plural, one {# underage athlete is not shown, to protect minors.} other {# underage athletes are not shown, to protect minors.}}",
     "seasonChip": "Season {season}"
   },
@@ -1192,10 +1190,7 @@
       "title": "Games",
       "subtitle": "For fun, with Baskin and with our games",
       "metaDescription": "Karibu Baskin games: the Baskin quiz and the prediction for the next game.",
-      "quizCardTitle": "Baskin quiz",
-      "quizCardBody": "5 questions about Baskin and Karibu, no rush. After each answer you read the explanation.",
       "quizCardCta": "Play",
-      "quizPreview": "Staff preview: the quiz is not online yet.",
       "predictionCardTitle": "Game prediction",
       "predictionCardBody": "Who wins the next game? Say it before tip-off.",
       "predictionCardMatch": "{match}, {when}",
@@ -1223,9 +1218,9 @@
         "correctIs": "The right answer is: {answer}",
         "learnMore": "Find out more",
         "resultTitle": "{score, plural, one {You got # question right out of {total}} other {You got # questions right out of {total}}}",
-        "tonePerfect": "Perfect! You really know a lot about Baskin.",
-        "toneGood": "Well done! You already know a lot about Baskin.",
-        "toneLearned": "{count, plural, one {Now you know # new thing about Baskin.} other {Now you know # new things about Baskin.}}",
+        "tonePerfect": "Perfect! You really know a lot.",
+        "toneGood": "Well done! You already know a lot.",
+        "toneLearned": "{count, plural, one {Now you know # new thing.} other {Now you know # new things.}}",
         "challengerScore": "The person who challenged you got {score} out of {total}.",
         "best": "Your best game: {best} out of {total}",
         "reviewTitle": "To read again",
@@ -1233,9 +1228,15 @@
         "challengeTitle": "Challenge a friend",
         "challengeBody": "Send them the same 5 questions you answered.",
         "challengeWithScore": "Put my score in the message",
-        "waWithScore": "How much do you know about Baskin? I got {score} out of {total}, your turn 🦊",
-        "waNoScore": "How much do you know about Baskin? Try answering these 5 questions 🦊",
-        "backToGames": "Back to games"
+        "waWithScore": "{title}: I got {score} out of {total}, your turn 🦊",
+        "waNoScore": "{title}: try answering these questions 🦊",
+        "backToGames": "Back to games",
+        "membersOnly": "This quiz is for Karibu athletes, families and staff, signed in to the app.",
+        "membersLogin": "Sign in",
+        "membersGuest": "You can play once the staff confirms your account.",
+        "challengeMembersNote": "The link only works for Karibu members.",
+        "notInLanguage": "This quiz is not available in your language yet.",
+        "previewDrafts": "The preview also has the questions still under review."
       },
       "prediction": {
         "title": "Your prediction",
@@ -1270,7 +1271,12 @@
         "totalsRow": "{choice}: {count}",
         "homeRow": "Make your prediction",
         "record": "Right predictions this season: {right} out of {total}"
-      }
+      },
+      "gamePreview": "Staff preview: this game is switched off and nobody else can see it.",
+      "simulatorCardTitle": "Challenge between our teams",
+      "simulatorCardBody": "Make up a challenge between our teams: pick two line-ups and see how it might go.",
+      "simulatorCardWho": "For Karibu athletes, families and staff, signed in to the app.",
+      "simulatorCardCta": "Make up a challenge"
     },
     "faq": {
       "heroTitle": "Frequently asked questions",

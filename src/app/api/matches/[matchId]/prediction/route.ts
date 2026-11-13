@@ -7,6 +7,8 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { PredictionSchema } from "@/lib/schemas/games";
 import { predictionWindow } from "@/lib/games/prediction";
 import { loadOwnPrediction, loadPredictionTotals } from "@/lib/games/loadPredictions";
+import { gameAccess } from "@/lib/games/gameSettings";
+import { loadGameSettings } from "@/lib/games/loadGameSettings";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -19,12 +21,16 @@ type Params = { params: Promise<{ matchId: string }> };
  */
 
 async function memberSession(): Promise<{ error: NextResponse } | { userId: string }> {
-  const session = await auth();
+  const [session, settings] = await Promise.all([auth(), loadGameSettings()]);
   if (!session?.user?.id) {
     return { error: NextResponse.json({ error: "Non autenticato" }, { status: 401 }) };
   }
   if (!isMemberRole(session.user.appRole)) {
     return { error: NextResponse.json({ error: "Non autorizzato" }, { status: 403 }) };
+  }
+  // Pronostico spento dall'admin (UX-66): c'è solo l'anteprima dello staff.
+  if (gameAccess(settings.prediction, session.user.appRole) === "hidden") {
+    return { error: NextResponse.json({ error: "Non trovato" }, { status: 404 }) };
   }
   return { userId: session.user.id };
 }

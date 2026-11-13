@@ -12,7 +12,6 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import StarIcon from "@mui/icons-material/Star";
 import HistoryIcon from "@mui/icons-material/History";
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { slugify } from "@/lib/slugUtils";
@@ -235,7 +234,6 @@ export default async function SquadrePage() {
         now
       ).upcoming
     : [];
-  const showSimulator = viewerIsMember;
 
   return (
     <>
@@ -379,27 +377,17 @@ export default async function SquadrePage() {
           )}
 
           {/* Link secondari: righe leggere, non card. */}
-          {(showSimulator || hasPastSeasons) && (
+          {hasPastSeasons && (
             <Box
               component="nav"
               aria-label={t("moreSection")}
               sx={{ mt: 5, borderTop: "1px solid", borderColor: "divider" }}
             >
-              {showSimulator && (
-                <SecondaryLink
-                  href="/squadre/sfida"
-                  icon={<SportsKabaddiIcon />}
-                  title={t("simChallengeTitle")}
-                  description={t("simChallengeDesc")}
-                />
-              )}
-              {hasPastSeasons && (
-                <SecondaryLink
-                  href="/squadre/archivio"
-                  icon={<HistoryIcon />}
-                  title={t("previousSeasons")}
-                />
-              )}
+              <SecondaryLink
+                href="/squadre/archivio"
+                icon={<HistoryIcon />}
+                title={t("previousSeasons")}
+              />
             </Box>
           )}
 

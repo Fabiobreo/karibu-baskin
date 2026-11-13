@@ -4,7 +4,7 @@
  * I gruppi sono gli stessi della dashboard.
  */
 import type { AppRole } from "@prisma/client";
-import { canViewAdminPanel, isStaffRole } from "@/lib/authRoles";
+import { canViewAdminPanel, hasRole, isStaffRole } from "@/lib/authRoles";
 
 export type AdminNavGroup = "main" | "attivita" | "anagrafiche" | "strumenti";
 
@@ -20,6 +20,8 @@ export interface AdminNavItem {
    * comando di scrittura (l'API glieli rifiuta comunque).
    */
   director?: boolean;
+  /** Solo l'admin: l'allenatore non la vede e non la apre (UX-66, Giochi). */
+  adminOnly?: boolean;
 }
 
 export const ADMIN_NAV_GROUP_LABELS: Record<Exclude<AdminNavGroup, "main">, string> = {
@@ -51,12 +53,17 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Esporta dati", href: "/admin/esporta", group: "strumenti", director: true },
   { label: "Suggerimenti", href: "/admin/suggerimenti", group: "strumenti" },
   { label: "Avviso urgente", href: "/admin/avvisi", group: "strumenti" },
+  { label: "Giochi", href: "/admin/giochi", group: "strumenti", adminOnly: true },
   { label: "Registro attività", href: "/admin/audit", group: "strumenti" },
 ];
 
-/** Le sezioni che un ruolo vede nel menu: tutte per lo staff, alcune per il dirigente. */
+/**
+ * Le sezioni che un ruolo vede nel menu: tutte per l'admin, tutte tranne quelle
+ * dell'admin per l'allenatore, alcune per il dirigente.
+ */
 export function adminNavFor(role: AppRole | null | undefined): AdminNavItem[] {
-  if (isStaffRole(role)) return ADMIN_NAV;
+  if (role && hasRole(role, "ADMIN")) return ADMIN_NAV;
+  if (isStaffRole(role)) return ADMIN_NAV.filter((i) => !i.adminOnly);
   return canViewAdminPanel(role) ? ADMIN_NAV.filter((i) => i.director) : [];
 }
 

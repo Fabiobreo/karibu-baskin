@@ -8,11 +8,16 @@ vi.mock("@/lib/rateLimit", () => ({
   getClientIp: vi.fn().mockReturnValue("127.0.0.1"),
 }));
 vi.mock("@/lib/rating/simulatorServer", () => ({ runSimulation: vi.fn() }));
+vi.mock("@/lib/authjs", () => ({ auth: vi.fn() }));
+const SETTINGS_ON = { quiz: "OFF", prediction: "MEMBERS", simulator: "MEMBERS" };
+vi.mock("@/lib/games/loadGameSettings", () => ({ loadGameSettings: vi.fn() }));
 
 import { POST } from "./route";
 import { isMember } from "@/lib/apiAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { runSimulation } from "@/lib/rating/simulatorServer";
+import { auth } from "@/lib/authjs";
+import { loadGameSettings } from "@/lib/games/loadGameSettings";
 
 const mockIsMember = isMember as Mock;
 const mockRateLimit = checkRateLimit as Mock;
@@ -34,6 +39,16 @@ describe("POST /api/simulator", () => {
     mockRateLimit.mockReturnValue({ allowed: true });
     mockIsMember.mockResolvedValue(true);
     mockRun.mockResolvedValue({ ok: true, result });
+    (auth as Mock).mockResolvedValue({ user: { id: "u-1", appRole: "ATHLETE" } });
+    (loadGameSettings as Mock).mockResolvedValue(SETTINGS_ON);
+  });
+
+  it("spento dall'admin risponde 404, tranne allo staff", async () => {
+    (loadGameSettings as Mock).mockResolvedValue({ ...SETTINGS_ON, simulator: "OFF" });
+    expect((await POST(post(valid))).status).toBe(404);
+    expect(mockRun).not.toHaveBeenCalled();
+    (auth as Mock).mockResolvedValue({ user: { id: "c-1", appRole: "COACH" } });
+    expect((await POST(post(valid))).status).toBe(200);
   });
 
   it("è riservato ai tesserati", async () => {

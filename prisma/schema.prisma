@@ -83,10 +83,6 @@ model User {
   // null = tutto abilitato (default)
   notifPrefs Json?
 
-  // Quiz del Baskin (UX-61): la migliore partita (0-5), solo per chi ha fatto
-  // l'accesso. null = mai giocato con l'accesso.
-  quizBest Int?
-
   accounts              Account[]
   authSessions          Session[]
   registrations         Registration[]
@@ -116,6 +112,7 @@ model User {
   eventOptionSelections EventOptionSelection[]
   eventGuestsAdded      EventGuest[]
   matchPredictions      MatchPrediction[]
+  quizBests             QuizBest[]
 }
 
 model Account {
@@ -845,6 +842,98 @@ model GameDailyStat {
   plays Int      @default(0)
 
   @@unique([day, game])
+}
+
+// Chi vede un gioco (UX-66), deciso dall'admin in `/admin/giochi`. Una riga per
+// gioco (`game` = quiz, prediction, simulator); senza riga vale il default del
+// gioco. Gli stati ammessi per ogni gioco stanno in `@/lib/games/gameSettings`.
+model GameSetting {
+  game        String         @id
+  visibility  GameVisibility
+  updatedAt   DateTime       @updatedAt
+  updatedById String?
+}
+
+enum GameVisibility {
+  OFF
+  MEMBERS
+  PUBLIC
+}
+
+// Un quiz del club (UX-67), creato e gestito dall'admin in `/admin/giochi/quiz`.
+// Il primo è il quiz del Baskin (id `baskin`). Chi lo vede lo dice
+// `visibility`, come per gli altri giochi; si accende solo con abbastanza
+// domande approvate (`@/lib/games/quizRules`).
+model Quiz {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  title         String
+  description   String
+  titleEn       String?
+  descriptionEn String?
+  visibility    GameVisibility @default(OFF)
+  position      Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  questions QuizQuestion[]
+  bests     QuizBest[]
+}
+
+// Una domanda di un quiz (UX-67): tre risposte, quella giusta, la spiegazione.
+// Nel gioco entrano solo le approvate; l'inglese è facoltativo e una domanda
+// senza traduzione non esce a chi legge in inglese.
+model QuizQuestion {
+  id            String             @id @default(cuid())
+  quizId        String
+  status        QuizQuestionStatus @default(DRAFT)
+  level         QuizLevel
+  // Elenco chiuso in `QUIZ_TOPICS` (`@/lib/content/baskinQuiz`).
+  topic         String
+  text          String
+  answers       String[]
+  correct       Int
+  explanation   String
+  // Pagina "Scopri di più", da `QUIZ_SOURCES`; null = nessun link.
+  source        String?
+  textEn        String?
+  answersEn     String[]
+  explanationEn String?
+  // Quante volte è uscita in una partita finita e quante risposte giuste.
+  // Solo numeri, mai chi ha risposto (UX-67).
+  shown         Int                @default(0)
+  correctCount  Int                @default(0)
+  approvedAt    DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId, status])
+}
+
+enum QuizQuestionStatus {
+  DRAFT
+  APPROVED
+}
+
+enum QuizLevel {
+  EASY
+  MEDIUM
+}
+
+// Migliore partita di un tesserato in un quiz (0-5, UX-67). Solo sua, mai
+// mostrata agli altri.
+model QuizBest {
+  userId    String
+  quizId    String
+  best      Int
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@id([userId, quizId])
 }
 
 // Famiglie attive nei sette giorni prima di `weekEnd` (UX-55). Una sessione

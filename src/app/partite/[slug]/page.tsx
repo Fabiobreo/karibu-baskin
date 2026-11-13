@@ -55,6 +55,8 @@ import { formatRome } from "@/lib/dateUtils";
 import { canNotifyCallups } from "@/lib/notifications/renotifyRules";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import MatchPredictionCard from "@/components/games/MatchPredictionCard";
+import { gameAccess } from "@/lib/games/gameSettings";
+import { loadGameSettings } from "@/lib/games/loadGameSettings";
 import MatchPredictionResult from "@/components/games/MatchPredictionResult";
 import { predictionOpensAt, predictionVerdict, predictionWindow } from "@/lib/games/prediction";
 import { loadOwnPrediction, loadPredictionTotals } from "@/lib/games/loadPredictions";
@@ -240,12 +242,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function MatchDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [match, session, t, locale, { matchResultLabel }] = await Promise.all([
+  const [match, session, t, locale, { matchResultLabel }, gameSettings] = await Promise.all([
     getMatch(slug),
     auth(),
     getTranslations("matches"),
     getLocale(),
     getEntityLabels(),
+    loadGameSettings(),
   ]);
   const dateLocale = getDateFnsLocale(locale);
   if (!match) notFound();
@@ -303,7 +306,12 @@ export default async function MatchDetailPage({ params }: Props) {
   const showWhereWhenBlock = showWhereWhen(match.date, phase, now);
   // Pronostico (UX-61): niente nelle amichevoli interne; prima dell'inizio la
   // card per tutti (chi non è tesserato legge come fare), dopo solo i tesserati.
-  const predWindow = predictionWindow(match, now);
+  // Spento dall'admin (UX-66): sparisce, salvo l'anteprima dello staff; i
+  // pronostici salvati restano e ricompaiono alla riaccensione.
+  const predWindow =
+    gameAccess(gameSettings.prediction, session?.user?.appRole) === "hidden"
+      ? "none"
+      : predictionWindow(match, now);
 
   // Disponibilità self-service: per partite future, mostra i toggle a chi è
   // membro di una delle squadre della partita (o genitore di un figlio membro).

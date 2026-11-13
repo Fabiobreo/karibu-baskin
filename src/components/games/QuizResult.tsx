@@ -26,6 +26,11 @@ interface QuizResultProps {
   /** Migliore partita di un tesserato; `null` per chi gioca senza accesso. */
   best: number | null;
   onPlayAgain: () => void;
+  /** Quiz solo per i tesserati (UX-66): il link della sfida funziona solo per loro. */
+  membersOnly: boolean;
+  /** Quiz giocato (UX-67): indirizzo e titolo per la sfida. */
+  slug: string;
+  title: string;
 }
 
 /**
@@ -41,6 +46,9 @@ export default function QuizResult({
   challengerScore,
   best,
   onPlayAgain,
+  membersOnly,
+  slug,
+  title,
 }: QuizResultProps) {
   const t = useTranslations("pages.games.quiz");
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -63,14 +71,14 @@ export default function QuizResult({
           component="h2"
           sx={{ outline: "none", mb: 1 }}
         >
-          {t("resultTitle", { score, total: QUIZ_LENGTH })}
+          {t("resultTitle", { score, total: questions.length })}
         </Typography>
         <Typography variant="body1">
           {tone === "perfect"
             ? t("tonePerfect")
             : tone === "good"
               ? t("toneGood")
-              : t("toneLearned", { count: QUIZ_LENGTH - score })}
+              : t("toneLearned", { count: questions.length - score })}
         </Typography>
         {challengerScore !== null && (
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
@@ -104,12 +112,14 @@ export default function QuizResult({
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   {q.explanation}
                 </Typography>
-                <MuiLink
-                  href={q.source}
-                  sx={{ display: "inline-block", mt: 1, fontWeight: FONT_WEIGHT.semibold }}
-                >
-                  {t("learnMore")}
-                </MuiLink>
+                {q.source && (
+                  <MuiLink
+                    href={q.source}
+                    sx={{ display: "inline-block", mt: 1, fontWeight: FONT_WEIGHT.semibold }}
+                  >
+                    {t("learnMore")}
+                  </MuiLink>
+                )}
               </Paper>
             ))}
           </Stack>
@@ -128,6 +138,11 @@ export default function QuizResult({
         <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, mb: 1 }}>
           {t("challengeBody")}
         </Typography>
+        {membersOnly && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {t("challengeMembersNote")}
+          </Typography>
+        )}
         <FormControlLabel
           control={
             <Checkbox checked={withScore} onChange={(e) => setWithScore(e.target.checked)} />
@@ -137,9 +152,13 @@ export default function QuizResult({
         />
         <ShareSection
           kind="quiz"
-          title={t("title")}
-          path={challengePath(code, withScore ? score : null)}
-          message={withScore ? t("waWithScore", { score, total: QUIZ_LENGTH }) : t("waNoScore")}
+          title={title}
+          path={challengePath(slug, code, withScore ? score : null)}
+          message={
+            withScore
+              ? t("waWithScore", { title, score, total: questions.length })
+              : t("waNoScore", { title })
+          }
         />
       </Paper>
 

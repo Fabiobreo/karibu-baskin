@@ -6,7 +6,10 @@ import { SITE_URL } from "@/lib/siteUrl";
 import { notMinorFilter } from "@/lib/minors";
 import { publicProfileUserFilter } from "@/lib/publicProfile";
 import { visibleAlbumWhere } from "@/lib/gallery/albumRules";
-import { QUIZ_READY } from "@/lib/content/baskinQuiz";
+import { gamesAreIndexable } from "@/lib/games/gameSettings";
+import { loadGameSettings, loadQuizSummaries } from "@/lib/games/loadGameSettings";
+import { isPlayableIn } from "@/lib/games/quizRules";
+import { quizPath } from "@/lib/games/quiz";
 
 const BASE = SITE_URL;
 
@@ -16,6 +19,11 @@ const BASE = SITE_URL;
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [gameSettings, quizzes] = await Promise.all([loadGameSettings(), loadQuizSummaries()]);
+  // Un indirizzo per ogni quiz per tutti con una partita intera (UX-67).
+  const publicQuizzes = quizzes.filter(
+    (q) => q.visibility === "PUBLIC" && isPlayableIn(q.counts, "it")
+  );
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE, priority: 1.0, changeFrequency: "weekly" },
     { url: `${BASE}/allenamenti`, priority: 0.9, changeFrequency: "daily" },
@@ -29,11 +37,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/news`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/eventi`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/gallery`, priority: 0.55, changeFrequency: "weekly" },
-    // Giochi (UX-61): quando il club ha rivisto le domande del quiz.
-    ...(QUIZ_READY
+    // Giochi (UX-61): solo quando l'admin apre il quiz a tutti (UX-66).
+    ...(gamesAreIndexable(gameSettings)
       ? [
           { url: `${BASE}/giochi`, priority: 0.5, changeFrequency: "weekly" as const },
-          { url: `${BASE}/giochi/quiz`, priority: 0.5, changeFrequency: "monthly" as const },
+          ...publicQuizzes.map((q) => ({
+            url: `${BASE}${quizPath(q.slug)}`,
+            priority: 0.5,
+            changeFrequency: "monthly" as const,
+          })),
         ]
       : []),
     { url: `${BASE}/faq`, priority: 0.5, changeFrequency: "monthly" },

@@ -328,7 +328,7 @@ async function main() {
         ["il-baskin", "/il-baskin"],
         ["il-club", "/il-club"],
         ["guida", "/guida"],
-        // Giochi (UX-61): il quiz finché non è online lo vede solo lo staff (profilo admin).
+        // Giochi (UX-61): il quiz spento lo vede solo lo staff (profilo admin, UX-66).
         ["giochi", "/giochi"],
         ["contatti", "/contatti"],
         ["login", "/login"],
@@ -344,6 +344,8 @@ async function main() {
         ["disponibilita", "/profilo/disponibilita"],
         ["allenamento-passato", targets.pastTraining],
         ["notifiche", "/notifiche"],
+        // Sfida fra le nostre squadre (UX-66): solo tesserati.
+        ["sfida", "/giochi/sfida"],
       ],
     },
     {
@@ -355,7 +357,11 @@ async function main() {
         ["partite", "/admin/partite"],
         ["utenti", "/admin/utenti"],
         ["statistiche-partita", targets.matchStats],
-        ["quiz", "/giochi/quiz"],
+        // Quiz del Baskin (UX-67): spento, lo vede solo lo staff in anteprima.
+        ["quiz", "/giochi/quiz/baskin"],
+        ["quiz-pannello", "/admin/giochi/quiz"],
+        ["quiz-domande", "/admin/giochi/quiz/baskin"],
+        ["giochi", "/admin/giochi"],
       ],
     },
   ].filter((p) => !ONLY || ONLY.includes(p.name));

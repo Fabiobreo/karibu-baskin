@@ -125,6 +125,13 @@ const ACTION_LABELS: Record<string, string> = {
   KEEP_AS_GUEST: "Account lasciato come ospite",
   UNDO_KEEP_AS_GUEST: "Account rimesso fra quelli da approvare",
   SEND_NOTIFICATION: "Avviso inviato",
+  UPDATE_GAME_SETTING: "Modifica di chi vede un gioco",
+  CREATE_QUIZ: "Creazione quiz",
+  UPDATE_QUIZ: "Modifica quiz",
+  DELETE_QUIZ: "Eliminazione quiz",
+  CREATE_QUIZ_QUESTION: "Domanda del quiz aggiunta",
+  UPDATE_QUIZ_QUESTION: "Domanda del quiz modificata o approvata",
+  DELETE_QUIZ_QUESTION: "Domanda del quiz eliminata",
 };
 
 /**

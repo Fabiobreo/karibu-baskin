@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getBaskinQuiz } from "@/lib/content/baskinQuiz";
+import type { QuizLevel, QuizQuestion } from "@/lib/content/baskinQuiz";
 import {
   challengePath,
   challengeSeed,
@@ -10,10 +10,30 @@ import {
   pickFreshCode,
   pickRound,
   QUIZ_LENGTH,
+  roundShape,
   scoreTone,
 } from "./quiz";
 
-const bank = getBaskinQuiz("it");
+/** Banca di prova: le domande stanno nel database (UX-67). */
+function makeBank(easy: number, medium: number): QuizQuestion[] {
+  const q = (level: QuizLevel, i: number): QuizQuestion => ({
+    id: `${level}-${String(i).padStart(2, "0")}`,
+    level,
+    topic: "ruoli",
+    text: `Domanda ${level} ${i}`,
+    answers: ["a", "b", "c"],
+    correct: i % 3,
+    explanation: "Perché sì.",
+    source: null,
+  });
+  return [
+    ...Array.from({ length: easy }, (_, i) => q("facile", i)),
+    ...Array.from({ length: medium }, (_, i) => q("medio", i)),
+  ];
+}
+
+// Come il quiz del Baskin: 18 facili e 22 medie.
+const bank = makeBank(18, 22);
 
 describe("pickRound", () => {
   it("dà 5 domande diverse: 3 facili e poi 2 medie", () => {
@@ -23,13 +43,27 @@ describe("pickRound", () => {
     expect(round.map((q) => q.level)).toEqual(["facile", "facile", "facile", "medio", "medio"]);
   });
 
-  it("con lo stesso codice di sfida escono le stesse domande, anche in inglese", () => {
+  it("con lo stesso codice di sfida e le stesse domande escono le stesse", () => {
     const seed = challengeSeed("ab3k9z");
     const a = pickRound(bank, seed).map((q) => q.id);
     const b = pickRound(bank, seed).map((q) => q.id);
-    const en = pickRound(getBaskinQuiz("en"), seed).map((q) => q.id);
     expect(b).toEqual(a);
-    expect(en).toEqual(a);
+  });
+
+  it("un quiz piccolo completa con l'altro livello, prima le facili", () => {
+    expect(roundShape(makeBank(1, 7))).toEqual({ facile: 1, medio: 4 });
+    expect(roundShape(makeBank(8, 0))).toEqual({ facile: 5, medio: 0 });
+    expect(pickRound(makeBank(2, 6), 7).map((q) => q.level)).toEqual([
+      "facile",
+      "facile",
+      "medio",
+      "medio",
+      "medio",
+    ]);
+  });
+
+  it("con meno di 5 domande le prende tutte", () => {
+    expect(pickRound(makeBank(2, 1), 1)).toHaveLength(3);
   });
 
   it("un codice inventato dà comunque 5 domande valide", () => {
@@ -87,8 +121,8 @@ describe("link di sfida", () => {
   it("fa codici corti e un percorso con il punteggio solo se scelto", () => {
     const code = newChallengeCode(() => 0.5);
     expect(code).toMatch(/^[a-z0-9]{6}$/);
-    expect(challengePath("abc", 4)).toBe("/giochi/quiz?sfida=abc&p=4");
-    expect(challengePath("abc", null)).toBe("/giochi/quiz?sfida=abc");
+    expect(challengePath("baskin", "abc", 4)).toBe("/giochi/quiz/baskin?sfida=abc&p=4");
+    expect(challengePath("baskin", "abc", null)).toBe("/giochi/quiz/baskin?sfida=abc");
   });
 });
 

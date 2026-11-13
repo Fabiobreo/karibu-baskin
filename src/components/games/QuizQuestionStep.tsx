@@ -201,14 +201,16 @@ export default function QuizQuestionStep({
             <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
               {question.explanation}
             </Typography>
-            <MuiLink
-              href={question.source}
-              target="_blank"
-              rel="noopener"
-              sx={{ display: "inline-block", mt: 1, fontWeight: FONT_WEIGHT.semibold }}
-            >
-              {t("learnMore")}
-            </MuiLink>
+            {question.source && (
+              <MuiLink
+                href={question.source}
+                target="_blank"
+                rel="noopener"
+                sx={{ display: "inline-block", mt: 1, fontWeight: FONT_WEIGHT.semibold }}
+              >
+                {t("learnMore")}
+              </MuiLink>
+            )}
           </Box>
         )}
       </Box>

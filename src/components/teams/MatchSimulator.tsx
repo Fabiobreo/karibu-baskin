@@ -226,7 +226,7 @@ export default function MatchSimulator({ teams, initial = EMPTY_INITIAL }: Match
     params.set("a", selA.join(","));
     params.set("b", selB.join(","));
     params.set("s", String(nonce));
-    const url = `${window.location.origin}/squadre/sfida?${params.toString()}`;
+    const url = `${window.location.origin}/giochi/sfida?${params.toString()}`;
     try {
       await navigator.clipboard.writeText(url);
       showToast({ message: t("shareCopied"), severity: "success" });

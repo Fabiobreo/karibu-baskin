@@ -13,6 +13,9 @@ vi.mock("@/lib/authjs", () => ({
   auth: vi.fn(),
 }));
 
+const SETTINGS_ON = { quiz: "OFF", prediction: "MEMBERS", simulator: "MEMBERS" };
+vi.mock("@/lib/games/loadGameSettings", () => ({ loadGameSettings: vi.fn() }));
+
 vi.mock("@/lib/rateLimit", () => ({
   checkRateLimit: vi.fn().mockReturnValue({ allowed: true }),
   getClientIp: vi.fn().mockReturnValue("1.2.3.4"),
@@ -21,6 +24,7 @@ vi.mock("@/lib/rateLimit", () => ({
 import { GET, PUT } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { loadGameSettings } from "@/lib/games/loadGameSettings";
 
 type PrismaMock = {
   match: { findUnique: Mock };
@@ -54,6 +58,7 @@ describe("/api/matches/[matchId]/prediction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "u-1", appRole: "ATHLETE" } });
+    (loadGameSettings as Mock).mockResolvedValue(SETTINGS_ON);
     p.match.findUnique.mockResolvedValue(upcoming);
     p.matchPrediction.findUnique.mockResolvedValue(null);
     p.matchPrediction.upsert.mockImplementation(({ create }) =>
@@ -75,6 +80,15 @@ describe("/api/matches/[matchId]/prediction", () => {
     mockAuth.mockResolvedValue({ user: { id: "g-1", appRole: "GUEST" } });
     expect((await put({ outcome: "WIN" })).status).toBe(403);
     expect((await get()).status).toBe(403);
+  });
+
+  it("spento dall'admin risponde 404, tranne allo staff (UX-66)", async () => {
+    (loadGameSettings as Mock).mockResolvedValue({ ...SETTINGS_ON, prediction: "OFF" });
+    expect((await get()).status).toBe(404);
+    expect((await put({ outcome: "WIN" })).status).toBe(404);
+    expect(p.matchPrediction.upsert).not.toHaveBeenCalled();
+    mockAuth.mockResolvedValue({ user: { id: "c-1", appRole: "COACH" } });
+    expect((await get()).status).toBe(200);
   });
 
   it("salva il pronostico prima dell'inizio", async () => {

@@ -42,9 +42,15 @@ describe("activeAdminSection", () => {
 });
 
 describe("adminNavFor", () => {
-  it("lo staff vede tutte le sezioni", () => {
-    expect(adminNavFor("COACH")).toEqual(ADMIN_NAV);
+  it("l'admin vede tutte le sezioni, l'allenatore tutte tranne quelle dell'admin", () => {
     expect(adminNavFor("ADMIN")).toEqual(ADMIN_NAV);
+    expect(adminNavFor("COACH")).toEqual(ADMIN_NAV.filter((i) => !i.adminOnly));
+  });
+
+  it("i giochi sono solo dell'admin (UX-66)", () => {
+    expect(canOpenAdminSection("ADMIN", "/admin/giochi")).toBe(true);
+    expect(canOpenAdminSection("COACH", "/admin/giochi")).toBe(false);
+    expect(canOpenAdminSection("DIRECTOR", "/admin/giochi")).toBe(false);
   });
 
   it("il dirigente vede solo le sezioni in sola lettura", () => {

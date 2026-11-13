@@ -2,8 +2,8 @@ import type { QuizQuestion } from "@/lib/content/baskinQuiz";
 import { seededShuffle, stringToSeed } from "@/lib/seededRandom";
 
 /**
- * Regole del quiz del Baskin (UX-61), pure e testate: quali domande escono,
- * il codice della sfida, il punteggio scritto nel link.
+ * Regole della partita di un quiz (UX-61, UX-67), pure e testate: quali
+ * domande escono, il codice della sfida, il punteggio scritto nel link.
  */
 
 export const EASY_PER_ROUND = 3;
@@ -13,21 +13,39 @@ export const QUIZ_LENGTH = EASY_PER_ROUND + MEDIUM_PER_ROUND;
 /** Lunghezza massima del codice di sfida letto dal link. */
 const MAX_CODE_LENGTH = 32;
 
-/** Domande già fatte in questa visita (`sessionStorage`), per non ripeterle. */
-export const QUIZ_SEEN_STORAGE_KEY = "karibu-quiz-seen";
+/** Domande già fatte in questa visita (`sessionStorage`), per quiz, per non ripeterle. */
+export function quizSeenStorageKey(quizId: string): string {
+  return `karibu-quiz-seen:${quizId}`;
+}
 
 /**
- * Le 5 domande di una partita: prima 3 facili, poi 2 medie. Con lo stesso seme
- * escono le stesse domande, nello stesso ordine, in tutte e due le lingue: è
- * così che funziona la sfida.
+ * Quante facili e quante medie in una partita: 3 e 2 se ci sono, altrimenti
+ * si completa con l'altro livello (un quiz piccolo prende quelle che ha).
+ */
+export function roundShape(bank: readonly QuizQuestion[]): { facile: number; medio: number } {
+  const easyAvail = bank.filter((q) => q.level === "facile").length;
+  const mediumAvail = bank.length - easyAvail;
+  let facile = Math.min(EASY_PER_ROUND, easyAvail);
+  let medio = Math.min(MEDIUM_PER_ROUND, mediumAvail);
+  facile += Math.min(easyAvail - facile, QUIZ_LENGTH - facile - medio);
+  medio += Math.min(mediumAvail - medio, QUIZ_LENGTH - facile - medio);
+  return { facile, medio };
+}
+
+/**
+ * Le domande di una partita: 5 (o tutte, se sono meno), prima le facili e poi
+ * le medie. Con lo stesso seme e le stesse domande escono le stesse, nello
+ * stesso ordine: è così che funziona la sfida. La banca va ordinata sempre
+ * allo stesso modo (per id).
  */
 export function pickRound(bank: readonly QuizQuestion[], seed: number): QuizQuestion[] {
-  const pick = (level: QuizQuestion["level"], count: number, salt: string) =>
+  const shape = roundShape(bank);
+  const pick = (level: QuizQuestion["level"], salt: string) =>
     seededShuffle(
       bank.filter((q) => q.level === level),
       stringToSeed(`${seed}-${salt}`)
-    ).slice(0, count);
-  return [...pick("facile", EASY_PER_ROUND, "easy"), ...pick("medio", MEDIUM_PER_ROUND, "medium")];
+    ).slice(0, shape[level]);
+  return [...pick("facile", "easy"), ...pick("medio", "medium")];
 }
 
 /** Tentativi per trovare un codice con domande nuove: calcolo puro, istantaneo. */
@@ -73,9 +91,10 @@ export function nextSeen(
   played: readonly QuizQuestion[]
 ): Set<string> {
   const next = new Set([...seen, ...played.map((q) => q.id)]);
+  const shape = roundShape(bank);
   const freshLeft = (level: QuizQuestion["level"]) =>
     bank.filter((q) => q.level === level && !next.has(q.id)).length;
-  if (freshLeft("facile") < EASY_PER_ROUND || freshLeft("medio") < MEDIUM_PER_ROUND) {
+  if (freshLeft("facile") < shape.facile || freshLeft("medio") < shape.medio) {
     return new Set(played.map((q) => q.id));
   }
   return next;
@@ -111,11 +130,16 @@ export function newChallengeCode(random: () => number = Math.random): string {
   return out;
 }
 
+/** Indirizzo di un quiz (UX-67). */
+export function quizPath(slug: string): string {
+  return `/giochi/quiz/${slug}`;
+}
+
 /** Percorso del link di sfida; il punteggio c'è solo se chi condivide lo vuole. */
-export function challengePath(code: string, score: number | null): string {
+export function challengePath(slug: string, code: string, score: number | null): string {
   const params = new URLSearchParams({ sfida: code });
   if (score !== null) params.set("p", String(score));
-  return `/giochi/quiz?${params.toString()}`;
+  return `${quizPath(slug)}?${params.toString()}`;
 }
 
 /** Il punteggio non è mai "basso": tre toni, dallo 0 al 5. */

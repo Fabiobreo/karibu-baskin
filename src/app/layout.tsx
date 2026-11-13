@@ -11,6 +11,8 @@ import Providers from "@/components/layout/Providers";
 import ServiceWorkerRegistrar from "@/components/layout/ServiceWorkerRegistrar";
 import OfflineBanner from "@/components/layout/OfflineBanner";
 import SiteHeader from "@/components/layout/SiteHeader";
+import { showsGamesInMenu } from "@/lib/games/gameSettings";
+import { loadGameSettings } from "@/lib/games/loadGameSettings";
 import SkipToContent from "@/components/layout/SkipToContent";
 import Footer from "@/components/layout/Footer";
 import HideInAdmin, { OnlyInAdmin } from "@/components/layout/HideInAdmin";
@@ -113,7 +115,12 @@ export async function generateViewport(): Promise<Viewport> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, currentSeason] = await Promise.all([auth(), getCurrentSeasonLabel()]);
+  const [session, currentSeason, gameSettings] = await Promise.all([
+    auth(),
+    getCurrentSeasonLabel(),
+    loadGameSettings(),
+  ]);
+  const showGames = showsGamesInMenu(gameSettings, session?.user?.appRole);
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -156,7 +163,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     sito restano fuori. Gli sponsor sono la fascia superiore
                     del footer (UX-39). */}
                 <HideInAdmin>
-                  <SiteHeader currentSeason={currentSeason} />
+                  <SiteHeader currentSeason={currentSeason} showGames={showGames} />
                 </HideInAdmin>
                 <OnlyInAdmin>
                   <AdminHeader />

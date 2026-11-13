@@ -12,17 +12,26 @@ import {
   nextSeen,
   pickFreshCode,
   pickRound,
-  QUIZ_SEEN_STORAGE_KEY,
+  quizPath,
+  quizSeenStorageKey,
 } from "@/lib/games/quiz";
 import { useHasMounted } from "@/lib/useHasMounted";
 
 interface BaskinQuizProps {
+  /** Quiz giocato (UX-67): id per statistiche e migliore partita, indirizzo e titolo per la sfida. */
+  quizId: string;
+  slug: string;
+  title: string;
   bank: QuizQuestion[];
   /** Tesserato con l'accesso: si salva la sua migliore partita. */
   member: boolean;
   initialBest: number | null;
   /** Arrivo da un link di sfida: stesse domande di chi l'ha mandato. */
   challenge: { code: string; score: number | null } | null;
+  /** Quiz solo per i tesserati (UX-66). */
+  membersOnly: boolean;
+  /** Anteprima dello staff: la partita non si conta e non si salva. */
+  preview: boolean;
 }
 
 interface Game {
@@ -35,9 +44,9 @@ interface Game {
   challengerScore: number | null;
 }
 
-function readSeen(): Set<string> {
+function readSeen(quizId: string): Set<string> {
   try {
-    const raw = window.sessionStorage.getItem(QUIZ_SEEN_STORAGE_KEY);
+    const raw = window.sessionStorage.getItem(quizSeenStorageKey(quizId));
     const ids: unknown = raw ? JSON.parse(raw) : [];
     return new Set(Array.isArray(ids) ? ids.filter((x) => typeof x === "string") : []);
   } catch {
@@ -45,9 +54,9 @@ function readSeen(): Set<string> {
   }
 }
 
-function writeSeen(seen: Set<string>) {
+function writeSeen(quizId: string, seen: Set<string>) {
   try {
-    window.sessionStorage.setItem(QUIZ_SEEN_STORAGE_KEY, JSON.stringify([...seen]));
+    window.sessionStorage.setItem(quizSeenStorageKey(quizId), JSON.stringify([...seen]));
   } catch {
     // Navigazione privata o memoria piena: si gioca lo stesso.
   }
@@ -67,8 +76,9 @@ function newGame(bank: QuizQuestion[], code: string, challengerScore: number | n
 }
 
 /**
- * Quiz del Baskin (UX-61). Le domande dipendono da `sessionStorage` (quelle già
- * fatte in questa visita), quindi il gioco parte solo nel browser.
+ * Partita di un quiz del club (UX-61, UX-67). Le domande dipendono da
+ * `sessionStorage` (quelle già fatte in questa visita), quindi il gioco parte
+ * solo nel browser.
  */
 export default function BaskinQuiz(props: BaskinQuizProps) {
   const mounted = useHasMounted();
@@ -86,27 +96,44 @@ export default function BaskinQuiz(props: BaskinQuizProps) {
   return <QuizGame {...props} />;
 }
 
-function QuizGame({ bank, member, initialBest, challenge }: BaskinQuizProps) {
+function QuizGame({
+  quizId,
+  slug,
+  title,
+  bank,
+  member,
+  initialBest,
+  challenge,
+  membersOnly,
+  preview,
+}: BaskinQuizProps) {
   const t = useTranslations("pages.games.quiz");
   const router = useRouter();
   const [game, setGame] = useState<Game>(() =>
     challenge
       ? newGame(bank, challenge.code, challenge.score)
-      : newGame(bank, pickFreshCode(bank, readSeen()), null)
+      : newGame(bank, pickFreshCode(bank, readSeen(quizId)), null)
   );
   const [best, setBest] = useState(initialBest);
   // Una partita finita si conta una volta sola, anche tornando indietro.
   const countedRef = useRef<string | null>(null);
 
+  // Fine partita: il contatore del giorno e, per ogni domanda, se la risposta
+  // era giusta (UX-67). Il server ricontrolla le risposte; nessun dato di chi gioca.
   const played = useMutation({
-    mutationFn: () => fetch("/api/games/quiz/played", { method: "POST" }),
+    mutationFn: (answers: { id: string; pick: number }[]) =>
+      fetch("/api/games/quiz/played", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quizId, answers }),
+      }),
   });
   const saveBest = useMutation({
     mutationFn: async (score: number) => {
       const res = await fetch("/api/users/me/quiz-best", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score }),
+        body: JSON.stringify({ quizId, score }),
       });
       if (!res.ok) return null;
       const data: { best: number } = await res.json();
@@ -124,16 +151,23 @@ function QuizGame({ bank, member, initialBest, challenge }: BaskinQuizProps) {
     if (countedRef.current === game.code) return;
     countedRef.current = game.code;
     const score = game.questions.filter((q, i) => game.picks[i] === q.correct).length;
-    writeSeen(nextSeen(bank, readSeen(), game.questions));
-    played.mutate();
+    writeSeen(quizId, nextSeen(bank, readSeen(quizId), game.questions));
+    // L'anteprima dello staff (anche domande in prova) non conta e non si salva.
+    if (preview) return;
+    played.mutate(
+      game.questions.flatMap((q, i) => {
+        const pick = game.picks[i];
+        return pick === null ? [] : [{ id: q.id, pick }];
+      })
+    );
     if (member) saveBest.mutate(score);
   }
 
   function playAgain() {
     const last = new Set(game.questions.map((q) => q.id));
-    setGame(newGame(bank, pickFreshCode(bank, readSeen(), last), null));
+    setGame(newGame(bank, pickFreshCode(bank, readSeen(quizId), last), null));
     // Fuori dal link di sfida: la partita nuova non è più quella di chi ha sfidato.
-    if (challenge) router.replace("/giochi/quiz", { scroll: false });
+    if (challenge) router.replace(quizPath(slug), { scroll: false });
     window.scrollTo({ top: 0 });
   }
 
@@ -146,6 +180,9 @@ function QuizGame({ bank, member, initialBest, challenge }: BaskinQuizProps) {
         challengerScore={game.challengerScore}
         best={member ? best : null}
         onPlayAgain={playAgain}
+        membersOnly={membersOnly}
+        slug={slug}
+        title={title}
       />
     );
   }

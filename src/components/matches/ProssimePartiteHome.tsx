@@ -11,6 +11,7 @@ import { withDbRetry } from "@/lib/dbRetry";
 import ProssimePartiteCards from "./ProssimePartiteCards";
 import { loadHomeCallupStatus, type HomeCallupStatus } from "@/lib/matches/homeCallupStatus";
 import { loadPendingPredictions } from "@/lib/games/loadPredictions";
+import { loadGameSettings } from "@/lib/games/loadGameSettings";
 import { getLocale, getTranslations } from "next-intl/server";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -30,54 +31,56 @@ export default async function ProssimePartiteHome({ viewer = null }: ProssimePar
 
   // Risultati del fine settimana (UX-58): dal venerdì al martedì sera.
   const weekend = weekendResultsWindow(now);
-  const [t, tAfter, locale, { matchResultLabel }, weekendResults, matches] = await Promise.all([
-    getTranslations("matches"),
-    getTranslations("matches.afterMatch"),
-    getLocale(),
-    getEntityLabels(),
-    weekend
-      ? withDbRetry(() =>
-          prisma.match.findMany({
-            where: {
-              date: { gte: weekend.from, lt: weekend.to },
-              ourScore: { not: null },
-              theirScore: { not: null },
-            },
-            orderBy: { date: "asc" },
-            select: {
-              id: true,
-              slug: true,
-              date: true,
-              isHome: true,
-              matchType: true,
-              ourScore: true,
-              theirScore: true,
-              result: true,
-              team: { select: { name: true } },
-              opponent: { select: { name: true } },
-              opponentTeam: { select: { name: true } },
-            },
-          })
-        )
-      : Promise.resolve([]),
-    withDbRetry(() =>
-      prisma.match.findMany({
-        where: { date: { gte: now, lte: limit } },
-        orderBy: { date: "asc" },
-        take: 3,
-        select: {
-          id: true,
-          slug: true,
-          date: true,
-          isHome: true,
-          venue: true,
-          team: { select: { id: true, name: true, color: true } },
-          opponent: { select: { id: true, name: true } },
-          opponentTeam: { select: { id: true, name: true } },
-        },
-      })
-    ),
-  ]);
+  const [t, tAfter, locale, { matchResultLabel }, weekendResults, matches, gameSettings] =
+    await Promise.all([
+      getTranslations("matches"),
+      getTranslations("matches.afterMatch"),
+      getLocale(),
+      getEntityLabels(),
+      weekend
+        ? withDbRetry(() =>
+            prisma.match.findMany({
+              where: {
+                date: { gte: weekend.from, lt: weekend.to },
+                ourScore: { not: null },
+                theirScore: { not: null },
+              },
+              orderBy: { date: "asc" },
+              select: {
+                id: true,
+                slug: true,
+                date: true,
+                isHome: true,
+                matchType: true,
+                ourScore: true,
+                theirScore: true,
+                result: true,
+                team: { select: { name: true } },
+                opponent: { select: { name: true } },
+                opponentTeam: { select: { name: true } },
+              },
+            })
+          )
+        : Promise.resolve([]),
+      withDbRetry(() =>
+        prisma.match.findMany({
+          where: { date: { gte: now, lte: limit } },
+          orderBy: { date: "asc" },
+          take: 3,
+          select: {
+            id: true,
+            slug: true,
+            date: true,
+            isHome: true,
+            venue: true,
+            team: { select: { id: true, name: true, color: true } },
+            opponent: { select: { id: true, name: true } },
+            opponentTeam: { select: { id: true, name: true } },
+          },
+        })
+      ),
+      loadGameSettings(),
+    ]);
 
   if (matches.length === 0 && weekendResults.length === 0) return null;
   const dateLocale = getDateFnsLocale(locale);
@@ -97,19 +100,21 @@ export default async function ProssimePartiteHome({ viewer = null }: ProssimePar
             now
           )
         ),
-        // Pronostico aperto e non ancora fatto (UX-61).
-        withDbRetry(() =>
-          loadPendingPredictions(
-            viewer.id,
-            matches.map((m) => ({
-              id: m.id,
-              date: m.date,
-              opponentId: m.opponent?.id ?? null,
-              opponentTeamId: m.opponentTeam?.id ?? null,
-            })),
-            now.getTime()
-          )
-        ),
+        // Pronostico aperto e non ancora fatto (UX-61), se l'admin non l'ha spento (UX-66).
+        gameSettings.prediction === "OFF"
+          ? Promise.resolve(new Set<string>())
+          : withDbRetry(() =>
+              loadPendingPredictions(
+                viewer.id,
+                matches.map((m) => ({
+                  id: m.id,
+                  date: m.date,
+                  opponentId: m.opponent?.id ?? null,
+                  opponentTeamId: m.opponentTeam?.id ?? null,
+                })),
+                now.getTime()
+              )
+            ),
       ])
     : [{} as Record<string, HomeCallupStatus>, new Set<string>()];
 

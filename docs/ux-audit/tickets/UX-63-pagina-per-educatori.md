@@ -1,6 +1,6 @@
 # UX-63 · Pagina per scuole, educatori e servizi
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55, UX-62 · **Stato:** da fare · **In attesa di:** testi e contatti del club (punto 2)
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55, UX-62 · **Stato:** scartato dal committente (12/11/2026): il codice sarebbe poco, ma servono testi del club e qualcuno che porti il foglio a scuole e centri
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 

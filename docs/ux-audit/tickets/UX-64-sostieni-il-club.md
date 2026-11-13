@@ -1,6 +1,6 @@
 # UX-64 · Sostieni il club: 5×1000, donazioni e volontari
 
-**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55 · **Stato:** da fare · **In attesa di:** dati fiscali e decisioni del club (punto 1)
+**Ondata:** 7 (engagement) · **Stima:** M · **Dipende da:** UX-55 · **Stato:** scartato dal committente (12/11/2026)
 
 Richiesta del committente del 06/11/2026 (piano di engagement).
 

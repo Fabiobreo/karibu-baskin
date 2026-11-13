@@ -1,5 +1,4 @@
 "use client";
-import { QUIZ_READY } from "@/lib/content/baskinQuiz";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -80,12 +79,20 @@ const PARTITE_HREFS = [
   { key: "scorers" as const, href: "/marcatori" },
 ];
 
-const IL_BASKIN_HREFS: { key: string; href: string; disabled?: boolean; badge?: string }[] = [
+interface IlBaskinLink {
+  key: string;
+  href: string;
+  disabled?: boolean;
+  badge?: string;
+}
+
+const IL_BASKIN_HREFS: IlBaskinLink[] = [
   { key: "whatIsBaskin", href: "/il-baskin" },
   { key: "gallery", href: "/gallery" },
-  // Giochi (UX-61): in menu quando il club ha rivisto le domande del quiz.
-  ...(QUIZ_READY ? [{ key: "games", href: "/giochi" }] : []),
 ];
+
+// Giochi (UX-61): in menu se chi guarda ne può giocare almeno uno (UX-66).
+const GAMES_LINK: IlBaskinLink = { key: "games", href: "/giochi" };
 
 const CONTATTI_HREFS = [
   { key: "contacts" as const, href: "/contatti" },
@@ -122,9 +129,11 @@ function ThemeModeIcon({ mode }: { mode: ColorMode }) {
 interface SiteHeaderProps {
   /** Stagione in corso (flag dello staff, o calendario): arriva dal layout. */
   currentSeason: string;
+  /** Voce "Giochi": c'è se chi guarda ne può giocare almeno uno (UX-66), dal layout. */
+  showGames: boolean;
 }
 
-export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
+export default function SiteHeader({ currentSeason, showGames }: SiteHeaderProps) {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const { showToast } = useToast();
@@ -158,6 +167,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   // Nessun gate sul mount: usePathname e gia risolto durante il render sul
   // server, cosi la voce attiva e evidenziata gia al primo frame.
   const pathname = usePathname();
+  const ilBaskinLinks = showGames ? [...IL_BASKIN_HREFS, GAMES_LINK] : IL_BASKIN_HREFS;
   const partiteActive =
     pathname === "/risultati" ||
     pathname === "/classifiche" ||
@@ -458,7 +468,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
               PaperProps={{ sx: { mt: 0.5, minWidth: 170 } }}
             >
-              {IL_BASKIN_HREFS.map((bl) => (
+              {ilBaskinLinks.map((bl) => (
                 <MenuItem
                   key={bl.href}
                   component={bl.disabled ? "li" : Link}
@@ -954,7 +964,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
 
           <Collapse in={ilBaskinOpen} timeout="auto" unmountOnExit>
             <List disablePadding>
-              {IL_BASKIN_HREFS.map((link) => {
+              {ilBaskinLinks.map((link) => {
                 const active = pathname === link.href;
                 return (
                   <ListItem key={link.href} disablePadding>
