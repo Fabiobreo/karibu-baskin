@@ -6,11 +6,12 @@ import AddIcon from "@mui/icons-material/Add";
 import PageHeader from "@/components/common/PageHeader";
 import RowActions from "@/components/admin/RowActions";
 import QuizFormDialog, { type AdminQuizRow } from "@/components/admin/QuizFormDialog";
+import QuizPublishDialog from "@/components/admin/QuizPublishDialog";
+import QuizStateChip from "@/components/admin/QuizStateChip";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
-import { GAME_VISIBILITY_LABELS } from "@/lib/games/gameSettings";
 import { quizPath } from "@/lib/games/quiz";
 import { canEnableQuiz, isPlayableIn, missingToEnableText } from "@/lib/games/quizRules";
 
@@ -28,6 +29,7 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
   const router = useRouter();
   const { showToast } = useToast();
   const [editing, setEditing] = useState<AdminQuizRow | "new" | null>(null);
+  const [publishing, setPublishing] = useState<AdminQuizRow | null>(null);
   const newButtonRef = useRef<HTMLButtonElement>(null);
 
   async function request(url: string, init: RequestInit, done: string): Promise<boolean> {
@@ -52,6 +54,17 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
         body: JSON.stringify({ move: direction }),
       },
       "Ordine salvato"
+    );
+
+  const turnOff = (quiz: AdminQuizRow) =>
+    request(
+      `/api/admin/quizzes/${quiz.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visibility: "OFF" }),
+      },
+      "Quiz spento"
     );
 
   return (
@@ -87,6 +100,8 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
         <Box component="ul" sx={{ listStyle: "none", m: 0, p: 0, display: "grid", gap: 1.5 }}>
           {quizzes.map((quiz, i) => {
             const { counts } = quiz;
+            // Spento e con abbastanza domande approvate: si pubblica dalla riga (UX-71).
+            const ready = quiz.visibility === "OFF" && canEnableQuiz(counts);
             const warning =
               quiz.visibility === "OFF"
                 ? canEnableQuiz(counts)
@@ -114,15 +129,17 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
                 }}
               >
                 <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
-                  <Typography
-                    variant="body1"
-                    sx={{ fontWeight: FONT_WEIGHT.semibold, overflowWrap: "anywhere" }}
-                  >
-                    {quiz.title}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: FONT_WEIGHT.semibold, overflowWrap: "anywhere" }}
+                    >
+                      {quiz.title}
+                    </Typography>
+                    <QuizStateChip visibility={quiz.visibility} />
+                  </Box>
                   <Typography variant="body2" color="text.secondary">
-                    {GAME_VISIBILITY_LABELS[quiz.visibility]} · {counts.approved} approvate su{" "}
-                    {counts.total} · in inglese {counts.approvedEn}
+                    {counts.approved} approvate su {counts.total} · in inglese {counts.approvedEn}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Partite negli ultimi {windowDays} giorni: {quiz.plays}
@@ -138,8 +155,15 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
                 <Box sx={{ ml: "auto" }}>
                   <RowActions
                     subject={quiz.title}
-                    primary={{ label: "Domande", href: `/admin/giochi/quiz/${quiz.id}` }}
+                    primary={
+                      ready
+                        ? { label: "Pubblica", onClick: () => setPublishing(quiz) }
+                        : { label: "Domande", href: `/admin/giochi/quiz/${quiz.id}` }
+                    }
                     items={[
+                      ...(ready
+                        ? [{ label: "Domande", href: `/admin/giochi/quiz/${quiz.id}` }]
+                        : []),
                       { label: "Modifica…", onClick: () => setEditing(quiz) },
                       ...(i > 0
                         ? [{ label: "Sposta su", onClick: () => void move(quiz, "up") }]
@@ -152,6 +176,9 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
                         href: quizPath(quiz.slug),
                         external: true,
                       },
+                      ...(quiz.visibility !== "OFF"
+                        ? [{ label: "Spegni", onClick: () => void turnOff(quiz) }]
+                        : []),
                     ]}
                     onDelete={() =>
                       request(
@@ -172,6 +199,21 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
             );
           })}
         </Box>
+      )}
+
+      {publishing && (
+        <QuizPublishDialog
+          quiz={{
+            id: publishing.id,
+            title: publishing.title,
+            approved: publishing.counts.approved,
+          }}
+          onClose={() => setPublishing(null)}
+          onDone={() => {
+            setPublishing(null);
+            router.refresh();
+          }}
+        />
       )}
 
       {editing && (

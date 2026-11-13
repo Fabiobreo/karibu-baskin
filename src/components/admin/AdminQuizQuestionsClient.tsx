@@ -14,6 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import QuizPublishDialog from "@/components/admin/QuizPublishDialog";
+import QuizStateChip, { QuestionStateChip } from "@/components/admin/QuizStateChip";
 import PageHeader from "@/components/common/PageHeader";
 import RowActions from "@/components/admin/RowActions";
 import QuizQuestionDialog, { type AdminQuizQuestion } from "@/components/admin/QuizQuestionDialog";
@@ -23,7 +27,6 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
 import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import { QUIZ_TOPICS, type QuizTopic } from "@/lib/content/baskinQuiz";
-import { GAME_VISIBILITY_LABELS } from "@/lib/games/gameSettings";
 import {
   canEnableQuiz,
   correctRate,
@@ -42,7 +45,6 @@ interface AdminQuizQuestionsClientProps {
   questions: AdminQuizQuestion[];
 }
 
-const STATUS_LABEL = { DRAFT: "In prova", APPROVED: "Approvata" } as const;
 const LEVEL_LABEL = { EASY: "Facile", MEDIUM: "Media" } as const;
 
 /**
@@ -60,6 +62,7 @@ export default function AdminQuizQuestionsClient({
   const [level, setLevel] = useState<"" | "EASY" | "MEDIUM">("");
   const [topic, setTopic] = useState("");
   const [editing, setEditing] = useState<AdminQuizQuestion | "new" | null>(null);
+  const [publishing, setPublishing] = useState(false);
   const newButtonRef = useRef<HTMLButtonElement>(null);
 
   const counts = countQuestions(questions);
@@ -124,10 +127,36 @@ export default function AdminQuizQuestionsClient({
       />
 
       <Box>
-        <Typography variant="body1">
-          {GAME_VISIBILITY_LABELS[quiz.visibility]} · {counts.approved} approvate su {counts.total}{" "}
-          · in inglese {counts.approvedEn}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", mb: 0.5 }}>
+          <QuizStateChip visibility={quiz.visibility} />
+          <Typography variant="body1">
+            {counts.approved} approvate su {counts.total} · in inglese {counts.approvedEn}
+          </Typography>
+          {quiz.visibility === "OFF" && canEnableQuiz(counts) && (
+            <Button variant="outlined" onClick={() => setPublishing(true)} sx={{ minHeight: 44 }}>
+              Pubblica
+            </Button>
+          )}
+          {quiz.visibility !== "OFF" && (
+            <Button
+              variant="text"
+              onClick={() =>
+                void request(
+                  `/api/admin/quizzes/${quiz.id}`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ visibility: "OFF" }),
+                  },
+                  "Quiz spento"
+                )
+              }
+              sx={{ minHeight: 44 }}
+            >
+              Spegni
+            </Button>
+          )}
+        </Box>
         {!canEnableQuiz(counts) && (
           <Typography variant="body2" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
             {missingToEnableText(counts)} per accenderlo.
@@ -213,33 +242,81 @@ export default function AdminQuizQuestionsClient({
               key={q.id}
               elevation={0}
               sx={{
-                border: "1px solid",
-                borderColor: "divider",
+                // In prova: bordo tratteggiato e fondo appena grigio; approvata: carta piena.
+                border: draft ? "1px dashed" : "1px solid",
+                borderColor: draft ? "text.secondary" : "divider",
+                bgcolor: draft ? "action.hover" : "background.paper",
                 borderRadius: RADIUS.lg,
                 p: 1.5,
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 gap: 1.5,
                 flexWrap: { xs: "wrap", sm: "nowrap" },
               }}
             >
               <Box sx={{ minWidth: 0, flex: "1 1 240px" }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 0.75 }}
+                >
+                  <QuestionStateChip status={q.status} />
+                  <Typography variant="caption" color="text.secondary">
+                    {LEVEL_LABEL[q.level]} · {QUIZ_TOPICS[q.topic as QuizTopic] ?? q.topic}
+                    {!hasEnglish(q) && " · senza inglese"} ·{" "}
+                    {rate === null
+                      ? `uscita ${q.shown} ${q.shown === 1 ? "volta" : "volte"}`
+                      : `${Math.round(rate * 100)}% giuste su ${q.shown}`}
+                  </Typography>
+                </Box>
                 <Typography variant="body1" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                   {q.text}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Giusta: {q.answers[q.correct]}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {STATUS_LABEL[q.status]} · {LEVEL_LABEL[q.level]} ·{" "}
-                  {QUIZ_TOPICS[q.topic as QuizTopic] ?? q.topic}
-                  {!hasEnglish(q) && " · senza inglese"} ·{" "}
-                  {rate === null
-                    ? `uscita ${q.shown} ${q.shown === 1 ? "volta" : "volte"}`
-                    : `${Math.round(rate * 100)}% giuste su ${q.shown}`}
+                {/* Le tre risposte in vista, la giusta segnata (UX-71). */}
+                <Box component="ol" sx={{ listStyle: "none", m: 0, mt: 0.75, p: 0 }}>
+                  {q.answers.map((a, n) => {
+                    const right = n === q.correct;
+                    return (
+                      <Box
+                        component="li"
+                        key={n}
+                        sx={{ display: "flex", alignItems: "flex-start", gap: 0.75, py: 0.25 }}
+                      >
+                        {right ? (
+                          <CheckCircleIcon
+                            fontSize="small"
+                            sx={{ color: "success.main", mt: "2px" }}
+                            aria-hidden
+                          />
+                        ) : (
+                          <RadioButtonUncheckedIcon
+                            fontSize="small"
+                            sx={{ color: "text.secondary", mt: "2px" }}
+                            aria-hidden
+                          />
+                        )}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: right ? "text.primary" : "text.secondary",
+                            fontWeight: right ? FONT_WEIGHT.semibold : undefined,
+                          }}
+                        >
+                          {a}
+                          {right && (
+                            <Box component="span" sx={{ color: "success.main" }}>
+                              {" "}
+                              · giusta
+                            </Box>
+                          )}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {q.explanation}
                 </Typography>
                 {review && (
-                  <Typography variant="body2" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+                  <Typography variant="body2" sx={{ fontWeight: FONT_WEIGHT.semibold, mt: 0.5 }}>
                     Da rileggere: la sbagliano quasi tutti.
                   </Typography>
                 )}
@@ -293,6 +370,17 @@ export default function AdminQuizQuestionsClient({
           );
         })}
       </Box>
+
+      {publishing && (
+        <QuizPublishDialog
+          quiz={{ id: quiz.id, title: quiz.title, approved: counts.approved }}
+          onClose={() => setPublishing(false)}
+          onDone={() => {
+            setPublishing(false);
+            router.refresh();
+          }}
+        />
+      )}
 
       {editing && (
         <QuizQuestionDialog
