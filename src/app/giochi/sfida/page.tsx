@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
+import PreviewChip from "@/components/games/PreviewChip";
 import SfidaGame, { type SfidaOutcome } from "@/components/games/sfida/SfidaGame";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
@@ -155,14 +156,13 @@ export default async function SfidaPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero column="main" title={t("heroTitle")} />
+      <PageHero
+        column="main"
+        title={t("heroTitle")}
+        action={access === "preview" ? <PreviewChip label={tGames("previewChip")} /> : undefined}
+      />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
-          {access === "preview" && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {tGames("gamePreview")}
-            </Typography>
-          )}
           {!initial ? (
             <EmptyState
               icon={<SportsKabaddiIcon sx={{ fontSize: 56, color: "text.secondary" }} />}

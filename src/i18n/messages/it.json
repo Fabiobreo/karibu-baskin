@@ -1245,6 +1245,7 @@
     "games": {
       "title": "Giochi",
       "metaDescription": "I giochi del Karibu Baskin: il quiz sul baskin e il pronostico della prossima partita.",
+      "previewChip": "Anteprima",
       "predictionTitle": "Pronostico",
       "simulatorTitle": "Sfida",
       "membersOnly": "Per i tesserati",
@@ -1261,17 +1262,12 @@
       "offForOthers": "Non visibile agli altri",
       "quiz": {
         "title": "Quiz del Baskin",
-        "subtitle": "5 domande, senza fretta",
         "metaDescription": "Quanto ne sai di baskin? 5 domande sulle regole, sui ruoli e sul Karibu, con la spiegazione dopo ogni risposta.",
         "loading": "Preparo le domande…",
         "challengeIntro": "Ti hanno sfidato! Rispondi alle stesse 5 domande.",
         "progress": "Domanda {current} di {total}",
-        "levelfacile": "Facile",
-        "levelmedio": "Media",
-        "answers": "Scegli una risposta",
-        "confirm": "Conferma",
+        "draftChip": "In prova",
         "next": "Avanti",
-        "back": "Indietro",
         "seeResult": "Vedi il risultato",
         "right": "Giusto!",
         "wrong": "Non proprio",
@@ -1297,8 +1293,7 @@
         "membersLogin": "Accedi",
         "membersGuest": "Lo potrai fare quando lo staff conferma il tuo account.",
         "challengeMembersNote": "Il link funziona solo per chi è tesserato del Karibu.",
-        "notInLanguage": "Questo quiz non c'è ancora nella tua lingua.",
-        "previewDrafts": "Nell'anteprima ci sono anche le domande in prova."
+        "notInLanguage": "Questo quiz non c'è ancora nella tua lingua."
       },
       "prediction": {
         "title": "Il tuo pronostico",
@@ -1333,8 +1328,7 @@
         "totalsRow": "{choice}: {count}",
         "homeRow": "Fai il tuo pronostico",
         "record": "Pronostici giusti in questa stagione: {right} su {total}"
-      },
-      "gamePreview": "Anteprima per lo staff: questo gioco è spento e non lo vede nessun altro."
+      }
     },
     "faq": {
       "heroTitle": "Domande frequenti",

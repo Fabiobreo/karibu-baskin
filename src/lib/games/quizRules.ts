@@ -71,6 +71,7 @@ export function playableBank(
       correct: q.correct,
       explanation: en ? q.explanationEn! : q.explanation,
       source: q.source,
+      ...(q.status === "APPROVED" ? {} : { draft: true }),
     }));
 }
 

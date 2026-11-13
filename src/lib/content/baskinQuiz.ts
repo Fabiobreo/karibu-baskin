@@ -58,4 +58,6 @@ export interface QuizQuestion {
   explanation: string;
   /** Pagina "Scopri di più", o `null` senza link. */
   source: string | null;
+  /** Domanda ancora in prova: esce solo nell'anteprima dello staff, con il chip "In prova". */
+  draft?: boolean;
 }

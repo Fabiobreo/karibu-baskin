@@ -1245,6 +1245,7 @@
     "games": {
       "title": "Games",
       "metaDescription": "Karibu Baskin games: the Baskin quiz and the prediction for the next game.",
+      "previewChip": "Preview",
       "predictionTitle": "Prediction",
       "simulatorTitle": "Challenge",
       "membersOnly": "Members only",
@@ -1261,17 +1262,12 @@
       "offForOthers": "Not visible to others",
       "quiz": {
         "title": "Baskin quiz",
-        "subtitle": "5 questions, no rush",
         "metaDescription": "How much do you know about Baskin? 5 questions on the rules, the roles and Karibu, with an explanation after each answer.",
         "loading": "Getting the questions ready…",
         "challengeIntro": "You've been challenged! Answer the same 5 questions.",
         "progress": "Question {current} of {total}",
-        "levelfacile": "Easy",
-        "levelmedio": "Medium",
-        "answers": "Choose an answer",
-        "confirm": "Confirm",
+        "draftChip": "Draft",
         "next": "Next",
-        "back": "Back",
         "seeResult": "See the result",
         "right": "Right!",
         "wrong": "Not quite",
@@ -1297,8 +1293,7 @@
         "membersLogin": "Sign in",
         "membersGuest": "You can play once the staff confirms your account.",
         "challengeMembersNote": "The link only works for Karibu members.",
-        "notInLanguage": "This quiz is not available in your language yet.",
-        "previewDrafts": "The preview also has the questions still under review."
+        "notInLanguage": "This quiz is not available in your language yet."
       },
       "prediction": {
         "title": "Your prediction",
@@ -1333,8 +1328,7 @@
         "totalsRow": "{choice}: {count}",
         "homeRow": "Make your prediction",
         "record": "Right predictions this season: {right} out of {total}"
-      },
-      "gamePreview": "Staff preview: this game is switched off and nobody else can see it."
+      }
     },
     "faq": {
       "heroTitle": "Frequently asked questions",

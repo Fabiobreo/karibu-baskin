@@ -10,7 +10,14 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { visuallyHidden } from "@mui/utils";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import { useTranslations } from "next-intl";
+import GameArt from "@/components/games/GameArt";
+import type { QuizArt } from "@/lib/games/gameArt";
+import { HERO_TEXT, OUTCOME } from "@/lib/palette";
+import { TYPE_SCALE } from "@/lib/typeScale";
 import ShareSection from "@/components/common/ShareSection";
 import type { QuizQuestion } from "@/lib/content/baskinQuiz";
 import { challengePath, QUIZ_LENGTH, scoreTone } from "@/lib/games/quiz";
@@ -31,6 +38,8 @@ interface QuizResultProps {
   /** Quiz giocato (UX-67): indirizzo e titolo per la sfida. */
   slug: string;
   title: string;
+  /** Disegno del quiz, sul tabellone (UX-70). */
+  art: QuizArt;
 }
 
 /**
@@ -49,6 +58,7 @@ export default function QuizResult({
   membersOnly,
   slug,
   title,
+  art,
 }: QuizResultProps) {
   const t = useTranslations("pages.games.quiz");
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -64,16 +74,67 @@ export default function QuizResult({
   return (
     <Stack spacing={4}>
       <Box>
-        <Typography
-          ref={headingRef}
-          tabIndex={-1}
-          variant="h4"
-          component="h2"
-          sx={{ outline: "none", mb: 1 }}
+        {/* Il tabellone del risultato (UX-70): il punteggio grande sul disegno del quiz. */}
+        <Box
+          sx={{
+            position: "relative",
+            overflow: "hidden",
+            borderRadius: RADIUS.lg,
+            background: (theme) => theme.palette.heroGradient.cardHead,
+            color: HERO_TEXT.primary,
+            px: 2,
+            py: { xs: 3, md: 4 },
+            mb: 2,
+            textAlign: "center",
+          }}
         >
-          {t("resultTitle", { score, total: questions.length })}
-        </Typography>
-        <Typography variant="body1">
+          <Box sx={{ position: "absolute", inset: 0, opacity: 0.15 }}>
+            <GameArt kind="quiz" art={art} />
+          </Box>
+          <Box sx={{ position: "relative" }}>
+            <Typography ref={headingRef} tabIndex={-1} component="h2" sx={{ outline: "none" }}>
+              <Box component="span" sx={visuallyHidden}>
+                {t("resultTitle", { score, total: questions.length })}
+              </Box>
+              <Box
+                component="span"
+                aria-hidden
+                sx={{
+                  typography: "stat",
+                  fontSize: { xs: TYPE_SCALE.xl7, sm: TYPE_SCALE.xl8 },
+                  display: "block",
+                }}
+              >
+                {score}
+                <Box component="span" sx={{ color: HERO_TEXT.muted }}>
+                  /{questions.length}
+                </Box>
+              </Box>
+            </Typography>
+            <Box aria-hidden sx={{ display: "flex", justifyContent: "center", gap: 0.75, mt: 2 }}>
+              {questions.map((q, i) => {
+                const ok = picks[i] === q.correct;
+                return (
+                  <Box
+                    key={q.id}
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: ok ? OUTCOME.dark.win : OUTCOME.dark.loss,
+                      color: OUTCOME.dark.onFill,
+                    }}
+                  >
+                    {ok ? <CheckIcon sx={{ fontSize: 18 }} /> : <CloseIcon sx={{ fontSize: 18 }} />}
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        </Box>
+        <Typography variant="h6" component="p">
           {tone === "perfect"
             ? t("tonePerfect")
             : tone === "good"

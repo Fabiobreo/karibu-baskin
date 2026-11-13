@@ -4,6 +4,7 @@ import { Box, Skeleton, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import type { QuizArt } from "@/lib/games/gameArt";
 import QuizQuestionStep from "@/components/games/QuizQuestionStep";
 import QuizResult from "@/components/games/QuizResult";
 import type { QuizQuestion } from "@/lib/content/baskinQuiz";
@@ -32,6 +33,8 @@ interface BaskinQuizProps {
   membersOnly: boolean;
   /** Anteprima dello staff: la partita non si conta e non si salva. */
   preview: boolean;
+  /** Disegno del quiz, sulla testata delle domande (UX-70). */
+  art: QuizArt;
 }
 
 interface Game {
@@ -106,6 +109,7 @@ function QuizGame({
   challenge,
   membersOnly,
   preview,
+  art,
 }: BaskinQuizProps) {
   const t = useTranslations("pages.games.quiz");
   const router = useRouter();
@@ -183,6 +187,7 @@ function QuizGame({
         membersOnly={membersOnly}
         slug={slug}
         title={title}
+        art={art}
       />
     );
   }
@@ -198,24 +203,24 @@ function QuizGame({
         key={question.id}
         question={question}
         index={game.index}
-        total={game.questions.length}
-        pick={game.picks[game.index]}
-        confirmed={game.confirmed[game.index]}
+        results={game.questions.map((q, i) =>
+          game.confirmed[i] ? game.picks[i] === q.correct : null
+        )}
+        pick={game.confirmed[game.index] ? game.picks[game.index] : null}
+        art={art}
         isLast={game.index === game.questions.length - 1}
+        // Un tocco è la risposta (UX-70): niente "Conferma", e non si cambia.
         onPick={(answer) =>
           setGame((g) =>
             g.confirmed[g.index]
               ? g
-              : { ...g, picks: g.picks.map((p, i) => (i === g.index ? answer : p)) }
+              : {
+                  ...g,
+                  picks: g.picks.map((p, i) => (i === g.index ? answer : p)),
+                  confirmed: g.confirmed.map((c, i) => (i === g.index ? true : c)),
+                }
           )
         }
-        onConfirm={() =>
-          setGame((g) => ({
-            ...g,
-            confirmed: g.confirmed.map((c, i) => (i === g.index ? true : c)),
-          }))
-        }
-        onBack={game.index > 0 ? () => setGame((g) => ({ ...g, index: g.index - 1 })) : null}
         onNext={() =>
           game.index === game.questions.length - 1
             ? finish()

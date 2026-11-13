@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import PageHero from "@/components/common/PageHero";
 import BaskinQuiz from "@/components/games/BaskinQuiz";
+import PreviewChip from "@/components/games/PreviewChip";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
@@ -59,7 +60,15 @@ export default async function QuizPage({ params, searchParams }: QuizPageProps) 
     ? { code: challengeCode, score: parseChallengeScore(first(sp.p)) }
     : null;
 
-  const hero = <PageHero column="main" title={title} subtitle={t("subtitle")} />;
+  const preview = access === "preview";
+  // Anteprima dello staff: un chip sulla fascia, non una frase (UX-70).
+  const hero = (
+    <PageHero
+      column="main"
+      title={title}
+      action={preview ? <PreviewChip label={tGames("previewChip")} /> : undefined}
+    />
+  );
   const notice = (children: React.ReactNode) => (
     <>
       {hero}
@@ -116,7 +125,6 @@ export default async function QuizPage({ params, searchParams }: QuizPageProps) 
     );
   }
 
-  const preview = access === "preview";
   const userId = session?.user?.id;
   const member = isMemberRole(role) && !!userId;
   const [bank, best] = await Promise.all([
@@ -139,11 +147,6 @@ export default async function QuizPage({ params, searchParams }: QuizPageProps) 
       {hero}
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
-          {preview && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {tGames("gamePreview")} {t("previewDrafts")}
-            </Typography>
-          )}
           <BaskinQuiz
             quizId={quiz.id}
             slug={quiz.slug}
@@ -154,6 +157,7 @@ export default async function QuizPage({ params, searchParams }: QuizPageProps) 
             challenge={challenge}
             membersOnly={quiz.visibility === "MEMBERS"}
             preview={preview}
+            art={quiz.art}
           />
         </Box>
       </Container>
