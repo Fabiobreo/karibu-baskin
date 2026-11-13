@@ -27,6 +27,7 @@ export default async function AdminQuizPage() {
         descriptionEn: true,
         visibility: true,
         art: true,
+        questionCount: true,
         questions: {
           select: {
             status: true,
@@ -48,7 +49,7 @@ export default async function AdminQuizPage() {
       quizzes={quizzes.map(({ questions, art, ...q }) => ({
         ...q,
         art: quizArt(art),
-        counts: countQuestions(questions),
+        counts: countQuestions(questions, q.questionCount),
         toReview: questions.filter((x) => needsReview(x.shown, x.correctCount)).length,
         plays: metrics.quizPlaysById[q.id] ?? 0,
       }))}

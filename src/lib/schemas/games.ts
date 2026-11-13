@@ -1,15 +1,15 @@
 import { z } from "zod";
-import { QUIZ_LENGTH } from "@/lib/games/quiz";
+import { MAX_QUIZ_LENGTH } from "@/lib/games/quiz";
 
 /** Stato di un gioco dal pannello (UX-66); quali stati ha ogni gioco lo dice `GAME_RULES`. */
 export const GameSettingUpdateSchema = z.object({
   visibility: z.enum(["OFF", "MEMBERS", "PUBLIC"], { message: "Stato non valido" }),
 });
 
-/** Migliore partita di un quiz (UX-61, UX-67): un intero da 0 a 5. */
+/** Migliore partita di un quiz (UX-61, UX-67): un intero da 0 al numero di domande del quiz (la rotta lo controlla). */
 export const QuizBestSchema = z.object({
   quizId: z.string().min(1).max(64),
-  score: z.int().min(0).max(QUIZ_LENGTH),
+  score: z.int().min(0).max(MAX_QUIZ_LENGTH),
 });
 
 /** Partita di un quiz finita (UX-67): le risposte date, che il server ricontrolla. */
@@ -17,7 +17,7 @@ export const QuizPlayedSchema = z.object({
   quizId: z.string().min(1).max(64),
   answers: z
     .array(z.object({ id: z.string().min(1).max(64), pick: z.int().min(0).max(2) }))
-    .max(QUIZ_LENGTH),
+    .max(MAX_QUIZ_LENGTH),
 });
 
 /** Punteggio massimo accettato in un pronostico: abbastanza per qualunque partita. */

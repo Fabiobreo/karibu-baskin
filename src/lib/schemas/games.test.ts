@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { PredictionSchema, QuizBestSchema, QuizPlayedSchema } from "./games";
 
 describe("QuizBestSchema", () => {
-  it("accetta solo interi da 0 a 5", () => {
+  it("accetta solo interi da 0 a 10 (il limite del quiz lo controlla la rotta)", () => {
     expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 0 }).success).toBe(true);
     expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 5 }).success).toBe(true);
-    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 6 }).success).toBe(false);
+    expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 11 }).success).toBe(false);
     expect(QuizBestSchema.safeParse({ quizId: "baskin", score: -1 }).success).toBe(false);
     expect(QuizBestSchema.safeParse({ quizId: "baskin", score: 2.5 }).success).toBe(false);
     expect(QuizBestSchema.safeParse({ quizId: "baskin", score: "4" }).success).toBe(false);
@@ -59,7 +59,7 @@ describe("PredictionSchema", () => {
 });
 
 describe("QuizPlayedSchema", () => {
-  it("accetta fino a 5 risposte da 0 a 2", () => {
+  it("accetta fino a 10 risposte da 0 a 2", () => {
     expect(
       QuizPlayedSchema.safeParse({ quizId: "baskin", answers: [{ id: "nato", pick: 1 }] }).success
     ).toBe(true);
@@ -70,7 +70,7 @@ describe("QuizPlayedSchema", () => {
     expect(
       QuizPlayedSchema.safeParse({
         quizId: "baskin",
-        answers: Array.from({ length: 6 }, (_, i) => ({ id: `q${i}`, pick: 0 })),
+        answers: Array.from({ length: 11 }, (_, i) => ({ id: `q${i}`, pick: 0 })),
       }).success
     ).toBe(false);
     expect(QuizPlayedSchema.safeParse({ answers: [] }).success).toBe(false);

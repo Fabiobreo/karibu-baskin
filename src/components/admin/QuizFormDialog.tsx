@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   FormHelperText,
   FormLabel,
+  MenuItem,
   Radio,
   RadioGroup,
   TextField,
@@ -28,8 +29,14 @@ import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { DEFAULT_QUIZ_ART, QUIZ_ARTS, QUIZ_ART_LABELS, type QuizArt } from "@/lib/games/gameArt";
 import { GAME_RULES, GAME_VISIBILITY_LABELS } from "@/lib/games/gameSettings";
+import { DEFAULT_QUIZ_LENGTH, MAX_QUIZ_LENGTH, MIN_QUIZ_LENGTH } from "@/lib/games/quiz";
 import { RADIUS } from "@/lib/radius";
-import { canEnableQuiz, missingToEnableText, type QuizCounts } from "@/lib/games/quizRules";
+import {
+  canEnableQuiz,
+  minApprovedToEnable,
+  missingToEnableText,
+  type QuizCounts,
+} from "@/lib/games/quizRules";
 
 /** Un quiz nell'elenco del pannello. */
 export interface AdminQuizRow {
@@ -42,6 +49,8 @@ export interface AdminQuizRow {
   visibility: GameVisibility;
   /** Disegno della card in Giochi (UX-68). */
   art: QuizArt;
+  /** Domande per partita (UX-67). */
+  questionCount: number;
   counts: QuizCounts;
   /** Domande "da rileggere" (troppe risposte sbagliate). */
   toReview: number;
@@ -70,8 +79,12 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
   const [descriptionEn, setDescriptionEn] = useState(quiz?.descriptionEn ?? "");
   const [art, setArt] = useState<QuizArt>(quiz?.art ?? DEFAULT_QUIZ_ART);
   const [visibility, setVisibility] = useState<GameVisibility>(quiz?.visibility ?? "OFF");
+  const [questionCount, setQuestionCount] = useState(quiz?.questionCount ?? DEFAULT_QUIZ_LENGTH);
   const [error, setError] = useState<string | null>(null);
-  const enableable = !quiz || canEnableQuiz(quiz.counts);
+  // Il minimo per accenderlo dipende dalle domande per partita scelte qui.
+  const counts = quiz ? { ...quiz.counts, perGame: questionCount } : null;
+  const minApproved = minApprovedToEnable(questionCount);
+  const enableable = !counts || canEnableQuiz(counts);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -81,6 +94,7 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
         titleEn,
         descriptionEn,
         art,
+        questionCount,
         ...(quiz && visibility !== quiz.visibility ? { visibility } : {}),
       };
       const res = await fetch(quiz ? `/api/admin/quizzes/${quiz.id}` : "/api/admin/quizzes", {
@@ -195,6 +209,26 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
               ))}
             </ToggleButtonGroup>
           </FormControl>
+          <TextField
+            select
+            label="Domande per partita"
+            value={questionCount}
+            onChange={(e) => setQuestionCount(Number(e.target.value))}
+            helperText={
+              quiz && quiz.questionCount !== questionCount && quiz.plays > 0
+                ? `Per accenderlo servono almeno ${minApproved} domande approvate. Cambiando il numero, le migliori partite salvate ripartono da zero.`
+                : `Per accenderlo servono almeno ${minApproved} domande approvate.`
+            }
+          >
+            {Array.from(
+              { length: MAX_QUIZ_LENGTH - MIN_QUIZ_LENGTH + 1 },
+              (_, i) => MIN_QUIZ_LENGTH + i
+            ).map((n) => (
+              <MenuItem key={n} value={n}>
+                {n}
+              </MenuItem>
+            ))}
+          </TextField>
           {quiz && (
             <FormControl>
               <FormLabel id="quiz-visibility">Chi lo vede</FormLabel>
@@ -216,13 +250,13 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
                 ))}
               </RadioGroup>
               {!enableable && (
-                <FormHelperText>{missingToEnableText(quiz.counts)} per accenderlo.</FormHelperText>
+                <FormHelperText>{missingToEnableText(counts!)} per accenderlo.</FormHelperText>
               )}
             </FormControl>
           )}
           {!quiz && (
             <FormHelperText>
-              Il quiz nasce spento: lo accendi quando ha almeno 8 domande approvate.
+              Il quiz nasce spento: lo accendi quando ha almeno {minApproved} domande approvate.
             </FormHelperText>
           )}
           {error && <Alert severity="error">{error}</Alert>}

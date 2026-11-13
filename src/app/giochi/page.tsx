@@ -13,7 +13,7 @@ import { gamesGridColumns } from "@/lib/games/gameArt";
 import { gameAccess, gamesAreIndexable, type GameAccess } from "@/lib/games/gameSettings";
 import { loadGameSettings, loadQuizSummaries } from "@/lib/games/loadGameSettings";
 import { loadNextPredictionMatch, loadOwnPrediction } from "@/lib/games/loadPredictions";
-import { QUIZ_LENGTH, quizPath } from "@/lib/games/quiz";
+import { quizPath } from "@/lib/games/quiz";
 import { quizAccess } from "@/lib/games/quizRules";
 import { columnSx } from "@/lib/layout";
 import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
@@ -127,7 +127,7 @@ export default async function GiochiPage() {
         q.access === "members"
           ? t("signInToPlay")
           : best !== undefined
-            ? t("quizBest", { best, total: QUIZ_LENGTH })
+            ? t("quizBest", { best, total: q.counts.perGame })
             : ((en ? q.descriptionEn : null) ?? q.description),
     });
   }

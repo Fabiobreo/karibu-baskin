@@ -20,6 +20,7 @@ export default async function AdminQuizQuestionsPage({ params }: Props) {
       id: true,
       title: true,
       visibility: true,
+      questionCount: true,
       questions: {
         // In prova prima, poi nell'ordine in cui sono state scritte.
         orderBy: [{ status: "asc" }, { createdAt: "asc" }],

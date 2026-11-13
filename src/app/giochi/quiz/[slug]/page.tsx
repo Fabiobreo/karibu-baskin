@@ -57,7 +57,7 @@ export default async function QuizPage({ params, searchParams }: QuizPageProps) 
   const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
   const challengeCode = parseChallengeCode(first(sp.sfida));
   const challenge = challengeCode
-    ? { code: challengeCode, score: parseChallengeScore(first(sp.p)) }
+    ? { code: challengeCode, score: parseChallengeScore(first(sp.p), quiz.counts.perGame) }
     : null;
 
   const preview = access === "preview";
@@ -157,6 +157,7 @@ export default async function QuizPage({ params, searchParams }: QuizPageProps) 
             challenge={challenge}
             membersOnly={quiz.visibility === "MEMBERS"}
             preview={preview}
+            length={quiz.counts.perGame}
             art={quiz.art}
           />
         </Box>

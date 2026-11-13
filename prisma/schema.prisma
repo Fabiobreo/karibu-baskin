@@ -876,6 +876,8 @@ model Quiz {
   // Disegno della card in /giochi, dall'elenco chiuso `QUIZ_ARTS`
   // (`@/lib/games/gameArt`).
   art           String         @default("questions")
+  // Domande per partita, scelte dall'admin (da 3 a 10, `@/lib/games/quiz`).
+  questionCount Int            @default(5)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

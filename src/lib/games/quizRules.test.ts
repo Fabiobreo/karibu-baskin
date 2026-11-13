@@ -5,7 +5,9 @@ import {
   countQuestions,
   hasEnglish,
   isPlayableIn,
+  minApprovedToEnable,
   missingToEnable,
+  missingToEnableText,
   needsReview,
   quizAccess,
   playableBank,
@@ -67,7 +69,7 @@ describe("accensione di un quiz", () => {
 
   it("servono 8 domande approvate", () => {
     const seven = countQuestions([...many(7), row({ id: "x", status: "DRAFT" })]);
-    expect(seven).toEqual({ total: 8, approved: 7, approvedEn: 7 });
+    expect(seven).toEqual({ total: 8, approved: 7, approvedEn: 7, perGame: 5 });
     expect(canEnableQuiz(seven)).toBe(false);
     expect(missingToEnable(seven)).toBe(1);
     expect(canEnableQuiz(countQuestions(many(8)))).toBe(true);
@@ -82,8 +84,8 @@ describe("accensione di un quiz", () => {
 });
 
 describe("quizGameVisibility", () => {
-  const playable = { total: 10, approved: 10, approvedEn: 0 };
-  const empty = { total: 40, approved: 0, approvedEn: 0 };
+  const playable = { total: 10, approved: 10, approvedEn: 0, perGame: 5 };
+  const empty = { total: 40, approved: 0, approvedEn: 0, perGame: 5 };
 
   it("vale il quiz più aperto fra quelli giocabili", () => {
     expect(
@@ -143,8 +145,8 @@ describe("scoreAnswers", () => {
 });
 
 describe("quizAccess", () => {
-  const playable = { total: 10, approved: 10, approvedEn: 0 };
-  const drafts = { total: 40, approved: 0, approvedEn: 0 };
+  const playable = { total: 10, approved: 10, approvedEn: 0, perGame: 5 };
+  const drafts = { total: 40, approved: 0, approvedEn: 0, perGame: 5 };
 
   it("un quiz acceso senza una partita intera non si mostra", () => {
     expect(quizAccess({ visibility: "PUBLIC", counts: drafts }, null, "it")).toBe("hidden");
@@ -157,7 +159,7 @@ describe("quizAccess", () => {
     expect(quizAccess({ visibility: "OFF", counts: drafts }, "ATHLETE", "it")).toBe("hidden");
     expect(
       quizAccess(
-        { visibility: "OFF", counts: { total: 0, approved: 0, approvedEn: 0 } },
+        { visibility: "OFF", counts: { total: 0, approved: 0, approvedEn: 0, perGame: 5 } },
         "ADMIN",
         "it"
       )
@@ -166,5 +168,21 @@ describe("quizAccess", () => {
 
   it("dei tesserati: l'anonimo legge come entrare", () => {
     expect(quizAccess({ visibility: "MEMBERS", counts: playable }, null, "it")).toBe("members");
+  });
+});
+
+describe("domande per partita", () => {
+  it("per accendere servono almeno 8 approvate, e 3 in più di una partita", () => {
+    expect(minApprovedToEnable(5)).toBe(8);
+    expect(minApprovedToEnable(8)).toBe(11);
+    expect(minApprovedToEnable(10)).toBe(13);
+  });
+
+  it("una partita da 8 vuole 8 domande nella lingua di chi guarda", () => {
+    const counts = { total: 12, approved: 9, approvedEn: 7, perGame: 8 };
+    expect(canEnableQuiz(counts)).toBe(false);
+    expect(missingToEnableText(counts)).toBe("Servono ancora 2 domande approvate");
+    expect(isPlayableIn(counts, "it")).toBe(true);
+    expect(isPlayableIn(counts, "en")).toBe(false);
   });
 });

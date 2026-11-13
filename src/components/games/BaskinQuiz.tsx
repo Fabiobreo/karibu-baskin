@@ -35,6 +35,8 @@ interface BaskinQuizProps {
   preview: boolean;
   /** Disegno del quiz, sulla testata delle domande (UX-70). */
   art: QuizArt;
+  /** Domande per partita di questo quiz, scelte dall'admin. */
+  length: number;
 }
 
 interface Game {
@@ -65,8 +67,13 @@ function writeSeen(quizId: string, seen: Set<string>) {
   }
 }
 
-function newGame(bank: QuizQuestion[], code: string, challengerScore: number | null): Game {
-  const questions = pickRound(bank, challengeSeed(code));
+function newGame(
+  bank: QuizQuestion[],
+  length: number,
+  code: string,
+  challengerScore: number | null
+): Game {
+  const questions = pickRound(bank, challengeSeed(code), length);
   return {
     code,
     questions,
@@ -110,13 +117,14 @@ function QuizGame({
   membersOnly,
   preview,
   art,
+  length,
 }: BaskinQuizProps) {
   const t = useTranslations("pages.games.quiz");
   const router = useRouter();
   const [game, setGame] = useState<Game>(() =>
     challenge
-      ? newGame(bank, challenge.code, challenge.score)
-      : newGame(bank, pickFreshCode(bank, readSeen(quizId)), null)
+      ? newGame(bank, length, challenge.code, challenge.score)
+      : newGame(bank, length, pickFreshCode(bank, readSeen(quizId), new Set(), length), null)
   );
   const [best, setBest] = useState(initialBest);
   // Una partita finita si conta una volta sola, anche tornando indietro.
@@ -155,7 +163,7 @@ function QuizGame({
     if (countedRef.current === game.code) return;
     countedRef.current = game.code;
     const score = game.questions.filter((q, i) => game.picks[i] === q.correct).length;
-    writeSeen(quizId, nextSeen(bank, readSeen(quizId), game.questions));
+    writeSeen(quizId, nextSeen(bank, readSeen(quizId), game.questions, length));
     // L'anteprima dello staff (anche domande in prova) non conta e non si salva.
     if (preview) return;
     played.mutate(
@@ -169,7 +177,7 @@ function QuizGame({
 
   function playAgain() {
     const last = new Set(game.questions.map((q) => q.id));
-    setGame(newGame(bank, pickFreshCode(bank, readSeen(quizId), last), null));
+    setGame(newGame(bank, length, pickFreshCode(bank, readSeen(quizId), last, length), null));
     // Fuori dal link di sfida: la partita nuova non è più quella di chi ha sfidato.
     if (challenge) router.replace(quizPath(slug), { scroll: false });
     window.scrollTo({ top: 0 });

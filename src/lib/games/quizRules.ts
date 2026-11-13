@@ -1,7 +1,7 @@
 import type { AppRole, GameVisibility, QuizLevel as DbQuizLevel } from "@prisma/client";
 import { gameAccess, type GameAccess } from "@/lib/games/gameSettings";
 import type { QuizQuestion } from "@/lib/content/baskinQuiz";
-import { QUIZ_LENGTH } from "@/lib/games/quiz";
+import { DEFAULT_QUIZ_LENGTH } from "@/lib/games/quiz";
 
 /**
  * Regole dei quiz gestiti dal pannello (UX-67), pure e testate: quando un quiz
@@ -9,8 +9,17 @@ import { QUIZ_LENGTH } from "@/lib/games/quiz";
  * domanda.
  */
 
-/** Domande approvate (in italiano) che servono per accendere un quiz. */
+/**
+ * Domande approvate (in italiano) che servono per accendere un quiz: almeno 8,
+ * e comunque 3 in più di quelle di una partita, così le partite non sono
+ * sempre uguali (8 domande per partita = almeno 11 approvate).
+ */
 export const MIN_APPROVED_TO_ENABLE = 8;
+const SPARE_QUESTIONS = 3;
+
+export function minApprovedToEnable(perGame: number): number {
+  return Math.max(MIN_APPROVED_TO_ENABLE, perGame + SPARE_QUESTIONS);
+}
 /** Uscite di una domanda prima di mostrarne la percentuale di risposte giuste. */
 export const MIN_SHOWN_FOR_STATS = 20;
 /** Sotto questa quota di risposte giuste una domanda è "da rileggere". */
@@ -78,31 +87,36 @@ export interface QuizCounts {
   approved: number;
   /** Approvate con tutto il testo inglese. */
   approvedEn: number;
+  /** Domande per partita del quiz (`Quiz.questionCount`). */
+  perGame: number;
 }
 
 export function countQuestions(
-  rows: readonly Pick<QuizQuestionRow, "status" | "textEn" | "answersEn" | "explanationEn">[]
+  rows: readonly Pick<QuizQuestionRow, "status" | "textEn" | "answersEn" | "explanationEn">[],
+  /** Domande per partita del quiz (`Quiz.questionCount`). */
+  perGame: number = DEFAULT_QUIZ_LENGTH
 ): QuizCounts {
   const approved = rows.filter((q) => q.status === "APPROVED");
   return {
     total: rows.length,
     approved: approved.length,
     approvedEn: approved.filter(hasEnglish).length,
+    perGame,
   };
 }
 
 /** Un quiz si accende solo con abbastanza domande approvate. */
-export function canEnableQuiz(counts: Pick<QuizCounts, "approved">): boolean {
-  return counts.approved >= MIN_APPROVED_TO_ENABLE;
+export function canEnableQuiz(counts: Pick<QuizCounts, "approved" | "perGame">): boolean {
+  return counts.approved >= minApprovedToEnable(counts.perGame);
 }
 
 /** Quante domande approvate mancano per accenderlo (0 se ci sono). */
-export function missingToEnable(counts: Pick<QuizCounts, "approved">): number {
-  return Math.max(0, MIN_APPROVED_TO_ENABLE - counts.approved);
+export function missingToEnable(counts: Pick<QuizCounts, "approved" | "perGame">): number {
+  return Math.max(0, minApprovedToEnable(counts.perGame) - counts.approved);
 }
 
 /** "Servono ancora 3 domande approvate" (pannello e API). */
-export function missingToEnableText(counts: Pick<QuizCounts, "approved">): string {
+export function missingToEnableText(counts: Pick<QuizCounts, "approved" | "perGame">): string {
   const n = missingToEnable(counts);
   return n === 1 ? "Serve ancora 1 domanda approvata" : `Servono ancora ${n} domande approvate`;
 }
@@ -114,7 +128,7 @@ export function missingToEnableText(counts: Pick<QuizCounts, "approved">): strin
  * segnala.
  */
 export function isPlayableIn(counts: QuizCounts, locale: string): boolean {
-  return (locale === "en" ? counts.approvedEn : counts.approved) >= QUIZ_LENGTH;
+  return (locale === "en" ? counts.approvedEn : counts.approved) >= counts.perGame;
 }
 
 const VISIBILITY_RANK: Record<GameVisibility, number> = { OFF: 0, MEMBERS: 1, PUBLIC: 2 };

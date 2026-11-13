@@ -33,13 +33,19 @@ export async function PUT(req: NextRequest, { params }: Params) {
         id: true,
         title: true,
         visibility: true,
+        questionCount: true,
         questions: { select: { status: true, textEn: true, answersEn: true, explanationEn: true } },
       },
     });
     if (!quiz) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
 
-    if (visibility && visibility !== "OFF" && visibility !== quiz.visibility) {
-      const counts = countQuestions(quiz.questions);
+    // Si accende solo con abbastanza domande approvate per il numero di domande
+    // per partita; lo stesso vale se si alza il numero su un quiz già acceso.
+    const nextVisibility = visibility ?? quiz.visibility;
+    const nextCount = fields.questionCount ?? quiz.questionCount;
+    const countChanged = nextCount !== quiz.questionCount;
+    if (nextVisibility !== "OFF" && (nextVisibility !== quiz.visibility || countChanged)) {
+      const counts = countQuestions(quiz.questions, nextCount);
       if (!canEnableQuiz(counts)) {
         return NextResponse.json({ error: missingToEnableText(counts) }, { status: 409 });
       }
@@ -72,13 +78,19 @@ export async function PUT(req: NextRequest, { params }: Params) {
       Object.keys(data).length > 0
         ? await prisma.quiz.update({ where: { id }, data, select: { id: true } })
         : quiz;
+    // Le migliori partite erano su un altro numero di domande: un "7 su 8"
+    // accanto a una partita da 5 non direbbe niente. Si ricomincia.
+    if (countChanged) await prisma.quizBest.deleteMany({ where: { quizId: id } });
 
     afterQuizWrite({
       actorId: who.actorId,
       action: "UPDATE_QUIZ",
       targetType: "Quiz",
       targetId: updated.id,
-      before: visibility ? { visibility: quiz.visibility } : null,
+      before:
+        visibility || countChanged
+          ? { visibility: quiz.visibility, questionCount: quiz.questionCount }
+          : null,
       after: { ...data, ...(move ? { move } : {}) },
     });
     return NextResponse.json({ ok: true });

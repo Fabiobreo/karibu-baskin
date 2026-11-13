@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/db", () => ({
   prisma: {
     quiz: { findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    quizBest: { deleteMany: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -18,6 +19,7 @@ import { afterQuizWrite } from "@/lib/games/quizAdmin";
 
 const p = prisma as unknown as {
   quiz: { findUnique: Mock; findMany: Mock; update: Mock; delete: Mock };
+  quizBest: { deleteMany: Mock };
   $transaction: Mock;
 };
 const mockAuth = auth as Mock;
@@ -42,6 +44,7 @@ const quizWith = (approved: number) => ({
   id: "baskin",
   title: "Quiz del Baskin",
   visibility: "OFF",
+  questionCount: 5,
   questions: [...Array.from({ length: approved }, () => question("APPROVED")), question("DRAFT")],
 });
 
@@ -51,6 +54,36 @@ describe("PUT /api/admin/quizzes/[id]", () => {
     mockAuth.mockResolvedValue({ user: { id: "a-1", appRole: "ADMIN" } });
     p.quiz.findUnique.mockResolvedValue(quizWith(8));
     p.quiz.update.mockResolvedValue({ id: "baskin" });
+  });
+
+  it("cambiare le domande per partita azzera le migliori partite", async () => {
+    expect((await put({ questionCount: 8 })).status).toBe(200);
+    expect(p.quiz.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ questionCount: 8 }) })
+    );
+    expect(p.quizBest.deleteMany).toHaveBeenCalledWith({ where: { quizId: "baskin" } });
+  });
+
+  it("lo stesso numero non tocca le migliori partite", async () => {
+    expect((await put({ questionCount: 5, title: "Quiz" })).status).toBe(200);
+    expect(p.quizBest.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("su un quiz acceso non si alza il numero senza abbastanza approvate", async () => {
+    // 8 approvate bastano per 5 domande a partita, non per 8 (ne servono 11).
+    p.quiz.findUnique.mockResolvedValue({ ...quizWith(8), visibility: "MEMBERS" });
+    const res = await put({ questionCount: 8 });
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toBe("Servono ancora 3 domande approvate");
+    expect(p.quiz.update).not.toHaveBeenCalled();
+    // Spento, invece, si può preparare.
+    p.quiz.findUnique.mockResolvedValue(quizWith(8));
+    expect((await put({ questionCount: 8 })).status).toBe(200);
+  });
+
+  it("rifiuta meno di 3 o più di 10 domande per partita", async () => {
+    expect((await put({ questionCount: 2 })).status).toBe(400);
+    expect((await put({ questionCount: 11 })).status).toBe(400);
   });
 
   it("è solo dell'admin", async () => {
@@ -75,7 +108,10 @@ describe("PUT /api/admin/quizzes/[id]", () => {
       expect.objectContaining({ data: { visibility: "PUBLIC" } })
     );
     expect(afterQuizWrite).toHaveBeenCalledWith(
-      expect.objectContaining({ action: "UPDATE_QUIZ", before: { visibility: "OFF" } })
+      expect.objectContaining({
+        action: "UPDATE_QUIZ",
+        before: { visibility: "OFF", questionCount: 5 },
+      })
     );
   });
 

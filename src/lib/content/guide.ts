@@ -273,8 +273,8 @@ const GUIDE_IT: Guide = {
           title: "Giochi",
           steps: [
             "In «Giochi» ci sono i quiz del club, il pronostico della partita e la sfida fra le nostre squadre. Sono giochi per divertirsi: non ci sono classifiche e non c'è fretta.",
-            "Ogni quiz ha 5 domande. Scegli una risposta e tocca «Conferma»: leggi subito se è giusta, con la spiegazione.",
-            "Con «Sfida un amico» gli mandi le stesse 5 domande. Se vuoi, nel messaggio c'è anche il tuo punteggio.",
+            "Ogni quiz ha poche domande, di solito 5. Tocca una risposta: leggi subito se è giusta, con la spiegazione.",
+            "Con «Sfida un amico» gli mandi le stesse domande. Se vuoi, nel messaggio c'è anche il tuo punteggio.",
             "Il pronostico apre 3 giorni prima di una partita, nella sua pagina. Scegli chi vince e, se vuoi, il punteggio.",
             "Puoi cambiarlo fino al fischio d'inizio. Dopo la partita leggi se ci hai preso e quante persone hanno detto cosa, senza nomi.",
             "Nella sfida scegli due formazioni con i giocatori delle nostre squadre e guardi come potrebbe andare. È solo per chi è tesserato.",
@@ -553,8 +553,8 @@ const GUIDE_EN: Guide = {
           title: "Games",
           steps: [
             'Under "Games" there are the club quizzes, the game prediction and the challenge between our teams. They are games for fun: no rankings and no rush.',
-            'Each quiz has 5 questions. Choose an answer and tap "Confirm": you read straight away whether it is right, with the explanation.',
-            'With "Challenge a friend" you send them the same 5 questions. If you like, your score is in the message too.',
+            "Each quiz has a few questions, usually 5. Tap an answer: you read straight away whether it is right, with the explanation.",
+            'With "Challenge a friend" you send them the same questions. If you like, your score is in the message too.',
             "The prediction opens 3 days before a game, on its page. Choose who wins and, if you like, the score.",
             "You can change it until tip-off. After the game you read whether you got it right and how many people said what, with no names.",
             "In the challenge you pick two line-ups with the players of our teams and see how it might go. It is only for Karibu members.",

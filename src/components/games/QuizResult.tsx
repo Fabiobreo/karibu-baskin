@@ -11,7 +11,13 @@ import { HERO_TEXT, OUTCOME } from "@/lib/palette";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import ShareSection from "@/components/common/ShareSection";
 import type { QuizQuestion } from "@/lib/content/baskinQuiz";
-import { challengePath, QUIZ_LENGTH, scoreTone } from "@/lib/games/quiz";
+import {
+  challengePath,
+  pickVariant,
+  scoreTone,
+  SHARE_VARIANTS,
+  TONE_VARIANTS,
+} from "@/lib/games/quiz";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -34,9 +40,9 @@ interface QuizResultProps {
 }
 
 /**
- * Fine del quiz (UX-61): il punteggio detto bene (lo 0 è "5 cose nuove"), le
- * spiegazioni delle risposte sbagliate e "Sfida un amico" con le stesse 5
- * domande. Nessun confronto con altre persone oltre a chi ha sfidato, se ha
+ * Fine del quiz (UX-61): il punteggio detto bene (lo 0 è "hai imparato
+ * qualcosa", con una frase a caso fra più varianti), le spiegazioni delle
+ * risposte sbagliate e "Sfida un amico" con le stesse domande. Nessun confronto con altre persone oltre a chi ha sfidato, se ha
  * scelto di mettere il punteggio nel link.
  */
 export default function QuizResult({
@@ -56,7 +62,19 @@ export default function QuizResult({
   const [withScore, setWithScore] = useState(true);
   const score = questions.filter((q, i) => picks[i] === q.correct).length;
   const wrong = questions.filter((q, i) => picks[i] !== q.correct);
-  const tone = scoreTone(score);
+  const total = questions.length;
+  const tone = scoreTone(score, total);
+  // Frasi a caso fra più varianti, prese dal codice della partita: ricaricando
+  // la pagina restano le stesse.
+  const toneKey = `tone${tone === "perfect" ? "Perfect" : tone === "good" ? "Good" : "Learned"}${pickVariant(code, "tone", TONE_VARIANTS[tone])}`;
+  const toneText = t(toneKey as "tonePerfect1", { total, count: total - score });
+  const shareText = withScore
+    ? t(`waWithScore${pickVariant(code, "wa", SHARE_VARIANTS.withScore)}` as "waWithScore1", {
+        title,
+        score,
+        total,
+      })
+    : t(`waNoScore${pickVariant(code, "wa", SHARE_VARIANTS.noScore)}` as "waNoScore1", { title });
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -126,20 +144,16 @@ export default function QuizResult({
           </Box>
         </Box>
         <Typography variant="h6" component="p">
-          {tone === "perfect"
-            ? t("tonePerfect")
-            : tone === "good"
-              ? t("toneGood")
-              : t("toneLearned", { count: questions.length - score })}
+          {toneText}
         </Typography>
         {challengerScore !== null && (
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            {t("challengerScore", { score: challengerScore, total: QUIZ_LENGTH })}
+            {t("challengerScore", { score: challengerScore, total })}
           </Typography>
         )}
         {best !== null && (
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            {t("best", { best, total: QUIZ_LENGTH })}
+            {t("best", { best, total })}
           </Typography>
         )}
         <Button variant="contained" size="large" onClick={onPlayAgain} sx={{ mt: 2.5 }}>
@@ -198,11 +212,7 @@ export default function QuizResult({
           kind="quiz"
           title={title}
           path={challengePath(slug, code, withScore ? score : null)}
-          message={
-            withScore
-              ? t("waWithScore", { title, score, total: questions.length })
-              : t("waNoScore", { title })
-          }
+          message={shareText}
         />
       </Paper>
 

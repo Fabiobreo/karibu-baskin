@@ -9,7 +9,8 @@ import {
   parseChallengeScore,
   pickFreshCode,
   pickRound,
-  QUIZ_LENGTH,
+  DEFAULT_QUIZ_LENGTH,
+  pickVariant,
   roundShape,
   scoreTone,
 } from "./quiz";
@@ -37,8 +38,8 @@ const bank = makeBank(18, 22);
 describe("pickRound", () => {
   it("dà 5 domande diverse: 3 facili e poi 2 medie", () => {
     const round = pickRound(bank, 42);
-    expect(round).toHaveLength(QUIZ_LENGTH);
-    expect(new Set(round.map((q) => q.id)).size).toBe(QUIZ_LENGTH);
+    expect(round).toHaveLength(DEFAULT_QUIZ_LENGTH);
+    expect(new Set(round.map((q) => q.id)).size).toBe(DEFAULT_QUIZ_LENGTH);
     expect(round.map((q) => q.level)).toEqual(["facile", "facile", "facile", "medio", "medio"]);
   });
 
@@ -68,7 +69,7 @@ describe("pickRound", () => {
   it("un codice inventato dà comunque 5 domande valide", () => {
     for (const code of ["x", "!!!", "codice-lunghissimo-inventato", "😀"]) {
       const round = pickRound(bank, challengeSeed(code));
-      expect(round).toHaveLength(QUIZ_LENGTH);
+      expect(round).toHaveLength(DEFAULT_QUIZ_LENGTH);
       expect(round.every((q) => bank.includes(q))).toBe(true);
     }
   });
@@ -86,7 +87,7 @@ describe("pickFreshCode", () => {
 describe("nextSeen", () => {
   it("accumula le domande fatte", () => {
     const round = pickRound(bank, 3);
-    expect(nextSeen(bank, new Set(), round).size).toBe(QUIZ_LENGTH);
+    expect(nextSeen(bank, new Set(), round).size).toBe(DEFAULT_QUIZ_LENGTH);
   });
 
   it("ricomincia quando non restano domande nuove, tenendo fuori quelle appena fatte", () => {
@@ -127,8 +128,69 @@ describe("link di sfida", () => {
 
 describe("scoreTone", () => {
   it("non dice mai che un punteggio è basso", () => {
-    expect(scoreTone(5)).toBe("perfect");
-    expect(scoreTone(3)).toBe("good");
-    expect(scoreTone(0)).toBe("learned");
+    expect(scoreTone(5, 5)).toBe("perfect");
+    expect(scoreTone(3, 5)).toBe("good");
+    expect(scoreTone(0, 5)).toBe("learned");
+  });
+
+  it("segue il numero di domande del quiz", () => {
+    expect(scoreTone(8, 8)).toBe("perfect");
+    expect(scoreTone(5, 8)).toBe("good");
+    expect(scoreTone(4, 8)).toBe("learned");
+    expect(scoreTone(5, 10)).toBe("learned");
+  });
+});
+
+describe("partite più lunghe (domande per partita scelte dall'admin)", () => {
+  it("8 domande: 5 facili e 3 medie", () => {
+    const round = pickRound(bank, 7, 8);
+    expect(round).toHaveLength(8);
+    expect(round.filter((q) => q.level === "facile")).toHaveLength(5);
+    expect(new Set(round.map((q) => q.id)).size).toBe(8);
+  });
+
+  it("3 domande: 2 facili e 1 media", () => {
+    expect(roundShape(bank, 3)).toEqual({ facile: 2, medio: 1 });
+  });
+
+  it("non ripete la partita appena finita anche con 10 domande", () => {
+    const length = 10;
+    let seen = new Set<string>();
+    let last = pickRound(bank, challengeSeed(pickFreshCode(bank, seen, new Set(), length)), length);
+    for (let i = 1; i < 10; i++) {
+      seen = nextSeen(bank, seen, last, length);
+      const lastIds = new Set(last.map((q) => q.id));
+      const next = pickRound(
+        bank,
+        challengeSeed(pickFreshCode(bank, seen, lastIds, length)),
+        length
+      );
+      expect(next).toHaveLength(length);
+      expect(next.some((q) => lastIds.has(q.id))).toBe(false);
+      last = next;
+    }
+  });
+
+  it("il punteggio nel link arriva fino alle domande del quiz", () => {
+    expect(parseChallengeScore("8", 8)).toBe(8);
+    expect(parseChallengeScore("10", 10)).toBe(10);
+    expect(parseChallengeScore("9", 8)).toBeNull();
+    expect(parseChallengeScore("6")).toBeNull();
+  });
+});
+
+describe("pickVariant", () => {
+  it("sta fra 1 e il numero di varianti, e non cambia con lo stesso codice", () => {
+    for (const code of ["abc123", "zzzzzz", "x"]) {
+      const v = pickVariant(code, "tone", 3);
+      expect(v).toBeGreaterThanOrEqual(1);
+      expect(v).toBeLessThanOrEqual(3);
+      expect(pickVariant(code, "tone", 3)).toBe(v);
+    }
+  });
+
+  it("con codici diversi escono tutte le varianti", () => {
+    const seen = new Set(Array.from({ length: 60 }, (_, i) => pickVariant(`code-${i}`, "tone", 3)));
+    expect(seen).toEqual(new Set([1, 2, 3]));
   });
 });

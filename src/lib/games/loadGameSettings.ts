@@ -69,6 +69,7 @@ const loadSnapshot = unstable_cache(
           visibility: true,
           position: true,
           art: true,
+          questionCount: true,
           questions: {
             select: { status: true, textEn: true, answersEn: true, explanationEn: true },
           },
@@ -78,7 +79,7 @@ const loadSnapshot = unstable_cache(
     const summaries = quizzes.map(({ questions, art, ...q }) => ({
       ...q,
       art: quizArt(art),
-      counts: countQuestions(questions),
+      counts: countQuestions(questions, q.questionCount),
     }));
     // Lo stato del gioco "quiz" è quello del quiz più aperto (UX-67).
     const settings = { ...resolveGameSettings(rows), quiz: quizGameVisibility(summaries) };

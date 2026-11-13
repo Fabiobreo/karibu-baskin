@@ -41,7 +41,7 @@ import type { GameVisibility } from "@prisma/client";
 type StatusFilter = "all" | "DRAFT" | "APPROVED" | "review";
 
 interface AdminQuizQuestionsClientProps {
-  quiz: { id: string; title: string; visibility: GameVisibility };
+  quiz: { id: string; title: string; visibility: GameVisibility; questionCount: number };
   questions: AdminQuizQuestion[];
 }
 
@@ -65,7 +65,7 @@ export default function AdminQuizQuestionsClient({
   const [publishing, setPublishing] = useState(false);
   const newButtonRef = useRef<HTMLButtonElement>(null);
 
-  const counts = countQuestions(questions);
+  const counts = countQuestions(questions, quiz.questionCount);
   const toReview = questions.filter((q) => needsReview(q.shown, q.correctCount)).length;
   const shown = useMemo(
     () =>

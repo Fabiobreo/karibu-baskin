@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { QUIZ_TOPICS, type QuizTopic } from "@/lib/content/baskinQuiz";
 import { QUIZ_ARTS } from "@/lib/games/gameArt";
+import { MAX_QUIZ_LENGTH, MIN_QUIZ_LENGTH } from "@/lib/games/quiz";
 
 /**
  * Schemi dei quiz gestiti dal pannello (UX-67). I messaggi sono per l'admin,
@@ -8,6 +9,12 @@ import { QUIZ_ARTS } from "@/lib/games/gameArt";
  */
 
 const text = (max: number, message: string) => z.string().trim().min(1, message).max(max);
+/** Domande per partita: da 3 a 10. */
+const questionCount = z
+  .int({ message: "Scegli quante domande per partita" })
+  .min(MIN_QUIZ_LENGTH, `Almeno ${MIN_QUIZ_LENGTH} domande per partita`)
+  .max(MAX_QUIZ_LENGTH, `Al massimo ${MAX_QUIZ_LENGTH} domande per partita`);
+
 const optionalText = (max: number) =>
   z
     .string()
@@ -23,6 +30,7 @@ export const QuizCreateSchema = z.object({
   descriptionEn: optionalText(200),
   /** Disegno della card in /giochi (UX-68). */
   art: z.enum(QUIZ_ARTS, { message: "Disegno non valido" }).optional(),
+  questionCount: questionCount.optional(),
 });
 
 export const QuizUpdateSchema = z
@@ -33,6 +41,7 @@ export const QuizUpdateSchema = z
     titleEn: z.string().trim().max(80).nullable().optional(),
     descriptionEn: z.string().trim().max(200).nullable().optional(),
     art: z.enum(QUIZ_ARTS, { message: "Disegno non valido" }).optional(),
+    questionCount: questionCount.optional(),
     visibility: z.enum(["OFF", "MEMBERS", "PUBLIC"], { message: "Stato non valido" }).optional(),
     /** Sposta il quiz di un posto nell'elenco. */
     move: z.enum(["up", "down"]).optional(),

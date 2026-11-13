@@ -33,8 +33,15 @@ export async function PUT(req: NextRequest) {
   const userId = session.user.id;
 
   try {
-    const quiz = await prisma.quiz.findUnique({ where: { id: quizId }, select: { id: true } });
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      select: { id: true, questionCount: true },
+    });
     if (!quiz) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
+    // Mai più punti delle domande di una partita di quel quiz.
+    if (score > quiz.questionCount) {
+      return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
+    }
     // Solo se più alto: la condizione sta nell'update, così due partite
     // finite insieme non si sovrascrivono a vicenda.
     const { count } = await prisma.quizBest.updateMany({
