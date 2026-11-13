@@ -23,7 +23,6 @@ const row = (over: Partial<QuizQuestionRow> = {}): QuizQuestionRow => ({
   answers: ["3", "5", "7"],
   correct: 1,
   explanation: "Cinque ruoli.",
-  source: "/il-baskin#ruoli",
   textEn: "How many roles?",
   answersEn: ["3", "5", "7"],
   explanationEn: "Five roles.",

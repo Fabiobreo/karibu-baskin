@@ -1,15 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Link as MuiLink,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Checkbox, FormControlLabel, Paper, Stack, Typography } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -173,14 +164,6 @@ export default function QuizResult({
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   {q.explanation}
                 </Typography>
-                {q.source && (
-                  <MuiLink
-                    href={q.source}
-                    sx={{ display: "inline-block", mt: 1, fontWeight: FONT_WEIGHT.semibold }}
-                  >
-                    {t("learnMore")}
-                  </MuiLink>
-                )}
               </Paper>
             ))}
           </Stack>

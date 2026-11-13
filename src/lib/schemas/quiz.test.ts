@@ -8,7 +8,6 @@ const question = {
   answers: ["3", "5", "7"],
   correct: 1,
   explanation: "I ruoli sono cinque.",
-  source: "/il-baskin#ruoli",
 };
 
 describe("QuizCreateSchema", () => {
@@ -44,14 +43,6 @@ describe("QuizQuestionSchema", () => {
       false
     );
     expect(QuizQuestionSchema.safeParse({ ...question, correct: 3 }).success).toBe(false);
-  });
-
-  it("'Scopri di più' solo dall'elenco chiuso, o niente", () => {
-    expect(QuizQuestionSchema.safeParse({ ...question, source: "https://x.it" }).success).toBe(
-      false
-    );
-    const none = QuizQuestionSchema.safeParse({ ...question, source: null });
-    expect(none.success && none.data.source).toBeNull();
   });
 
   it("l'inglese è tutto o niente", () => {

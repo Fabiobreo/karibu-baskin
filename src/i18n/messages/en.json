@@ -1274,7 +1274,6 @@
         "rightAnswer": "Right answer",
         "yourAnswer": "Your answer",
         "correctIs": "The right answer is: {answer}",
-        "learnMore": "Find out more",
         "resultTitle": "{score, plural, one {You got # question right out of {total}} other {You got # questions right out of {total}}}",
         "tonePerfect": "Perfect! You really know a lot.",
         "toneGood": "Well done! You already know a lot.",

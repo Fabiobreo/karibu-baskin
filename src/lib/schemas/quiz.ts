@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { QUIZ_SOURCES, QUIZ_TOPICS, type QuizTopic } from "@/lib/content/baskinQuiz";
+import { QUIZ_TOPICS, type QuizTopic } from "@/lib/content/baskinQuiz";
 import { QUIZ_ARTS } from "@/lib/games/gameArt";
 
 /**
@@ -58,10 +58,6 @@ export const QuizQuestionSchema = z
     answers,
     correct: z.int().min(0).max(2, "Scegli la risposta giusta"),
     explanation: text(300, "Scrivi la spiegazione"),
-    source: z
-      .enum(QUIZ_SOURCES)
-      .nullish()
-      .transform((v) => v ?? null),
     textEn: optionalText(200),
     answersEn: z
       .array(z.string().trim().max(120))

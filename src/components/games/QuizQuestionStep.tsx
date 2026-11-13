@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { Box, Button, ButtonBase, Chip, Link as MuiLink, Typography } from "@mui/material";
+import { Box, Button, ButtonBase, Chip, Typography } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -218,16 +218,6 @@ export default function QuizQuestionStep({
               <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
                 {question.explanation}
               </Typography>
-              {question.source && (
-                <MuiLink
-                  href={question.source}
-                  target="_blank"
-                  rel="noopener"
-                  sx={{ display: "inline-block", mt: 1, fontWeight: FONT_WEIGHT.semibold }}
-                >
-                  {t("learnMore")}
-                </MuiLink>
-              )}
             </Box>
           )}
         </Box>

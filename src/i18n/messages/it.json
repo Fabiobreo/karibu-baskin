@@ -1274,7 +1274,6 @@
         "rightAnswer": "Risposta giusta",
         "yourAnswer": "La tua risposta",
         "correctIs": "La risposta giusta è: {answer}",
-        "learnMore": "Scopri di più",
         "resultTitle": "{score, plural, one {Hai risposto bene a # domanda su {total}} other {Hai risposto bene a # domande su {total}}}",
         "tonePerfect": "Perfetto! Ne sai proprio tanto.",
         "toneGood": "Bravo! Ne sai già molto.",

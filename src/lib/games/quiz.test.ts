@@ -24,7 +24,6 @@ function makeBank(easy: number, medium: number): QuizQuestion[] {
     answers: ["a", "b", "c"],
     correct: i % 3,
     explanation: "Perché sì.",
-    source: null,
   });
   return [
     ...Array.from({ length: easy }, (_, i) => q("facile", i)),

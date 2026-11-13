@@ -29,7 +29,6 @@ export interface QuizQuestionRow {
   answers: string[];
   correct: number;
   explanation: string;
-  source: string | null;
   textEn: string | null;
   answersEn: string[];
   explanationEn: string | null;
@@ -70,7 +69,6 @@ export function playableBank(
       answers: en ? q.answersEn : q.answers,
       correct: q.correct,
       explanation: en ? q.explanationEn! : q.explanation,
-      source: q.source,
       ...(q.status === "APPROVED" ? {} : { draft: true }),
     }));
 }

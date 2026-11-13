@@ -32,7 +32,6 @@ export default async function AdminQuizQuestionsPage({ params }: Props) {
           answers: true,
           correct: true,
           explanation: true,
-          source: true,
           textEn: true,
           answersEn: true,
           explanationEn: true,

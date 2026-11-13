@@ -897,8 +897,6 @@ model QuizQuestion {
   answers       String[]
   correct       Int
   explanation   String
-  // Pagina "Scopri di più", da `QUIZ_SOURCES`; null = nessun link.
-  source        String?
   textEn        String?
   answersEn     String[]
   explanationEn String?

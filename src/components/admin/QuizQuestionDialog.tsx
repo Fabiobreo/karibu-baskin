@@ -25,12 +25,7 @@ import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-import {
-  QUIZ_SOURCE_LABELS,
-  QUIZ_SOURCES,
-  QUIZ_TOPICS,
-  type QuizTopic,
-} from "@/lib/content/baskinQuiz";
+import { QUIZ_TOPICS, type QuizTopic } from "@/lib/content/baskinQuiz";
 import { hasEnglish, type QuizQuestionRow } from "@/lib/games/quizRules";
 
 /** Una domanda nel pannello: i campi del database più i numeri. */
@@ -52,7 +47,7 @@ const three = (a: string[] | undefined) => [0, 1, 2].map((i) => a?.[i] ?? "");
 
 /**
  * Nuova domanda o modifica (UX-67). Tre risposte e quella giusta, una
- * spiegazione breve, livello, argomento e, se c'è, la pagina "Scopri di più".
+ * spiegazione breve, livello e argomento.
  * L'inglese è facoltativo ma tutto o niente.
  */
 export default function QuizQuestionDialog({
@@ -68,7 +63,6 @@ export default function QuizQuestionDialog({
   const [explanation, setExplanation] = useState(question?.explanation ?? "");
   const [level, setLevel] = useState<"EASY" | "MEDIUM">(question?.level ?? "EASY");
   const [topic, setTopic] = useState<string>(question?.topic ?? "");
-  const [source, setSource] = useState<string>(question?.source ?? "");
   const [textEn, setTextEn] = useState(question?.textEn ?? "");
   const [answersEn, setAnswersEn] = useState(three(question?.answersEn));
   const [explanationEn, setExplanationEn] = useState(question?.explanationEn ?? "");
@@ -85,7 +79,6 @@ export default function QuizQuestionDialog({
         answers,
         correct,
         explanation,
-        source: source || null,
         textEn,
         answersEn,
         explanationEn,
@@ -219,26 +212,6 @@ export default function QuizQuestionDialog({
               {(Object.keys(QUIZ_TOPICS) as QuizTopic[]).map((k) => (
                 <MenuItem key={k} value={k}>
                   {QUIZ_TOPICS[k]}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl>
-            <InputLabel id="question-source" shrink>
-              Scopri di più
-            </InputLabel>
-            <Select
-              labelId="question-source"
-              label="Scopri di più"
-              notched
-              displayEmpty
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-            >
-              <MenuItem value="">Nessun link</MenuItem>
-              {QUIZ_SOURCES.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {QUIZ_SOURCE_LABELS[s]}
                 </MenuItem>
               ))}
             </Select>

@@ -21,29 +21,6 @@ export const QUIZ_TOPICS = {
 } as const;
 export type QuizTopic = keyof typeof QUIZ_TOPICS;
 
-/** Dove si legge di più. Elenco chiuso: `baskinQuiz.test.ts` controlla che le pagine esistano. */
-export const QUIZ_SOURCES = [
-  "/il-baskin#in-breve",
-  "/il-baskin#campo",
-  "/il-baskin#ruoli",
-  "/il-baskin#regole",
-  "/il-baskin#origini",
-  "/il-club",
-  "/contatti#vieni-a-provare",
-] as const;
-export type QuizSource = (typeof QUIZ_SOURCES)[number];
-
-/** Etichette delle pagine "Scopri di più" nel pannello. */
-export const QUIZ_SOURCE_LABELS: Record<QuizSource, string> = {
-  "/il-baskin#in-breve": "Il Baskin: in breve",
-  "/il-baskin#campo": "Il Baskin: il campo",
-  "/il-baskin#ruoli": "Il Baskin: i ruoli",
-  "/il-baskin#regole": "Il Baskin: le regole",
-  "/il-baskin#origini": "Il Baskin: le origini",
-  "/il-club": "Il club",
-  "/contatti#vieni-a-provare": "Vieni a provare",
-};
-
 /** Una domanda come arriva al gioco, già nella lingua di chi guarda. */
 export interface QuizQuestion {
   id: string;
@@ -56,8 +33,6 @@ export interface QuizQuestion {
   correct: number;
   /** Due righe al massimo, lette dopo la risposta, giusta o no. */
   explanation: string;
-  /** Pagina "Scopri di più", o `null` senza link. */
-  source: string | null;
   /** Domanda ancora in prova: esce solo nell'anteprima dello staff, con il chip "In prova". */
   draft?: boolean;
 }

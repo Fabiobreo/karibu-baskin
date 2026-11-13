@@ -45,7 +45,6 @@ const QUESTION_ROW_SELECT = {
   answers: true,
   correct: true,
   explanation: true,
-  source: true,
   textEn: true,
   answersEn: true,
   explanationEn: true,
