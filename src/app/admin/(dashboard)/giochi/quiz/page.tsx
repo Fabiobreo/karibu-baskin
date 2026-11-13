@@ -1,6 +1,7 @@
 import AdminQuizListClient from "@/components/admin/AdminQuizListClient";
 import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
+import { quizArt } from "@/lib/games/gameArt";
 import { countQuestions, needsReview } from "@/lib/games/quizRules";
 import { loadGameMetrics } from "@/lib/metrics/loadGameMetrics";
 
@@ -25,6 +26,7 @@ export default async function AdminQuizPage() {
         titleEn: true,
         descriptionEn: true,
         visibility: true,
+        art: true,
         questions: {
           select: {
             status: true,
@@ -43,8 +45,9 @@ export default async function AdminQuizPage() {
   return (
     <AdminQuizListClient
       windowDays={WINDOW_DAYS}
-      quizzes={quizzes.map(({ questions, ...q }) => ({
+      quizzes={quizzes.map(({ questions, art, ...q }) => ({
         ...q,
+        art: quizArt(art),
         counts: countQuestions(questions),
         toReview: questions.filter((x) => needsReview(x.shown, x.correctCount)).length,
         plays: metrics.quizPlaysById[q.id] ?? 0,

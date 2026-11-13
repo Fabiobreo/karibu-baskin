@@ -26,6 +26,8 @@ export interface NextPredictionMatch {
   slug: string | null;
   date: Date;
   teamName: string;
+  /** Tinta della nostra squadra (`CompetitiveTeam.color`), per il disegno della card. */
+  teamColor: string | null;
   opponentName: string;
   isHome: boolean;
 }
@@ -43,7 +45,7 @@ export async function loadNextPredictionMatch(now: Date): Promise<NextPrediction
       slug: true,
       date: true,
       isHome: true,
-      team: { select: { name: true } },
+      team: { select: { name: true, color: true } },
       opponent: { select: { name: true } },
     },
   });
@@ -54,6 +56,7 @@ export async function loadNextPredictionMatch(now: Date): Promise<NextPrediction
     date: m.date,
     isHome: m.isHome,
     teamName: m.team.name,
+    teamColor: m.team.color,
     opponentName: m.opponent?.name ?? "",
   };
 }

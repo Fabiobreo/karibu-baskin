@@ -1188,15 +1188,21 @@
   "pages": {
     "games": {
       "title": "Giochi",
-      "subtitle": "Per divertirsi con il baskin e con le nostre partite",
       "metaDescription": "I giochi del Karibu Baskin: il quiz sul baskin e il pronostico della prossima partita.",
-      "quizCardCta": "Gioca",
-      "predictionCardTitle": "Pronostico della partita",
-      "predictionCardBody": "Chi vince la prossima partita? Dillo prima del fischio d'inizio.",
-      "predictionCardMatch": "{match}, {when}",
-      "predictionCardCta": "Fai il pronostico",
-      "predictionCardNone": "Il prossimo pronostico apre con la prossima partita.",
-      "predictionCardWho": "Per atleti, famiglie e staff del Karibu, con l'accesso all'app.",
+      "predictionTitle": "Pronostico",
+      "simulatorTitle": "Sfida",
+      "membersOnly": "Per i tesserati",
+      "signInToPlay": "Accedi per giocare",
+      "quizBest": "Il tuo record: {best} su {total}",
+      "predictionMatch": "{match}, {day}",
+      "predictionWaiting": "Apre 3 giorni prima della partita",
+      "predictionSaid": {
+        "WIN": "Hai detto: vinciamo noi",
+        "DRAW": "Hai detto: pareggio",
+        "LOSS": "Hai detto: vincono loro"
+      },
+      "simulatorLine": "Scegli due formazioni",
+      "offForOthers": "Non visibile agli altri",
       "quiz": {
         "title": "Quiz del Baskin",
         "subtitle": "5 domande, senza fretta",
@@ -1272,11 +1278,7 @@
         "homeRow": "Fai il tuo pronostico",
         "record": "Pronostici giusti in questa stagione: {right} su {total}"
       },
-      "gamePreview": "Anteprima per lo staff: questo gioco è spento e non lo vede nessun altro.",
-      "simulatorCardTitle": "Sfida fra le nostre squadre",
-      "simulatorCardBody": "Inventa una sfida fra le nostre squadre: scegli due formazioni e guarda come potrebbe andare.",
-      "simulatorCardWho": "Per atleti, famiglie e staff del Karibu, con l'accesso all'app.",
-      "simulatorCardCta": "Inventa una sfida"
+      "gamePreview": "Anteprima per lo staff: questo gioco è spento e non lo vede nessun altro."
     },
     "faq": {
       "heroTitle": "Domande frequenti",

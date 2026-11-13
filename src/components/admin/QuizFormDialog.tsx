@@ -15,14 +15,20 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from "@mui/material";
 import type { GameVisibility } from "@prisma/client";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
+import GameArt from "@/components/games/GameArt";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { DEFAULT_QUIZ_ART, QUIZ_ARTS, QUIZ_ART_LABELS, type QuizArt } from "@/lib/games/gameArt";
 import { GAME_RULES, GAME_VISIBILITY_LABELS } from "@/lib/games/gameSettings";
+import { RADIUS } from "@/lib/radius";
 import { canEnableQuiz, missingToEnableText, type QuizCounts } from "@/lib/games/quizRules";
 
 /** Un quiz nell'elenco del pannello. */
@@ -34,6 +40,8 @@ export interface AdminQuizRow {
   titleEn: string | null;
   descriptionEn: string | null;
   visibility: GameVisibility;
+  /** Disegno della card in Giochi (UX-68). */
+  art: QuizArt;
   counts: QuizCounts;
   /** Domande "da rileggere" (troppe risposte sbagliate). */
   toReview: number;
@@ -60,6 +68,7 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
   const [description, setDescription] = useState(quiz?.description ?? "");
   const [titleEn, setTitleEn] = useState(quiz?.titleEn ?? "");
   const [descriptionEn, setDescriptionEn] = useState(quiz?.descriptionEn ?? "");
+  const [art, setArt] = useState<QuizArt>(quiz?.art ?? DEFAULT_QUIZ_ART);
   const [visibility, setVisibility] = useState<GameVisibility>(quiz?.visibility ?? "OFF");
   const [error, setError] = useState<string | null>(null);
   const enableable = !quiz || canEnableQuiz(quiz.counts);
@@ -71,6 +80,7 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
         description,
         titleEn,
         descriptionEn,
+        art,
         ...(quiz && visibility !== quiz.visibility ? { visibility } : {}),
       };
       const res = await fetch(quiz ? `/api/admin/quizzes/${quiz.id}` : "/api/admin/quizzes", {
@@ -122,7 +132,7 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
           />
           <TextField
             label="Descrizione"
-            helperText="Una riga, sotto il titolo nella card di Giochi"
+            helperText="Una riga corta, sotto il titolo nella card di Giochi"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
@@ -140,6 +150,51 @@ export default function QuizFormDialog({ open, quiz, onClose, onSaved }: QuizFor
             onChange={(e) => setDescriptionEn(e.target.value)}
             slotProps={{ htmlInput: { maxLength: 200 } }}
           />
+          <FormControl>
+            <FormLabel id="quiz-art" sx={{ mb: 1 }}>
+              Disegno della card
+            </FormLabel>
+            <ToggleButtonGroup
+              exclusive
+              aria-labelledby="quiz-art"
+              value={art}
+              onChange={(_, v: QuizArt | null) => v && setArt(v)}
+              sx={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 1 }}
+            >
+              {QUIZ_ARTS.map((a) => (
+                <ToggleButton
+                  key={a}
+                  value={a}
+                  sx={{
+                    p: 0.75,
+                    flexDirection: "column",
+                    gap: 0.5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: `${RADIUS.md} !important`,
+                    textTransform: "none",
+                    "&.Mui-selected": { borderColor: "primary.main", borderWidth: 2 },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: "relative",
+                      width: "100%",
+                      aspectRatio: "16 / 10",
+                      borderRadius: RADIUS.sm,
+                      overflow: "hidden",
+                      background: (theme) => theme.palette.heroGradient.cardHead,
+                    }}
+                  >
+                    <GameArt kind="quiz" art={a} />
+                  </Box>
+                  <Typography variant="caption" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+                    {QUIZ_ART_LABELS[a]}
+                  </Typography>
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </FormControl>
           {quiz && (
             <FormControl>
               <FormLabel id="quiz-visibility">Chi lo vede</FormLabel>

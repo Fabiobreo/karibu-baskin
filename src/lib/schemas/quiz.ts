@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { QUIZ_SOURCES, QUIZ_TOPICS, type QuizTopic } from "@/lib/content/baskinQuiz";
+import { QUIZ_ARTS } from "@/lib/games/gameArt";
 
 /**
  * Schemi dei quiz gestiti dal pannello (UX-67). I messaggi sono per l'admin,
@@ -20,6 +21,8 @@ export const QuizCreateSchema = z.object({
   description: text(200, "Scrivi una riga di descrizione"),
   titleEn: optionalText(80),
   descriptionEn: optionalText(200),
+  /** Disegno della card in /giochi (UX-68). */
+  art: z.enum(QUIZ_ARTS, { message: "Disegno non valido" }).optional(),
 });
 
 export const QuizUpdateSchema = z
@@ -29,6 +32,7 @@ export const QuizUpdateSchema = z
     // Vuoto = togli la traduzione (la rotta lo salva come null).
     titleEn: z.string().trim().max(80).nullable().optional(),
     descriptionEn: z.string().trim().max(200).nullable().optional(),
+    art: z.enum(QUIZ_ARTS, { message: "Disegno non valido" }).optional(),
     visibility: z.enum(["OFF", "MEMBERS", "PUBLIC"], { message: "Stato non valido" }).optional(),
     /** Sposta il quiz di un posto nell'elenco. */
     move: z.enum(["up", "down"]).optional(),

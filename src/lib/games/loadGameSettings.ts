@@ -11,6 +11,7 @@ import {
   type QuizQuestionRow,
 } from "@/lib/games/quizRules";
 import type { QuizQuestion } from "@/lib/content/baskinQuiz";
+import { quizArt, type QuizArt } from "@/lib/games/gameArt";
 
 /** Tag della cache di giochi e quiz: ogni scrittura del pannello lo svuota. */
 export const GAME_SETTINGS_TAG = "game-settings";
@@ -25,6 +26,8 @@ export interface QuizSummary {
   descriptionEn: string | null;
   visibility: GameVisibility;
   position: number;
+  /** Disegno della card (`QUIZ_ARTS`). */
+  art: QuizArt;
   counts: QuizCounts;
 }
 
@@ -66,14 +69,16 @@ const loadSnapshot = unstable_cache(
           descriptionEn: true,
           visibility: true,
           position: true,
+          art: true,
           questions: {
             select: { status: true, textEn: true, answersEn: true, explanationEn: true },
           },
         },
       }),
     ]);
-    const summaries = quizzes.map(({ questions, ...q }) => ({
+    const summaries = quizzes.map(({ questions, art, ...q }) => ({
       ...q,
+      art: quizArt(art),
       counts: countQuestions(questions),
     }));
     // Lo stato del gioco "quiz" è quello del quiz più aperto (UX-67).

@@ -1188,15 +1188,21 @@
   "pages": {
     "games": {
       "title": "Games",
-      "subtitle": "For fun, with Baskin and with our games",
       "metaDescription": "Karibu Baskin games: the Baskin quiz and the prediction for the next game.",
-      "quizCardCta": "Play",
-      "predictionCardTitle": "Game prediction",
-      "predictionCardBody": "Who wins the next game? Say it before tip-off.",
-      "predictionCardMatch": "{match}, {when}",
-      "predictionCardCta": "Make your prediction",
-      "predictionCardNone": "The next prediction opens with the next game.",
-      "predictionCardWho": "For Karibu athletes, families and staff, signed in to the app.",
+      "predictionTitle": "Prediction",
+      "simulatorTitle": "Challenge",
+      "membersOnly": "Members only",
+      "signInToPlay": "Sign in to play",
+      "quizBest": "Your best: {best} out of {total}",
+      "predictionMatch": "{match}, {day}",
+      "predictionWaiting": "Opens 3 days before the match",
+      "predictionSaid": {
+        "WIN": "You said: we win",
+        "DRAW": "You said: a draw",
+        "LOSS": "You said: they win"
+      },
+      "simulatorLine": "Pick two lineups",
+      "offForOthers": "Not visible to others",
       "quiz": {
         "title": "Baskin quiz",
         "subtitle": "5 questions, no rush",
@@ -1272,11 +1278,7 @@
         "homeRow": "Make your prediction",
         "record": "Right predictions this season: {right} out of {total}"
       },
-      "gamePreview": "Staff preview: this game is switched off and nobody else can see it.",
-      "simulatorCardTitle": "Challenge between our teams",
-      "simulatorCardBody": "Make up a challenge between our teams: pick two line-ups and see how it might go.",
-      "simulatorCardWho": "For Karibu athletes, families and staff, signed in to the app.",
-      "simulatorCardCta": "Make up a challenge"
+      "gamePreview": "Staff preview: this game is switched off and nobody else can see it."
     },
     "faq": {
       "heroTitle": "Frequently asked questions",
