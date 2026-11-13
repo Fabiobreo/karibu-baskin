@@ -45,6 +45,11 @@ export interface SimInput {
   teamBMus: (number | null)[];
   /** Seme riproducibile: stesso seed ⇒ stesso risultato. */
   seed: string;
+  /**
+   * Un solo tempo di una partita intera (UX-69): punti e rumore a un quarto,
+   * e il pareggio resta (si rompe solo sul totale).
+   */
+  quarter?: boolean;
 }
 
 export interface SimResult {
@@ -69,7 +74,7 @@ export interface SimResult {
  * Squadre vuote ⇒ trattate come forza media (μ₀) per non rompere il calcolo;
  * la UI impedisce comunque la simulazione senza giocatori.
  */
-export function simulateMatch({ teamAMus, teamBMus, seed }: SimInput): SimResult {
+export function simulateMatch({ teamAMus, teamBMus, seed, quarter = false }: SimInput): SimResult {
   const musA = teamAMus.map(effectiveMu);
   const musB = teamBMus.map(effectiveMu);
 
@@ -88,18 +93,23 @@ export function simulateMatch({ teamAMus, teamBMus, seed }: SimInput): SimResult
 
   // Punteggio atteso proporzionale alla quota di forza, centrato su BASE_POINTS.
   const totalAvg = avgA + avgB || 2 * TRUESKILL.MU;
-  const expA = BASE_POINTS * ((2 * avgA) / totalAvg);
-  const expB = BASE_POINTS * ((2 * avgB) / totalAvg);
+  // Un tempo vale un quarto dei punti; il rumore di quattro tempi sommati
+  // torna quello di una partita (SCORE_SD / 2 per tempo).
+  const base = quarter ? BASE_POINTS / 4 : BASE_POINTS;
+  const sd = quarter ? SCORE_SD / 2 : SCORE_SD;
+  const minScore = quarter ? 0 : 10;
+  const expA = base * ((2 * avgA) / totalAvg);
+  const expB = base * ((2 * avgB) / totalAvg);
 
   const rand = mulberry32(stringToSeed(seed));
-  let scoreA = Math.round(expA + gaussian(rand) * SCORE_SD);
-  let scoreB = Math.round(expB + gaussian(rand) * SCORE_SD);
-  scoreA = Math.max(10, scoreA);
-  scoreB = Math.max(10, scoreB);
+  let scoreA = Math.round(expA + gaussian(rand) * sd);
+  let scoreB = Math.round(expB + gaussian(rand) * sd);
+  scoreA = Math.max(minScore, scoreA);
+  scoreB = Math.max(minScore, scoreB);
 
   // I pareggi nel baskin sono rari: rompiamo il pari con un tiro seedato in
   // favore di chi è (leggermente) più probabile vincente.
-  if (scoreA === scoreB) {
+  if (scoreA === scoreB && !quarter) {
     if (rand() < winProbabilityA) scoreA += 1;
     else scoreB += 1;
   }

@@ -1,26 +1,34 @@
 import { notFound, redirect } from "next/navigation";
 import { Box, Container, Typography } from "@mui/material";
-import { columnSx } from "@/lib/layout";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
+import EmptyState from "@/components/common/EmptyState";
+import PageHero from "@/components/common/PageHero";
+import SfidaGame, { type SfidaOutcome } from "@/components/games/sfida/SfidaGame";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { gameAccess } from "@/lib/games/gameSettings";
 import { loadGameSettings } from "@/lib/games/loadGameSettings";
+import {
+  buildSfida,
+  parseSfidaLink,
+  type SfidaContext,
+  type SfidaPlayerView,
+  type SfidaState,
+} from "@/lib/games/sfidaState";
+import { columnSx } from "@/lib/layout";
 import { loginHref } from "@/lib/loginReturn";
-import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
-import { runSimulation } from "@/lib/rating/simulatorServer";
+import { runMatchSimulation, runSimulation } from "@/lib/rating/simulatorServer";
 import { simPlayerKey } from "@/lib/rating/simulatorShared";
-import type { SimResult } from "@/lib/rating/matchSimulator";
-import PageHero from "@/components/common/PageHero";
-import EmptyState from "@/components/common/EmptyState";
-import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
-import MatchSimulator, { type SimTeam } from "@/components/teams/MatchSimulator";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
+import { mulberry32 } from "@/lib/seededRandom";
 import { buildMetadata } from "@/lib/seo";
+import { teamFill } from "@/lib/teamColors";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Simulatore Sfida",
-  description: "Simula una sfida tra due squadre del Karibu Baskin.",
+  title: "Sfida",
+  description: "Una sfida fra le squadre del Karibu Baskin, per gioco.",
   path: "/giochi/sfida",
   noindex: true,
 });
@@ -28,8 +36,32 @@ export const revalidate = 0;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-const firstParam = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+/** Una sfida nuova a ogni apertura: il seme cambia ogni volta, di proposito. */
+function freshSeed(): number {
+  return Math.floor(Math.random() * 2 ** 31);
+}
 
+/** Il risultato di un link condiviso, calcolato qui: il client parte già con il tabellone. */
+async function linkOutcome(state: SfidaState): Promise<SfidaOutcome | null> {
+  const [a, b] = state.sides;
+  if (state.mode === "six") {
+    const r = await runSimulation(a.lineup, b.lineup, state.nonce);
+    return r.ok
+      ? {
+          kind: "six",
+          scoreA: r.result.scoreA,
+          scoreB: r.result.scoreB,
+          winner: r.result.winner,
+          pctA: Math.round(r.result.winProbabilityA * 100),
+        }
+      : null;
+  }
+  const r = await runMatchSimulation(a.quarters, b.quarters, state.nonce);
+  return r.ok ? { kind: "full", ...r.result } : null;
+}
+
+// La Sfida (UX-66, UX-69): partita pronta fra due nostre squadre o fra tutti
+// mescolati, sei contro sei o partita intera in 4 tempi.
 export default async function SfidaPage({ searchParams }: Props) {
   const [session, settings] = await Promise.all([auth(), loadGameSettings()]);
   // Il simulatore è un gioco (UX-66) ma mostra nomi e rose dei tesserati,
@@ -39,117 +71,102 @@ export default async function SfidaPage({ searchParams }: Props) {
   if (access === "hidden") notFound();
   if (access === "members") redirect(session?.user ? "/" : loginHref("/giochi/sfida"));
 
-  const [t, tGames, sp] = await Promise.all([
+  const [t, tGames, sp, season] = await Promise.all([
     getTranslations("simulator"),
     getTranslations("pages.games"),
     searchParams,
+    getCurrentSeasonLabel(),
   ]);
 
-  const currentSeason = await getCurrentSeasonLabel();
-
-  // Nessun ratingMu in questa query: il TrueSkill è visibile solo allo staff e
-  // la simulazione avviene sul server (runSimulation), quindi il client non ne
-  // ha bisogno e non deve riceverlo.
+  // Nessun livello in questa query: il calcolo avviene sul server
+  // (runSimulation) e il client non lo deve ricevere.
   const teamsRaw = await prisma.competitiveTeam.findMany({
-    // La Karibu non ha rosa propria da cui partire.
-    where: { season: currentSeason, isMixed: false },
+    // La Karibu non ha rosa propria.
+    where: { season, isMixed: false },
     orderBy: { name: "asc" },
     select: {
       id: true,
       name: true,
+      color: true,
       memberships: {
         select: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              customImage: true,
-              sportRole: true,
-              gender: true,
-            },
-          },
-          child: {
-            select: { id: true, name: true, sportRole: true, gender: true },
-          },
+          user: { select: { id: true, name: true, sportRole: true, gender: true } },
+          child: { select: { id: true, name: true, sportRole: true, gender: true } },
         },
       },
     },
   });
 
-  const teams: SimTeam[] = teamsRaw
-    .map((team) => ({
-      id: team.id,
-      name: team.name,
-      roster: team.memberships
-        .map((m): SimTeam["roster"][number] | null => {
-          if (m.user) {
-            return {
-              id: m.user.id,
-              kind: "user",
-              name: m.user.name ?? "—",
-              image: m.user.customImage ?? m.user.image ?? null,
-              sportRole: m.user.sportRole,
-              gender: m.user.gender,
-              teamName: team.name,
-            };
-          }
-          if (m.child) {
-            return {
-              id: m.child.id,
-              kind: "child",
-              name: m.child.name,
-              image: null,
-              sportRole: m.child.sportRole,
-              gender: m.child.gender,
-              teamName: team.name,
-            };
-          }
-          return null;
-        })
-        .filter((p): p is SimTeam["roster"][number] => p !== null)
-        .sort((a, b) => (a.sportRole ?? 99) - (b.sportRole ?? 99) || a.name.localeCompare(b.name)),
-    }))
-    .filter((team) => team.roster.length > 0);
+  const byKey = new Map<string, SfidaPlayerView>();
+  for (const team of teamsRaw) {
+    for (const m of team.memberships) {
+      const who = m.user
+        ? { key: simPlayerKey("user", m.user.id), ...m.user, name: m.user.name ?? "—" }
+        : m.child
+          ? { key: simPlayerKey("child", m.child.id), ...m.child }
+          : null;
+      if (!who) continue;
+      const known = byKey.get(who.key);
+      if (known) known.teamIds.push(team.id);
+      else
+        byKey.set(who.key, {
+          key: who.key,
+          name: who.name,
+          sportRole: who.sportRole,
+          gender: who.gender,
+          teamIds: [team.id],
+        });
+    }
+  }
+  const ctx: SfidaContext = {
+    players: [...byKey.values()],
+    teams: teamsRaw.map((tm) => {
+      const fill = teamFill(tm.color);
+      return { id: tm.id, name: tm.name, fill: fill && { bg: fill.bg, fg: fill.fg } };
+    }),
+    names: t.raw("names") as string[],
+  };
 
-  // Link "sfida" condiviso (?a=&b=&s=): formazioni filtrate sulle rose della
-  // stagione e, se entrambe valide, risultato calcolato qui. Il client parte già
-  // simulato senza effetti al mount.
-  const rosterKeys = new Set(
-    teams.flatMap((tm) => tm.roster.map((p) => simPlayerKey(p.kind, p.id)))
-  );
-  const parseKeys = (v: string | undefined) =>
-    v ? v.split(",").filter((k) => rosterKeys.has(k)) : [];
-  const selA = parseKeys(firstParam(sp.a));
-  const selB = parseKeys(firstParam(sp.b));
-  const nonceParsed = Number(firstParam(sp.s) ?? 0);
-  const nonce = Number.isInteger(nonceParsed) && nonceParsed >= 0 ? nonceParsed : 0;
-
-  let initialResult: SimResult | null = null;
-  if (selA.length > 0 && selB.length > 0) {
-    const outcome = await runSimulation(selA, selB, nonce);
-    if (outcome.ok) initialResult = outcome.result;
+  // Un link condiviso riapre la stessa sfida con il suo risultato; altrimenti
+  // una partita nuova, intera se le rose bastano.
+  let initial = parseSfidaLink(sp, ctx);
+  const initialOutcome = initial ? await linkOutcome(initial) : null;
+  if (!initialOutcome) initial = null;
+  let notice: "fullNotPossible" | null = null;
+  if (!initial) {
+    const rand = mulberry32(freshSeed());
+    initial = buildSfida(ctx, { mode: "full", grouping: "season" }, rand);
+    if (!initial) {
+      initial = buildSfida(ctx, { mode: "six", grouping: "season" }, rand);
+      if (initial) notice = "fullNotPossible";
+    }
   }
 
   return (
     <>
-      <PageHero column="main" title={t("heroTitle")} subtitle={t("heroSubtitle")} />
-
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      <PageHero column="main" title={t("heroTitle")} />
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={columnSx("main")}>
           {access === "preview" && (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {tGames("gamePreview")}
             </Typography>
           )}
-          {teams.length === 0 ? (
+          {!initial ? (
             <EmptyState
-              icon={<SportsKabaddiIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+              icon={<SportsKabaddiIcon sx={{ fontSize: 56, color: "text.secondary" }} />}
               title={t("emptyTitle")}
               message={t("emptyDesc")}
             />
           ) : (
-            <MatchSimulator teams={teams} initial={{ selA, selB, nonce, result: initialResult }} />
+            <SfidaGame
+              players={ctx.players}
+              teams={ctx.teams}
+              names={ctx.names}
+              initial={initial}
+              initialOutcome={initialOutcome}
+              initialNotice={notice}
+            />
           )}
         </Box>
       </Container>

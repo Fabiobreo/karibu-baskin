@@ -22,7 +22,7 @@ import { socialBrandColor } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 import { shareMessage, shareUrl, type ShareCampaign } from "@/lib/shareLinks";
 
-type ShareKind = "training" | "event" | "match" | "news" | "album" | "quiz";
+type ShareKind = "training" | "event" | "match" | "news" | "album" | "quiz" | "sfida";
 
 /** Campagna UTM di ogni tipo di pagina (UX-56). */
 const CAMPAIGN: Record<ShareKind, ShareCampaign> = {
@@ -32,6 +32,7 @@ const CAMPAIGN: Record<ShareKind, ShareCampaign> = {
   news: "news",
   album: "album",
   quiz: "quiz",
+  sfida: "sfida",
 };
 
 /** Frase prima del link nel messaggio di WhatsApp. */
@@ -42,6 +43,7 @@ const WA_KEY = {
   news: "waNews",
   album: "waAlbum",
   quiz: "waQuiz",
+  sfida: "waSfida",
 } as const satisfies Record<ShareKind, string>;
 
 /** Indicazione sotto il QR. */
@@ -52,6 +54,7 @@ const QR_HINT_KEY = {
   news: "qrHintPage",
   album: "qrHintPage",
   quiz: "qrHintPage",
+  sfida: "qrHintPage",
 } as const satisfies Record<ShareKind, string>;
 
 interface Props {
