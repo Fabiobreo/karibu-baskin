@@ -17,7 +17,11 @@ const EASY_SHARE = 0.6;
 /** Lunghezza massima del codice di sfida letto dal link. */
 const MAX_CODE_LENGTH = 32;
 
-/** Domande già fatte in questa visita (`sessionStorage`), per quiz, per non ripeterle. */
+/**
+ * Domande già fatte su questo dispositivo (`localStorage`), per quiz: si
+ * ricordano anche fra una visita e l'altra, così si girano tutte prima di
+ * rivederne una.
+ */
 export function quizSeenStorageKey(quizId: string): string {
   return `karibu-quiz-seen:${quizId}`;
 }
@@ -62,7 +66,7 @@ export function pickRound(
 }
 
 /** Tentativi per trovare un codice con domande nuove: calcolo puro, istantaneo. */
-const FRESH_CODE_TRIES = 600;
+const FRESH_CODE_TRIES = 5000;
 
 /**
  * Ogni partita nasce da un codice, così "Sfida un amico" manda le stesse
@@ -95,9 +99,11 @@ export function pickFreshCode(
 }
 
 /**
- * Domande viste dopo una partita. Quando per un livello non ne restano
- * abbastanza di nuove per la partita dopo, si ricomincia da capo (tenendo
- * solo quelle appena fatte, che non escono subito di nuovo).
+ * Domande viste dopo una partita. Ogni livello gira per conto suo: quando per
+ * le facili (o per le medie) non ne restano abbastanza di nuove per la partita
+ * dopo, si ricomincia solo quel livello, tenendo quelle appena fatte, che non
+ * escono subito di nuovo. Così si passano tutte le domande prima di rivederne
+ * una, anche se le facili finiscono prima delle medie.
  */
 export function nextSeen(
   bank: readonly QuizQuestion[],
@@ -105,12 +111,17 @@ export function nextSeen(
   played: readonly QuizQuestion[],
   length: number = DEFAULT_QUIZ_LENGTH
 ): Set<string> {
-  const next = new Set([...seen, ...played.map((q) => q.id)]);
+  const bankIds = new Set(bank.map((q) => q.id));
+  const playedIds = new Set(played.map((q) => q.id));
+  // Domande tolte o non più approvate non contano.
+  const next = new Set([...seen, ...playedIds].filter((id) => bankIds.has(id)));
   const shape = roundShape(bank, length);
-  const freshLeft = (level: QuizQuestion["level"]) =>
-    bank.filter((q) => q.level === level && !next.has(q.id)).length;
-  if (freshLeft("facile") < shape.facile || freshLeft("medio") < shape.medio) {
-    return new Set(played.map((q) => q.id));
+  for (const level of ["facile", "medio"] as const) {
+    const ofLevel = bank.filter((q) => q.level === level);
+    const fresh = ofLevel.filter((q) => !next.has(q.id)).length;
+    if (fresh < shape[level]) {
+      for (const q of ofLevel) if (!playedIds.has(q.id)) next.delete(q.id);
+    }
   }
   return next;
 }

@@ -1,3 +1,4 @@
+import { mulberry32 } from "@/lib/seededRandom";
 import { describe, expect, it } from "vitest";
 import type { QuizLevel, QuizQuestion } from "@/lib/content/baskinQuiz";
 import {
@@ -101,6 +102,30 @@ describe("nextSeen", () => {
       expect(next.some((q) => last.includes(q))).toBe(false);
       last = next;
     }
+  });
+});
+
+describe("rotazione su tutte le domande", () => {
+  it("passa tutte le domande di ogni livello prima di rivederne una", () => {
+    // Banca grande come quella vera: 16 facili e 20 medie.
+    const big = Array.from({ length: 36 }, (_, i) => ({
+      ...bank[0],
+      id: `r${String(i).padStart(2, "0")}`,
+      level: i < 16 ? ("facile" as const) : ("medio" as const),
+    }));
+    let seen = new Set<string>();
+    let last = new Set<string>();
+    const appeared = new Set<string>();
+    const random = mulberry32(42);
+    // 16 facili a 3 per partita e 20 medie a 2: in 10 partite si vedono tutte.
+    for (let g = 0; g < 10; g++) {
+      const code = pickFreshCode(big, seen, last, DEFAULT_QUIZ_LENGTH, random);
+      const round = pickRound(big, challengeSeed(code));
+      round.forEach((q) => appeared.add(q.id));
+      seen = nextSeen(big, seen, round);
+      last = new Set(round.map((q) => q.id));
+    }
+    expect(appeared.size).toBe(36);
   });
 });
 

@@ -13,7 +13,13 @@ import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
 import { quizPath } from "@/lib/games/quiz";
-import { canEnableQuiz, isPlayableIn, missingToEnableText } from "@/lib/games/quizRules";
+import {
+  canEnableQuiz,
+  isPlayableIn,
+  MIN_APPROVED_TO_ENABLE,
+  minApprovedToEnable,
+  missingToEnableText,
+} from "@/lib/games/quizRules";
 
 interface AdminQuizListClientProps {
   quizzes: AdminQuizRow[];
@@ -90,8 +96,9 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
       />
 
       <Typography variant="body2" color="text.secondary">
-        Un quiz nasce spento e si accende con almeno 8 domande approvate. Nel gioco entrano solo le
-        domande approvate; in inglese solo quelle tradotte.
+        Un quiz nasce spento e si accende con almeno {MIN_APPROVED_TO_ENABLE} domande approvate (e
+        comunque 3 in più di quelle di una partita). Nel gioco entrano solo le domande approvate; in
+        inglese solo quelle tradotte.
       </Typography>
 
       {quizzes.length === 0 ? (
@@ -108,9 +115,9 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
                   ? null
                   : `${missingToEnableText(counts)} per accenderlo.`
                 : !isPlayableIn(counts, "it")
-                  ? "Acceso, ma con meno di 5 domande approvate: non si vede sul sito."
+                  ? `Acceso, ma con meno di ${counts.perGame} domande approvate: non si vede sul sito.`
                   : !canEnableQuiz(counts)
-                    ? "Acceso con meno di 8 domande approvate: le partite si ripetono presto."
+                    ? `Acceso con meno di ${minApprovedToEnable(counts.perGame)} domande approvate: le partite si ripetono presto.`
                     : null;
             return (
               <Paper
@@ -139,7 +146,8 @@ export default function AdminQuizListClient({ quizzes, windowDays }: AdminQuizLi
                     <QuizStateChip visibility={quiz.visibility} />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    {counts.approved} approvate su {counts.total} · in inglese {counts.approvedEn}
+                    {quiz.questionCount} domande per partita · {counts.approved} approvate su{" "}
+                    {counts.total} · in inglese {counts.approvedEn}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Partite negli ultimi {windowDays} giorni: {quiz.plays}

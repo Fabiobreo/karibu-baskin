@@ -51,7 +51,7 @@ interface Game {
 
 function readSeen(quizId: string): Set<string> {
   try {
-    const raw = window.sessionStorage.getItem(quizSeenStorageKey(quizId));
+    const raw = window.localStorage.getItem(quizSeenStorageKey(quizId));
     const ids: unknown = raw ? JSON.parse(raw) : [];
     return new Set(Array.isArray(ids) ? ids.filter((x) => typeof x === "string") : []);
   } catch {
@@ -61,7 +61,7 @@ function readSeen(quizId: string): Set<string> {
 
 function writeSeen(quizId: string, seen: Set<string>) {
   try {
-    window.sessionStorage.setItem(quizSeenStorageKey(quizId), JSON.stringify([...seen]));
+    window.localStorage.setItem(quizSeenStorageKey(quizId), JSON.stringify([...seen]));
   } catch {
     // Navigazione privata o memoria piena: si gioca lo stesso.
   }
@@ -87,7 +87,7 @@ function newGame(
 
 /**
  * Partita di un quiz del club (UX-61, UX-67). Le domande dipendono da
- * `sessionStorage` (quelle già fatte in questa visita), quindi il gioco parte
+ * `localStorage` (quelle già fatte su questo dispositivo), quindi il gioco parte
  * solo nel browser.
  */
 export default function BaskinQuiz(props: BaskinQuizProps) {

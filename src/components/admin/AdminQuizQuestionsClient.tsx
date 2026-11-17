@@ -16,6 +16,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import QuizLengthControl from "@/components/admin/QuizLengthControl";
 import QuizPublishDialog from "@/components/admin/QuizPublishDialog";
 import QuizStateChip, { QuestionStateChip } from "@/components/admin/QuizStateChip";
 import PageHeader from "@/components/common/PageHeader";
@@ -132,6 +133,12 @@ export default function AdminQuizQuestionsClient({
           <Typography variant="body1">
             {counts.approved} approvate su {counts.total} · in inglese {counts.approvedEn}
           </Typography>
+          <QuizLengthControl
+            quizId={quiz.id}
+            value={quiz.questionCount}
+            visibility={quiz.visibility}
+            approved={counts.approved}
+          />
           {quiz.visibility === "OFF" && canEnableQuiz(counts) && (
             <Button variant="outlined" onClick={() => setPublishing(true)} sx={{ minHeight: 44 }}>
               Pubblica
