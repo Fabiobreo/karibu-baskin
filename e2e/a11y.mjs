@@ -85,58 +85,65 @@ const PIXEL_PNG = Buffer.from(
 
 async function resolveTargets(prisma) {
   const now = new Date();
-  const [upcoming, lastTraining, pastTraining, match, admin, athlete, drill] = await Promise.all([
-    prisma.trainingSession.findFirst({
-      where: { date: { gte: now } },
-      orderBy: { date: "asc" },
-      select: { id: true, dateSlug: true },
-    }),
-    prisma.trainingSession.findFirst({
-      where: { date: { lt: now } },
-      orderBy: { date: "desc" },
-      select: { id: true, dateSlug: true },
-    }),
-    prisma.trainingSession.findFirst({
-      // Esclusi gli allenamenti del seed UX-26: non hanno squadre, e la pagina
-      // misurata perderebbe proprio le parti che si vedono dopo l'allenamento.
-      where: {
-        date: { lt: now },
-        registrations: { some: {} },
-        NOT: { title: { startsWith: "[UX]" } },
-      },
-      orderBy: { date: "desc" },
-      select: { id: true, dateSlug: true },
-    }),
-    prisma.match.findFirst({
-      where: { date: { lt: now }, result: { not: null }, team: { isMixed: false } },
-      orderBy: { date: "desc" },
-      select: { id: true, slug: true },
-    }),
-    process.env.E2E_ADMIN_EMAIL
-      ? { email: process.env.E2E_ADMIN_EMAIL }
-      : prisma.user.findFirst({
-          where: { appRole: "ADMIN" },
-          orderBy: { createdAt: "asc" },
-          select: { email: true },
-        }),
-    process.env.E2E_ATHLETE_EMAIL
-      ? { email: process.env.E2E_ATHLETE_EMAIL }
-      : prisma.user.findFirst({
-          where: {
-            appRole: "ATHLETE",
-            sportRole: { not: null },
-            NOT: { email: { endsWith: "@sim.test" } },
-          },
-          orderBy: { createdAt: "asc" },
-          select: { email: true },
-        }),
-    // Playbook (UX-72): il primo esercizio o schema pubblicato, se c'e'.
-    prisma.drill.findFirst({
-      where: { status: "PUBLISHED", archivedAt: null },
-      orderBy: { publishedAt: "asc" },
-      select: { id: true, slug: true },
-    }),
-  ]);
+  const [upcoming, lastTraining, pastTraining, match, admin, athlete, drill, proposal] =
+    await Promise.all([
+      prisma.trainingSession.findFirst({
+        where: { date: { gte: now } },
+        orderBy: { date: "asc" },
+        select: { id: true, dateSlug: true },
+      }),
+      prisma.trainingSession.findFirst({
+        where: { date: { lt: now } },
+        orderBy: { date: "desc" },
+        select: { id: true, dateSlug: true },
+      }),
+      prisma.trainingSession.findFirst({
+        // Esclusi gli allenamenti del seed UX-26: non hanno squadre, e la pagina
+        // misurata perderebbe proprio le parti che si vedono dopo l'allenamento.
+        where: {
+          date: { lt: now },
+          registrations: { some: {} },
+          NOT: { title: { startsWith: "[UX]" } },
+        },
+        orderBy: { date: "desc" },
+        select: { id: true, dateSlug: true },
+      }),
+      prisma.match.findFirst({
+        where: { date: { lt: now }, result: { not: null }, team: { isMixed: false } },
+        orderBy: { date: "desc" },
+        select: { id: true, slug: true },
+      }),
+      process.env.E2E_ADMIN_EMAIL
+        ? { email: process.env.E2E_ADMIN_EMAIL }
+        : prisma.user.findFirst({
+            where: { appRole: "ADMIN" },
+            orderBy: { createdAt: "asc" },
+            select: { email: true },
+          }),
+      process.env.E2E_ATHLETE_EMAIL
+        ? { email: process.env.E2E_ATHLETE_EMAIL }
+        : prisma.user.findFirst({
+            where: {
+              appRole: "ATHLETE",
+              sportRole: { not: null },
+              NOT: { email: { endsWith: "@sim.test" } },
+            },
+            orderBy: { createdAt: "asc" },
+            select: { email: true },
+          }),
+      // Playbook (UX-72): il primo esercizio o schema pubblicato, se c'e'.
+      prisma.drill.findFirst({
+        where: { status: "PUBLISHED", archivedAt: null },
+        orderBy: { publishedAt: "asc" },
+        select: { id: true, slug: true },
+      }),
+      // Proposte di esercizi (UX-73): la prima inviata allo staff, se c'e'.
+      prisma.drill.findFirst({
+        where: { status: "PROPOSED", proposedAt: { not: null } },
+        orderBy: { proposedAt: "asc" },
+        select: { id: true },
+      }),
+    ]);
   const training = upcoming ?? lastTraining;
   return {
     training: training ? `/allenamento/${training.dateSlug ?? training.id}` : null,
@@ -147,6 +154,7 @@ async function resolveTargets(prisma) {
     athleteEmail: athlete?.email ?? null,
     drill: drill ? `/playbook/${drill.slug}` : null,
     drillEditor: drill ? `/admin/playbook/${drill.id}` : null,
+    proposal: proposal ? `/admin/playbook/proposte/${proposal.id}` : null,
   };
 }
 
@@ -360,6 +368,8 @@ async function main() {
         ["playbook-esercizi", "/playbook/esercizi"],
         ["playbook-schemi", "/playbook/schemi"],
         ["playbook-dettaglio", targets.drill],
+        // Proporre un esercizio (UX-73).
+        ["playbook-proponi", "/playbook/proponi"],
       ],
     },
     {
@@ -378,6 +388,8 @@ async function main() {
         ["giochi", "/admin/giochi"],
         ["playbook", "/admin/playbook"],
         ["playbook-editor", targets.drillEditor],
+        ["playbook-proposte", "/admin/playbook?scheda=proposte"],
+        ["playbook-proposta", targets.proposal],
       ],
     },
   ].filter((p) => !ONLY || ONLY.includes(p.name));

@@ -11,6 +11,9 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { RADIUS } from "@/lib/radius";
 import { loadMySuggestions } from "@/lib/suggestions/mySuggestions";
+import { loadMyProposals } from "@/lib/board/loadProposals";
+import { isMemberRole } from "@/lib/authRoles";
+import MyProposalCard from "@/components/board/MyProposalCard";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
@@ -34,14 +37,23 @@ export default async function MieiSuggerimentiPage() {
   const session = await auth();
   if (!session?.user?.id) redirect(loginHref("/profilo/suggerimenti"));
 
-  const [suggestions, t, tSuggestion, locale] = await Promise.all([
+  const [allSuggestions, proposals, t, tSuggestion, locale] = await Promise.all([
     loadMySuggestions(session.user.id),
+    isMemberRole(session.user.appRole) ? loadMyProposals(session.user.id) : Promise.resolve([]),
     getTranslations("profile"),
     getTranslations("suggestion"),
     getLocale(),
   ]);
   const dateLocale = getDateFnsLocale(locale);
   const fmt = (d: Date) => format(d, "d MMM yyyy, HH:mm", { locale: dateLocale });
+  // Le proposte di esercizi (UX-73) hanno la loro card, con il disegno: il
+  // suggerimento collegato porta solo le risposte dello staff.
+  const repliesBySuggestion = new Map(
+    allSuggestions
+      .filter((s) => s.category === "ESERCIZIO")
+      .map((s) => [s.id, s.notes.map((n) => ({ ...n, when: fmt(n.createdAt) }))])
+  );
+  const suggestions = allSuggestions.filter((s) => s.category !== "ESERCIZIO");
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
@@ -52,7 +64,32 @@ export default async function MieiSuggerimentiPage() {
           breadcrumb={[{ label: t("title"), href: "/profilo" }, { label: t("mySuggestions") }]}
         />
 
-        {suggestions.length === 0 ? (
+        {proposals.length > 0 && (
+          <Box component="section" sx={{ mb: 4 }}>
+            <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+              {t("myProposals")}
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {proposals.map((p) => (
+                <MyProposalCard
+                  key={p.id}
+                  proposal={p}
+                  replies={p.suggestionId ? (repliesBySuggestion.get(p.suggestionId) ?? []) : []}
+                />
+              ))}
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
+              {t("myProposalsSigned")}
+            </Typography>
+          </Box>
+        )}
+
+        {proposals.length > 0 && suggestions.length > 0 && (
+          <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+            {t("myOtherSuggestions")}
+          </Typography>
+        )}
+        {suggestions.length === 0 && proposals.length > 0 ? null : suggestions.length === 0 ? (
           <Paper
             variant="outlined"
             sx={{
@@ -128,9 +165,11 @@ export default async function MieiSuggerimentiPage() {
           </Box>
         )}
 
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 3 }}>
-          {t("mySuggestionsAnonymous")}
-        </Typography>
+        {(suggestions.length > 0 || proposals.length === 0) && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 3 }}>
+            {t("mySuggestionsAnonymous")}
+          </Typography>
+        )}
       </Box>
     </Container>
   );

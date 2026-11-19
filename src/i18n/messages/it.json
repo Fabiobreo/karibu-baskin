@@ -1152,7 +1152,10 @@
     "availabilityLocked": "Le convocazioni sono fatte: le risposte restano queste. Se c'è un problema, scrivi allo staff.",
     "availabilitySetByStaffLocked": "Segnata dallo staff.",
     "lockedYes": "Hai detto di sì",
-    "lockedNo": "Hai detto di no"
+    "lockedNo": "Hai detto di no",
+    "myProposals": "Le tue proposte di esercizi",
+    "myProposalsSigned": "Le proposte di esercizi sono firmate: lo staff vede il tuo nome.",
+    "myOtherSuggestions": "Gli altri suggerimenti"
   },
   "guestOnboarding": {
     "heroGreeting": "Ciao {name}, ti diamo il benvenuto!",

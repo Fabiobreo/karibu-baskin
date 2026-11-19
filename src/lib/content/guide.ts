@@ -294,8 +294,14 @@ const GUIDE_IT: Guide = {
             "Con le frecce vai avanti e indietro di un passo. «Lenta» rallenta il movimento.",
             "Le frecce sul campo dicono cosa succede: linea piena è un movimento, tratteggiata un passaggio, ondulata un palleggio.",
             "Sul telefono, se c'è il bottone «Tutto schermo», toccalo e gira il telefono: si vede più grande. Sull'iPhone il bottone non c'è: gira il telefono e basta.",
+            "Hai un'idea per un esercizio? Negli «Esercizi» tocca «Proponi un esercizio», dagli un titolo e disegnalo come fa lo staff: aggiungi le pedine, spostale passo dopo passo e scrivi come si fa.",
+            "Quando ti piace tocca «Invia allo staff». Lo staff vede il tuo nome e ti risponde in «I miei suggerimenti», nel profilo. Finché non lo prende lo puoi cambiare o ritirare.",
+            "Se lo staff lo mette nel Playbook, chi è del Karibu legge sotto il titolo che l'idea è tua. Se non vuoi, togli la spunta «Mostra il mio nome».",
           ],
-          links: [{ href: "/playbook/esercizi", label: "Apri il Playbook" }],
+          links: [
+            { href: "/playbook/esercizi", label: "Apri il Playbook" },
+            { href: "/playbook/proponi", label: "Proponi un esercizio" },
+          ],
         },
         {
           id: "profilo",
@@ -589,8 +595,14 @@ const GUIDE_EN: Guide = {
             'With the arrows you go one step forward or back. "Slow" slows the movement down.',
             "The arrows on the court say what happens: a solid line is a movement, a dashed one a pass, a wavy one a dribble.",
             'On the phone, if there is a "Full screen" button, tap it and turn the phone: it gets bigger. On the iPhone there is no button: just turn the phone.',
+            'Got an idea for a drill? Under "Drills" tap "Suggest a drill", give it a title and draw it the way the staff does: add the pieces, move them step by step and write how it works.',
+            'When you are happy with it, tap "Send to the staff". The staff sees your name and replies in "My suggestions", in your profile. Until they take it you can change or withdraw it.',
+            'If the staff puts it in the Playbook, Karibu members read under the title that it was your idea. If you would rather not, untick "Show my name".',
           ],
-          links: [{ href: "/playbook/esercizi", label: "Open the Playbook" }],
+          links: [
+            { href: "/playbook/esercizi", label: "Open the Playbook" },
+            { href: "/playbook/proponi", label: "Suggest a drill" },
+          ],
         },
         {
           id: "profilo",

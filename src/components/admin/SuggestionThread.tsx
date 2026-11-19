@@ -40,6 +40,13 @@ interface SuggestionThreadProps {
   /** Nota salvata: la card aggiorna lista, stato e ultima attività. */
   onNoteAdded: (suggestionId: string, note: AdminSuggestionNote, status: string) => void;
   onNoteDeleted: (suggestionId: string, noteId: string) => void;
+  /**
+   * Proposta di esercizio (UX-73): l'autore e' noto allo staff, quindi la
+   * risposta non e' anonima nei due sensi.
+   */
+  signed?: boolean;
+  /** Il dirigente legge il filo, non scrive (UX-73). */
+  readOnly?: boolean;
 }
 
 /** Note e risposte di un suggerimento, più il modulo per scriverne una. La bozza sta qui. */
@@ -49,6 +56,8 @@ export default function SuggestionThread({
   isAdmin,
   onNoteAdded,
   onNoteDeleted,
+  signed = false,
+  readOnly = false,
 }: SuggestionThreadProps) {
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
@@ -118,7 +127,7 @@ export default function SuggestionThread({
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 1.5 }}>
       <Divider />
       {suggestion.notes.map((n) => {
-        const canDelete = isAdmin || n.author.id === currentUserId;
+        const canDelete = !readOnly && (isAdmin || n.author.id === currentUserId);
         const Icon = n.isReply ? ReplyIcon : LockIcon;
         return (
           <Box key={n.id} sx={{ display: "flex", gap: 1.25 }}>
@@ -184,52 +193,56 @@ export default function SuggestionThread({
         );
       })}
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={kind}
-          onChange={(_, v: Kind | null) => v && setKind(v)}
-          aria-label="Tipo di messaggio"
-          sx={{ alignSelf: "flex-start" }}
-        >
-          <ToggleButton value="NOTE" sx={TOUCH_TARGET_ON_PHONE}>
-            Nota interna
-          </ToggleButton>
-          <ToggleButton value="REPLY" disabled={!suggestion.canReply} sx={TOUCH_TARGET_ON_PHONE}>
-            Risposta all&apos;autore
-          </ToggleButton>
-        </ToggleButtonGroup>
-        {!suggestion.canReply && (
+      {readOnly ? null : (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={kind}
+            onChange={(_, v: Kind | null) => v && setKind(v)}
+            aria-label="Tipo di messaggio"
+            sx={{ alignSelf: "flex-start" }}
+          >
+            <ToggleButton value="NOTE" sx={TOUCH_TARGET_ON_PHONE}>
+              Nota interna
+            </ToggleButton>
+            <ToggleButton value="REPLY" disabled={!suggestion.canReply} sx={TOUCH_TARGET_ON_PHONE}>
+              Risposta all&apos;autore
+            </ToggleButton>
+          </ToggleButtonGroup>
+          {!suggestion.canReply && (
+            <Typography variant="caption" color="text.secondary">
+              Chi l&apos;ha scritto non ha più un account: puoi solo lasciare una nota interna.
+            </Typography>
+          )}
           <Typography variant="caption" color="text.secondary">
-            Chi l&apos;ha scritto non ha più un account: puoi solo lasciare una nota interna.
+            {isReply
+              ? signed
+                ? "Arriva a chi ha proposto l'esercizio, con una notifica. Legge “Lo staff”, non il tuo nome."
+                : "Arriva a chi ha scritto il suggerimento, con una notifica. Non saprà chi sei, e tu non sai chi è."
+              : "La leggono solo allenatori e admin."}
           </Typography>
-        )}
-        <Typography variant="caption" color="text.secondary">
-          {isReply
-            ? "Arriva a chi ha scritto il suggerimento, con una notifica. Non saprà chi sei, e tu non sai chi è."
-            : "La leggono solo allenatori e admin."}
-        </Typography>
-        <TextField
-          label={isReply ? "Risposta" : "Nota"}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          size="small"
-          fullWidth
-          multiline
-          minRows={2}
-          maxRows={6}
-          slotProps={{ htmlInput: { maxLength: 1000 } }}
-        />
-        <Button
-          variant="outlined"
-          disabled={busy || !draft.trim()}
-          onClick={submit}
-          sx={{ alignSelf: "flex-end", ...TOUCH_TARGET_ON_PHONE }}
-        >
-          {isReply ? "Invia risposta" : "Salva nota"}
-        </Button>
-      </Box>
+          <TextField
+            label={isReply ? "Risposta" : "Nota"}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            size="small"
+            fullWidth
+            multiline
+            minRows={2}
+            maxRows={6}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
+          />
+          <Button
+            variant="outlined"
+            disabled={busy || !draft.trim()}
+            onClick={submit}
+            sx={{ alignSelf: "flex-end", ...TOUCH_TARGET_ON_PHONE }}
+          >
+            {isReply ? "Invia risposta" : "Salva nota"}
+          </Button>
+        </Box>
+      )}
       {ConfirmDialog}
     </Box>
   );

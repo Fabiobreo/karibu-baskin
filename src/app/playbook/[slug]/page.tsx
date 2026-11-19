@@ -4,6 +4,7 @@ import CategoryIcon from "@mui/icons-material/CategoryOutlined";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import TimerIcon from "@mui/icons-material/TimerOutlined";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import { getLocale, getTranslations } from "next-intl/server";
 import EntityHero, { HeroMeta } from "@/components/common/EntityHero";
 import MembersOnlyNotice from "@/components/common/MembersOnlyNotice";
@@ -79,7 +80,7 @@ export default async function PlaybookDrillPage({ params }: Props) {
     // Il controllo prima di qualunque Suspense: un 404 vero, non un soft 404.
     notFound();
   }
-  const { drill, preview, trainings } = page;
+  const { drill, preview, trainings, ideaOf } = page;
   const category = drillCategory(drill.kind);
   const breadcrumbRoot = {
     label: category === "exercises" ? t("tabExercises") : t("tabPlays"),
@@ -108,6 +109,9 @@ export default async function PlaybookDrillPage({ params }: Props) {
             <HeroMeta icon={<FormatListNumberedIcon />}>
               {t("steps", { n: drill.content.steps.length })}
             </HeroMeta>
+            {ideaOf && (
+              <HeroMeta icon={<LightbulbIcon />}>{t("proposal.ideaOf", { name: ideaOf })}</HeroMeta>
+            )}
           </>
         }
       />

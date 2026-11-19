@@ -133,6 +133,8 @@ describe("pagine del pannello", () => {
       "partite/page.tsx",
       "playbook/[id]/page.tsx",
       "playbook/page.tsx",
+      // Proposte dei tesserati (UX-73): il dirigente le legge, senza "Adotta".
+      "playbook/proposte/[id]/page.tsx",
       "squadre/[teamId]/rosa/page.tsx",
       "squadre/page.tsx",
       "utenti/page.tsx",

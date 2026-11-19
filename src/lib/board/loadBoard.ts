@@ -6,6 +6,7 @@ import { parseDrillContent } from "@/lib/schemas/drill";
 import type { DrillContent } from "./content";
 import { effectiveVisibility, kindsOf, type DrillCategory } from "./category";
 import { DRILL_PUBLIC_SELECT, PUBLIC_DRILL_WHERE, visibleDrillWhere } from "./drillAdmin";
+import { proposalAuthorLabel } from "./proposals";
 
 /**
  * Letture del Playbook per le pagine pubbliche (UX-72). Gli esercizi resi
@@ -102,6 +103,11 @@ export interface BoardDrillPage {
   preview: boolean;
   /** Ultimi allenamenti con questo in scaletta: solo per i tesserati. */
   trainings: { id: string; href: string; title: string; date: Date }[];
+  /**
+   * Nome di battesimo di chi l'ha proposto, per "Idea di …" (UX-73): solo ai
+   * tesserati, mai su un esercizio pubblico, mai per un minore.
+   */
+  ideaOf: string | null;
 }
 
 const RECENT_TRAININGS = 5;
@@ -122,6 +128,10 @@ export const loadBoardDrill = cache(
         status: true,
         archivedAt: true,
         proposedAt: true,
+        adoptedAt: true,
+        showAuthor: true,
+        // Solo per decidere "Idea di …": nome e data di nascita non escono da qui.
+        createdBy: { select: { name: true, birthDate: true } },
         trainings: {
           orderBy: { session: { date: "desc" } },
           take: RECENT_TRAININGS,
@@ -138,8 +148,14 @@ export const loadBoardDrill = cache(
     const allowed =
       (viewer === "staff" && !privateDraft) || (published && (member || drill.isPublic));
     if (!allowed) return null;
+    const isPublic = published && drill.isPublic;
     return {
-      drill: { ...drill, isPublic: published && drill.isPublic },
+      drill: { ...drill, isPublic },
+      ideaOf: proposalAuthorLabel(
+        { adoptedAt: row.adoptedAt, showAuthor: row.showAuthor, isPublic },
+        row.createdBy,
+        { member }
+      ),
       preview: !published,
       trainings: (member ? row.trainings : []).map(({ session: s }) => ({
         id: s.id,

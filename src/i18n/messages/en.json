@@ -1152,7 +1152,10 @@
     "availabilityLocked": "The squad has been picked: these answers stay. If something is wrong, write to the staff.",
     "availabilitySetByStaffLocked": "Marked by the staff.",
     "lockedYes": "You said yes",
-    "lockedNo": "You said no"
+    "lockedNo": "You said no",
+    "myProposals": "Your drill suggestions",
+    "myProposalsSigned": "Drill suggestions are signed: the staff sees your name.",
+    "myOtherSuggestions": "Other suggestions"
   },
   "guestOnboarding": {
     "heroGreeting": "Hi {name}, welcome!",
