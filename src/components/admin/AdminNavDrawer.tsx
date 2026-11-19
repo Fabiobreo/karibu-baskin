@@ -29,6 +29,8 @@ import DownloadIcon from "@mui/icons-material/Download";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import HistoryIcon from "@mui/icons-material/History";
+import GestureIcon from "@mui/icons-material/Gesture";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import type { ReactNode } from "react";
 import { ADMIN_NAV_GROUP_LABELS, type AdminNavGroup, type AdminNavItem } from "@/lib/adminNav";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
@@ -42,6 +44,7 @@ const ICONS: Record<string, ReactNode> = {
   "/admin/eventi": <CalendarMonthIcon />,
   "/admin/news": <ArticleIcon />,
   "/admin/gallery": <CollectionsIcon />,
+  "/admin/playbook": <GestureIcon />,
   "/admin/utenti": <PersonIcon />,
   "/admin/squadre": <GroupsIcon />,
   "/admin/gironi": <TableChartIcon />,
@@ -50,6 +53,7 @@ const ICONS: Record<string, ReactNode> = {
   "/admin/esporta": <DownloadIcon />,
   "/admin/suggerimenti": <LightbulbIcon />,
   "/admin/avvisi": <CampaignIcon />,
+  "/admin/giochi": <SportsEsportsIcon />,
   "/admin/audit": <HistoryIcon />,
 };
 

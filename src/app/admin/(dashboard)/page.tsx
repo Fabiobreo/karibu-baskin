@@ -18,6 +18,8 @@ import CollectionsIcon from "@mui/icons-material/Collections";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import InsightsIcon from "@mui/icons-material/Insights";
 import CampaignIcon from "@mui/icons-material/Campaign";
+import GestureIcon from "@mui/icons-material/Gesture";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import PageHeader from "@/components/common/PageHeader";
 import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
 import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
@@ -25,6 +27,7 @@ import Link from "next/link";
 import { onHover } from "@/lib/hoverStyles";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
 import { requireAdminPage } from "@/lib/adminAccess";
+import { hasRole } from "@/lib/authRoles";
 import { ATHLETE_ACCOUNT_WHERE } from "@/lib/athletes";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -33,7 +36,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 export const revalidate = 30;
 
 export default async function AdminPage() {
-  const { readOnly } = await requireAdminPage("/admin");
+  const { readOnly, role } = await requireAdminPage("/admin");
   if (readOnly) return <DirectorDashboard />;
 
   const now = new Date();
@@ -187,6 +190,7 @@ export default async function AdminPage() {
           <NavLink href="/admin/eventi" icon={<CalendarMonthIcon />} label="Eventi" />
           <NavLink href="/admin/news" icon={<ArticleIcon />} label="News" />
           <NavLink href="/admin/gallery" icon={<CollectionsIcon />} label="Gallery" />
+          <NavLink href="/admin/playbook" icon={<GestureIcon />} label="Playbook" />
         </NavSection>
 
         <NavSection title="Anagrafiche">
@@ -205,6 +209,9 @@ export default async function AdminPage() {
             badge={newSuggestionsCount}
           />
           <NavLink href="/admin/avvisi" icon={<CampaignIcon />} label="Avviso urgente" />
+          {hasRole(role, "ADMIN") && (
+            <NavLink href="/admin/giochi" icon={<SportsEsportsIcon />} label="Giochi" />
+          )}
           <NavLink href="/admin/audit" icon={<HistoryIcon />} label="Registro attività" />
         </NavSection>
       </Box>
@@ -293,6 +300,7 @@ async function DirectorDashboard() {
           <NavLink href="/admin/eventi" icon={<CalendarMonthIcon />} label="Eventi" />
           <NavLink href="/admin/news" icon={<ArticleIcon />} label="News" />
           <NavLink href="/admin/gallery" icon={<CollectionsIcon />} label="Gallery" />
+          <NavLink href="/admin/playbook" icon={<GestureIcon />} label="Playbook" />
         </NavSection>
 
         <NavSection title="Anagrafiche">
