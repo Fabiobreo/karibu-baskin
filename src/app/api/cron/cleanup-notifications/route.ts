@@ -3,13 +3,14 @@ import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { PUSH_STAT_RETENTION_MONTHS } from "@/lib/notifications/pushStats";
 import { SHARE_STAT_RETENTION_MONTHS } from "@/lib/metrics/shareStats";
+import { abandonedDraftsWhere } from "@/lib/board/proposals";
 import { saveWeeklyActivitySnapshot } from "@/lib/metrics/loadEngagementMetrics";
 
 // Vercel Cron — eseguito ogni domenica alle 03:00 UTC
 // Elimina notifiche più vecchie di 90 giorni già lette da tutti, i contatori
 // delle push oltre 13 mesi, e salva le famiglie attive della settimana (UX-55:
 // dalle sessioni si sa solo l'ultimo uso, quindi la settimana va fotografata
-// adesso). È il cron settimanale: niente cron nuovi, sono già 7.
+// adesso), e cancella le bozze di proposte di esercizi abbandonate (UX-73). È il cron settimanale: niente cron nuovi, sono già 7.
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization") ?? "";
@@ -61,6 +62,12 @@ export async function GET(req: NextRequest) {
     where: { day: { lt: shareCutoff } },
   });
 
+  // Proposte di esercizi (UX-73) mai inviate e ferme da 60 giorni. Il
+  // suggerimento non c'e' ancora: nasce all'invio.
+  const { count: deletedProposalDrafts } = await prisma.drill.deleteMany({
+    where: abandonedDraftsWhere(),
+  });
+
   // Una fotografia mancata non deve far fallire la pulizia.
   const weeklyActivity = await saveWeeklyActivitySnapshot().catch((err) => {
     console.error("[cron cleanup] weekly activity", err);
@@ -73,6 +80,7 @@ export async function GET(req: NextRequest) {
     deletedPushStats,
     deletedShareStats,
     deletedGameStats,
+    deletedProposalDrafts,
     weeklyActivity,
   });
 }

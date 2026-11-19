@@ -121,6 +121,7 @@ export const loadBoardDrill = cache(
         ...SELECT,
         status: true,
         archivedAt: true,
+        proposedAt: true,
         trainings: {
           orderBy: { session: { date: "desc" } },
           take: RECENT_TRAININGS,
@@ -132,7 +133,10 @@ export const loadBoardDrill = cache(
     const published = row.status === "PUBLISHED" && !row.archivedAt;
     const drill = toPublic(row);
     if (!drill) return null;
-    const allowed = viewer === "staff" || (published && (member || drill.isPublic));
+    // La bozza di una proposta non ancora inviata (UX-73) e' solo dell'autore.
+    const privateDraft = row.status === "PROPOSED" && !row.proposedAt;
+    const allowed =
+      (viewer === "staff" && !privateDraft) || (published && (member || drill.isPublic));
     if (!allowed) return null;
     return {
       drill: { ...drill, isPublic: published && drill.isPublic },

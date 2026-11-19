@@ -28,7 +28,12 @@ export async function GET(req: NextRequest) {
   const all = !!role && hasRole(role, "COACH") && req.nextUrl.searchParams.get("status") === "all";
 
   const drills = all
-    ? await prisma.drill.findMany({ orderBy: { updatedAt: "desc" }, select: DRILL_ADMIN_SELECT })
+    ? await prisma.drill.findMany({
+        // Le proposte dei tesserati (UX-73) hanno la loro scheda.
+        where: { status: { not: "PROPOSED" } },
+        orderBy: { updatedAt: "desc" },
+        select: DRILL_ADMIN_SELECT,
+      })
     : await prisma.drill.findMany({
         where: visibleDrillWhere(isMemberRole(role)),
         orderBy: { publishedAt: "desc" },

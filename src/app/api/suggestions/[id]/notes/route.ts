@@ -4,6 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { inBackground } from "@/lib/background";
 import { deliverNotices } from "@/lib/notifications/matchNotify";
+import { adminProposalPath } from "@/lib/board/proposals";
 import { noteNotices } from "@/lib/suggestions/suggestionNotify";
 import { SuggestionNoteCreateSchema } from "@/lib/schemas/suggestion";
 
@@ -29,7 +30,13 @@ export async function POST(req: Request, { params }: Params) {
   try {
     const suggestion = await prisma.suggestion.findUnique({
       where: { id },
-      select: { id: true, userId: true, status: true, notes: { select: { authorId: true } } },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        notes: { select: { authorId: true } },
+        drill: { select: { id: true } },
+      },
     });
     if (!suggestion) {
       return NextResponse.json({ error: "Suggerimento non trovato" }, { status: 404 });
@@ -72,6 +79,7 @@ export async function POST(req: Request, { params }: Params) {
           previousNoteAuthorIds: suggestion.notes.map((n) => n.authorId),
           body: parsed.data.body,
           isReply,
+          ...(suggestion.drill ? { adminUrl: adminProposalPath(suggestion.drill.id) } : {}),
         }),
         "suggestion note"
       ),

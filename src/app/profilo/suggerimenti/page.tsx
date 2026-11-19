@@ -27,6 +27,7 @@ const CATEGORY_KEYS = {
   ALLENAMENTI: "catTrainings",
   PARTITE_EVENTI: "catMatches",
   ALTRO: "catOther",
+  ESERCIZIO: "catExercise",
 } as const;
 
 export default async function MieiSuggerimentiPage() {

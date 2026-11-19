@@ -34,6 +34,8 @@ export const DRILL_ADMIN_SELECT = {
   ...DRILL_PUBLIC_SELECT,
   status: true,
   archivedAt: true,
+  proposedAt: true,
+  adoptedAt: true,
   createdAt: true,
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
@@ -112,7 +114,8 @@ export function toAdminDrillRow(d: AdminDrillRecord) {
     durationMin: d.durationMin,
     competitiveTeamId: d.competitiveTeamId,
     visibility: d.visibility,
-    status: d.status,
+    // Le proposte (UX-73) non arrivano qui: hanno la loro scheda.
+    status: d.status === "PUBLISHED" ? ("PUBLISHED" as const) : ("DRAFT" as const),
     archived: d.archivedAt !== null,
     usedIn: d._count.trainings,
     updatedAt: d.updatedAt.toISOString(),

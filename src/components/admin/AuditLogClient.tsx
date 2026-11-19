@@ -139,6 +139,8 @@ const ACTION_LABELS: Record<string, string> = {
   ARCHIVE_DRILL: "Playbook: archiviato",
   DELETE_DRILL: "Playbook: eliminato",
   SET_TRAINING_DRILLS: "Scaletta di un allenamento",
+  ADOPT_DRILL: "Playbook: proposta di un tesserato adottata",
+  DECLINE_DRILL_PROPOSAL: "Playbook: proposta messa da parte",
 };
 
 /**

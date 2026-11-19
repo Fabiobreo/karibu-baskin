@@ -10,7 +10,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminPlaybookPage() {
   const { readOnly } = await requireAdminPage("/admin/playbook");
   const [drills, teams] = await Promise.all([
-    prisma.drill.findMany({ orderBy: { updatedAt: "desc" }, select: DRILL_ADMIN_SELECT }),
+    prisma.drill.findMany({
+      where: { status: { not: "PROPOSED" } },
+      orderBy: { updatedAt: "desc" },
+      select: DRILL_ADMIN_SELECT,
+    }),
     loadDrillTeamOptions(),
   ]);
   return (

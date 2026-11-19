@@ -9,6 +9,7 @@ import { staffUserIds } from "@/lib/notifications/recipients";
 import { deliverNotices } from "@/lib/notifications/matchNotify";
 import {
   ADMIN_SUGGESTION_SELECT,
+  GENERAL_SUGGESTIONS_WHERE,
   sortByActivity,
   toAdminSuggestion,
 } from "@/lib/suggestions/adminSuggestion";
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
   const statusParam = req.nextUrl.searchParams.get("status");
   const status = SUGGESTION_STATUSES.find((s) => s === statusParam);
   const items = await prisma.suggestion.findMany({
-    where: status ? { status } : undefined,
+    where: { ...GENERAL_SUGGESTIONS_WHERE, ...(status ? { status } : {}) },
     orderBy: { createdAt: "desc" },
     select: ADMIN_SUGGESTION_SELECT,
   });

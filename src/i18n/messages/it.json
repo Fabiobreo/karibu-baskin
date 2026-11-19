@@ -196,7 +196,8 @@
     "yourSuggestion": "Il tuo suggerimento",
     "submit": "Invia suggerimento",
     "sendError": "Suggerimento non inviato. Riprova.",
-    "seeMine": "I miei suggerimenti"
+    "seeMine": "I miei suggerimenti",
+    "catExercise": "Proposta di esercizio"
   },
   "childLinker": {
     "noChildren": "Nessun figlio aggiunto.",

@@ -1328,6 +1328,8 @@ enum SuggestionCategory {
   ALLENAMENTI
   PARTITE_EVENTI // partite ed eventi
   ALTRO
+  // Proposta di esercizio dal Playbook (UX-73): l'unica categoria firmata.
+  ESERCIZIO
 }
 
 enum SuggestionStatus {
@@ -1346,6 +1348,8 @@ model Suggestion {
   userId    String? // autore — MAI esposto in UI
   user      User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   notes     SuggestionNote[]
+  // Proposta di esercizio collegata (categoria ESERCIZIO, UX-73).
+  drill     Drill?
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
@@ -1396,15 +1400,25 @@ model Drill {
   publishedAt       DateTime?
   createdById       String?
   updatedById       String?
+  // Proposta di un tesserato (UX-73): `createdById` e' l'autore, il filo con
+  // lo staff e' il suggerimento collegato. `proposedAt` = inviata allo staff,
+  // `adoptedAt` = presa dallo staff (da li' e' un esercizio dello staff).
+  suggestionId      String?         @unique
+  proposedAt        DateTime?
+  adoptedAt         DateTime?
+  // "Idea di <nome>" sull'esercizio pubblicato: l'autore la puo' spegnere.
+  showAuthor        Boolean         @default(true)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   competitiveTeam CompetitiveTeam? @relation(fields: [competitiveTeamId], references: [id], onDelete: SetNull)
   createdBy       User?            @relation("DrillCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy       User?            @relation("DrillUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  suggestion      Suggestion?      @relation(fields: [suggestionId], references: [id], onDelete: SetNull)
   trainings       TrainingDrill[]
 
   @@index([status, archivedAt])
+  @@index([createdById, status])
   @@index([competitiveTeamId])
 }
 
@@ -1443,6 +1457,9 @@ enum DrillCourt {
 enum DrillStatus {
   DRAFT
   PUBLISHED
+  // Proposta di un tesserato (UX-73): bozza dell'autore finche' `proposedAt`
+  // e' nullo, poi inviata. Non entra mai in libreria, sitemap o scaletta.
+  PROPOSED
 }
 
 enum DrillVisibility {

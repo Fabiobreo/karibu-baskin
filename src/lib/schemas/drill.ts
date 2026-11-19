@@ -261,3 +261,36 @@ export const TrainingDrillsSchema = z
   .refine((list) => new Set(list.map((d) => d.drillId)).size === list.length, {
     message: "Lo stesso schema due volte",
   });
+
+// ── Proposte dei tesserati (UX-73) ──────────────────────────────────────────
+
+/** Solo esercizi: gli schemi da partita restano dello staff. */
+export const PROPOSAL_KINDS = ["WARMUP", "EXERCISE"] as const;
+
+const proposalKind = z
+  .enum(DRILL_KINDS)
+  .refine((k) => (PROPOSAL_KINDS as readonly string[]).includes(k), {
+    message: "Si propongono solo esercizi: gli schemi da partita li disegna lo staff",
+  });
+
+/** Nuova proposta: titolo, tipo, campo, e se si vuole gia' la descrizione. */
+export const ProposalCreateSchema = z.object({
+  title,
+  kind: proposalKind,
+  court: z.enum(DRILL_COURTS, { message: "Scegli il campo" }),
+  description: optionalText(MAX_DESCRIPTION),
+  showAuthor: z.boolean().optional(),
+});
+
+/** Modifica dell'autore: niente squadra, durata, visibilita' o stato. */
+export const ProposalUpdateSchema = z.object({
+  title: title.optional(),
+  kind: proposalKind.optional(),
+  court: z.enum(DRILL_COURTS).optional(),
+  description: clearable(
+    z.string().trim().max(MAX_DESCRIPTION, `Al massimo ${MAX_DESCRIPTION} caratteri`),
+    (v) => v === ""
+  ),
+  showAuthor: z.boolean().optional(),
+  content: z.unknown().optional(),
+});

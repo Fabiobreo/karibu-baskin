@@ -54,6 +54,8 @@ const ROUTES: Record<string, Access> = {
   // ai tesserati anche gli schemi, le bozze a chi entra nel pannello.
   drills: "public",
   "drills/[id]": "public",
+  // Proposte di esercizi (UX-73): solo le proprie, e solo ai tesserati.
+  "drills/proposals": "self",
   events: "public",
   "events/[eventId]/attendance": "public",
   "events/[eventId]/options": "public",

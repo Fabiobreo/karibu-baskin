@@ -73,7 +73,9 @@ export type AuditAction =
   | "UNPUBLISH_DRILL"
   | "ARCHIVE_DRILL"
   | "DELETE_DRILL"
-  | "SET_TRAINING_DRILLS";
+  | "SET_TRAINING_DRILLS"
+  | "ADOPT_DRILL"
+  | "DECLINE_DRILL_PROPOSAL";
 
 interface LogAuditInput {
   actorId: string;

@@ -13,8 +13,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
 
   try {
-    const source = await prisma.drill.findUnique({
-      where: { id },
+    // Le proposte dei tesserati (UX-73) si adottano, non si copiano.
+    const source = await prisma.drill.findFirst({
+      where: { id, status: { not: "PROPOSED" } },
       select: {
         title: true,
         kind: true,

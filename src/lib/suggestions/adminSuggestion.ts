@@ -25,6 +25,14 @@ export const ADMIN_SUGGESTION_SELECT = {
   },
 } as const satisfies Prisma.SuggestionSelect;
 
+/**
+ * I suggerimenti della pagina Suggerimenti: tutti tranne le proposte di
+ * esercizi (UX-73), che si leggono, firmate, nella scheda Proposte del Playbook.
+ */
+export const GENERAL_SUGGESTIONS_WHERE = {
+  category: { not: "ESERCIZIO" },
+} as const satisfies Prisma.SuggestionWhereInput;
+
 type Row = Prisma.SuggestionGetPayload<{ select: typeof ADMIN_SUGGESTION_SELECT }>;
 
 export interface AdminSuggestionNote {

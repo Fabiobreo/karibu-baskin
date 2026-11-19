@@ -5,6 +5,7 @@ import AdminSuggerimentiClient from "@/components/admin/AdminSuggerimentiClient"
 import PageHeader from "@/components/common/PageHeader";
 import {
   ADMIN_SUGGESTION_SELECT,
+  GENERAL_SUGGESTIONS_WHERE,
   sortByActivity,
   toAdminSuggestion,
 } from "@/lib/suggestions/adminSuggestion";
@@ -18,6 +19,7 @@ export default async function AdminSuggerimentiPage() {
   // `toAdminSuggestion` toglie `userId`: i suggerimenti sono anonimi verso lo
   // staff. L'autore delle note (staff) invece è visibile.
   const rows = await prisma.suggestion.findMany({
+    where: GENERAL_SUGGESTIONS_WHERE,
     orderBy: { createdAt: "desc" },
     select: ADMIN_SUGGESTION_SELECT,
   });

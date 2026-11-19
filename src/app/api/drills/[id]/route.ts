@@ -6,7 +6,10 @@ import { staffActor } from "@/lib/apiAuth";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { DrillUpdateSchema, drillContentSchema } from "@/lib/schemas/drill";
+import { inBackground } from "@/lib/background";
+import { deliverNotices } from "@/lib/notifications/matchNotify";
 import { canBePublic } from "@/lib/board/category";
+import { proposalPublishedNotice } from "@/lib/board/proposalNotify";
 import {
   DRILL_ADMIN_SELECT,
   DRILL_PUBLIC_SELECT,
@@ -30,7 +33,11 @@ export async function GET(req: NextRequest, { params }: Ctx) {
   const session = await auth();
   const role = session?.user?.appRole as AppRole | undefined;
   if (canViewAdminPanel(role)) {
-    const drill = await prisma.drill.findUnique({ where: { id }, select: DRILL_ADMIN_SELECT });
+    // La bozza di una proposta non ancora inviata e' solo dell'autore (UX-73).
+    const drill = await prisma.drill.findFirst({
+      where: { id, NOT: { status: "PROPOSED", proposedAt: null } },
+      select: DRILL_ADMIN_SELECT,
+    });
     return drill ? NextResponse.json(drill) : notFound();
   }
   const drill = await prisma.drill.findFirst({
@@ -70,9 +77,18 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
         content: true,
         archivedAt: true,
         publishedAt: true,
+        adoptedAt: true,
+        createdById: true,
       },
     });
     if (!existing) return notFound();
+    // Una proposta di un tesserato (UX-73) si adotta prima di cambiarla.
+    if (existing.status === "PROPOSED") {
+      return NextResponse.json(
+        { error: "È una proposta: adottala prima di modificarla" },
+        { status: 409 }
+      );
+    }
     if (existing.archivedAt) {
       return NextResponse.json({ error: "Lo schema è archiviato" }, { status: 409 });
     }
@@ -118,6 +134,19 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       },
       select: DRILL_ADMIN_SELECT,
     });
+
+    // Prima pubblicazione di un esercizio proposto da un tesserato: glielo diciamo.
+    if (status === "PUBLISHED" && !existing.publishedAt && existing.adoptedAt) {
+      const notice = proposalPublishedNotice({
+        authorId: existing.createdById,
+        actorId: who.actorId,
+        title: drill.title,
+        slug: drill.slug,
+      });
+      if (notice) {
+        inBackground(deliverNotices([notice], "drill published"), "notification drill published");
+      }
+    }
 
     const statusChanged = status !== existing.status;
     auditDrill({
@@ -166,9 +195,45 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
   try {
     const existing = await prisma.drill.findUnique({
       where: { id },
-      select: { title: true, archivedAt: true, _count: { select: { trainings: true } } },
+      select: {
+        title: true,
+        status: true,
+        proposedAt: true,
+        archivedAt: true,
+        suggestionId: true,
+        _count: { select: { trainings: true } },
+      },
     });
     if (!existing) return notFound();
+
+    // Una proposta (UX-73) non si cancella: e' il lavoro dell'autore, che la
+    // puo' rileggere. Lo staff la mette da parte ("Non adesso").
+    if (existing.status === "PROPOSED") {
+      if (!existing.proposedAt) return notFound();
+      if (!existing.archivedAt) {
+        await prisma.$transaction([
+          prisma.drill.update({
+            where: { id },
+            data: { archivedAt: new Date(), updatedById: who.actorId },
+          }),
+          ...(existing.suggestionId
+            ? [
+                prisma.suggestion.update({
+                  where: { id: existing.suggestionId },
+                  data: { status: "ARCHIVIATO" },
+                }),
+              ]
+            : []),
+        ]);
+        auditDrill({
+          actorId: who.actorId,
+          action: "DECLINE_DRILL_PROPOSAL",
+          targetId: id,
+          before: { title: existing.title },
+        });
+      }
+      return NextResponse.json({ archived: true });
+    }
 
     if (existing._count.trainings > 0) {
       if (!existing.archivedAt) {

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Alert, Box, Typography } from "@mui/material";
 import PageHeader from "@/components/common/PageHeader";
 import DrillPlayer from "@/components/board/DrillPlayer";
@@ -7,6 +7,7 @@ import { requireAdminPage } from "@/lib/adminAccess";
 import { prisma } from "@/lib/db";
 import { DRILL_ADMIN_SELECT, loadDrillTeamOptions, toAdminDrillRow } from "@/lib/board/drillAdmin";
 import { DRILL_COURT_LABELS, DRILL_KIND_LABELS } from "@/lib/board/labels";
+import { adminProposalPath } from "@/lib/board/proposals";
 import { EMPTY_DRILL_CONTENT, parseDrillContent } from "@/lib/schemas/drill";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,12 @@ export default async function AdminDrillPage({ params }: { params: Promise<{ id:
     loadDrillTeamOptions(),
   ]);
   if (!drill) notFound();
+  // Una proposta di un tesserato (UX-73) si guarda dalla sua pagina; la bozza
+  // non ancora inviata e' solo dell'autore.
+  if (drill.status === "PROPOSED") {
+    if (!drill.proposedAt) notFound();
+    redirect(adminProposalPath(drill.id));
+  }
 
   const row = toAdminDrillRow(drill);
   const content = parseDrillContent(drill.content, drill.court) ?? EMPTY_DRILL_CONTENT;

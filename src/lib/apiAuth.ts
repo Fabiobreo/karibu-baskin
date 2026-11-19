@@ -97,3 +97,21 @@ export async function adminActor(): Promise<{ actorId: string } | { error: NextR
   }
   return { actorId: session.user.id };
 }
+
+/**
+ * Guardia per le scritture dei tesserati (proposte di esercizi, UX-73): id e
+ * nome di chi agisce, oppure la risposta da restituire (401 senza sessione,
+ * 403 a un ospite).
+ */
+export async function memberActor(): Promise<
+  { actorId: string; name: string | null } | { error: NextResponse }
+> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: NextResponse.json({ error: "Non autenticato" }, { status: 401 }) };
+  }
+  if (!isMemberRole(session.user.appRole)) {
+    return { error: NextResponse.json({ error: "Non autorizzato" }, { status: 403 }) };
+  }
+  return { actorId: session.user.id, name: session.user.name ?? null };
+}

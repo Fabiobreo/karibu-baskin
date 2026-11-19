@@ -12,6 +12,7 @@ export const SUGGESTION_CATEGORY_LABELS: Record<SuggestionCategory, string> = {
   ALLENAMENTI: "Allenamenti",
   PARTITE_EVENTI: "Partite ed eventi",
   ALTRO: "Altro",
+  ESERCIZIO: "Proposta di esercizio",
 };
 
 /** Testo su una riga sola, tagliato sulla parola con "…" se supera `max`. */
@@ -58,6 +59,8 @@ export interface NoteNoticesInput {
   previousNoteAuthorIds: string[];
   body: string;
   isReply: boolean;
+  /** Pagina dello staff, se non e' la pagina Suggerimenti (proposte di esercizi, UX-73). */
+  adminUrl?: string;
 }
 
 export function noteNotices(input: NoteNoticesInput): OutgoingNotice[] {
@@ -76,7 +79,7 @@ export function noteNotices(input: NoteNoticesInput): OutgoingNotice[] {
         ? "Risposta inviata all'autore di un suggerimento"
         : "Nuova nota su un suggerimento",
       body: `${firstName(input.writerName) ?? "Lo staff"}: ${excerpt(input.body)}`,
-      url: adminSuggestionUrl(input.suggestionId),
+      url: input.adminUrl ?? adminSuggestionUrl(input.suggestionId),
     });
   }
 

@@ -8,6 +8,7 @@ vi.mock("@/lib/db", () => ({
     pushDailyStat: { deleteMany: vi.fn() },
     shareVisitStat: { deleteMany: vi.fn() },
     gameDailyStat: { deleteMany: vi.fn() },
+    drill: { deleteMany: vi.fn() },
   },
 }));
 
@@ -25,6 +26,7 @@ type PrismaMock = {
   pushDailyStat: { deleteMany: Mock };
   shareVisitStat: { deleteMany: Mock };
   gameDailyStat: { deleteMany: Mock };
+  drill: { deleteMany: Mock };
 };
 const snapshot = saveWeeklyActivitySnapshot as unknown as Mock;
 const p = prisma as unknown as PrismaMock;
@@ -47,6 +49,7 @@ describe("GET /api/cron/cleanup-notifications", () => {
     p.pushDailyStat.deleteMany.mockResolvedValue({ count: 0 });
     p.shareVisitStat.deleteMany.mockResolvedValue({ count: 0 });
     p.gameDailyStat.deleteMany.mockResolvedValue({ count: 0 });
+    p.drill.deleteMany.mockResolvedValue({ count: 0 });
     snapshot.mockResolvedValue({ families: 10, activeFamilies: 6, activeUsers: 8 });
   });
 
@@ -148,5 +151,18 @@ describe("GET /api/cron/cleanup-notifications", () => {
     );
     expect(res.status).toBe(200);
     expect((await res.json()).weeklyActivity).toBeNull();
+  });
+
+  it("cancella le bozze di proposte mai inviate da 60 giorni (UX-73)", async () => {
+    p.drill.deleteMany.mockResolvedValue({ count: 2 });
+    const res = await GET(
+      makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]
+    );
+    const json = await res.json();
+    expect(json.deletedProposalDrafts).toBe(2);
+    const where = p.drill.deleteMany.mock.calls[0][0].where;
+    expect(where).toMatchObject({ status: "PROPOSED", proposedAt: null, adoptedAt: null });
+    const days = (Date.now() - where.updatedAt.lt.getTime()) / 86_400_000;
+    expect(Math.round(days)).toBe(60);
   });
 });
