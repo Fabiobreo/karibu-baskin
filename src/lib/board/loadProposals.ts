@@ -99,6 +99,27 @@ export const ADMIN_PROPOSALS_WHERE = {
   proposedAt: { not: null },
 } satisfies Prisma.DrillWhereInput;
 
+/**
+ * Proposte nuove: inviate, non messe da parte, e che nessuno dello staff ha
+ * ancora aperto o commentato (il suggerimento collegato e' ancora `NUOVO`).
+ * E' il numero sulla scheda Proposte (e, per la dashboard, `countNewProposals`).
+ */
+export const NEW_PROPOSALS_WHERE = {
+  ...ADMIN_PROPOSALS_WHERE,
+  archivedAt: null,
+  suggestion: { status: "NUOVO" },
+} satisfies Prisma.DrillWhereInput;
+
+export const countNewProposals = () => prisma.drill.count({ where: NEW_PROPOSALS_WHERE });
+
+/** Lo staff ha aperto la proposta: non e' piu' nuova. */
+export async function markProposalSeen(suggestionId: string) {
+  await prisma.suggestion.updateMany({
+    where: { id: suggestionId, status: "NUOVO" },
+    data: { status: "LETTO" },
+  });
+}
+
 const ADMIN_PROPOSAL_SELECT = {
   ...PROPOSAL_SELECT,
   createdBy: { select: { name: true } },

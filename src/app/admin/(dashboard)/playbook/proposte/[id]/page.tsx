@@ -3,7 +3,7 @@ import AdminProposalClient from "@/components/admin/board/AdminProposalClient";
 import { requireAdminPage } from "@/lib/adminAccess";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import { loadAdminProposal } from "@/lib/board/loadProposals";
+import { loadAdminProposal, markProposalSeen } from "@/lib/board/loadProposals";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,12 @@ export default async function AdminProposalPage({ params }: { params: Promise<{ 
     });
     if (adopted) redirect(`/admin/playbook/${id}`);
     notFound();
+  }
+  // Aperta da un allenatore o da un admin: non e' piu' "nuova" (il dirigente
+  // legge soltanto e non la toglie dal numero dello staff).
+  if (!readOnly && proposal.suggestion?.status === "NUOVO") {
+    await markProposalSeen(proposal.suggestion.id);
+    proposal.suggestion = { ...proposal.suggestion, status: "LETTO" };
   }
   return (
     <AdminProposalClient
