@@ -85,7 +85,7 @@ const PIXEL_PNG = Buffer.from(
 
 async function resolveTargets(prisma) {
   const now = new Date();
-  const [upcoming, lastTraining, pastTraining, match, admin, athlete] = await Promise.all([
+  const [upcoming, lastTraining, pastTraining, match, admin, athlete, drill] = await Promise.all([
     prisma.trainingSession.findFirst({
       where: { date: { gte: now } },
       orderBy: { date: "asc" },
@@ -130,6 +130,12 @@ async function resolveTargets(prisma) {
           orderBy: { createdAt: "asc" },
           select: { email: true },
         }),
+    // Lavagna (UX-72): il primo schema pubblicato, se c'e'.
+    prisma.drill.findFirst({
+      where: { status: "PUBLISHED", archivedAt: null },
+      orderBy: { publishedAt: "asc" },
+      select: { id: true, slug: true },
+    }),
   ]);
   const training = upcoming ?? lastTraining;
   return {
@@ -139,6 +145,8 @@ async function resolveTargets(prisma) {
     matchStats: match ? `/admin/partite/${match.id}/statistiche` : null,
     adminEmail: admin?.email ?? null,
     athleteEmail: athlete?.email ?? null,
+    drill: drill ? `/lavagna/${drill.slug}` : null,
+    drillEditor: drill ? `/admin/lavagna/${drill.id}` : null,
   };
 }
 
@@ -330,6 +338,8 @@ async function main() {
         ["guida", "/guida"],
         // Giochi (UX-61): il quiz spento lo vede solo lo staff (profilo admin, UX-66).
         ["giochi", "/giochi"],
+        // Lavagna (UX-72): all'anonimo solo l'avviso, nessuno schema.
+        ["lavagna", "/lavagna"],
         ["contatti", "/contatti"],
         ["login", "/login"],
         ["eventi", "/eventi"],
@@ -346,6 +356,8 @@ async function main() {
         ["notifiche", "/notifiche"],
         // Sfida fra le nostre squadre (UX-66): solo tesserati.
         ["sfida", "/giochi/sfida"],
+        ["lavagna", "/lavagna"],
+        ["schema", targets.drill],
       ],
     },
     {
@@ -362,6 +374,8 @@ async function main() {
         ["quiz-pannello", "/admin/giochi/quiz"],
         ["quiz-domande", "/admin/giochi/quiz/baskin"],
         ["giochi", "/admin/giochi"],
+        ["lavagna", "/admin/lavagna"],
+        ["lavagna-editor", targets.drillEditor],
       ],
     },
   ].filter((p) => !ONLY || ONLY.includes(p.name));

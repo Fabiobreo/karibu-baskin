@@ -23,6 +23,7 @@ import CelebrationIcon from "@mui/icons-material/Celebration";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import ExtensionIcon from "@mui/icons-material/Extension";
+import GestureIcon from "@mui/icons-material/Gesture";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -44,6 +45,7 @@ const ICONS: Record<GuideIcon, React.ReactNode> = {
   calendar: <CalendarMonthIcon />,
   news: <NewspaperIcon />,
   games: <ExtensionIcon />,
+  board: <GestureIcon />,
   profile: <AccountCircleIcon />,
   privacy: <VisibilityIcon />,
   help: <HelpOutlineIcon />,

@@ -93,6 +93,8 @@ const IL_BASKIN_HREFS: IlBaskinLink[] = [
 
 // Giochi (UX-61): in menu se chi guarda ne può giocare almeno uno (UX-66).
 const GAMES_LINK: IlBaskinLink = { key: "games", href: "/giochi" };
+// Lavagna (UX-72): schemi ed esercizi, solo per tesserati e staff.
+const BOARD_LINK: IlBaskinLink = { key: "board", href: "/lavagna" };
 
 const CONTATTI_HREFS = [
   { key: "contacts" as const, href: "/contatti" },
@@ -131,9 +133,11 @@ interface SiteHeaderProps {
   currentSeason: string;
   /** Voce "Giochi": c'è se chi guarda ne può giocare almeno uno (UX-66), dal layout. */
   showGames: boolean;
+  /** Voce "Lavagna": solo tesserati e staff (UX-72), dal layout. */
+  showBoard: boolean;
 }
 
-export default function SiteHeader({ currentSeason, showGames }: SiteHeaderProps) {
+export default function SiteHeader({ currentSeason, showGames, showBoard }: SiteHeaderProps) {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const { showToast } = useToast();
@@ -167,7 +171,11 @@ export default function SiteHeader({ currentSeason, showGames }: SiteHeaderProps
   // Nessun gate sul mount: usePathname e gia risolto durante il render sul
   // server, cosi la voce attiva e evidenziata gia al primo frame.
   const pathname = usePathname();
-  const ilBaskinLinks = showGames ? [...IL_BASKIN_HREFS, GAMES_LINK] : IL_BASKIN_HREFS;
+  const ilBaskinLinks = [
+    ...IL_BASKIN_HREFS,
+    ...(showGames ? [GAMES_LINK] : []),
+    ...(showBoard ? [BOARD_LINK] : []),
+  ];
   const partiteActive =
     pathname === "/risultati" ||
     pathname === "/classifiche" ||
@@ -178,7 +186,8 @@ export default function SiteHeader({ currentSeason, showGames }: SiteHeaderProps
   const ilBaskinActive =
     pathname === "/il-baskin" ||
     pathname === "/gallery" ||
-    (pathname?.startsWith("/giochi") ?? false);
+    (pathname?.startsWith("/giochi") ?? false) ||
+    (pathname?.startsWith("/lavagna") ?? false);
   const contattiActive = CONTATTI_HREFS.some((l) => l.href === pathname);
 
   // Squadre della stagione corrente per i link dinamici del dropdown

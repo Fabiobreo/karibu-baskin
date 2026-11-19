@@ -20,6 +20,7 @@ export type GuideIcon =
   | "calendar"
   | "news"
   | "games"
+  | "board"
   | "profile"
   | "privacy"
   | "help";
@@ -280,6 +281,20 @@ const GUIDE_IT: Guide = {
             "Nella sfida scegli due formazioni con i giocatori delle nostre squadre e guardi come potrebbe andare. È solo per chi è tesserato.",
           ],
           links: [{ href: "/giochi", label: "Vai ai giochi" }],
+        },
+        {
+          id: "lavagna",
+          icon: "board",
+          title: "La lavagna",
+          steps: [
+            "Nella «Lavagna» lo staff mette gli schemi e gli esercizi che facciamo. La trovi nel menu «Il Baskin». La vedono atleti, famiglie e staff del Karibu.",
+            "Ogni schema è un campo visto dall'alto. Le pedine piene attaccano, quelle contornate difendono. Il numero è il ruolo.",
+            "Tocca «Avvia»: i giocatori si muovono un passo alla volta. Sopra il campo leggi cosa succede in quel passo.",
+            "Con le frecce vai avanti e indietro di un passo. «Lenta» rallenta il movimento.",
+            "Le frecce sul campo dicono cosa succede: linea piena è un movimento, tratteggiata un passaggio, ondulata un palleggio.",
+            "Sul telefono, se c'è il bottone «Tutto schermo», toccalo e gira il telefono: lo schema si vede più grande. Sull'iPhone il bottone non c'è: gira il telefono e basta.",
+          ],
+          links: [{ href: "/lavagna", label: "Apri la lavagna" }],
         },
         {
           id: "profilo",
@@ -560,6 +575,20 @@ const GUIDE_EN: Guide = {
             "In the challenge you pick two line-ups with the players of our teams and see how it might go. It is only for Karibu members.",
           ],
           links: [{ href: "/giochi", label: "Go to games" }],
+        },
+        {
+          id: "lavagna",
+          icon: "board",
+          title: "The board",
+          steps: [
+            'On the "Board" the staff puts the plays and drills we do. You find it in the "Baskin" menu. Karibu athletes, families and staff can see it.',
+            "Each play is a court seen from above. Filled pieces attack, outlined pieces defend. The number is the role.",
+            'Tap "Play": the players move one step at a time. Above the court you read what happens in that step.',
+            'With the arrows you go one step forward or back. "Slow" slows the movement down.',
+            "The arrows on the court say what happens: a solid line is a movement, a dashed one a pass, a wavy one a dribble.",
+            'On the phone, if there is a "Full screen" button, tap it and turn the phone: the play gets bigger. On the iPhone there is no button: just turn the phone.',
+          ],
+          links: [{ href: "/lavagna", label: "Open the board" }],
         },
         {
           id: "profilo",

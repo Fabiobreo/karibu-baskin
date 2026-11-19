@@ -308,6 +308,7 @@
     "events": "Eventi",
     "gallery": "Gallery",
     "games": "Giochi",
+    "board": "Lavagna",
     "contacts": "Contatti",
     "faq": "FAQ",
     "guide": "Guida all'app",
@@ -1982,7 +1983,8 @@
       "callups": "i convocati",
       "albums": "gli altri album",
       "photos": "le foto di questo album",
-      "photosShort": "le foto"
+      "photosShort": "le foto",
+      "board": "gli schemi della lavagna"
     }
   },
   "albumStrip": {
@@ -2095,5 +2097,68 @@
       "listTitle": "Le tue stagioni",
       "listItem": "Stagione {season}"
     }
+  },
+  "board": {
+    "play": "Avvia",
+    "pause": "Pausa",
+    "restart": "Ricomincia",
+    "prev": "Passo indietro",
+    "next": "Passo avanti",
+    "stepOf": "Passo {current} di {total}",
+    "stepN": "Passo {n}",
+    "speed": "Velocità",
+    "slow": "Lenta",
+    "normal": "Normale",
+    "loop": "Ripeti",
+    "fullscreen": "Tutto schermo",
+    "exitFullscreen": "Esci dal tutto schermo",
+    "rotate": "Gira il telefono per vederla più grande",
+    "allSteps": "Tutti i passi",
+    "legend": "Come si legge",
+    "legendAttack": "Pedina piena: attacca",
+    "legendDefense": "Pedina contornata: difende",
+    "legendMove": "Movimento",
+    "legendPass": "Passaggio",
+    "legendDribble": "Palleggio",
+    "legendShot": "Tiro",
+    "legendScreen": "Blocco",
+    "noText": "Nessuna spiegazione per questo passo",
+    "title": "Lavagna",
+    "subtitle": "Schemi ed esercizi del Karibu, da guardare e ripassare",
+    "search": "Cerca uno schema",
+    "filterKind": "Tipo",
+    "filterCourt": "Campo",
+    "filterTeam": "Squadra",
+    "all": "Tutti",
+    "allTeams": "Tutte",
+    "empty": "Lo staff non ha ancora pubblicato schemi.",
+    "emptyFiltered": "Nessuno schema con questi filtri.",
+    "steps": "{n, plural, one {# passo} other {# passi}}",
+    "minutes": "{n} min",
+    "preview": "Anteprima",
+    "manage": "Gestisci",
+    "usedIn": "Negli allenamenti",
+    "usedInText": "Lo abbiamo fatto in questi allenamenti:",
+    "courtAlt": "Primo passo di {title}",
+    "kinds": {
+      "ATTACK": "Attacco",
+      "DEFENSE": "Difesa",
+      "TRANSITION": "Transizione",
+      "SET_PLAY": "Rimessa o palla ferma",
+      "EXERCISE": "Esercizio",
+      "WARMUP": "Riscaldamento"
+    },
+    "courts": {
+      "FULL": "Campo intero",
+      "HALF": "Metà campo"
+    },
+    "trainingTitle": "Cosa facciamo oggi",
+    "trainingTitlePast": "Cosa abbiamo fatto",
+    "withTeam": "Con la squadra",
+    "onlyRoles": "Solo ruoli",
+    "noTeamsYet": "I nomi arrivano quando lo staff fa le squadre.",
+    "you": "{name} · Tu",
+    "openOnBoard": "Apri nella lavagna",
+    "showDrill": "Mostra {title}"
   }
 }

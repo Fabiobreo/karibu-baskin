@@ -25,6 +25,7 @@ import ManageParticipantsDialog from "@/components/admin/ManageParticipantsDialo
 import { familyTeams } from "@/lib/trainingTeams";
 import { bibSurfaceSx } from "@/lib/bib";
 import { firstName } from "@/components/training/FamilyTeamChips";
+import TrainingDrillsSection from "@/components/board/TrainingDrillsSection";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { hasRole, isMemberRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
@@ -636,6 +637,19 @@ export default function SessionPageClient({
                     </Box>
                   </Grid>
                 </Grid>
+              )}
+              {/* Scaletta della lavagna (UX-72): solo ai tesserati, con i
+                  nomi della squadra di chi guarda. Senza scaletta non c'e'. */}
+              {canSeeRoster && realSessionId && (
+                <SectionErrorBoundary label="Lavagna">
+                  <TrainingDrillsSection
+                    sessionId={realSessionId}
+                    teams={teams}
+                    marks={viewerMarks}
+                    ownTeam={myTeams[0]?.key ?? null}
+                    ended={isEnded}
+                  />
+                </SectionErrorBoundary>
               )}
             </Box>
           ) : (

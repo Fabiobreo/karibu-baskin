@@ -308,6 +308,7 @@
     "events": "Events",
     "gallery": "Gallery",
     "games": "Games",
+    "board": "Board",
     "contacts": "Contact",
     "faq": "FAQ",
     "guide": "App guide",
@@ -1982,7 +1983,8 @@
       "callups": "the call-ups",
       "albums": "the other albums",
       "photos": "the photos in this album",
-      "photosShort": "the photos"
+      "photosShort": "the photos",
+      "board": "the plays on the board"
     }
   },
   "albumStrip": {
@@ -2095,5 +2097,68 @@
       "listTitle": "Your seasons",
       "listItem": "{season} season"
     }
+  },
+  "board": {
+    "play": "Play",
+    "pause": "Pause",
+    "restart": "Start again",
+    "prev": "Previous step",
+    "next": "Next step",
+    "stepOf": "Step {current} of {total}",
+    "stepN": "Step {n}",
+    "speed": "Speed",
+    "slow": "Slow",
+    "normal": "Normal",
+    "loop": "Repeat",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "rotate": "Turn your phone to see it bigger",
+    "allSteps": "All steps",
+    "legend": "How to read it",
+    "legendAttack": "Filled piece: attacking",
+    "legendDefense": "Outlined piece: defending",
+    "legendMove": "Movement",
+    "legendPass": "Pass",
+    "legendDribble": "Dribble",
+    "legendShot": "Shot",
+    "legendScreen": "Screen",
+    "noText": "No explanation for this step",
+    "title": "Board",
+    "subtitle": "Karibu plays and drills, to watch and go over again",
+    "search": "Search a play",
+    "filterKind": "Type",
+    "filterCourt": "Court",
+    "filterTeam": "Team",
+    "all": "All",
+    "allTeams": "All",
+    "empty": "The staff has not published any plays yet.",
+    "emptyFiltered": "No plays with these filters.",
+    "steps": "{n, plural, one {# step} other {# steps}}",
+    "minutes": "{n} min",
+    "preview": "Preview",
+    "manage": "Manage",
+    "usedIn": "In training sessions",
+    "usedInText": "We did it in these training sessions:",
+    "courtAlt": "First step of {title}",
+    "kinds": {
+      "ATTACK": "Attack",
+      "DEFENSE": "Defence",
+      "TRANSITION": "Transition",
+      "SET_PLAY": "Inbound or set play",
+      "EXERCISE": "Drill",
+      "WARMUP": "Warm-up"
+    },
+    "courts": {
+      "FULL": "Full court",
+      "HALF": "Half court"
+    },
+    "trainingTitle": "What we are doing today",
+    "trainingTitlePast": "What we did",
+    "withTeam": "With the team",
+    "onlyRoles": "Roles only",
+    "noTeamsYet": "Names appear when the staff makes the teams.",
+    "you": "{name} · You",
+    "openOnBoard": "Open on the board",
+    "showDrill": "Show {title}"
   }
 }

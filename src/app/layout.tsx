@@ -1,3 +1,4 @@
+import { isMemberRole } from "@/lib/authRoles";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
@@ -121,6 +122,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     loadGameSettings(),
   ]);
   const showGames = showsGamesInMenu(gameSettings, session?.user?.appRole);
+  const showBoard = isMemberRole(session?.user?.appRole);
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -163,7 +165,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     sito restano fuori. Gli sponsor sono la fascia superiore
                     del footer (UX-39). */}
                 <HideInAdmin>
-                  <SiteHeader currentSeason={currentSeason} showGames={showGames} />
+                  <SiteHeader
+                    currentSeason={currentSeason}
+                    showGames={showGames}
+                    showBoard={showBoard}
+                  />
                 </HideInAdmin>
                 <OnlyInAdmin>
                   <AdminHeader />
