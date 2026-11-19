@@ -19,6 +19,8 @@ export interface BoardArrow {
   to: Point;
   /** Il pezzo che si muove o che blocca; per passaggi e tiri chi ha la palla. */
   pieceId?: string;
+  /** Percorso ad arco: il punto da cui passa a meta' strada (`@/lib/board/curves`). */
+  via?: Point;
 }
 
 /** Sotto i 10 cm non e' uno spostamento: e' la mano che trema sul telefono. */
@@ -77,6 +79,7 @@ export function deriveArrows(content: DrillContent, index: number): BoardArrow[]
       from,
       to,
       pieceId: piece.id,
+      ...(next.curves?.[piece.id] ? { via: next.curves[piece.id] } : {}),
     });
   }
 
@@ -94,6 +97,7 @@ export function deriveArrows(content: DrillContent, index: number): BoardArrow[]
       from: ballFrom,
       to: ballTo,
       pieceId: holder ?? undefined,
+      ...(next.ballCurve ? { via: next.ballCurve } : {}),
     });
   }
   return arrows;

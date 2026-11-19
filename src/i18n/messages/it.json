@@ -2241,7 +2241,10 @@
       "draftDiscard": "Scarta",
       "preview": "Anteprima",
       "previewTitle": "Anteprima: {title}",
-      "close": "Chiudi"
+      "close": "Chiudi",
+      "curveHint": "Per fare un percorso ad arco, trascina il punto arancio a metà della freccia.",
+      "straighten": "Percorso dritto",
+      "curveHandle": "Trascina per curvare il percorso"
     },
     "proposal": {
       "pageTitle": "Proponi un esercizio",

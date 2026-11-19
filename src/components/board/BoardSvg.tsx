@@ -14,6 +14,8 @@ import { courtShapes, COURT_LENGTH, COURT_WIDTH } from "@/lib/board/court";
 import { HALF_COURT_MIN_X, type DrillPiece } from "@/lib/board/content";
 import type { BoardArrow } from "@/lib/board/arrows";
 import type { BoardFrame } from "@/lib/board/animation";
+import { samplePath, trimPath } from "@/lib/board/curves";
+import type { Point } from "@/lib/board/court";
 import { roleColor } from "@/lib/constants";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -49,6 +51,12 @@ interface BoardSvgProps {
   onPointerUp?: (e: ReactPointerEvent<SVGSVGElement>) => void;
   /** Bordo e angoli: la miniatura del pannello non li vuole. */
   framed?: boolean;
+  /**
+   * Maniglie dei percorsi ad arco nell'editor (UX-73): una per percorso, sul
+   * punto da cui passa a meta' strada. Si trascinano per curvarlo.
+   */
+  handles?: (Point & { id: string; label: string })[];
+  onHandlePointerDown?: (id: string, e: ReactPointerEvent<SVGElement>) => void;
 }
 
 /** Margine attorno al campo, in metri: le pedine sulla linea non si tagliano. */
@@ -107,6 +115,8 @@ export default function BoardSvg({
   onPointerMove,
   onPointerUp,
   framed = true,
+  handles = [],
+  onHandlePointerDown,
 }: BoardSvgProps) {
   const theme = useTheme();
   const vb = boardViewBox(court);
@@ -244,6 +254,22 @@ export default function BoardSvg({
             </g>
           );
         })}
+
+        {handles.map((h) => (
+          // Sopra pezzi e palla: e' quello che si sta toccando. Il cerchio
+          // trasparente piu' grande e' la zona da toccare col dito (44 px).
+          <g
+            key={`handle-${h.id}`}
+            transform={`translate(${h.x} ${h.y})`}
+            onPointerDown={onHandlePointerDown ? (e) => onHandlePointerDown(h.id, e) : undefined}
+            style={{ cursor: "grab" }}
+          >
+            <title>{h.label}</title>
+            <circle r={Math.max(r, 22 * mpp)} fill="transparent" />
+            <circle r={r * 0.55} fill={c.paper} stroke={c.selected} strokeWidth={stroke * 2} />
+            <circle r={r * 0.2} fill={c.selected} />
+          </g>
+        ))}
 
         {frame.ball && (
           <g
@@ -427,6 +453,18 @@ function Arrow({
   markerId: string;
 }) {
   const { from, to, kind } = arrow;
+  if (arrow.via && kind !== "screen") {
+    return (
+      <CurvedArrow
+        arrow={arrow}
+        via={arrow.via}
+        r={r}
+        stroke={stroke}
+        color={color}
+        markerId={markerId}
+      />
+    );
+  }
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const len = Math.hypot(dx, dy);
@@ -496,4 +534,93 @@ export function wavyPath(
     d += ` L${a.x + ux * s - uy * off},${a.y + uy * s + ux * off}`;
   }
   return `${d} L${b.x},${b.y}`;
+}
+
+/** Freccia ad arco (UX-73): la stessa forma della dritta, lungo la curva. */
+function CurvedArrow({
+  arrow,
+  via,
+  r,
+  stroke,
+  color,
+  markerId,
+}: {
+  arrow: BoardArrow;
+  via: Point;
+  r: number;
+  stroke: number;
+  color: string;
+  markerId: string;
+}) {
+  const { from, to, kind } = arrow;
+  const endGap = kind === "shot" ? 0 : r * 1.2;
+  const pts = trimPath(samplePath(from, to, via, 40), r * 1.15, endGap);
+  if (!pts) return null;
+  const marker = `url(#${markerId}-${kind === "shot" ? "full" : "open"})`;
+  if (kind === "dribble") {
+    return (
+      <path
+        d={wavyAlong(pts, r * 0.35, r * 1.4)}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        markerEnd={marker}
+      />
+    );
+  }
+  return (
+    <path
+      d={`M${pts.map((p) => `${p.x},${p.y}`).join(" L")}`}
+      fill="none"
+      stroke={color}
+      strokeWidth={kind === "shot" ? stroke * 1.3 : stroke}
+      strokeDasharray={kind === "pass" || kind === "shot" ? `${r * 0.6} ${r * 0.45}` : undefined}
+      strokeLinejoin="round"
+      markerEnd={marker}
+    />
+  );
+}
+
+/**
+ * Linea ondulata lungo una spezzata: il palleggio ad arco. Come `wavyPath`,
+ * l'ultimo tratto e' dritto (lungo la curva) per la punta.
+ */
+export function wavyAlong(points: Point[], amplitude: number, wavelength: number): string {
+  const cum = [0];
+  for (let i = 1; i < points.length; i++) {
+    cum.push(cum[i - 1] + Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y));
+  }
+  const len = cum[cum.length - 1];
+  const straight = Math.min(len * 0.3, wavelength * 0.6);
+  const waveLen = len - straight;
+  const n = Math.max(1, Math.round(waveLen / wavelength));
+  const samples = n * 12;
+  // Punto e direzione alla distanza `s` lungo la spezzata.
+  const at = (s: number) => {
+    let i = 1;
+    while (i < points.length - 1 && cum[i] < s) i++;
+    const a = points[i - 1];
+    const b = points[i];
+    const seg = cum[i] - cum[i - 1] || 1;
+    const k = Math.min(1, Math.max(0, (s - cum[i - 1]) / seg));
+    return {
+      x: a.x + (b.x - a.x) * k,
+      y: a.y + (b.y - a.y) * k,
+      ux: (b.x - a.x) / seg,
+      uy: (b.y - a.y) / seg,
+    };
+  };
+  let d = `M${points[0].x},${points[0].y}`;
+  for (let i = 1; i <= samples; i++) {
+    const s = (i / samples) * waveLen;
+    const p = at(s);
+    const off = Math.sin((i / samples) * n * 2 * Math.PI) * amplitude;
+    d += ` L${p.x - p.uy * off},${p.y + p.ux * off}`;
+  }
+  for (let s = waveLen + straight / 4; s < len; s += straight / 4) {
+    const p = at(s);
+    d += ` L${p.x},${p.y}`;
+  }
+  const last = points[points.length - 1];
+  return `${d} L${last.x},${last.y}`;
 }

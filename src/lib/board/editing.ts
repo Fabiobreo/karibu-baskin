@@ -117,7 +117,59 @@ function dropPieceRefs(step: DrillStep, id: string, removeKey: boolean): DrillSt
   const ball =
     step.ball && "holder" in step.ball && step.ball.holder === id ? undefined : step.ball;
   const screens = step.screens?.filter((s) => s.from !== id);
-  return { ...step, at, ball, screens: screens?.length ? screens : undefined };
+  return withCurve({ ...step, at, ball, screens: screens?.length ? screens : undefined }, id);
+}
+
+/** Il passo con il percorso di `id` messo (o tolto, senza `via`); vuoto = niente campo. */
+function withCurve(step: DrillStep, id: string, via?: Point): DrillStep {
+  const curves = { ...step.curves };
+  if (via) curves[id] = via;
+  else delete curves[id];
+  const next: DrillStep = { ...step, curves };
+  if (!Object.keys(curves).length) delete next.curves;
+  return next;
+}
+
+/** Il passo senza percorsi ad arco: la strada per arrivarci e' cambiata. */
+function straight(step: DrillStep): DrillStep {
+  const next = { ...step };
+  delete next.curves;
+  delete next.ballCurve;
+  return next;
+}
+
+/**
+ * Curva (o raddrizza, con `undefined`) il percorso con cui un pezzo arriva al
+ * passo `stepIndex` dal precedente (UX-73). `via` e' il punto da cui passa a
+ * meta' strada, dentro il campo. Il primo passo non ha un percorso.
+ */
+export function setCurve(
+  content: DrillContent,
+  stepIndex: number,
+  id: string,
+  via: Point | undefined,
+  court: Court
+): DrillContent {
+  if (stepIndex <= 0) return content;
+  const p = via ? clampToCourt(via, court) : undefined;
+  return mapSteps(content, (step, i) => (i === stepIndex ? withCurve(step, id, p) : step));
+}
+
+/** Lo stesso per la palla che arriva al passo `stepIndex` (passaggio o tiro). */
+export function setBallCurve(
+  content: DrillContent,
+  stepIndex: number,
+  via: Point | undefined,
+  court: Court
+): DrillContent {
+  if (stepIndex <= 0) return content;
+  return mapSteps(content, (step, i) => {
+    if (i !== stepIndex) return step;
+    const next = { ...step };
+    if (via) next.ballCurve = clampToCourt(via, court);
+    else delete next.ballCurve;
+    return next;
+  });
 }
 
 /** Il pezzo esce dal campo da questo passo in avanti (sostituzioni, file). */
@@ -227,6 +279,9 @@ export function addStep(content: DrillContent, afterIndex: number): DrillContent
 export function removeStep(content: DrillContent, index: number): DrillContent {
   if (content.steps.length <= 1) return content;
   const steps = content.steps.filter((_, i) => i !== index);
+  // Il passo che prende il posto di quello tolto ci arriva da un altro passo:
+  // i suoi archi non valgono piu' (e il primo passo non ne ha).
+  for (const i of [0, index]) if (steps[i]) steps[i] = straight(steps[i]);
   // Il primo passo non puo' essere un tiro.
   if (steps[0]?.ball && "shot" in steps[0].ball) steps[0] = { ...steps[0], ball: undefined };
   return { ...content, steps };
@@ -239,6 +294,9 @@ export function moveStep(content: DrillContent, index: number, delta: -1 | 1): D
   const steps = [...content.steps];
   [steps[index], steps[target]] = [steps[target], steps[index]];
   if (steps[0]?.ball && "shot" in steps[0].ball) return content;
+  // Cambiano le strade per arrivare ai due passi e a quello dopo: niente archi.
+  const after = Math.max(index, target) + 1;
+  for (const i of [index, target, after]) if (steps[i]) steps[i] = straight(steps[i]);
   return { ...content, steps };
 }
 
@@ -256,5 +314,13 @@ export function clampContentToHalf(content: DrillContent): DrillContent {
           ? { shot: "rightMain" }
           : step.ball,
     screens: step.screens?.map((s) => ({ ...s, to: clampToCourt(s.to, "HALF") })),
+    ...(step.curves
+      ? {
+          curves: Object.fromEntries(
+            Object.entries(step.curves).map(([id, p]) => [id, clampToCourt(p, "HALF")])
+          ),
+        }
+      : {}),
+    ...(step.ballCurve ? { ballCurve: clampToCourt(step.ballCurve, "HALF") } : {}),
   }));
 }

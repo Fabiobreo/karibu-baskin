@@ -1,12 +1,14 @@
 import type { Point } from "./court";
 import { ballHolder, ballPoint, launchPoint } from "./arrows";
 import type { DrillContent } from "./content";
+import { pathPoint } from "./curves";
 
 /**
  * Dove stanno i pezzi a un certo punto del passaggio da un passo al successivo
  * (UX-72). `t` va da 0 (passo `index`) a 1 (passo successivo).
  *
- * - Un pezzo in campo nei due passi scorre, con partenza e arrivo morbidi.
+ * - Un pezzo in campo nei due passi scorre, con partenza e arrivo morbidi,
+ *   dritto o lungo l'arco scelto dallo staff (`DrillStep.curves`, UX-73).
  * - Un pezzo che entra compare sul posto, uno che esce sparisce sul posto.
  * - La palla segue chi la tiene. Quando cambia mano, resta al passatore fino a
  *   meta' e nella seconda meta' vola verso chi la riceve (o verso il canestro):
@@ -40,11 +42,6 @@ export function easeInOut(t: number): number {
   return c < 0.5 ? 2 * c * c : 1 - (-2 * c + 2) ** 2 / 2;
 }
 
-const lerp = (a: Point, b: Point, t: number): Point => ({
-  x: a.x + (b.x - a.x) * t,
-  y: a.y + (b.y - a.y) * t,
-});
-
 const inHand = (p: Point): BallFrame => ({ x: p.x, y: p.y, hand: 1 });
 const loose = (p: Point | null): BallFrame | null => (p ? { x: p.x, y: p.y, hand: 0 } : null);
 
@@ -61,7 +58,7 @@ export function interpolateStep(content: DrillContent, index: number, t = 0): Bo
     const from = step.at[piece.id];
     const to = next?.at[piece.id] ?? null;
     if (from && (to || !next)) {
-      const p = to ? lerp(from, to, eased) : from;
+      const p = to ? pathPoint(from, to, next?.curves?.[piece.id], eased) : from;
       pieces[piece.id] = { ...p, opacity: 1 };
     } else if (from) {
       pieces[piece.id] = { ...from, opacity: 1 - progress };
@@ -99,7 +96,7 @@ function ballAt(
   const target = nextHolder ? handOf(nextHolder) : loose(ballPoint(next));
   if (!launch || !target) return target ?? launch;
   return {
-    ...lerp(launch, target, flight),
+    ...pathPoint(launch, target, next.ballCurve, flight),
     hand: launch.hand + (target.hand - launch.hand) * flight,
   };
 }

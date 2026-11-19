@@ -52,6 +52,9 @@ interface DrillSelectionPanelProps {
   stepIndex: number;
   selectedId: string | null;
   screenMode: boolean;
+  /** Il percorso con cui arriva in questo passo (UX-73): `null` se non si sposta. */
+  path: "straight" | "curved" | null;
+  onStraighten: () => void;
   onUpdate: (id: string, patch: Partial<Omit<DrillPiece, "id" | "kind">>) => void;
   onGiveBall: (id: string) => void;
   onRemoveBall: () => void;
@@ -73,6 +76,8 @@ export default function DrillSelectionPanel({
   stepIndex,
   selectedId,
   screenMode,
+  path,
+  onStraighten,
   onUpdate,
   onGiveBall,
   onRemoveBall,
@@ -102,6 +107,7 @@ export default function DrillSelectionPanel({
           <Typography variant="body2" color="text.secondary" sx={{ flex: "1 1 100%" }}>
             {t("ballHint")}
           </Typography>
+          {path && <PathHint path={path} onStraighten={onStraighten} />}
           <Button
             variant="text"
             color="inherit"
@@ -187,6 +193,7 @@ export default function DrillSelectionPanel({
               </ToggleButtonGroup>
             )}
           </Box>
+          {path && <PathHint path={path} onStraighten={onStraighten} />}
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {isPlayerPiece(piece) && holder !== piece.id && (
               <Button
@@ -249,5 +256,28 @@ export default function DrillSelectionPanel({
         </Box>
       )}
     </Paper>
+  );
+}
+
+/** Come si curva il percorso, e il bottone per raddrizzarlo (UX-73). */
+function PathHint({
+  path,
+  onStraighten,
+}: {
+  path: "straight" | "curved";
+  onStraighten: () => void;
+}) {
+  const t = useTranslations("board.editor");
+  return (
+    <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, flex: "1 1 100%" }}>
+      <Typography variant="body2" color="text.secondary" sx={{ flex: "1 1 200px" }}>
+        {t("curveHint")}
+      </Typography>
+      {path === "curved" && (
+        <Button variant="outlined" onClick={onStraighten}>
+          {t("straighten")}
+        </Button>
+      )}
+    </Box>
   );
 }

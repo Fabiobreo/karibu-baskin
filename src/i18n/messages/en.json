@@ -2241,7 +2241,10 @@
       "draftDiscard": "Discard",
       "preview": "Preview",
       "previewTitle": "Preview: {title}",
-      "close": "Close"
+      "close": "Close",
+      "curveHint": "To make a curved path, drag the orange dot in the middle of the arrow.",
+      "straighten": "Straight path",
+      "curveHandle": "Drag to curve the path"
     },
     "proposal": {
       "pageTitle": "Suggest a drill",

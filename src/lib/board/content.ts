@@ -66,6 +66,14 @@ export interface DrillStep {
   ball?: DrillBall;
   /** Blocchi: l'unica freccia che non nasce da uno spostamento. */
   screens?: DrillScreen[];
+  /**
+   * Percorsi ad arco per arrivare a questo passo dal precedente (UX-73): per
+   * ogni pezzo che si sposta, il punto da cui passa a meta' strada
+   * (`@/lib/board/curves`). Senza voce il percorso e' dritto.
+   */
+  curves?: Record<string, Point>;
+  /** Lo stesso per la palla che arriva in questo passo (passaggio o tiro). */
+  ballCurve?: Point;
 }
 
 export interface DrillContent {

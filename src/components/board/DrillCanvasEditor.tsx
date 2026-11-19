@@ -19,7 +19,8 @@ import DrillSelectionPanel from "./DrillSelectionPanel";
 import DrillStepsBar from "./DrillStepsBar";
 import type { DrillHistory, DrillHistoryAction } from "./drillHistory";
 import { useToast } from "@/context/ToastContext";
-import { deriveArrows, stepScreens } from "@/lib/board/arrows";
+import { MIN_MOVE, deriveArrows, stepScreens } from "@/lib/board/arrows";
+import { isCurved, midpoint } from "@/lib/board/curves";
 import { interpolateStep } from "@/lib/board/animation";
 import { MAX_PIECES, isPlayerPiece, type DrillContent } from "@/lib/board/content";
 import type { Point } from "@/lib/board/court";
@@ -39,7 +40,11 @@ interface DrillCanvasEditorProps {
 
 type Drag =
   | { kind: "piece"; id: string; pointerId: number; moved: boolean; offset: Point }
-  | { kind: "ball"; pointerId: number; moved: boolean };
+  | { kind: "ball"; pointerId: number; moved: boolean }
+  /** Maniglia di un percorso ad arco (UX-73): un pezzo, o "ball" per la palla. */
+  | { kind: "curve"; id: string; pointerId: number; moved: boolean };
+
+const BALL_PATH = "ball";
 
 /**
  * La parte di disegno dell'editor del Playbook (UX-72), condivisa fra l'editor
@@ -105,6 +110,12 @@ export default function DrillCanvasEditor({
     dragRef.current = { kind: "ball", pointerId: e.pointerId, moved: false };
   }
 
+  function onHandlePointerDown(id: string, e: ReactPointerEvent<SVGElement>) {
+    e.stopPropagation();
+    svgRef.current?.setPointerCapture(e.pointerId);
+    dragRef.current = { kind: "curve", id, pointerId: e.pointerId, moved: false };
+  }
+
   function onBoardPointerDown(e: ReactPointerEvent<SVGSVGElement>) {
     const m = toMeters(e);
     if (screenMode && selectedId && m) {
@@ -127,6 +138,14 @@ export default function DrillCanvasEditor({
     if (drag.kind === "piece") {
       const to = { x: m.x + drag.offset.x, y: m.y + drag.offset.y };
       dispatch({ type: "live", fn: (c) => edit.movePiece(c, current, drag.id, to, court) });
+    } else if (drag.kind === "curve") {
+      dispatch({
+        type: "live",
+        fn: (c) =>
+          drag.id === BALL_PATH
+            ? edit.setBallCurve(c, current, m, court)
+            : edit.setCurve(c, current, drag.id, m, court),
+      });
     } else {
       dispatch({ type: "live", fn: (c) => edit.setBall(c, current, edit.clampToCourt(m, court)) });
     }
@@ -213,6 +232,34 @@ export default function DrillCanvasEditor({
   }
 
   const frame = useMemo(() => interpolateStep(content, current, 0), [content, current]);
+
+  // Percorso ad arco (UX-73) di quello che si e' scelto: come arriva in questo
+  // passo dal precedente. Solo se si sposta davvero (o, per la palla, se c'e'
+  // un passaggio o un tiro).
+  const path = useMemo(() => {
+    if (current === 0 || !selectedId) return null;
+    const prev = content.steps[current - 1];
+    if (selectedId === BALL_PATH) {
+      const arrow = deriveArrows(content, current - 1).find(
+        (a) => a.kind === "pass" || a.kind === "shot"
+      );
+      return arrow ? { id: BALL_PATH, from: arrow.from, to: arrow.to, via: step.ballCurve } : null;
+    }
+    const from = prev.at[selectedId];
+    const to = step.at[selectedId];
+    if (!from || !to || Math.hypot(to.x - from.x, to.y - from.y) < MIN_MOVE) return null;
+    return { id: selectedId, from, to, via: step.curves?.[selectedId] };
+  }, [content, current, selectedId, step]);
+  const handles = path
+    ? [{ id: path.id, label: t("curveHandle"), ...(path.via ?? midpoint(path.from, path.to)) }]
+    : [];
+  const straighten = () =>
+    path &&
+    apply((c) =>
+      path.id === BALL_PATH
+        ? edit.setBallCurve(c, current, undefined, court)
+        : edit.setCurve(c, current, path.id, undefined, court)
+    );
   const arrows = useMemo(
     () => [
       ...(current > 0 ? deriveArrows(content, current - 1).filter((a) => a.kind !== "screen") : []),
@@ -298,6 +345,8 @@ export default function DrillCanvasEditor({
           onBoardPointerDown={onBoardPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
+          handles={handles}
+          onHandlePointerDown={onHandlePointerDown}
         />
         <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.75 }}>
           {current > 0 ? t("arrowsHint") : t("firstStepHint")}
@@ -357,6 +406,8 @@ export default function DrillCanvasEditor({
           stepIndex={current}
           selectedId={selectedId}
           screenMode={screenMode}
+          path={path ? (isCurved(path.from, path.to, path.via) ? "curved" : "straight") : null}
+          onStraighten={straighten}
           onUpdate={(id, patch) => apply((c) => edit.updatePiece(c, id, patch))}
           onGiveBall={(id) => apply((c) => edit.setBall(c, current, { holder: id }))}
           onRemoveBall={() => {

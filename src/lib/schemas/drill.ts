@@ -79,6 +79,9 @@ const StepSchema = z.object({
     .array(z.object({ from: pieceId, to: point }))
     .max(MAX_SCREENS_PER_STEP, `Al massimo ${MAX_SCREENS_PER_STEP} blocchi per passo`)
     .optional(),
+  // Percorsi ad arco (UX-73): facoltativi, il contenuto vecchio resta dritto.
+  curves: z.record(pieceId, point).optional(),
+  ballCurve: point.optional(),
 });
 
 /**
@@ -141,6 +144,18 @@ export function drillContentSchema(court: DrillCourtValue) {
           if (s === 0) issue("Il primo passo non puo' essere un tiro", ["steps", s, "ball"]);
         } else if (ball && !isInsideCourt(ball, half)) {
           issue("Palla fuori dalla meta' campo", ["steps", s, "ball"]);
+        }
+        const curves = Object.entries(step.curves ?? {});
+        if (s === 0 && (curves.length > 0 || step.ballCurve)) {
+          issue("Il primo passo non ha un percorso per arrivarci", ["steps", s, "curves"]);
+        }
+        for (const [id, via] of curves) {
+          if (!byId.has(id)) issue("Percorso di un pezzo che non c'e'", ["steps", s, "curves", id]);
+          if (!isInsideCourt(via, half))
+            issue("Percorso fuori dalla meta' campo", ["steps", s, "curves", id]);
+        }
+        if (step.ballCurve && !isInsideCourt(step.ballCurve, half)) {
+          issue("Percorso della palla fuori dalla meta' campo", ["steps", s, "ballCurve"]);
         }
         step.screens?.forEach((sc, j) => {
           const from = byId.get(sc.from);
