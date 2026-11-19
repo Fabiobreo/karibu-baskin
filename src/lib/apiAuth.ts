@@ -104,7 +104,7 @@ export async function adminActor(): Promise<{ actorId: string } | { error: NextR
  * 403 a un ospite).
  */
 export async function memberActor(): Promise<
-  { actorId: string; name: string | null } | { error: NextResponse }
+  { actorId: string; name: string | null; isStaff: boolean } | { error: NextResponse }
 > {
   const session = await auth();
   if (!session?.user?.id) {
@@ -113,5 +113,10 @@ export async function memberActor(): Promise<
   if (!isMemberRole(session.user.appRole)) {
     return { error: NextResponse.json({ error: "Non autorizzato" }, { status: 403 }) };
   }
-  return { actorId: session.user.id, name: session.user.name ?? null };
+  const role = session.user.appRole as AppRole | undefined;
+  return {
+    actorId: session.user.id,
+    name: session.user.name ?? null,
+    isStaff: !!role && hasRole(role, "COACH"),
+  };
 }

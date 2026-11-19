@@ -11,6 +11,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 vi.mock("@/lib/authjs", () => ({ auth: vi.fn() }));
+vi.mock("@/lib/board/drillAdmin", () => ({ auditDrill: vi.fn() }));
 
 import { PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
@@ -98,6 +99,33 @@ describe("PUT /api/drills/proposals/[id]", () => {
       where: { id: "s1" },
       data: { message: "Nuovo testo" },
     });
+  });
+});
+
+describe("PUT dello staff su una proposta", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    p.drill.update.mockReturnValue({ id: "d1", updatedAt: new Date() });
+    p.$transaction.mockImplementation(async (ops: unknown[]) => Promise.all(ops));
+  });
+
+  it("un allenatore corregge una proposta inviata, ma non 'Mostra il mio nome'", async () => {
+    as("COACH", "coach");
+    p.drill.findUnique.mockResolvedValue(stored({ proposedAt: new Date() }));
+    expect((await put({ title: "Corretto", showAuthor: false })).status).toBe(200);
+    const data = p.drill.update.mock.calls[0][0].data;
+    expect(data.title).toBe("Corretto");
+    expect(data).not.toHaveProperty("showAuthor");
+    expect(data.updatedById).toBe("coach");
+  });
+
+  it("mai la bozza non inviata; il dirigente no", async () => {
+    as("COACH", "coach");
+    p.drill.findUnique.mockResolvedValue(stored());
+    expect((await put({ title: "X" })).status).toBe(404);
+    as("DIRECTOR", "dir");
+    p.drill.findUnique.mockResolvedValue(stored({ proposedAt: new Date() }));
+    expect((await put({ title: "X" })).status).toBe(404);
   });
 });
 

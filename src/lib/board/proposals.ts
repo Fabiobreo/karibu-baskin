@@ -59,6 +59,15 @@ export function canEditProposal(d: ProposalFields, userId: string | null | undef
   return !!userId && d.createdById === userId && isProposal(d) && !d.archivedAt;
 }
 
+/**
+ * Lo staff (allenatori e admin) corregge una proposta inviata anche prima di
+ * adottarla: titolo, descrizione, tipo e disegno. Mai la bozza non ancora
+ * inviata, che e' solo dell'autore, e mai "Mostra il mio nome", che e' sua.
+ */
+export function canStaffEditProposal(d: ProposalFields): boolean {
+  return isProposal(d) && !!d.proposedAt;
+}
+
 /** L'autore la ritira (la cancella) finche' non e' adottata, anche dopo un "Non adesso". */
 export function canWithdrawProposal(d: ProposalFields, userId: string | null | undefined): boolean {
   return !!userId && d.createdById === userId && isProposal(d);

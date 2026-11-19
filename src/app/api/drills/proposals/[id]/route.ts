@@ -4,7 +4,8 @@ import { memberActor } from "@/lib/apiAuth";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { ProposalUpdateSchema, drillContentSchema } from "@/lib/schemas/drill";
-import { canEditProposal, canWithdrawProposal } from "@/lib/board/proposals";
+import { auditDrill } from "@/lib/board/drillAdmin";
+import { canEditProposal, canStaffEditProposal, canWithdrawProposal } from "@/lib/board/proposals";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -27,7 +28,9 @@ const notFound = () => NextResponse.json({ error: "Non trovato" }, { status: 404
  * PUT — l'autore modifica la sua proposta (UX-73) finche' lo staff non l'ha
  * adottata o messa da parte: titolo, tipo (solo esercizi), campo, descrizione,
  * "Mostra il mio nome" e il disegno. Se e' gia' inviata, la descrizione
- * aggiorna anche il testo del suggerimento collegato.
+ * aggiorna anche il testo del suggerimento collegato. Allenatori e admin la
+ * correggono anche prima di adottarla, una volta inviata (non "Mostra il mio
+ * nome", che resta una scelta dell'autore).
  */
 export async function PUT(req: NextRequest, { params }: Ctx) {
   const who = await memberActor();
@@ -53,17 +56,20 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
   try {
     const existing = await prisma.drill.findUnique({ where: { id }, select: PROPOSAL_FIELDS });
-    if (!existing || existing.createdById !== who.actorId || existing.status !== "PROPOSED") {
+    const isAuthor = existing?.createdById === who.actorId;
+    const staffEdit = !isAuthor && who.isStaff && !!existing && canStaffEditProposal(existing);
+    if (!existing || existing.status !== "PROPOSED" || (!isAuthor && !staffEdit)) {
       return notFound();
     }
-    if (!canEditProposal(existing, who.actorId)) {
+    if (isAuthor && !canEditProposal(existing, who.actorId)) {
       return NextResponse.json(
         { error: "Lo staff ha già deciso su questa proposta", code: "locked" },
         { status: 409 }
       );
     }
 
-    const { content: rawContent, ...fields } = parsed.data;
+    const { content: rawContent, showAuthor, ...rest } = parsed.data;
+    const fields = staffEdit ? rest : { ...rest, showAuthor };
     const court = fields.court ?? existing.court;
     const contentResult = drillContentSchema(court).safeParse(rawContent ?? existing.content);
     if (!contentResult.success) {
@@ -102,6 +108,14 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
           ]
         : []),
     ]);
+    if (staffEdit) {
+      auditDrill({
+        actorId: who.actorId,
+        action: "UPDATE_DRILL",
+        targetId: id,
+        after: { proposal: true, ...(fields.title ? { title: fields.title } : {}) },
+      });
+    }
     return NextResponse.json({ id: drill.id, updatedAt: drill.updatedAt.toISOString() });
   } catch (err) {
     console.error("[playbook] modifica proposta", err);

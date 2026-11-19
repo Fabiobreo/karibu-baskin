@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import PageHeader from "@/components/common/PageHeader";
 import DrillPlayer from "@/components/board/DrillPlayer";
+import AdminProposalEditor, { type ProposalPatch } from "./AdminProposalEditor";
 import SuggestionThread, { formatSuggestionDate } from "@/components/admin/SuggestionThread";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -23,8 +24,9 @@ interface AdminProposalClientProps {
 
 /**
  * Una proposta di esercizio di un tesserato nel pannello (UX-73): il visore,
- * chi l'ha proposta (le proposte sono firmate), il filo del suggerimento per
- * note interne e risposte, e i due esiti: "Adotta" (diventa una bozza dello
+ * chi l'ha proposta (le proposte sono firmate), "Modifica" per correggerla
+ * prima di decidere, il filo del suggerimento per note interne e risposte, e
+ * i due esiti: "Adotta" (diventa una bozza dello
  * staff) e "Non adesso" (messa da parte, l'autore la puo' rileggere). Il
  * dirigente legge soltanto.
  */
@@ -38,6 +40,15 @@ export default function AdminProposalClient({
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [suggestion, setSuggestion] = useState<AdminSuggestion | null>(p.suggestion);
+  // Le correzioni dello staff si vedono subito, senza ricaricare la pagina.
+  const [cur, setCur] = useState<ProposalPatch>({
+    title: p.title,
+    description: p.description,
+    kind: p.kind === "WARMUP" ? "WARMUP" : "EXERCISE",
+    content: p.content,
+  });
+  const [editing, setEditing] = useState(false);
+  const [version, setVersion] = useState(0);
 
   const act = useMutation({
     mutationFn: async (what: "adopt" | "decline") => {
@@ -62,7 +73,7 @@ export default function AdminProposalClient({
 
   const adopt = () =>
     openConfirm(
-      `Adottare ${p.title}?`,
+      `Adottare ${cur.title}?`,
       "Diventa una bozza dello staff: la sistemi e la pubblichi quando vuoi. A chi l'ha proposta arriva una risposta: «Lo staff ha preso il tuo esercizio».",
       () => act.mutate("adopt"),
       { confirmLabel: "Adotta", confirmColor: "primary" }
@@ -78,15 +89,15 @@ export default function AdminProposalClient({
   return (
     <>
       <PageHeader
-        title={p.title}
+        title={cur.title}
         breadcrumb={[
           { label: "Playbook", href: "/admin/playbook" },
           { label: "Proposte", href: "/admin/playbook?scheda=proposte" },
-          { label: p.title },
+          { label: cur.title },
         ]}
-        subtitle={`Proposta di ${p.authorName ?? "un utente che non c'è più"} · ${DRILL_KIND_LABELS[p.kind]} · ${DRILL_COURT_LABELS[p.court]}`}
+        subtitle={`Proposta di ${p.authorName ?? "un utente che non c'è più"} · ${DRILL_KIND_LABELS[cur.kind]} · ${DRILL_COURT_LABELS[p.court]}`}
         action={
-          readOnly ? undefined : (
+          readOnly || editing ? undefined : (
             <Button variant="contained" onClick={adopt} disabled={act.isPending}>
               Adotta
             </Button>
@@ -112,22 +123,42 @@ export default function AdminProposalClient({
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 1 }}>
             Inviata il {formatSuggestionDate(p.proposedAt)}
           </Typography>
-          {p.description && (
-            <Typography variant="body1" sx={{ mb: 2, whiteSpace: "pre-line" }}>
-              {p.description}
-            </Typography>
-          )}
-          <DrillPlayer title={p.title} court={p.court} content={p.content} />
-          {!readOnly && !p.archived && (
-            <Button
-              variant="text"
-              color="inherit"
-              onClick={decline}
-              disabled={act.isPending}
-              sx={{ mt: 2 }}
-            >
-              Non adesso
-            </Button>
+          {editing ? (
+            <AdminProposalEditor
+              proposal={{ ...p, ...cur }}
+              onCancel={() => setEditing(false)}
+              onSaved={(patch) => {
+                setCur(patch);
+                setVersion((v) => v + 1);
+                setEditing(false);
+              }}
+            />
+          ) : (
+            <>
+              {cur.description && (
+                <Typography variant="body1" sx={{ mb: 2, whiteSpace: "pre-line" }}>
+                  {cur.description}
+                </Typography>
+              )}
+              <DrillPlayer key={version} title={cur.title} court={p.court} content={cur.content} />
+              {!readOnly && (
+                <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", mt: 2 }}>
+                  <Button variant="outlined" onClick={() => setEditing(true)}>
+                    Modifica
+                  </Button>
+                  {!p.archived && (
+                    <Button
+                      variant="text"
+                      color="inherit"
+                      onClick={decline}
+                      disabled={act.isPending}
+                    >
+                      Non adesso
+                    </Button>
+                  )}
+                </Box>
+              )}
+            </>
           )}
         </Box>
 

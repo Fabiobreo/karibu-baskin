@@ -5,6 +5,7 @@ import {
   canAdoptProposal,
   canEditProposal,
   canPropose,
+  canStaffEditProposal,
   canSubmitProposal,
   canWithdrawProposal,
   isProposalKind,
@@ -75,6 +76,13 @@ describe("cosa puo' fare l'autore", () => {
     expect(canWithdrawProposal(declined, "u1")).toBe(true);
     expect(canWithdrawProposal(adopted, "u1")).toBe(false);
     expect(canWithdrawProposal(sent, "u2")).toBe(false);
+  });
+
+  it("lo staff corregge solo una proposta inviata e non adottata", () => {
+    expect(canStaffEditProposal(draft)).toBe(false);
+    expect(canStaffEditProposal(sent)).toBe(true);
+    expect(canStaffEditProposal(declined)).toBe(true);
+    expect(canStaffEditProposal(adopted)).toBe(false);
   });
 
   it("lo staff adotta solo una proposta inviata", () => {
