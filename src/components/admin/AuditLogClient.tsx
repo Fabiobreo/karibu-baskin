@@ -132,6 +132,13 @@ const ACTION_LABELS: Record<string, string> = {
   CREATE_QUIZ_QUESTION: "Domanda del quiz aggiunta",
   UPDATE_QUIZ_QUESTION: "Domanda del quiz modificata o approvata",
   DELETE_QUIZ_QUESTION: "Domanda del quiz eliminata",
+  CREATE_DRILL: "Schema della lavagna creato",
+  UPDATE_DRILL: "Schema della lavagna modificato",
+  PUBLISH_DRILL: "Schema della lavagna pubblicato",
+  UNPUBLISH_DRILL: "Schema della lavagna rimesso in bozza",
+  ARCHIVE_DRILL: "Schema della lavagna archiviato",
+  DELETE_DRILL: "Schema della lavagna eliminato",
+  SET_TRAINING_DRILLS: "Scaletta di un allenamento",
 };
 
 /**
