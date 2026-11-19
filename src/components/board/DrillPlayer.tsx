@@ -55,6 +55,20 @@ function usePrefersReducedMotion() {
   );
 }
 
+const noSubscribe = () => () => {};
+/**
+ * Il browser permette il tutto schermo? Sul server non si sa: il bottone
+ * compare dopo l'idratazione, cosi' l'HTML del server e quello del browser
+ * coincidono (sull'iPhone il bottone non c'e').
+ */
+function useCanFullscreen() {
+  return useSyncExternalStore(
+    noSubscribe,
+    () => !!document.fullscreenEnabled,
+    () => false
+  );
+}
+
 /**
  * Visore di uno schema (UX-72): Play anima i passi uno dopo l'altro, con una
  * pausa su ognuno per leggere la riga; avanti e indietro un passo alla volta.
@@ -178,7 +192,7 @@ export default function DrillPlayer({
   const frame = useMemo(() => interpolateStep(content, step, progress), [content, step, progress]);
   const arrows = useMemo(() => deriveArrows(content, step), [content, step]);
   const text = content.steps[step]?.text;
-  const canFullscreen = typeof document !== "undefined" && !!document.fullscreenEnabled;
+  const canFullscreen = useCanFullscreen();
 
   return (
     <Box

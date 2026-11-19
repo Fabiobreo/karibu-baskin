@@ -33,6 +33,7 @@ export const DRILL_KINDS = [
 ] as const;
 export const DRILL_COURTS = ["FULL", "HALF"] as const;
 export const DRILL_STATUSES = ["DRAFT", "PUBLISHED"] as const;
+export const DRILL_VISIBILITIES = ["MEMBERS", "PUBLIC"] as const;
 export type DrillCourtValue = (typeof DRILL_COURTS)[number];
 
 const MAX_TITLE = 80;
@@ -197,20 +198,42 @@ export const DrillCreateSchema = z.object({
   description: optionalText(MAX_DESCRIPTION),
   durationMin,
   competitiveTeamId: teamId,
+  /** Solo per gli esercizi (lo controlla la rotta): pubblico per scelta. */
+  visibility: z.enum(DRILL_VISIBILITIES).optional(),
 });
 
 /**
  * Modifica: tutti i campi facoltativi. Il contenuto si ricontrolla nella rotta
  * con `drillContentSchema`, contro il campo salvato o quello nuovo.
  */
+// Nella modifica un campo assente resta com'e' (undefined, Prisma non lo
+// tocca) e solo `null` o il vuoto lo cancellano. Con `.optional()` sopra gli
+// schemi della creazione Zod v4 farebbe girare la trasformazione anche su un
+// campo assente, e ogni "Salva" dell'editor azzererebbe descrizione, durata
+// e squadra.
+const clearable = <T>(schema: z.ZodType<T>, empty: (v: T) => boolean = () => false) =>
+  schema
+    .nullable()
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === null || empty(v) ? null : v));
+
 export const DrillUpdateSchema = z.object({
   title: title.optional(),
   kind: z.enum(DRILL_KINDS).optional(),
   court: z.enum(DRILL_COURTS).optional(),
-  description: optionalText(MAX_DESCRIPTION).optional(),
-  durationMin: durationMin.optional(),
-  competitiveTeamId: teamId.optional(),
+  description: clearable(
+    z.string().trim().max(MAX_DESCRIPTION, `Al massimo ${MAX_DESCRIPTION} caratteri`),
+    (v) => v === ""
+  ),
+  durationMin: clearable(
+    z
+      .int({ message: "Durata non valida" })
+      .min(1, "Durata non valida")
+      .max(120, "Al massimo 120 minuti")
+  ),
+  competitiveTeamId: clearable(z.string(), (v) => v === ""),
   status: z.enum(DRILL_STATUSES).optional(),
+  visibility: z.enum(DRILL_VISIBILITIES).optional(),
   content: z.unknown().optional(),
 });
 

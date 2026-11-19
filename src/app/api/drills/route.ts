@@ -1,29 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma, type AppRole } from "@prisma/client";
 import { auth } from "@/lib/authjs";
-import { hasRole } from "@/lib/authRoles";
-import { isMember, staffActor } from "@/lib/apiAuth";
+import { hasRole, isMemberRole } from "@/lib/authRoles";
+import { staffActor } from "@/lib/apiAuth";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { DrillCreateSchema, EMPTY_DRILL_CONTENT } from "@/lib/schemas/drill";
+import { canBePublic } from "@/lib/board/category";
 import {
   DRILL_ADMIN_SELECT,
   DRILL_PUBLIC_SELECT,
-  VISIBLE_DRILL_WHERE,
   auditDrill,
+  visibleDrillWhere,
   freeDrillSlug,
 } from "@/lib/board/drillAdmin";
 
 /**
- * GET — schemi della lavagna (UX-72). Ai tesserati i pubblicati; allo staff,
+ * GET — il Playbook (UX-72). Ai tesserati gli esercizi e gli schemi
+ * pubblicati; a tutti gli altri solo gli esercizi resi pubblici. Allo staff,
  * con `?status=all`, anche bozze e archiviati.
  */
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-drills", 60, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
-  if (!(await isMember())) {
-    return NextResponse.json({ error: "Solo per i tesserati" }, { status: 403 });
-  }
   const session = await auth();
   const role = session?.user?.appRole as AppRole | undefined;
   const all = !!role && hasRole(role, "COACH") && req.nextUrl.searchParams.get("status") === "all";
@@ -31,14 +30,14 @@ export async function GET(req: NextRequest) {
   const drills = all
     ? await prisma.drill.findMany({ orderBy: { updatedAt: "desc" }, select: DRILL_ADMIN_SELECT })
     : await prisma.drill.findMany({
-        where: VISIBLE_DRILL_WHERE,
+        where: visibleDrillWhere(isMemberRole(role)),
         orderBy: { publishedAt: "desc" },
         select: DRILL_PUBLIC_SELECT,
       });
   return NextResponse.json(drills);
 }
 
-/** POST — nuovo schema, in bozza, con un passo vuoto. Staff. */
+/** POST — nuovo esercizio o schema, in bozza, con un passo vuoto. Staff. */
 export async function POST(req: NextRequest) {
   const who = await staffActor();
   if ("error" in who) return who.error;
@@ -47,6 +46,13 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
+  }
+
+  if (parsed.data.visibility === "PUBLIC" && !canBePublic(parsed.data.kind)) {
+    return NextResponse.json(
+      { error: "Solo un esercizio può essere pubblico: gli schemi sono dei tesserati" },
       { status: 400 }
     );
   }
@@ -80,7 +86,7 @@ export async function POST(req: NextRequest) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
       return NextResponse.json({ error: "Squadra non trovata" }, { status: 400 });
     }
-    console.error("[lavagna] crea", err);
+    console.error("[playbook] crea", err);
     return NextResponse.json({ error: "Errore del server" }, { status: 500 });
   }
 }

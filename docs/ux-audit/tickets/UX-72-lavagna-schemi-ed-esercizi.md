@@ -1,4 +1,4 @@
-# UX-72 · Lavagna: schemi ed esercizi animati, con i nomi dei giocatori
+# UX-72 · Playbook (prima "Lavagna"): esercizi e schemi animati, con i nomi dei giocatori
 
 **Ondata:** 9 (strumenti dello staff) · **Stima:** L · **Dipende da:** — · **Stato:** fatto (18/11/2026), con i settori del canestro laterale alto ancora da disegnare
 
@@ -252,6 +252,23 @@ Tutte con schema Zod, try/catch con `P2002` gestito, risposte JSON, registro att
 - **Differenze dal ticket:** le pedine tengono il colore del ruolo anche nell'allenamento (il ruolo serve più della casacca, che sta nel selettore); la sezione sta in fondo alla pagina invece che subito dopo le squadre, per stare in un punto solo in tutti i layout; con tre squadre la difesa è "la squadra dopo, in giro", senza un secondo selettore.
 - **Verifica:** `tsc`, `npm test` (2.995), lint e Prettier verdi. Nel browser sull'allenamento di prova "[UX] Ciclo di vita": da admin aggiunto lo schema alla scaletta, scambiati Elena e Davide fra ruolo 3 e 4, salvato; nella pagina dell'allenamento gli Arancioni mostrano lo scambio, i Neri "Valentina" e "Luca"; da Luca Ferrero (atleta dei Neri) la sezione parte dai Neri con "Luca · Tu"; da anonimo l'API risponde 403 e la pagina non contiene lo schema. Nessun errore in console.
 - **Non verificato:** la sezione con un genitore che ha un figlio in squadra (coperto dal test di `trainingPieceNames`), `npm run a11y` sulla pagina di un allenamento con la scaletta (l'allenamento misurato dallo script non ne ha una).
+
+### Dopo la review (19/11/2026)
+
+Sette correzioni: la modifica di uno schema non azzera più descrizione, durata e squadra (`DrillUpdateSchema` con `clearable`); "Tutto schermo" senza errore di idratazione (`useSyncExternalStore`); la scrittura del testo di un passo entra in Annulla come un solo passo; lo scambio su una pedina vuota non lascia un vecchio scambio (`placeAthlete`); "All."/"T" dai dizionari; id delle punte delle frecce unici per lavagna; la scaletta si chiede solo se l'allenamento ne ha una (`hasDrills`).
+
+### Playbook: esercizi e schemi (19/11/2026)
+
+Decisioni del committente: il nome è **Playbook**; due macrocategorie, **esercizi** e **schemi**; gli esercizi sono **pubblici per scelta**, uno per uno, e **possono finire su Google**; gli schemi (il gioco da partita) restano dei tesserati.
+
+- **Dati:** `Drill.visibility` (`MEMBERS`, `PUBLIC`), migration `20261119090000_drill_visibility`. La categoria si ricava dal tipo (`@/lib/board/category`: esercizi = Riscaldamento ed Esercizio, schemi = Attacco, Difesa, Transizione, Rimessa). `effectiveVisibility` tiene uno schema dei tesserati anche se il dato dicesse altro.
+- **API:** `GET /api/drills` e `/api/drills/[id]` diventano pubbliche (`public` in `routeAccess.test.ts`): a chi non è tesserato solo `PUBLIC_DRILL_WHERE` (esercizio, pubblicato, non archiviato, pubblico). La PUT rifiuta "pubblico" su uno schema (400) e riporta ai tesserati un esercizio che diventa schema. La copia di un esercizio nasce per i tesserati.
+- **Pannello `/admin/playbook`** (era `/admin/lavagna`): schede Esercizi e Schemi con il conteggio, "Nuovo esercizio" / "Nuovo schema", tipo raggruppato per categoria, "Chi lo vede" (solo tesserati / tutti, anche su Google) solo per gli esercizi, riga "Pubblico" sulla card, "Rendi pubblico" / "Solo per i tesserati" nel "⋯".
+- **Pubblico:** `/playbook` porta a `/playbook/esercizi` (per tutti; a chi non è tesserato i soli esercizi pubblici, più la riga "Solo atleti, famiglie e staff del Karibu vedono gli altri esercizi" se ce ne sono altri); `/playbook/schemi` (tesserati, `noindex`; agli altri l'avviso); dettaglio `/playbook/[slug]` (esercizio pubblico: titolo e descrizione nei metadati, indicizzabile; tutto il resto `noindex`, e a chi non può vederlo l'avviso senza dire se esiste). Tab di sezione `PlaybookSectionNav` nella fascia, come le partite. Gli slug `esercizi` e `schemi` sono riservati.
+- **Menu:** voce "Playbook" nel menu "Il Baskin": tesserati sempre, gli altri solo con almeno un esercizio pubblico (`loadPublicExerciseCount` in cache, tag `playbook` svuotato da ogni scrittura). **Sitemap:** `/playbook/esercizi` e gli esercizi pubblici.
+- **Testi:** "Playbook" in tutte e due le lingue; "Esercizi" / "Drills", "Schemi" / "Plays". Guida: capitolo "Il Playbook" (`/guida#playbook`). `npm run a11y`: `/playbook/esercizi` e `/playbook/schemi` da anonimo e da atleta, dettaglio, pannello ed editor.
+- **Verifica:** `tsc`, `npm test` (3.011), lint verdi. Nel browser: uno schema "pubblico" rifiutato (400); creato e pubblicato l'esercizio pubblico "[Prova] Passaggi a tre"; da anonimo (richieste senza cookie) esercizi e dettaglio dell'esercizio con il visore, titolo nei metadati e senza `noindex`, schemi e dettaglio di uno schema con l'avviso, senza lo schema e con `noindex`; l'API anonima restituisce solo l'esercizio; sitemap con `/playbook/esercizi` e l'esercizio; voce del menu per l'anonimo; pannello con le due schede.
+- **Non verificato:** `npm run a11y` dopo la divisione.
 
 ## Fuori da questo ticket
 

@@ -12,20 +12,24 @@ import {
   FormControlLabel,
   FormLabel,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Radio,
   RadioGroup,
   Select,
   TextField,
 } from "@mui/material";
-import type { DrillCourt, DrillKind } from "@prisma/client";
+import type { DrillCourt, DrillKind, DrillVisibility } from "@prisma/client";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { canBePublic, kindsOf, type DrillCategory } from "@/lib/board/category";
 import {
+  DRILL_CATEGORY_LABELS,
   DRILL_COURT_LABELS,
   DRILL_KIND_LABELS,
+  DRILL_VISIBILITY_LABELS,
   type AdminDrillRow,
   type DrillTeamOption,
 } from "@/lib/board/labels";
@@ -35,8 +39,17 @@ interface DrillFormDialogProps {
   /** Schema da modificare; null = nuovo (nasce in bozza). */
   drill: Pick<
     AdminDrillRow,
-    "id" | "title" | "kind" | "court" | "description" | "durationMin" | "competitiveTeamId"
+    | "id"
+    | "title"
+    | "kind"
+    | "court"
+    | "description"
+    | "durationMin"
+    | "competitiveTeamId"
+    | "visibility"
   > | null;
+  /** Per un nuovo elemento: la scheda da cui si parte (esercizio o schema). */
+  defaultCategory?: DrillCategory;
   teams: DrillTeamOption[];
   onClose: () => void;
   /** Dopo il salvataggio, con l'id dello schema. */
@@ -44,20 +57,27 @@ interface DrillFormDialogProps {
 }
 
 /**
- * Nuovo schema o dettagli di uno esistente (UX-72): titolo, tipo, campo,
- * descrizione, durata e squadra di riferimento (solo un filtro, non decide chi
- * lo vede). Il disegno si fa nell'editor.
+ * Nuovo esercizio o schema, o i dettagli di uno esistente (UX-72): titolo,
+ * tipo (che decide se e' un esercizio o uno schema), campo, descrizione,
+ * durata, squadra di riferimento (solo un filtro) e, per un esercizio, chi lo
+ * vede. Il disegno si fa nell'editor.
  */
 export default function DrillFormDialog({
   open,
   drill,
+  defaultCategory = "plays",
   teams,
   onClose,
   onSaved,
 }: DrillFormDialogProps) {
   const { showToast } = useToast();
   const [title, setTitle] = useState(drill?.title ?? "");
-  const [kind, setKind] = useState<DrillKind>(drill?.kind ?? "ATTACK");
+  const [kind, setKind] = useState<DrillKind>(
+    drill?.kind ?? (defaultCategory === "exercises" ? "EXERCISE" : "ATTACK")
+  );
+  const [visibility, setVisibility] = useState<DrillVisibility>(drill?.visibility ?? "MEMBERS");
+  const isExercise = canBePublic(kind);
+  const noun = isExercise ? "esercizio" : "schema";
   const [court, setCourt] = useState<DrillCourt>(drill?.court ?? "HALF");
   const [description, setDescription] = useState(drill?.description ?? "");
   const [duration, setDuration] = useState(drill?.durationMin ? String(drill.durationMin) : "");
@@ -73,6 +93,8 @@ export default function DrillFormDialog({
         description,
         durationMin: duration ? Number(duration) : null,
         competitiveTeamId: teamId || null,
+        // Uno schema e' sempre dei tesserati: la rotta lo impone comunque.
+        visibility: isExercise ? visibility : "MEMBERS",
       };
       const res = await fetch(drill ? `/api/drills/${drill.id}` : "/api/drills", {
         method: drill ? "PUT" : "POST",
@@ -85,7 +107,9 @@ export default function DrillFormDialog({
     },
     onSuccess: (saved) => {
       showToast({
-        message: drill ? "Dettagli salvati" : "Schema creato, in bozza",
+        message: drill
+          ? "Dettagli salvati"
+          : `${isExercise ? "Esercizio" : "Schema"} creato, in bozza`,
         severity: "success",
       });
       onSaved(saved);
@@ -101,7 +125,7 @@ export default function DrillFormDialog({
       fullWidth
     >
       <DialogTitle fontWeight={FONT_WEIGHT.semibold}>
-        {drill ? "Dettagli dello schema" : "Nuovo schema"}
+        {drill ? `Dettagli dello ${noun}` : `Nuovo ${noun}`}
       </DialogTitle>
       <DialogContent>
         <Box
@@ -130,13 +154,42 @@ export default function DrillFormDialog({
               value={kind}
               onChange={(e) => setKind(e.target.value as DrillKind)}
             >
-              {(Object.keys(DRILL_KIND_LABELS) as DrillKind[]).map((k) => (
-                <MenuItem key={k} value={k}>
-                  {DRILL_KIND_LABELS[k]}
-                </MenuItem>
-              ))}
+              {(["exercises", "plays"] as const).flatMap((c) => [
+                <ListSubheader key={c}>{DRILL_CATEGORY_LABELS[c]}</ListSubheader>,
+                ...kindsOf(c).map((k) => (
+                  <MenuItem key={k} value={k}>
+                    {DRILL_KIND_LABELS[k]}
+                  </MenuItem>
+                )),
+              ])}
             </Select>
           </FormControl>
+          {isExercise ? (
+            <FormControl>
+              <FormLabel id="drill-visibility">Chi lo vede, quando è pubblicato</FormLabel>
+              <RadioGroup
+                aria-labelledby="drill-visibility"
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value as DrillVisibility)}
+              >
+                {(["MEMBERS", "PUBLIC"] as const).map((v) => (
+                  <FormControlLabel
+                    key={v}
+                    value={v}
+                    control={<Radio />}
+                    label={DRILL_VISIBILITY_LABELS[v]}
+                    sx={{ minHeight: 44 }}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          ) : (
+            drill?.visibility === "PUBLIC" && (
+              <Alert severity="info">
+                Uno schema è sempre solo dei tesserati: salvando, non sarà più pubblico.
+              </Alert>
+            )
+          )}
           <FormControl>
             <FormLabel id="drill-court">Campo</FormLabel>
             <RadioGroup

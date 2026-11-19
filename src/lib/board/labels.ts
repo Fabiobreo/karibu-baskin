@@ -1,6 +1,6 @@
-import type { DrillCourt, DrillKind } from "@prisma/client";
+import type { DrillCourt, DrillKind, DrillVisibility } from "@prisma/client";
 
-/** Etichette della lavagna nel pannello (UX-72): il pannello e' solo in italiano. */
+/** Etichette del Playbook nel pannello (UX-72): il pannello e' solo in italiano. */
 export const DRILL_KIND_LABELS: Record<DrillKind, string> = {
   ATTACK: "Attacco",
   DEFENSE: "Difesa",
@@ -8,6 +8,13 @@ export const DRILL_KIND_LABELS: Record<DrillKind, string> = {
   SET_PLAY: "Rimessa o palla ferma",
   EXERCISE: "Esercizio",
   WARMUP: "Riscaldamento",
+};
+
+export const DRILL_CATEGORY_LABELS = { exercises: "Esercizi", plays: "Schemi" } as const;
+
+export const DRILL_VISIBILITY_LABELS: Record<DrillVisibility, string> = {
+  MEMBERS: "Solo tesserati",
+  PUBLIC: "Tutti, anche su Google",
 };
 
 export const DRILL_COURT_LABELS: Record<DrillCourt, string> = {
@@ -25,6 +32,7 @@ export interface AdminDrillRow {
   description: string | null;
   durationMin: number | null;
   competitiveTeamId: string | null;
+  visibility: DrillVisibility;
   status: "DRAFT" | "PUBLISHED";
   archived: boolean;
   usedIn: number;

@@ -80,3 +80,32 @@ export function trainingPieceNames(
     })
   );
 }
+
+/**
+ * Lo staff mette `athleteId` su `pieceId` (dialog della scaletta). `current`
+ * e' l'abbinamento che si vede (pezzo → atleta) per le pedine di quel lato;
+ * chi era gia' su un'altra pedina prende il posto lasciato libero; se quel
+ * posto era vuoto, la pedina lasciata torna alla proposta automatica.
+ * Restituisce gli scambi salvati della squadra con le pedine di quel lato
+ * riscritte per intero: un vecchio scambio non resta a contraddire il nuovo.
+ */
+export function placeAthlete(
+  saved: Record<string, string> | undefined,
+  sidePieces: string[],
+  current: Record<string, string>,
+  pieceId: string,
+  athleteId: string
+): Record<string, string> {
+  const mapping: Record<string, string> = {};
+  for (const id of sidePieces) if (current[id]) mapping[id] = current[id];
+  const previous = mapping[pieceId];
+  const other = sidePieces.find((id) => id !== pieceId && mapping[id] === athleteId);
+  mapping[pieceId] = athleteId;
+  if (other) {
+    if (previous) mapping[other] = previous;
+    else delete mapping[other];
+  }
+  const out = { ...(saved ?? {}) };
+  for (const id of sidePieces) delete out[id];
+  return { ...out, ...mapping };
+}

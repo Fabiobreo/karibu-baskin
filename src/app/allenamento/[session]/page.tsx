@@ -21,7 +21,7 @@ export default async function AllenamentoPage({
     prisma.trainingSession.findFirst({
       where: { OR: [{ id: sessionParam }, { dateSlug: sessionParam }] },
       include: {
-        _count: { select: { registrations: true } },
+        _count: { select: { registrations: true, drills: true } },
         restrictTeam: { select: { id: true, name: true, color: true } },
       },
     }),
@@ -44,8 +44,14 @@ export default async function AllenamentoPage({
     registrationOpenedAt: training.registrationOpenedAt
       ? training.registrationOpenedAt.toISOString()
       : null,
-    _count: training._count,
+    _count: { registrations: training._count.registrations },
   };
 
-  return <SessionPageClient initialSession={initialSession} currentSeason={currentSeason} />;
+  return (
+    <SessionPageClient
+      initialSession={initialSession}
+      currentSeason={currentSeason}
+      hasDrills={training._count.drills > 0}
+    />
+  );
 }

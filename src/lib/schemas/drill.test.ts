@@ -3,6 +3,7 @@ import { PICK_AND_SHOOT } from "@/lib/board/fixtures";
 import type { DrillContent } from "@/lib/board/content";
 import {
   DrillCreateSchema,
+  DrillUpdateSchema,
   EMPTY_DRILL_CONTENT,
   TrainingDrillsSchema,
   drillContentSchema,
@@ -130,5 +131,29 @@ describe("TrainingDrillsSchema", () => {
     expect(
       TrainingDrillsSchema.safeParse([{ drillId: "d1", assignments: { teamZ: {} } }]).success
     ).toBe(false);
+  });
+});
+
+describe("DrillUpdateSchema", () => {
+  it("un campo assente resta com'e', null o vuoto lo cancellano", () => {
+    const only = DrillUpdateSchema.parse({ status: "PUBLISHED" });
+    expect(only.description).toBeUndefined();
+    expect(only.durationMin).toBeUndefined();
+    expect(only.competitiveTeamId).toBeUndefined();
+    const cleared = DrillUpdateSchema.parse({
+      description: "  ",
+      durationMin: null,
+      competitiveTeamId: "",
+    });
+    expect(cleared).toMatchObject({
+      description: null,
+      durationMin: null,
+      competitiveTeamId: null,
+    });
+    expect(DrillUpdateSchema.parse({ description: " Bene ", durationMin: 10 })).toMatchObject({
+      description: "Bene",
+      durationMin: 10,
+    });
+    expect(DrillUpdateSchema.safeParse({ durationMin: 0 }).success).toBe(false);
   });
 });

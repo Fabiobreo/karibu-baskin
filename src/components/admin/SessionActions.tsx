@@ -73,7 +73,7 @@ export default function SessionActions({ session, initialEdit = false }: Session
       >
         Duplica
       </Button>
-      {/* Lavagna (UX-72): gli schemi di questo allenamento e chi va dove. */}
+      {/* Playbook (UX-72): gli schemi di questo allenamento e chi va dove. */}
       <Button
         variant="outlined"
         startIcon={<GestureIcon />}

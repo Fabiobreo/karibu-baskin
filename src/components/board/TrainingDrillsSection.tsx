@@ -25,6 +25,7 @@ import {
 import { fetchJson } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
 import type { TeamsData } from "@/lib/schemas/session";
+import { drillPath } from "@/lib/board/category";
 import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 import DrillPlayer from "./DrillPlayer";
 import type { PieceName } from "./BoardSvg";
@@ -175,7 +176,7 @@ export default function TrainingDrillsSection({
                 content={d.content}
                 names={namesByDrill[d.drillId]}
               />
-              <Button href={`/lavagna/${d.slug}`} variant="text" sx={{ mt: 1 }}>
+              <Button href={drillPath(d.slug)} variant="text" sx={{ mt: 1 }}>
                 {t("openOnBoard")}
               </Button>
             </AccordionDetails>

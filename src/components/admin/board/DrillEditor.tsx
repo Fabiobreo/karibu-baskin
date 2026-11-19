@@ -40,6 +40,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { deriveArrows, stepScreens } from "@/lib/board/arrows";
 import { interpolateStep } from "@/lib/board/animation";
 import { isPlayerPiece, type DrillContent } from "@/lib/board/content";
+import { canBePublic } from "@/lib/board/category";
 import type { Point } from "@/lib/board/court";
 import * as edit from "@/lib/board/editing";
 import {
@@ -103,6 +104,7 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
   const [draftDismissed, setDraftDismissed] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<Drag | null>(null);
+  const textCheckpointRef = useRef(false);
   const { content } = history;
   const court = drill.court;
   const dirty = content !== saved;
@@ -165,10 +167,12 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
       showToast({
         message:
           status === "PUBLISHED"
-            ? "Schema pubblicato: lo vedono i tesserati"
+            ? drill.visibility === "PUBLIC" && canBePublic(drill.kind)
+              ? "Pubblicato: lo vedono tutti"
+              : "Pubblicato: lo vedono i tesserati"
             : status === "DRAFT"
-              ? "Schema rimesso in bozza"
-              : "Schema salvato",
+              ? "Rimesso in bozza"
+              : "Salvato",
         severity: "success",
       });
       router.refresh();
@@ -293,7 +297,7 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
     const at = edit.freeSpot(content, current, court);
     const result = edit.addPiece(content, current, piece, at);
     if (!result.id) {
-      showToast({ message: "Al massimo 24 pezzi per schema", severity: "warning" });
+      showToast({ message: "Al massimo 24 pezzi", severity: "warning" });
       return;
     }
     dispatch({ type: "replace", content: result.content });
@@ -331,7 +335,7 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
     <>
       <PageHeader
         title={drill.title}
-        breadcrumb={[{ label: "Lavagna", href: "/admin/lavagna" }, { label: drill.title }]}
+        breadcrumb={[{ label: "Playbook", href: "/admin/playbook" }, { label: drill.title }]}
         subtitle={`${DRILL_KIND_LABELS[drill.kind]} · ${DRILL_COURT_LABELS[court]}${dirty ? " · modifiche non salvate" : ""}`}
         action={
           <Button
@@ -375,7 +379,7 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
             </Box>
           }
         >
-          Su questo dispositivo ci sono modifiche a questo schema non ancora salvate.
+          Su questo dispositivo ci sono modifiche non ancora salvate.
         </Alert>
       )}
 
@@ -443,7 +447,7 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
       <Box
         tabIndex={0}
         onKeyDown={onKeyDown}
-        aria-label="Lavagna: tocca un pezzo per sceglierlo, frecce per spostarlo, Canc per toglierlo"
+        aria-label="Campo: tocca un pezzo per sceglierlo, frecce per spostarlo, Canc per toglierlo"
         sx={{
           outline: "none",
           "&:focus-visible": {
@@ -514,9 +518,18 @@ export default function DrillEditor({ drill, content: initial, teams }: DrillEdi
             dispatch({ type: "replace", content: next });
             setStepIndex(current + delta);
           }}
-          onText={(text) =>
-            dispatch({ type: "live", fn: (c) => edit.setStepText(c, current, text) })
-          }
+          onTextFocus={() => {
+            textCheckpointRef.current = false;
+          }}
+          onText={(text) => {
+            // Una scrittura e' un solo passo della storia: il punto di ritorno
+            // si salva alla prima battuta, poi le lettere vanno "live".
+            if (!textCheckpointRef.current) {
+              dispatch({ type: "checkpoint" });
+              textCheckpointRef.current = true;
+            }
+            dispatch({ type: "live", fn: (c) => edit.setStepText(c, current, text) });
+          }}
         />
         <DrillSelectionPanel
           pieces={content.pieces}

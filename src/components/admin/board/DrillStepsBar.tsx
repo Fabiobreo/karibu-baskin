@@ -16,6 +16,8 @@ interface DrillStepsBarProps {
   onRemove: () => void;
   onMove: (delta: -1 | 1) => void;
   onText: (text: string) => void;
+  /** Il campo prende il focus: comincia una scrittura da annullare in un colpo. */
+  onTextFocus: () => void;
 }
 
 /**
@@ -32,6 +34,7 @@ export default function DrillStepsBar({
   onRemove,
   onMove,
   onText,
+  onTextFocus,
 }: DrillStepsBarProps) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const act = (fn: () => void) => () => {
@@ -99,7 +102,8 @@ export default function DrillStepsBar({
         placeholder="Il 3 riceve e va al settore centrale"
         value={text}
         onChange={(e) => onText(e.target.value)}
-        helperText={`${text.length}/${MAX_STEP_TEXT} · si legge sopra la lavagna`}
+        onFocus={onTextFocus}
+        helperText={`${text.length}/${MAX_STEP_TEXT} · si legge sopra il campo`}
         slotProps={{ htmlInput: { maxLength: MAX_STEP_TEXT } }}
         fullWidth
       />

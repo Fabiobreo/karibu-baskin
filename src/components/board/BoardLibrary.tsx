@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import EmptyState from "@/components/common/EmptyState";
 import { interpolateStep } from "@/lib/board/animation";
 import type { PublicDrill } from "@/lib/board/loadBoard";
+import { drillPath } from "@/lib/board/category";
 import { RADIUS } from "@/lib/radius";
 import { TOUCH_FIELD_ON_PHONE } from "@/lib/touchTarget";
 import BoardSvg from "./BoardSvg";
@@ -37,11 +38,18 @@ export function useDrillMeta() {
 }
 
 /**
- * Libreria della lavagna per i tesserati (UX-72): card con la miniatura del
- * primo passo, filtri per tipo, campo e squadra di riferimento, ricerca.
- * Tutti i tesserati vedono tutti gli schemi pubblicati: la squadra e' solo un filtro.
+ * Elenco del Playbook (UX-72), esercizi o schemi: card con la miniatura del
+ * primo passo, filtri per tipo, campo e squadra di riferimento, ricerca. La
+ * squadra e' solo un filtro; chi vede cosa lo decide la pagina.
  */
-export default function BoardLibrary({ drills }: { drills: PublicDrill[] }) {
+export default function BoardLibrary({
+  drills,
+  emptyText,
+}: {
+  drills: PublicDrill[];
+  /** Testo senza niente da mostrare: dipende dalla categoria. */
+  emptyText: string;
+}) {
   const t = useTranslations("board");
   const meta = useDrillMeta();
   const [search, setSearch] = useState("");
@@ -66,7 +74,7 @@ export default function BoardLibrary({ drills }: { drills: PublicDrill[] }) {
       (!team || d.team?.id === team)
   );
 
-  if (drills.length === 0) return <EmptyState title={t("empty")} />;
+  if (drills.length === 0) return <EmptyState title={emptyText} />;
 
   return (
     <>
@@ -162,7 +170,7 @@ export default function BoardLibrary({ drills }: { drills: PublicDrill[] }) {
                 }}
               >
                 <CardActionArea
-                  href={`/lavagna/${d.slug}`}
+                  href={drillPath(d.slug)}
                   sx={{
                     height: "100%",
                     display: "flex",

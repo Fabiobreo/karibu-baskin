@@ -308,7 +308,7 @@
     "events": "Eventi",
     "gallery": "Gallery",
     "games": "Giochi",
-    "board": "Lavagna",
+    "board": "Playbook",
     "contacts": "Contatti",
     "faq": "FAQ",
     "guide": "Guida all'app",
@@ -1984,7 +1984,8 @@
       "albums": "gli altri album",
       "photos": "le foto di questo album",
       "photosShort": "le foto",
-      "board": "gli schemi della lavagna"
+      "board": "gli schemi del Playbook",
+      "moreExercises": "gli altri esercizi"
     }
   },
   "albumStrip": {
@@ -2123,9 +2124,8 @@
     "legendShot": "Tiro",
     "legendScreen": "Blocco",
     "noText": "Nessuna spiegazione per questo passo",
-    "title": "Lavagna",
-    "subtitle": "Schemi ed esercizi del Karibu, da guardare e ripassare",
-    "search": "Cerca uno schema",
+    "title": "Playbook",
+    "search": "Cerca per titolo",
     "filterKind": "Tipo",
     "filterCourt": "Campo",
     "filterTeam": "Squadra",
@@ -2158,7 +2158,15 @@
     "onlyRoles": "Solo ruoli",
     "noTeamsYet": "I nomi arrivano quando lo staff fa le squadre.",
     "you": "{name} · Tu",
-    "openOnBoard": "Apri nella lavagna",
-    "showDrill": "Mostra {title}"
+    "openOnBoard": "Apri nel Playbook",
+    "showDrill": "Mostra {title}",
+    "coachShort": "All.",
+    "tutorShort": "T",
+    "subtitleExercises": "Esercizi di Baskin da guardare e rifare in palestra",
+    "subtitlePlays": "Il nostro gioco da partita, per atleti, famiglie e staff",
+    "tabExercises": "Esercizi",
+    "tabPlays": "Schemi",
+    "navLabel": "Sezioni del Playbook",
+    "emptyExercises": "Lo staff non ha ancora pubblicato esercizi."
   }
 }

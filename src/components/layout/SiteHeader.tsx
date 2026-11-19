@@ -93,8 +93,9 @@ const IL_BASKIN_HREFS: IlBaskinLink[] = [
 
 // Giochi (UX-61): in menu se chi guarda ne può giocare almeno uno (UX-66).
 const GAMES_LINK: IlBaskinLink = { key: "games", href: "/giochi" };
-// Lavagna (UX-72): schemi ed esercizi, solo per tesserati e staff.
-const BOARD_LINK: IlBaskinLink = { key: "board", href: "/lavagna" };
+// Playbook (UX-72): esercizi e schemi. Per chi non e' tesserato c'e' solo con
+// almeno un esercizio pubblico (lo decide il layout).
+const BOARD_LINK: IlBaskinLink = { key: "board", href: "/playbook" };
 
 const CONTATTI_HREFS = [
   { key: "contacts" as const, href: "/contatti" },
@@ -133,7 +134,7 @@ interface SiteHeaderProps {
   currentSeason: string;
   /** Voce "Giochi": c'è se chi guarda ne può giocare almeno uno (UX-66), dal layout. */
   showGames: boolean;
-  /** Voce "Lavagna": solo tesserati e staff (UX-72), dal layout. */
+  /** Voce "Playbook" (UX-72), dal layout: tesserati, o tutti con un esercizio pubblico. */
   showBoard: boolean;
 }
 
@@ -187,7 +188,7 @@ export default function SiteHeader({ currentSeason, showGames, showBoard }: Site
     pathname === "/il-baskin" ||
     pathname === "/gallery" ||
     (pathname?.startsWith("/giochi") ?? false) ||
-    (pathname?.startsWith("/lavagna") ?? false);
+    (pathname?.startsWith("/playbook") ?? false);
   const contattiActive = CONTATTI_HREFS.some((l) => l.href === pathname);
 
   // Squadre della stagione corrente per i link dinamici del dropdown

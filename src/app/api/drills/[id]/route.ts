@@ -1,36 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma, type AppRole } from "@prisma/client";
 import { auth } from "@/lib/authjs";
-import { canViewAdminPanel } from "@/lib/authRoles";
-import { isMember, staffActor } from "@/lib/apiAuth";
+import { canViewAdminPanel, isMemberRole } from "@/lib/authRoles";
+import { staffActor } from "@/lib/apiAuth";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { DrillUpdateSchema, drillContentSchema } from "@/lib/schemas/drill";
-import { DRILL_ADMIN_SELECT, DRILL_PUBLIC_SELECT, auditDrill } from "@/lib/board/drillAdmin";
+import { canBePublic } from "@/lib/board/category";
+import {
+  DRILL_ADMIN_SELECT,
+  DRILL_PUBLIC_SELECT,
+  auditDrill,
+  visibleDrillWhere,
+} from "@/lib/board/drillAdmin";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 const notFound = () => NextResponse.json({ error: "Non trovato" }, { status: 404 });
 
 /**
- * GET — uno schema (UX-72). Ai tesserati solo se pubblicato e non archiviato;
- * a chi entra nel pannello (staff e dirigente) anche le bozze, con i campi
- * del pannello.
+ * GET — un esercizio o uno schema (UX-72). Ai tesserati se pubblicato e non
+ * archiviato, a tutti gli altri solo un esercizio pubblico; a chi entra nel
+ * pannello (staff e dirigente) anche le bozze, con i campi del pannello.
  */
 export async function GET(req: NextRequest, { params }: Ctx) {
   const rl = checkRateLimit(getClientIp(req), "get-drill", 120, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
-  if (!(await isMember())) {
-    return NextResponse.json({ error: "Solo per i tesserati" }, { status: 403 });
-  }
   const { id } = await params;
   const session = await auth();
-  if (canViewAdminPanel(session?.user?.appRole as AppRole | undefined)) {
+  const role = session?.user?.appRole as AppRole | undefined;
+  if (canViewAdminPanel(role)) {
     const drill = await prisma.drill.findUnique({ where: { id }, select: DRILL_ADMIN_SELECT });
     return drill ? NextResponse.json(drill) : notFound();
   }
   const drill = await prisma.drill.findFirst({
-    where: { id, status: "PUBLISHED", archivedAt: null },
+    where: { id, ...visibleDrillWhere(isMemberRole(role)) },
     select: DRILL_PUBLIC_SELECT,
   });
   return drill ? NextResponse.json(drill) : notFound();
@@ -59,8 +63,10 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       where: { id },
       select: {
         title: true,
+        kind: true,
         court: true,
         status: true,
+        visibility: true,
         content: true,
         archivedAt: true,
         publishedAt: true,
@@ -83,6 +89,17 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     }
     const content = contentResult.data;
     const status = fields.status ?? existing.status;
+
+    // Solo un esercizio puo' essere pubblico. Chi trasforma un esercizio
+    // pubblico in uno schema lo riporta ai soli tesserati senza doverci pensare.
+    const kind = fields.kind ?? existing.kind;
+    if (fields.visibility === "PUBLIC" && !canBePublic(kind)) {
+      return NextResponse.json(
+        { error: "Solo un esercizio può essere pubblico: gli schemi sono dei tesserati" },
+        { status: 400 }
+      );
+    }
+    const visibility = canBePublic(kind) ? (fields.visibility ?? existing.visibility) : "MEMBERS";
     if (status === "PUBLISHED" && content.pieces.length === 0) {
       return NextResponse.json(
         { error: "Aggiungi almeno un pezzo prima di pubblicare" },
@@ -94,6 +111,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       where: { id },
       data: {
         ...fields,
+        visibility,
         content: content as unknown as Prisma.InputJsonValue,
         updatedById: who.actorId,
         ...(status === "PUBLISHED" && !existing.publishedAt ? { publishedAt: new Date() } : {}),
@@ -110,11 +128,17 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
           : "UNPUBLISH_DRILL"
         : "UPDATE_DRILL",
       targetId: id,
-      before: { title: existing.title, court: existing.court, status: existing.status },
+      before: {
+        title: existing.title,
+        court: existing.court,
+        status: existing.status,
+        visibility: existing.visibility,
+      },
       after: {
         title: drill.title,
         court: drill.court,
         status: drill.status,
+        visibility: drill.visibility,
         ...(rawContent !== undefined
           ? { steps: content.steps.length, pieces: content.pieces.length }
           : {}),
@@ -125,7 +149,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
       return NextResponse.json({ error: "Squadra non trovata" }, { status: 400 });
     }
-    console.error("[lavagna] modifica", err);
+    console.error("[playbook] modifica", err);
     return NextResponse.json({ error: "Errore del server" }, { status: 500 });
   }
 }
@@ -178,7 +202,7 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
         { status: 409 }
       );
     }
-    console.error("[lavagna] elimina", err);
+    console.error("[playbook] elimina", err);
     return NextResponse.json({ error: "Errore del server" }, { status: 500 });
   }
 }

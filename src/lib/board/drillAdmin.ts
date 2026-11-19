@@ -1,12 +1,14 @@
 import type { Prisma } from "@prisma/client";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { logAudit, type AuditAction } from "@/lib/audit";
 import { inBackground } from "@/lib/background";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 import { PUBLIC_TEAM_WHERE } from "@/lib/matches/mixedTeam";
+import { EXERCISE_KINDS, RESERVED_DRILL_SLUGS } from "./category";
 
 /**
- * Letture e scritture degli schemi della lavagna (UX-72) condivise da rotte e
+ * Letture e scritture del Playbook (UX-72) condivise da rotte e
  * pagine. Chi ha creato o modificato uno schema resta nel database (registro e
  * pannello), ma non esce mai verso i tesserati: per loro c'e' `DRILL_PUBLIC_SELECT`.
  */
@@ -21,6 +23,7 @@ export const DRILL_PUBLIC_SELECT = {
   description: true,
   durationMin: true,
   competitiveTeamId: true,
+  visibility: true,
   content: true,
   publishedAt: true,
   updatedAt: true,
@@ -43,6 +46,29 @@ export const VISIBLE_DRILL_WHERE = {
   archivedAt: null,
 } satisfies Prisma.DrillWhereInput;
 
+/**
+ * Quello che vede chi non e' tesserato: solo gli esercizi pubblicati e resi
+ * pubblici. Uno schema da partita non c'e' mai, qualunque cosa dica il dato.
+ */
+export const PUBLIC_DRILL_WHERE = {
+  ...VISIBLE_DRILL_WHERE,
+  visibility: "PUBLIC",
+  kind: { in: [...EXERCISE_KINDS] },
+} satisfies Prisma.DrillWhereInput;
+
+export const visibleDrillWhere = (member: boolean): Prisma.DrillWhereInput =>
+  member ? VISIBLE_DRILL_WHERE : PUBLIC_DRILL_WHERE;
+
+/** Cache di quello che dipende dal Playbook pubblico (menu, sitemap). */
+export const PLAYBOOK_TAG = "playbook";
+
+/** Quanti esercizi pubblici ci sono: decide se il Playbook va nel menu di tutti. */
+export const loadPublicExerciseCount = unstable_cache(
+  () => prisma.drill.count({ where: PUBLIC_DRILL_WHERE }),
+  ["playbook-public-count"],
+  { tags: [PLAYBOOK_TAG], revalidate: 300 }
+);
+
 /** Slug libero a partire dal titolo ("pick-and-roll", "pick-and-roll-2"). */
 export async function freeDrillSlug(title: string, exceptId?: string): Promise<string> {
   const base = slugify(title) || "schema";
@@ -50,7 +76,8 @@ export async function freeDrillSlug(title: string, exceptId?: string): Promise<s
     where: { slug: { startsWith: base }, ...(exceptId ? { id: { not: exceptId } } : {}) },
     select: { slug: true },
   });
-  const used = new Set(taken.map((d) => d.slug));
+  // "esercizi" e "schemi" sono le pagine delle due categorie.
+  const used = new Set([...taken.map((d) => d.slug), ...RESERVED_DRILL_SLUGS]);
   let slug = base;
   for (let n = 2; used.has(slug); n++) slug = `${base}-${n}`;
   return slug;
@@ -66,7 +93,9 @@ export function auditDrill(input: {
   /** "Drill" di default; la scaletta registra l'allenamento. */
   targetType?: "Drill" | "TrainingSession";
 }) {
-  inBackground(logAudit({ targetType: "Drill", ...input }), "audit lavagna");
+  // Ogni scrittura puo' cambiare cosa c'e' di pubblico: menu e sitemap rileggono.
+  revalidateTag(PLAYBOOK_TAG, { expire: 0 });
+  inBackground(logAudit({ targetType: "Drill", ...input }), "audit playbook");
 }
 
 type AdminDrillRecord = Prisma.DrillGetPayload<{ select: typeof DRILL_ADMIN_SELECT }>;
@@ -82,6 +111,7 @@ export function toAdminDrillRow(d: AdminDrillRecord) {
     description: d.description,
     durationMin: d.durationMin,
     competitiveTeamId: d.competitiveTeamId,
+    visibility: d.visibility,
     status: d.status,
     archived: d.archivedAt !== null,
     usedIn: d._count.trainings,

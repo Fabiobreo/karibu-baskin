@@ -29,17 +29,21 @@ import { RADIUS } from "@/lib/radius";
 import { bibMeta } from "@/lib/bib";
 import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 import { assignSlots } from "@/lib/board/assign";
+import { EXERCISE_KINDS, PLAY_KINDS } from "@/lib/board/category";
 import type { DrillContent } from "@/lib/board/content";
 import { DRILL_COURT_LABELS, DRILL_KIND_LABELS } from "@/lib/board/labels";
 import type { TrainingDrillItem } from "@/lib/board/trainingDrills";
 import {
   opponentKey,
+  placeAthlete,
   slotTeam,
   trainingTeamKeys,
   type TrainingTeamKey,
 } from "@/lib/board/trainingNames";
 import type { DrillAssignments } from "@/lib/schemas/drill";
 import type { TeamsData } from "@/lib/schemas/session";
+
+const KIND_ORDER = [...EXERCISE_KINDS, ...PLAY_KINDS];
 
 interface LibraryDrill {
   id: string;
@@ -75,7 +79,7 @@ interface TrainingDrillsDialogProps {
 }
 
 /**
- * Scaletta di un allenamento (UX-72): quali schemi della lavagna, in che
+ * Scaletta di un allenamento (UX-72): quali esercizi e schemi del Playbook, in che
  * ordine, con una nota; per ogni squadra chi va su quale pedina (proposto in
  * automatico, si cambia con un menu). Un solo salvataggio.
  */
@@ -138,7 +142,14 @@ export default function TrainingDrillsDialog({
     onError: (err) => setError(err.message),
   });
 
-  const available = (library.data ?? []).filter((d) => !list.some((i) => i.drillId === d.id));
+  // Raggruppati per tipo (l'Autocomplete vuole i gruppi gia' in fila): prima
+  // gli esercizi, poi gli schemi.
+  const available = (library.data ?? [])
+    .filter((d) => !list.some((i) => i.drillId === d.id))
+    .sort(
+      (a, b) =>
+        KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.title.localeCompare(b.title)
+    );
   const loading = current.isLoading || library.isLoading;
 
   return (
@@ -175,11 +186,11 @@ export default function TrainingDrillsDialog({
                   },
                 ])
               }
-              noOptionsText="Nessuno schema pubblicato da aggiungere"
+              noOptionsText="Niente di pubblicato da aggiungere"
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Aggiungi dalla lavagna"
+                  label="Aggiungi dal Playbook"
                   placeholder="Cerca per titolo"
                 />
               )}
@@ -187,8 +198,8 @@ export default function TrainingDrillsDialog({
 
             {list.length === 0 ? (
               <Typography color="text.secondary">
-                Nessuno schema in scaletta. I tesserati vedono la sezione &ldquo;Cosa facciamo
-                oggi&rdquo; solo quando ce n&apos;è almeno uno.
+                Scaletta vuota. I tesserati vedono la sezione &ldquo;Cosa facciamo oggi&rdquo; solo
+                quando ce n&apos;è almeno uno.
               </Typography>
             ) : (
               list.map((item, index) => (
@@ -267,18 +278,15 @@ function DrillRow({
     const teamKey = side === "attack" ? attack : defense;
     if (!teamKey) return;
     const sidePieces = rolePieces.filter((p) => p.side === side).map((p) => p.id);
-    const mapping: Record<string, string> = {};
-    for (const id of sidePieces) if (slots[id]) mapping[id] = slots[id].id;
-    const previous = mapping[pieceId];
-    const other = sidePieces.find((id) => mapping[id] === athleteId && id !== pieceId);
-    mapping[pieceId] = athleteId;
-    if (other) {
-      if (previous) mapping[other] = previous;
-      else delete mapping[other];
-    }
+    const current = Object.fromEntries(
+      Object.entries(slots).map(([pieceId, athlete]) => [pieceId, athlete.id])
+    );
     onChange({
       ...item,
-      assignments: { ...item.assignments, [teamKey]: { ...item.assignments[teamKey], ...mapping } },
+      assignments: {
+        ...item.assignments,
+        [teamKey]: placeAthlete(item.assignments[teamKey], sidePieces, current, pieceId, athleteId),
+      },
     });
   }
 

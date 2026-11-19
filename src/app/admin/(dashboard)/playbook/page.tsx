@@ -6,9 +6,9 @@ import { EMPTY_DRILL_CONTENT, parseDrillContent } from "@/lib/schemas/drill";
 
 export const dynamic = "force-dynamic";
 
-/** Lavagna (UX-72): gli schemi ed esercizi dello staff. Il dirigente li guarda. */
-export default async function AdminLavagnaPage() {
-  const { readOnly } = await requireAdminPage("/admin/lavagna");
+/** Playbook (UX-72): esercizi e schemi dello staff. Il dirigente li guarda. */
+export default async function AdminPlaybookPage() {
+  const { readOnly } = await requireAdminPage("/admin/playbook");
   const [drills, teams] = await Promise.all([
     prisma.drill.findMany({ orderBy: { updatedAt: "desc" }, select: DRILL_ADMIN_SELECT }),
     loadDrillTeamOptions(),

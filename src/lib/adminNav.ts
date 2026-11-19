@@ -45,8 +45,8 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: "Eventi", href: "/admin/eventi", group: "attivita", inBar: true, director: true },
   { label: "News", href: "/admin/news", group: "attivita", inBar: true, director: true },
   { label: "Gallery", href: "/admin/gallery", group: "attivita", director: true },
-  // Lavagna (UX-72): il dirigente guarda gli schemi, non li scrive.
-  { label: "Lavagna", href: "/admin/lavagna", group: "attivita", director: true },
+  // Playbook (UX-72): il dirigente guarda esercizi e schemi, non li scrive.
+  { label: "Playbook", href: "/admin/playbook", group: "attivita", director: true },
   { label: "Utenti", href: "/admin/utenti", group: "anagrafiche", inBar: true, director: true },
   { label: "Squadre", href: "/admin/squadre", group: "anagrafiche", inBar: true, director: true },
   { label: "Gironi", href: "/admin/gironi", group: "anagrafiche" },

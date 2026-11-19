@@ -1,4 +1,5 @@
 import { isMemberRole } from "@/lib/authRoles";
+import { loadPublicExerciseCount } from "@/lib/board/drillAdmin";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
@@ -116,13 +117,17 @@ export async function generateViewport(): Promise<Viewport> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, currentSeason, gameSettings] = await Promise.all([
+  const [session, currentSeason, gameSettings, publicExercises] = await Promise.all([
     auth(),
     getCurrentSeasonLabel(),
     loadGameSettings(),
+    // In cache (tag `playbook`): non e' una query a ogni pagina.
+    loadPublicExerciseCount().catch(() => 0),
   ]);
   const showGames = showsGamesInMenu(gameSettings, session?.user?.appRole);
-  const showBoard = isMemberRole(session?.user?.appRole);
+  // Playbook (UX-72): i tesserati ci trovano esercizi e schemi; gli altri solo
+  // gli esercizi pubblici, quindi la voce c'e' per loro solo se ce n'e' almeno uno.
+  const showBoard = isMemberRole(session?.user?.appRole) || publicExercises > 0;
   const locale = await getLocale();
   const messages = await getMessages();
 

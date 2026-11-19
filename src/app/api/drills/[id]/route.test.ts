@@ -41,6 +41,8 @@ const as = (appRole: string) => mockAuth.mockResolvedValue({ user: { id: "u1", a
 
 const stored = (over: object = {}) => ({
   title: "Pick",
+  kind: "ATTACK",
+  visibility: "MEMBERS",
   court: "HALF",
   status: "DRAFT",
   content: PICK_AND_SHOOT,
@@ -52,12 +54,23 @@ const stored = (over: object = {}) => ({
 describe("GET /api/drills/[id]", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("ospite e anonimo: 403, senza leggere niente", async () => {
-    as("GUEST");
-    expect((await get()).status).toBe(403);
-    mockAuth.mockResolvedValue(null);
-    expect((await get()).status).toBe(403);
-    expect(p.drill.findFirst).not.toHaveBeenCalled();
+  it("ospite e anonimo: solo un esercizio reso pubblico, mai uno schema", async () => {
+    for (const viewer of [() => as("GUEST"), () => mockAuth.mockResolvedValue(null)]) {
+      viewer();
+      p.drill.findFirst.mockResolvedValue(null);
+      expect((await get()).status).toBe(404);
+      expect(p.drill.findFirst).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: "d1",
+            status: "PUBLISHED",
+            archivedAt: null,
+            visibility: "PUBLIC",
+            kind: { in: ["WARMUP", "EXERCISE"] },
+          }),
+        })
+      );
+    }
   });
 
   it("al tesserato solo pubblicati e non archiviati", async () => {
@@ -97,6 +110,11 @@ describe("PUT /api/drills/[id]", () => {
   it("salva il disegno valido e lo registra", async () => {
     expect((await put({ content: PICK_AND_SHOOT })).status).toBe(200);
     expect(auditDrill).toHaveBeenCalledWith(expect.objectContaining({ action: "UPDATE_DRILL" }));
+    // Salvare il disegno non tocca descrizione, durata e squadra.
+    const data = p.drill.update.mock.calls[0][0].data;
+    expect(data.description).toBeUndefined();
+    expect(data.durationMin).toBeUndefined();
+    expect(data.competitiveTeamId).toBeUndefined();
   });
 
   it("rifiuta un disegno fuori dalla meta' campo", async () => {
@@ -124,6 +142,16 @@ describe("PUT /api/drills/[id]", () => {
     expect((await put({ status: "PUBLISHED" })).status).toBe(200);
     expect(p.drill.update.mock.calls[0][0].data.publishedAt).toBeInstanceOf(Date);
     expect(auditDrill).toHaveBeenCalledWith(expect.objectContaining({ action: "PUBLISH_DRILL" }));
+  });
+
+  it("solo un esercizio diventa pubblico; diventando schema torna ai tesserati", async () => {
+    expect((await put({ visibility: "PUBLIC" })).status).toBe(400);
+    p.drill.findUnique.mockResolvedValue(stored({ kind: "EXERCISE" }));
+    expect((await put({ visibility: "PUBLIC" })).status).toBe(200);
+    expect(p.drill.update.mock.lastCall![0].data.visibility).toBe("PUBLIC");
+    p.drill.findUnique.mockResolvedValue(stored({ kind: "EXERCISE", visibility: "PUBLIC" }));
+    expect((await put({ kind: "ATTACK" })).status).toBe(200);
+    expect(p.drill.update.mock.lastCall![0].data.visibility).toBe("MEMBERS");
   });
 
   it("uno schema archiviato non si modifica", async () => {

@@ -67,7 +67,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       const usable = drill.status === "PUBLISHED" && !drill.archivedAt;
       if (!usable && !already.has(drill.id)) {
         return NextResponse.json(
-          { error: `"${drill.title}" non è pubblicato: pubblicalo dalla lavagna` },
+          { error: `"${drill.title}" non è pubblicato: pubblicalo dal Playbook` },
           { status: 409 }
         );
       }
@@ -99,7 +99,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
       return NextResponse.json({ error: "Schema o allenamento non trovato" }, { status: 400 });
     }
-    console.error("[lavagna] scaletta", err);
+    console.error("[playbook] scaletta", err);
     return NextResponse.json({ error: "Errore del server" }, { status: 500 });
   }
 }

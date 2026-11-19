@@ -1376,24 +1376,28 @@ model SuggestionNote {
 // persone: i nomi arrivano dal contesto (le squadre di un allenamento). Il
 // disegno sta in `content`, validato da `DrillContentSchema` (`@/lib/schemas/drill`).
 model Drill {
-  id                String      @id @default(cuid())
-  slug              String      @unique
+  id                String          @id @default(cuid())
+  slug              String          @unique
   title             String
   kind              DrillKind
   court             DrillCourt
-  description       String?     @db.Text
+  description       String?         @db.Text
   durationMin       Int?
   // Squadra di riferimento: solo un filtro della libreria, non restringe chi vede.
   competitiveTeamId String?
-  status            DrillStatus @default(DRAFT)
+  status            DrillStatus     @default(DRAFT)
+  // Chi lo vede quando e' pubblicato. Solo gli esercizi possono essere
+  // pubblici (anche su Google), per scelta esplicita; gli schemi da partita
+  // restano sempre dei tesserati (`@/lib/board/category`).
+  visibility        DrillVisibility @default(MEMBERS)
   content           Json
   // Archiviato: usato in un allenamento, quindi non si elimina (UX-72).
   archivedAt        DateTime?
   publishedAt       DateTime?
   createdById       String?
   updatedById       String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   competitiveTeam CompetitiveTeam? @relation(fields: [competitiveTeamId], references: [id], onDelete: SetNull)
   createdBy       User?            @relation("DrillCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -1439,4 +1443,9 @@ enum DrillCourt {
 enum DrillStatus {
   DRAFT
   PUBLISHED
+}
+
+enum DrillVisibility {
+  MEMBERS
+  PUBLIC
 }

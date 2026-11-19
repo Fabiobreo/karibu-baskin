@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useTranslations } from "next-intl";
 import { courtShapes, COURT_LENGTH, COURT_WIDTH } from "@/lib/board/court";
 import { HALF_COURT_MIN_X, type DrillPiece } from "@/lib/board/content";
 import type { BoardArrow } from "@/lib/board/arrows";
@@ -126,6 +127,11 @@ export default function BoardSvg({
   const stroke = Math.max(0.06, 1.5 * mpp);
   const interactive = !!onPiecePointerDown;
   const titleId = useId();
+  // Un prefisso per lavagna: con piu' lavagne nella pagina gli id delle punte
+  // delle frecce non si ripetono (un id doppio e' HTML non valido, e una
+  // freccia prenderebbe la punta di un'altra lavagna, magari nascosta).
+  const markerId = `board${titleId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const t = useTranslations("board");
 
   return (
     <Box
@@ -168,7 +174,7 @@ export default function BoardSvg({
         <title id={titleId}>{description ? `${title}. ${description}` : title}</title>
         <defs>
           <marker
-            id="board-head-open"
+            id={`${markerId}-open`}
             viewBox="0 0 10 10"
             refX="8"
             refY="5"
@@ -179,7 +185,7 @@ export default function BoardSvg({
             <path d="M1,1 L8,5 L1,9" fill="none" stroke={c.ink} strokeWidth="1.6" />
           </marker>
           <marker
-            id="board-head-full"
+            id={`${markerId}-full`}
             viewBox="0 0 10 10"
             refX="8"
             refY="5"
@@ -197,7 +203,14 @@ export default function BoardSvg({
 
         <g opacity={arrowOpacity} pointerEvents="none">
           {arrows.map((a, i) => (
-            <Arrow key={i} arrow={a} r={r} stroke={stroke * 1.4} color={c.ink} />
+            <Arrow
+              key={i}
+              arrow={a}
+              r={r}
+              stroke={stroke * 1.4}
+              color={c.ink}
+              markerId={markerId}
+            />
           ))}
         </g>
 
@@ -217,7 +230,14 @@ export default function BoardSvg({
               {selectedId === piece.id && (
                 <circle r={r * 1.45} fill="none" stroke={c.selected} strokeWidth={stroke * 2} />
               )}
-              <PieceShape piece={piece} r={r} font={font} stroke={stroke} colors={c} />
+              <PieceShape
+                piece={piece}
+                r={r}
+                font={font}
+                stroke={stroke}
+                colors={c}
+                coachLabel={piece.coach === "tutor" ? t("tutorShort") : t("coachShort")}
+              />
               {names?.[piece.id] && (
                 <PieceLabel name={names[piece.id]} r={r} font={font} colors={c} stroke={stroke} />
               )}
@@ -262,12 +282,15 @@ function PieceShape({
   font,
   stroke,
   colors: c,
+  coachLabel,
 }: {
   piece: DrillPiece;
   r: number;
   font: number;
   stroke: number;
   colors: Colors;
+  /** "All." o "T", tradotto da chi disegna. */
+  coachLabel: string;
 }) {
   const text = (label: string, color: string) => (
     <text
@@ -304,7 +327,7 @@ function PieceShape({
       return (
         <>
           <rect x={-r} y={-r} width={2 * r} height={2 * r} rx={r * 0.25} fill={c.brand} />
-          {text(piece.coach === "tutor" ? "T" : "All.", c.brandText)}
+          {text(coachLabel, c.brandText)}
         </>
       );
     case "cone":
@@ -395,11 +418,13 @@ function Arrow({
   r,
   stroke,
   color,
+  markerId,
 }: {
   arrow: BoardArrow;
   r: number;
   stroke: number;
   color: string;
+  markerId: string;
 }) {
   const { from, to, kind } = arrow;
   const dx = to.x - from.x;
@@ -430,7 +455,7 @@ function Arrow({
         fill="none"
         stroke={color}
         strokeWidth={stroke}
-        markerEnd="url(#board-head-open)"
+        markerEnd={`url(#${markerId}-open)`}
       />
     );
   }
@@ -443,7 +468,7 @@ function Arrow({
       stroke={color}
       strokeWidth={kind === "shot" ? stroke * 1.3 : stroke}
       strokeDasharray={kind === "pass" || kind === "shot" ? `${r * 0.6} ${r * 0.45}` : undefined}
-      markerEnd={kind === "shot" ? "url(#board-head-full)" : "url(#board-head-open)"}
+      markerEnd={`url(#${markerId}-${kind === "shot" ? "full" : "open"})`}
     />
   );
 }

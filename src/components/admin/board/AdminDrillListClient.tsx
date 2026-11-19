@@ -11,10 +11,13 @@ import {
   MenuItem,
   Paper,
   Select,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import PublicIcon from "@mui/icons-material/Public";
 import SearchIcon from "@mui/icons-material/Search";
 import type { DrillCourt, DrillKind } from "@prisma/client";
 import PageHeader from "@/components/common/PageHeader";
@@ -26,7 +29,9 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { interpolateStep } from "@/lib/board/animation";
 import type { DrillContent } from "@/lib/board/content";
+import { drillCategory, kindsOf, type DrillCategory } from "@/lib/board/category";
 import {
+  DRILL_CATEGORY_LABELS,
   DRILL_COURT_LABELS,
   DRILL_KIND_LABELS,
   type AdminDrillRow,
@@ -34,6 +39,7 @@ import {
 } from "@/lib/board/labels";
 import { TOUCH_FIELD_ON_PHONE } from "@/lib/touchTarget";
 import { RADIUS } from "@/lib/radius";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export interface AdminDrillListItem extends AdminDrillRow {
   content: DrillContent;
@@ -47,10 +53,14 @@ interface AdminDrillListClientProps {
 
 type StatusFilter = "active" | "DRAFT" | "PUBLISHED" | "archived";
 
+/** Testo per lo staff: "esercizio" o "schema". */
+const noun = (c: DrillCategory) => (c === "exercises" ? "esercizio" : "schema");
+
 /**
- * Lavagna nel pannello (UX-72): gli schemi a card con la miniatura del primo
- * passo, filtri e azioni. "Nuovo schema" chiede titolo, tipo e campo e apre
- * l'editor. Il dirigente guarda soltanto.
+ * Playbook nel pannello (UX-72): due schede, Esercizi e Schemi, con le card
+ * (miniatura del primo passo), filtri e azioni. Un esercizio si puo' rendere
+ * pubblico (lo vede chiunque, anche su Google); uno schema resta dei
+ * tesserati. Il dirigente guarda soltanto.
  */
 export default function AdminDrillListClient({
   drills,
@@ -60,6 +70,7 @@ export default function AdminDrillListClient({
   const router = useRouter();
   const { showToast } = useToast();
   const [creating, setCreating] = useState(false);
+  const [category, setCategory] = useState<DrillCategory>("exercises");
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<DrillKind | "">("");
   const [court, setCourt] = useState<DrillCourt | "">("");
@@ -71,6 +82,7 @@ export default function AdminDrillListClient({
     const q = search.trim().toLowerCase();
     return drills.filter(
       (d) =>
+        drillCategory(d.kind) === category &&
         (!q || d.title.toLowerCase().includes(q)) &&
         (!kind || d.kind === kind) &&
         (!court || d.court === court) &&
@@ -79,7 +91,7 @@ export default function AdminDrillListClient({
           ? d.archived
           : !d.archived && (status === "active" || d.status === status))
     );
-  }, [drills, search, kind, court, teamId, status]);
+  }, [drills, category, search, kind, court, teamId, status]);
 
   const action = useMutation({
     mutationFn: async ({ url, init }: { url: string; init: RequestInit; done: string }) => {
@@ -89,7 +101,7 @@ export default function AdminDrillListClient({
     },
     onSuccess: (data, { done }) => {
       showToast({
-        message: data.archived ? "Schema archiviato: è usato in un allenamento" : done,
+        message: data.archived ? "Archiviato: è usato in un allenamento" : done,
         severity: "success",
       });
       router.refresh();
@@ -107,24 +119,67 @@ export default function AdminDrillListClient({
       },
       done:
         next === "PUBLISHED"
-          ? "Schema pubblicato: lo vedono i tesserati"
-          : "Schema rimesso in bozza",
+          ? d.visibility === "PUBLIC" && drillCategory(d.kind) === "exercises"
+            ? "Pubblicato: lo vedono tutti"
+            : "Pubblicato: lo vedono i tesserati"
+          : "Rimesso in bozza",
+    });
+
+  const setVisibility = (d: AdminDrillListItem, next: "MEMBERS" | "PUBLIC") =>
+    action.mutate({
+      url: `/api/drills/${d.id}`,
+      init: {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visibility: next }),
+      },
+      done:
+        next === "PUBLIC"
+          ? d.status === "PUBLISHED"
+            ? "Ora lo vedono tutti, anche su Google"
+            : "Sarà pubblico quando lo pubblichi"
+          : "Ora lo vedono solo i tesserati",
     });
 
   return (
     <>
       <PageHeader
-        title="Lavagna"
-        subtitle="Schemi ed esercizi da mostrare in palestra e da ritrovare negli allenamenti"
+        title="Playbook"
+        subtitle="Esercizi e schemi da mostrare in palestra e da ritrovare negli allenamenti"
         titleRef={titleRef}
         action={
           readOnly ? undefined : (
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreating(true)}>
-              Nuovo schema
+              {category === "exercises" ? "Nuovo esercizio" : "Nuovo schema"}
             </Button>
           )
         }
       />
+
+      <Tabs
+        value={category}
+        onChange={(_, v: DrillCategory) => {
+          setCategory(v);
+          setKind("");
+        }}
+        sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}
+      >
+        {(["exercises", "plays"] as const).map((c) => (
+          <Tab
+            key={c}
+            value={c}
+            label={`${DRILL_CATEGORY_LABELS[c]} · ${
+              drills.filter((d) => !d.archived && drillCategory(d.kind) === c).length
+            }`}
+            sx={{ minHeight: 48 }}
+          />
+        ))}
+      </Tabs>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        {category === "exercises"
+          ? "Un esercizio lo vedono i tesserati; se lo rendi pubblico lo vede chiunque, anche su Google."
+          : "Gli schemi sono il nostro gioco da partita: li vedono solo i tesserati."}
+      </Typography>
 
       <Box
         sx={{
@@ -157,9 +212,9 @@ export default function AdminDrillListClient({
           onChange={(v) => setKind(v as DrillKind | "")}
           all="Tutti"
         >
-          {Object.entries(DRILL_KIND_LABELS).map(([k, l]) => (
+          {kindsOf(category).map((k) => (
             <MenuItem key={k} value={k}>
-              {l}
+              {DRILL_KIND_LABELS[k]}
             </MenuItem>
           ))}
         </Filter>
@@ -193,9 +248,11 @@ export default function AdminDrillListClient({
       {shown.length === 0 ? (
         <Paper variant="outlined" sx={{ p: 4, textAlign: "center", borderRadius: RADIUS.lg }}>
           <Typography color="text.secondary">
-            {drills.length === 0
-              ? "Ancora nessuno schema. Con “Nuovo schema” se ne disegna uno."
-              : "Nessuno schema con questi filtri."}
+            {drills.some((d) => drillCategory(d.kind) === category)
+              ? `Nessun ${noun(category)} con questi filtri.`
+              : category === "exercises"
+                ? "Ancora nessun esercizio. Con “Nuovo esercizio” se ne disegna uno."
+                : "Ancora nessuno schema. Con “Nuovo schema” se ne disegna uno."}
           </Typography>
         </Paper>
       ) : (
@@ -238,6 +295,16 @@ export default function AdminDrillListClient({
                   </Typography>
                   <DrillStateChip status={d.status} archived={d.archived} />
                 </Box>
+                {d.visibility === "PUBLIC" && drillCategory(d.kind) === "exercises" && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+                  >
+                    <PublicIcon sx={{ fontSize: TYPE_SCALE.md }} aria-hidden />
+                    Pubblico: lo vedono tutti, anche su Google
+                  </Typography>
+                )}
                 <Typography variant="body2" color="text.secondary">
                   {DRILL_KIND_LABELS[d.kind]} · {DRILL_COURT_LABELS[d.court]}
                   {d.durationMin ? ` · ${d.durationMin} min` : ""} · {d.content.steps.length}{" "}
@@ -254,7 +321,7 @@ export default function AdminDrillListClient({
                     layout="card"
                     primary={{
                       label: readOnly || d.archived ? "Apri" : "Modifica",
-                      href: `/admin/lavagna/${d.id}`,
+                      href: `/admin/playbook/${d.id}`,
                       emphasis: "outlined",
                     }}
                     items={
@@ -270,6 +337,19 @@ export default function AdminDrillListClient({
                                   label: "Pubblica",
                                   onClick: () => setDrillStatus(d, "PUBLISHED"),
                                 },
+                            ...(drillCategory(d.kind) === "exercises"
+                              ? [
+                                  d.visibility === "PUBLIC"
+                                    ? {
+                                        label: "Solo per i tesserati",
+                                        onClick: () => setVisibility(d, "MEMBERS"),
+                                      }
+                                    : {
+                                        label: "Rendi pubblico",
+                                        onClick: () => setVisibility(d, "PUBLIC"),
+                                      },
+                                ]
+                              : []),
                             {
                               label: "Duplica",
                               onClick: () =>
@@ -289,7 +369,7 @@ export default function AdminDrillListClient({
                               await action.mutateAsync({
                                 url: `/api/drills/${d.id}`,
                                 init: { method: "DELETE" },
-                                done: "Schema eliminato",
+                                done: "Eliminato",
                               });
                               return true;
                             } catch {
@@ -303,12 +383,12 @@ export default function AdminDrillListClient({
                         ? {
                             title: `Archiviare ${d.title}?`,
                             message:
-                              "È in una scaletta: non si elimina, sparisce dalla lavagna ma resta negli allenamenti in cui è stato usato.",
+                              "È in una scaletta: non si elimina, sparisce dal Playbook ma resta negli allenamenti in cui è stato usato.",
                             confirmLabel: "Archivia",
                           }
                         : {
                             title: `Eliminare ${d.title}?`,
-                            message: "Lo schema si cancella e non si recupera.",
+                            message: `Questo ${noun(drillCategory(d.kind))} si cancella e non si recupera.`,
                             confirmLabel: "Elimina",
                           }
                     }
@@ -325,9 +405,10 @@ export default function AdminDrillListClient({
         <DrillFormDialog
           open
           drill={null}
+          defaultCategory={category}
           teams={teams}
           onClose={() => setCreating(false)}
-          onSaved={({ id }) => router.push(`/admin/lavagna/${id}`)}
+          onSaved={({ id }) => router.push(`/admin/playbook/${id}`)}
         />
       )}
     </>

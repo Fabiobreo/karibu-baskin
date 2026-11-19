@@ -10,6 +10,8 @@ import { gamesAreIndexable } from "@/lib/games/gameSettings";
 import { loadGameSettings, loadQuizSummaries } from "@/lib/games/loadGameSettings";
 import { isPlayableIn } from "@/lib/games/quizRules";
 import { quizPath } from "@/lib/games/quiz";
+import { PUBLIC_DRILL_WHERE } from "@/lib/board/drillAdmin";
+import { categoryPath, drillPath } from "@/lib/board/category";
 
 const BASE = SITE_URL;
 
@@ -54,7 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];
 
-  const [teams, players, sessions, matches, opposingTeams, posts, events, albums] =
+  const [teams, players, sessions, matches, opposingTeams, posts, events, albums, exercises] =
     await Promise.all([
       prisma.competitiveTeam.findMany({
         // La Karibu di stagione ha una pagina solo quando gioca il campionato.
@@ -98,6 +100,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         where: visibleAlbumWhere(false),
         select: { slug: true, updatedAt: true },
         orderBy: { date: "desc" },
+      }),
+      // Playbook (UX-72): solo gli esercizi resi pubblici, mai gli schemi.
+      prisma.drill.findMany({
+        where: PUBLIC_DRILL_WHERE,
+        select: { slug: true, updatedAt: true },
+        orderBy: { publishedAt: "desc" },
       }),
     ]);
 
@@ -163,6 +171,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.45,
   }));
 
+  const exercisePages: MetadataRoute.Sitemap =
+    exercises.length > 0
+      ? [
+          { url: `${BASE}${categoryPath("exercises")}`, priority: 0.5, changeFrequency: "weekly" },
+          ...exercises.map((d) => ({
+            url: `${BASE}${drillPath(d.slug)}`,
+            lastModified: d.updatedAt,
+            changeFrequency: "monthly" as const,
+            priority: 0.45,
+          })),
+        ]
+      : [];
+
   return [
     ...staticPages,
     ...teamPages,
@@ -173,5 +194,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...postPages,
     ...eventPages,
     ...albumPages,
+    ...exercisePages,
   ];
 }

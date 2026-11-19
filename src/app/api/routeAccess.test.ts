@@ -50,9 +50,10 @@ const ROUTES: Record<string, Access> = {
   "cron/match-callup-reminder": "cron",
   "cron/match-coverage-alert": "cron",
   "cron/training-open-reminder": "cron",
-  // Lavagna (UX-72): schemi pubblicati ai tesserati, le bozze a chi entra nel pannello.
-  drills: "member",
-  "drills/[id]": "member",
+  // Playbook (UX-72): a tutti solo gli esercizi resi pubblici (PUBLIC_DRILL_WHERE),
+  // ai tesserati anche gli schemi, le bozze a chi entra nel pannello.
+  drills: "public",
+  "drills/[id]": "public",
   events: "public",
   "events/[eventId]/attendance": "public",
   "events/[eventId]/options": "public",
@@ -85,7 +86,7 @@ const ROUTES: Record<string, Access> = {
   search: "public",
   sessions: "public",
   "sessions/[sessionId]": "public",
-  // Scaletta della lavagna (UX-72): disegni senza nomi, ai tesserati.
+  // Scaletta del Playbook (UX-72): disegni senza nomi, ai tesserati.
   "sessions/[sessionId]/drills": "member",
   "sessions/[sessionId]/match-results": "public",
   suggestions: "staff",

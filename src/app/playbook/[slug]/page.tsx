@@ -16,53 +16,75 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { formatRome } from "@/lib/dateUtils";
 import { columnSx } from "@/lib/layout";
 import { buildMetadata } from "@/lib/seo";
+import { PLAYBOOK_PATH, categoryPath, drillCategory, drillPath } from "@/lib/board/category";
 
 type Props = { params: Promise<{ slug: string }> };
 
-// Il titolo di uno schema non e' un segreto, ma la pagina e' dei tesserati:
-// niente Google, niente sitemap.
+async function viewerOf() {
+  const session = await auth();
+  return boardViewer(session?.user?.appRole, !!session?.user);
+}
+
+/**
+ * Un esercizio reso pubblico e' una pagina per tutti, anche per Google (titolo
+ * e descrizione dello staff). Tutto il resto e' dei tesserati: `noindex`, e il
+ * titolo non dice di quale schema si tratta.
+ */
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
+  const page = await loadBoardDrill(slug, await viewerOf());
+  const open = !!page && page.drill.isPublic;
   return buildMetadata({
-    title: "Lavagna",
-    description: "Uno schema della lavagna del Karibu Baskin, per atleti, famiglie e staff.",
-    path: `/lavagna/${slug}`,
-    noindex: true,
+    title: open ? page.drill.title : "Playbook",
+    description: open
+      ? (page.drill.description?.slice(0, 160) ??
+        "Un esercizio di Baskin del Karibu Baskin, animato passo dopo passo.")
+      : "Esercizi e schemi del Karibu Baskin, per atleti, famiglie e staff.",
+    path: drillPath(slug),
+    noindex: !open,
   });
 }
 
 /**
- * Uno schema della lavagna (UX-72): il visore, la descrizione e gli
- * allenamenti in cui lo abbiamo fatto. Qui solo ruoli, nessun nome: i nomi
- * arrivano nella pagina dell'allenamento.
+ * Un esercizio o uno schema del Playbook (UX-72): il visore, la descrizione
+ * e, ai tesserati, gli allenamenti in cui lo abbiamo fatto. Qui solo ruoli,
+ * nessun nome: i nomi arrivano nella pagina dell'allenamento.
  */
-export default async function LavagnaDrillPage({ params }: Props) {
-  const [{ slug }, session, t, locale] = await Promise.all([
+export default async function PlaybookDrillPage({ params }: Props) {
+  const [{ slug }, viewer, t, locale] = await Promise.all([
     params,
-    auth(),
+    viewerOf(),
     getTranslations("board"),
     getLocale(),
   ]);
-  const viewer = boardViewer(session?.user?.appRole, !!session?.user);
-  const breadcrumbRoot = { label: t("title"), href: "/lavagna" };
+  const page = await loadBoardDrill(slug, viewer);
 
-  if (viewer === "anonymous" || viewer === "guest") {
-    return (
-      <>
-        <EntityHero breadcrumb={[breadcrumbRoot]} title={t("title")} />
-        <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-          <Box sx={columnSx("main")}>
-            <MembersOnlyNotice viewer={viewer} what="board" variant="block" />
-          </Box>
-        </Container>
-      </>
-    );
+  if (!page) {
+    // Chi non e' tesserato non sa se lo schema esiste: legge chi lo vede.
+    if (viewer === "anonymous" || viewer === "guest") {
+      return (
+        <>
+          <EntityHero
+            breadcrumb={[{ label: t("title"), href: PLAYBOOK_PATH }]}
+            title={t("title")}
+          />
+          <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+            <Box sx={columnSx("main")}>
+              <MembersOnlyNotice viewer={viewer} what="board" variant="block" />
+            </Box>
+          </Container>
+        </>
+      );
+    }
+    // Il controllo prima di qualunque Suspense: un 404 vero, non un soft 404.
+    notFound();
   }
-
-  // Il controllo prima di qualunque Suspense: un 404 vero, non un soft 404.
-  const page = await loadBoardDrill(slug, viewer === "staff");
-  if (!page) notFound();
   const { drill, preview, trainings } = page;
+  const category = drillCategory(drill.kind);
+  const breadcrumbRoot = {
+    label: category === "exercises" ? t("tabExercises") : t("tabPlays"),
+    href: categoryPath(category),
+  };
   const dateLocale = getDateFnsLocale(locale);
 
   return (
@@ -73,7 +95,7 @@ export default async function LavagnaDrillPage({ params }: Props) {
         badges={preview ? <PreviewChip label={t("preview")} /> : undefined}
         manage={
           viewer === "staff" && (
-            <StaffManageButton href={`/admin/lavagna/${drill.id}`} label={t("manage")} />
+            <StaffManageButton href={`/admin/playbook/${drill.id}`} label={t("manage")} />
           )
         }
         meta={

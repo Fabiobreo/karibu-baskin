@@ -308,7 +308,7 @@
     "events": "Events",
     "gallery": "Gallery",
     "games": "Games",
-    "board": "Board",
+    "board": "Playbook",
     "contacts": "Contact",
     "faq": "FAQ",
     "guide": "App guide",
@@ -1984,7 +1984,8 @@
       "albums": "the other albums",
       "photos": "the photos in this album",
       "photosShort": "the photos",
-      "board": "the plays on the board"
+      "board": "the Playbook plays",
+      "moreExercises": "the other drills"
     }
   },
   "albumStrip": {
@@ -2123,9 +2124,8 @@
     "legendShot": "Shot",
     "legendScreen": "Screen",
     "noText": "No explanation for this step",
-    "title": "Board",
-    "subtitle": "Karibu plays and drills, to watch and go over again",
-    "search": "Search a play",
+    "title": "Playbook",
+    "search": "Search by title",
     "filterKind": "Type",
     "filterCourt": "Court",
     "filterTeam": "Team",
@@ -2158,7 +2158,15 @@
     "onlyRoles": "Roles only",
     "noTeamsYet": "Names appear when the staff makes the teams.",
     "you": "{name} · You",
-    "openOnBoard": "Open on the board",
-    "showDrill": "Show {title}"
+    "openOnBoard": "Open in the Playbook",
+    "showDrill": "Show {title}",
+    "coachShort": "C",
+    "tutorShort": "T",
+    "subtitleExercises": "Baskin drills to watch and try in the gym",
+    "subtitlePlays": "Our game plays, for athletes, families and staff",
+    "tabExercises": "Drills",
+    "tabPlays": "Plays",
+    "navLabel": "Playbook sections",
+    "emptyExercises": "The staff has not published any drills yet."
   }
 }

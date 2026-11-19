@@ -12,11 +12,11 @@ import { EMPTY_DRILL_CONTENT, parseDrillContent } from "@/lib/schemas/drill";
 export const dynamic = "force-dynamic";
 
 /**
- * Uno schema della lavagna (UX-72): l'editor per lo staff; per il dirigente,
- * e per uno schema archiviato, solo il visore.
+ * Un esercizio o uno schema del Playbook (UX-72): l'editor per lo staff; per il dirigente,
+ * e per uno archiviato, solo il visore.
  */
 export default async function AdminDrillPage({ params }: { params: Promise<{ id: string }> }) {
-  const { readOnly } = await requireAdminPage("/admin/lavagna");
+  const { readOnly } = await requireAdminPage("/admin/playbook");
   const { id } = await params;
   const [drill, teams] = await Promise.all([
     prisma.drill.findUnique({ where: { id }, select: DRILL_ADMIN_SELECT }),
@@ -32,12 +32,12 @@ export default async function AdminDrillPage({ params }: { params: Promise<{ id:
       <>
         <PageHeader
           title={row.title}
-          breadcrumb={[{ label: "Lavagna", href: "/admin/lavagna" }, { label: row.title }]}
+          breadcrumb={[{ label: "Playbook", href: "/admin/playbook" }, { label: row.title }]}
           subtitle={`${DRILL_KIND_LABELS[row.kind]} · ${DRILL_COURT_LABELS[row.court]}`}
         />
         {row.archived && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            Schema archiviato: resta negli allenamenti in cui è stato usato e non si modifica più.
+            Archiviato: resta negli allenamenti in cui è stato usato e non si modifica più.
           </Alert>
         )}
         <Box sx={{ maxWidth: 880 }}>

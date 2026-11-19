@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { TeamsData } from "@/lib/schemas/session";
 import { PICK_AND_SHOOT } from "./fixtures";
-import { opponentKey, trainingPieceNames, trainingTeamKeys } from "./trainingNames";
+import { opponentKey, placeAthlete, trainingPieceNames, trainingTeamKeys } from "./trainingNames";
 
 const teams: TeamsData = {
   teamA: [
@@ -41,5 +41,25 @@ describe("trainingNames", () => {
       {}
     );
     expect(trainingPieceNames(PICK_AND_SHOOT, { ...base, teams, attack: null })).toEqual({});
+  });
+});
+
+describe("placeAthlete", () => {
+  const side = ["a3", "b3", "a4"];
+
+  it("scambia due giocatori fra due pedine", () => {
+    expect(placeAthlete({}, side, { a3: "r1", a4: "r2" }, "a3", "r2")).toEqual({
+      a3: "r2",
+      a4: "r1",
+    });
+  });
+
+  it("su una pedina vuota: niente vecchio scambio che contraddice il nuovo", () => {
+    // Prima r1 era stato messo a mano su a3; ora lo staff lo sposta su b3, vuota.
+    const saved = { a3: "r1", zz: "fuori-dal-lato" };
+    expect(placeAthlete(saved, side, { a3: "r1" }, "b3", "r1")).toEqual({
+      b3: "r1",
+      zz: "fuori-dal-lato",
+    });
   });
 });

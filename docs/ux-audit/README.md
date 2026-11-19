@@ -139,11 +139,11 @@ Ondata 8: giochi dal pannello (13/11/2026, richiesta del committente nata dalla 
 | ------------------------------------ | ----------------------------------------- | ----- | ---------- | ------------------------------------- |
 | [UX-62](tickets/UX-62-seo-locale.md) | Farsi trovare: SEO locale e scheda Google | M     | UX-55      | approvazione dei testi (codice fatto) |
 
-Ondata 9: strumenti dello staff (18/11/2026, richiesta del committente). La lavagna per schemi ed esercizi animati, con i nomi dei giocatori presi dalle squadre dell'allenamento (UX-72). Primo rilascio: libreria e allenamento; partite e profilo squadra in ticket successivi. Codice fatto il 18/11/2026: esce dalla lista quando ci sono i settori del canestro laterale alto.
+Ondata 9: strumenti dello staff (18/11/2026, richiesta del committente). Il Playbook (prima "Lavagna"): esercizi, anche pubblici, e schemi da partita animati, con i nomi dei giocatori presi dalle squadre dell'allenamento (UX-72). Primo rilascio: libreria e allenamento; partite e profilo squadra in ticket successivi. Codice fatto il 18/11/2026: esce dalla lista quando ci sono i settori del canestro laterale alto.
 
-| Ticket                                               | Titolo                                                        | Stima | Dipende da | In attesa di |
-| ---------------------------------------------------- | ------------------------------------------------------------- | ----- | ---------- | ------------ |
-| [UX-72](tickets/UX-72-lavagna-schemi-ed-esercizi.md) | Lavagna: schemi ed esercizi animati, con i nomi dei giocatori | L     |            | settori del canestro laterale alto (figura del regolamento EISI o misure dalla palestra; codice fatto) |
+| Ticket                                               | Titolo                                                        | Stima | Dipende da | In attesa di                                                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------- | ----- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| [UX-72](tickets/UX-72-lavagna-schemi-ed-esercizi.md) | Playbook: esercizi e schemi animati, con i nomi dei giocatori | L     |            | settori del canestro laterale alto (figura del regolamento EISI o misure dalla palestra; codice fatto) |
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

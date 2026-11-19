@@ -51,7 +51,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       return NextResponse.json({ error: "Riprova: titolo già usato" }, { status: 409 });
     }
-    console.error("[lavagna] duplica", err);
+    console.error("[playbook] duplica", err);
     return NextResponse.json({ error: "Errore del server" }, { status: 500 });
   }
 }

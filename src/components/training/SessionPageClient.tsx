@@ -71,11 +71,14 @@ interface SessionPageClientProps {
   initialSession: Session | null;
   /** Stagione in corso (flag dello staff, o calendario), per il badge squadra nel form. */
   currentSeason: string;
+  /** L'allenamento ha una scaletta della lavagna (UX-72): senza, niente richiesta. */
+  hasDrills: boolean;
 }
 
 export default function SessionPageClient({
   initialSession,
   currentSeason,
+  hasDrills,
 }: SessionPageClientProps) {
   const t = useTranslations("trainings");
   const { teamColorLabel } = useEntityLabels();
@@ -640,8 +643,8 @@ export default function SessionPageClient({
               )}
               {/* Scaletta della lavagna (UX-72): solo ai tesserati, con i
                   nomi della squadra di chi guarda. Senza scaletta non c'e'. */}
-              {canSeeRoster && realSessionId && (
-                <SectionErrorBoundary label="Lavagna">
+              {hasDrills && canSeeRoster && realSessionId && (
+                <SectionErrorBoundary label="Playbook">
                   <TrainingDrillsSection
                     sessionId={realSessionId}
                     teams={teams}

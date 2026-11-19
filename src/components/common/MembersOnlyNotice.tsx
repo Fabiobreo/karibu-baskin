@@ -13,7 +13,8 @@ export type MembersOnlySubject =
   | "albums"
   | "photos"
   | "photosShort"
-  | "board";
+  | "board"
+  | "moreExercises";
 
 interface MembersOnlyNoticeProps {
   /** `anonymous` = senza accesso (gli si chiede di accedere); `guest` = account in attesa di conferma. */
