@@ -113,6 +113,8 @@ model User {
   eventGuestsAdded      EventGuest[]
   matchPredictions      MatchPrediction[]
   quizBests             QuizBest[]
+  drillsCreated         Drill[]                @relation("DrillCreatedBy")
+  drillsUpdated         Drill[]                @relation("DrillUpdatedBy")
 }
 
 model Account {
@@ -280,6 +282,7 @@ model TrainingSession {
   dateSlug      String?               @unique // es. "2025-03-15T18:00" — URL slug leggibile
   registrations Registration[]
   matchResults  TrainingMatchResult[]
+  drills        TrainingDrill[]
 
   // Squadra agonistica di riferimento (null = allenamento per tutti / misti per ruolo)
   teamId String?
@@ -361,9 +364,9 @@ model TrainingMatchResult {
 // ── Squadre agonistiche ───────────────────────────────────────────────────────
 
 model Season {
-  label     String   @id // es. "2025-26"
-  isCurrent Boolean  @default(false)
-  createdAt DateTime @default(now())
+  label            String    @id // es. "2025-26"
+  isCurrent        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
   // "La tua stagione" (UX-60): quando l'admin ha pubblicato i riepiloghi
   // personali. Null = non ancora: la pagina del riepilogo risponde 404.
   recapPublishedAt DateTime?
@@ -398,6 +401,7 @@ model CompetitiveTeam {
   groups             GroupCompetitiveTeam[]
   trainingSessions   TrainingSession[]      @relation("TrainingTeam")
   restrictedSessions TrainingSession[]      @relation("TrainingRestriction")
+  drills             Drill[]
 
   @@index([season])
 }
@@ -1264,19 +1268,19 @@ enum AlbumVisibility {
 }
 
 model PhotoAlbum {
-  id            String          @id @default(cuid())
-  slug          String          @unique
-  title         String
-  date          DateTime
-  driveFolderId String          @unique
-  visibility    AlbumVisibility @default(MEMBERS)
-  coverPhotoId  String? // AlbumPhoto.id; null = la prima foto visibile
-  photoCount    Int             @default(0) // foto visibili (non nascoste)
-  otherFiles    Int             @default(0) // video e sottocartelle, non mostrati
-  syncedAt      DateTime        @default(now())
+  id             String          @id @default(cuid())
+  slug           String          @unique
+  title          String
+  date           DateTime
+  driveFolderId  String          @unique
+  visibility     AlbumVisibility @default(MEMBERS)
+  coverPhotoId   String? // AlbumPhoto.id; null = la prima foto visibile
+  photoCount     Int             @default(0) // foto visibili (non nascoste)
+  otherFiles     Int             @default(0) // video e sottocartelle, non mostrati
+  syncedAt       DateTime        @default(now())
   // Valorizzato quando la cartella non risponde piu' (condivisione tolta o
   // cartella eliminata): l'album sparisce dal pubblico, le foto restano a DB.
-  unreachableAt DateTime?
+  unreachableAt  DateTime?
   // Ultimo avviso "Sono arrivate le foto" (UX-57); null = mai avvisato.
   lastNotifiedAt DateTime?
 
@@ -1364,4 +1368,75 @@ model SuggestionNote {
   createdAt    DateTime   @default(now())
 
   @@index([suggestionId, createdAt])
+}
+
+// ── Lavagna (UX-72) ─────────────────────────────────────────────────────────
+
+// Schema o esercizio disegnato dallo staff. Le pedine sono posti (ruoli), mai
+// persone: i nomi arrivano dal contesto (le squadre di un allenamento). Il
+// disegno sta in `content`, validato da `DrillContentSchema` (`@/lib/schemas/drill`).
+model Drill {
+  id                String      @id @default(cuid())
+  slug              String      @unique
+  title             String
+  kind              DrillKind
+  court             DrillCourt
+  description       String?     @db.Text
+  durationMin       Int?
+  // Squadra di riferimento: solo un filtro della libreria, non restringe chi vede.
+  competitiveTeamId String?
+  status            DrillStatus @default(DRAFT)
+  content           Json
+  // Archiviato: usato in un allenamento, quindi non si elimina (UX-72).
+  archivedAt        DateTime?
+  publishedAt       DateTime?
+  createdById       String?
+  updatedById       String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  competitiveTeam CompetitiveTeam? @relation(fields: [competitiveTeamId], references: [id], onDelete: SetNull)
+  createdBy       User?            @relation("DrillCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy       User?            @relation("DrillUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  trainings       TrainingDrill[]
+
+  @@index([status, archivedAt])
+  @@index([competitiveTeamId])
+}
+
+// Uno schema nella scaletta di un allenamento. `assignments` tiene solo gli
+// scambi di nomi fatti dallo staff (`@/lib/board/assign`).
+model TrainingDrill {
+  id          String   @id @default(cuid())
+  sessionId   String
+  drillId     String
+  position    Int
+  note        String?
+  assignments Json?
+  createdAt   DateTime @default(now())
+
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  drill   Drill           @relation(fields: [drillId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, drillId])
+  @@index([drillId])
+}
+
+enum DrillKind {
+  ATTACK
+  DEFENSE
+  TRANSITION
+  SET_PLAY
+  EXERCISE
+  WARMUP
+}
+
+enum DrillCourt {
+  FULL
+  HALF
+}
+
+enum DrillStatus {
+  DRAFT
+  PUBLISHED
 }

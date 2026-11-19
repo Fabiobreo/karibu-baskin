@@ -65,6 +65,23 @@ export async function panelGuard(): Promise<NextResponse | null> {
 }
 
 /**
+ * Come `staffGuard`, ma per le scritture dello staff che finiscono nel registro
+ * attività (lavagna, UX-72): l'id di chi agisce, oppure la risposta da
+ * restituire (401 senza sessione, 403 sotto l'allenatore).
+ */
+export async function staffActor(): Promise<{ actorId: string } | { error: NextResponse }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: NextResponse.json({ error: "Non autenticato" }, { status: 401 }) };
+  }
+  const role = session.user.appRole as AppRole | undefined;
+  if (!role || !hasRole(role, "COACH")) {
+    return { error: NextResponse.json({ error: "Non autorizzato" }, { status: 403 }) };
+  }
+  return { actorId: session.user.id };
+}
+
+/**
  * Guardia per le scritture dell'admin che finiscono nel registro attività
  * (giochi e quiz, UX-67): l'id di chi agisce, oppure la risposta da
  * restituire (401 senza sessione, 403 a chi non è admin).

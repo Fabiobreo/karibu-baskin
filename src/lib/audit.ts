@@ -66,7 +66,14 @@ export type AuditAction =
   | "DELETE_QUIZ"
   | "CREATE_QUIZ_QUESTION"
   | "UPDATE_QUIZ_QUESTION"
-  | "DELETE_QUIZ_QUESTION";
+  | "DELETE_QUIZ_QUESTION"
+  | "CREATE_DRILL"
+  | "UPDATE_DRILL"
+  | "PUBLISH_DRILL"
+  | "UNPUBLISH_DRILL"
+  | "ARCHIVE_DRILL"
+  | "DELETE_DRILL"
+  | "SET_TRAINING_DRILLS";
 
 interface LogAuditInput {
   actorId: string;
