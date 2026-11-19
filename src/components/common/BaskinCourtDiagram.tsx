@@ -3,14 +3,16 @@ import { useTranslations } from "next-intl";
 import RoleBadge from "@/components/common/RoleBadge";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { COURT_LENGTH, COURT_WIDTH, courtShapes } from "@/lib/board/court";
+import CourtLines from "@/components/board/CourtLines";
 
 // Disegno in unita' da 11 per metro: il campo (28 x 15 m) e' largo 308 e sta in
 // un riquadro da 360, cosi' su un telefono da 390 px un'unita' vale circa un
-// pixel. Fonte: Regolamento di gioco EISI, Rev. 20, "Campo di gioco (adattato)".
+// pixel. Le linee vengono da `@/lib/board/court`, in metri, le stesse della lavagna.
+const UNIT = 11;
 const VIEW = { w: 360, h: 216 };
-const COURT = { x: 26, y: 24, w: 308, h: 165 };
+const COURT = { x: 26, y: 24, w: COURT_LENGTH * UNIT, h: COURT_WIDTH * UNIT };
 const MID = { x: COURT.x + COURT.w / 2, y: COURT.y + COURT.h / 2 };
-const RIGHT = COURT.x + COURT.w;
 const BOTTOM = COURT.y + COURT.h;
 /**
  * Zona dei pivot. Da regolamento il raggio e' 3 m (33 unita'): qui e' un po'
@@ -18,11 +20,13 @@ const BOTTOM = COURT.y + COURT.h;
  * dice dove stanno le cose, non le misure.
  */
 const ZONE_R = 42;
-const CIRCLE_R = 19.8;
+/** Ferri piu' grandi del vero e appena dentro il perimetro: a questa scala si vedono. */
 const HOOP_R = 3.5;
-const KEY = { w: 63.8, h: 54 };
-const HOOP_OFFSET = 17.3;
-const THREE = { r: 74.25, y: 9.9, x: 32.9 };
+const SHAPES = courtShapes({
+  pivotZoneR: ZONE_R / UNIT,
+  hoopR: HOOP_R / UNIT,
+  sideHoopInset: (HOOP_R + 1.5) / UNIT,
+});
 
 type Marker = { x: number; y: number };
 
@@ -152,43 +156,9 @@ export default function BaskinCourtDiagram() {
           height="100%"
           aria-hidden="true"
           focusable="false"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.25}
         >
-          {/* Zone dei pivot: semicerchi a meta' campo, sui due lati. */}
-          <path
-            d={`M${MID.x - ZONE_R},${COURT.y} A${ZONE_R},${ZONE_R} 0 0 0 ${MID.x + ZONE_R},${COURT.y}`}
-            fill="currentColor"
-            fillOpacity={0.14}
-          />
-          <path
-            d={`M${MID.x - ZONE_R},${BOTTOM} A${ZONE_R},${ZONE_R} 0 0 1 ${MID.x + ZONE_R},${BOTTOM}`}
-            fill="currentColor"
-            fillOpacity={0.14}
-          />
-
-          {/* Campo: perimetro, meta' campo, cerchio centrale. */}
-          <rect x={COURT.x} y={COURT.y} width={COURT.w} height={COURT.h} strokeWidth={2} />
-          <line x1={MID.x} y1={COURT.y + ZONE_R} x2={MID.x} y2={BOTTOM - ZONE_R} />
-          <circle cx={MID.x} cy={MID.y} r={CIRCLE_R} />
-
-          {/* Aree e linee dei tre punti dei due canestri grandi. */}
-          <rect x={COURT.x} y={MID.y - KEY.h / 2} width={KEY.w} height={KEY.h} />
-          <rect x={RIGHT - KEY.w} y={MID.y - KEY.h / 2} width={KEY.w} height={KEY.h} />
-          <path
-            d={`M${COURT.x},${COURT.y + THREE.y} h${THREE.x} A${THREE.r},${THREE.r} 0 0 1 ${COURT.x + THREE.x},${BOTTOM - THREE.y} h${-THREE.x}`}
-          />
-          <path
-            d={`M${RIGHT},${COURT.y + THREE.y} h${-THREE.x} A${THREE.r},${THREE.r} 0 0 0 ${RIGHT - THREE.x},${BOTTOM - THREE.y} h${THREE.x}`}
-          />
-
-          {/* Canestri: i due grandi e i due a lato. */}
-          <g strokeWidth={2}>
-            <circle cx={COURT.x + HOOP_OFFSET} cy={MID.y} r={HOOP_R} />
-            <circle cx={RIGHT - HOOP_OFFSET} cy={MID.y} r={HOOP_R} />
-            <circle cx={MID.x} cy={COURT.y + HOOP_R + 1.5} r={HOOP_R} />
-            <circle cx={MID.x} cy={BOTTOM - HOOP_R - 1.5} r={HOOP_R} />
+          <g transform={`translate(${COURT.x} ${COURT.y}) scale(${UNIT})`}>
+            <CourtLines shapes={SHAPES} thick={2 / UNIT} thin={1.25 / UNIT} />
           </g>
         </svg>
 

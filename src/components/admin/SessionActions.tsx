@@ -6,6 +6,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import GestureIcon from "@mui/icons-material/Gesture";
+import TrainingDrillsDialog from "@/components/admin/board/TrainingDrillsDialog";
 import SessionEditDialog, { type EditableSession } from "@/components/admin/SessionEditDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
@@ -20,7 +22,8 @@ interface SessionActionsProps {
 
 /**
  * Azioni su un allenamento, uguali nelle tre sezioni di /admin/allenamenti
- * (UX-14): modifica, duplica, elimina, apri la pagina pubblica.
+ * (UX-14): modifica, duplica, scaletta della lavagna (UX-72), elimina, apri la
+ * pagina pubblica.
  */
 export default function SessionActions({ session, initialEdit = false }: SessionActionsProps) {
   const router = useRouter();
@@ -38,6 +41,7 @@ export default function SessionActions({ session, initialEdit = false }: Session
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [editing, setEditing] = useState(initialEdit);
+  const [drills, setDrills] = useState(false);
 
   async function remove() {
     const res = await fetch(`/api/sessions/${session.id}`, { method: "DELETE" });
@@ -69,6 +73,22 @@ export default function SessionActions({ session, initialEdit = false }: Session
       >
         Duplica
       </Button>
+      {/* Lavagna (UX-72): gli schemi di questo allenamento e chi va dove. */}
+      <Button
+        variant="outlined"
+        startIcon={<GestureIcon />}
+        onClick={() => setDrills(true)}
+        sx={{ minHeight: 44 }}
+      >
+        Scaletta
+      </Button>
+      {drills && (
+        <TrainingDrillsDialog
+          sessionId={session.id}
+          sessionTitle={session.title}
+          onClose={() => setDrills(false)}
+        />
+      )}
       <Button
         color="error"
         startIcon={<DeleteOutlineIcon />}

@@ -13,6 +13,7 @@ Tutti i componenti riutilizzabili vanno qui, organizzati per **dominio/feature**
 | `news/`          | Post + sondaggi (`Post*`, `Poll*`, `LatestNewsHero`)             |
 | `gallery/`       | Album da Drive, feed Instagram, video YouTube, lightbox          |
 | `games/`         | Giochi del club: quiz del Baskin, pronostico della partita       |
+| `board/`         | Lavagna di schemi ed esercizi (UX-72), linee del campo           |
 | `rating/`        | TrueSkill, badge, tracker sviluppo                               |
 | `calendar/`      | Calendario + sottoscrizione .ics                                 |
 | `profile/`       | Profilo utente, avatar, collegamento figli, prefs notifiche      |
