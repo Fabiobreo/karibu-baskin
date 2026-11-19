@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { Button, ListSubheader, Menu, MenuItem } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { useTranslations } from "next-intl";
 import type { DrillPiece } from "@/lib/board/content";
+import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
 /** Un pezzo da aggiungere, senza codice: lo assegna `addPiece`. */
 export type NewPiece = Omit<DrillPiece, "id">;
@@ -13,6 +15,7 @@ const ROLES = [1, 2, 3, 4, 5] as const;
  * Menu "Aggiungi" dell'editor (UX-72): pedine di ruolo d'attacco e di difesa,
  * pedine senza ruolo, allenatore e tutor, materiali, nota. Il pezzo nuovo
  * compare in un posto libero vicino al centro e si trascina dove serve.
+ * Condiviso fra l'editor dello staff e quello delle proposte (UX-73).
  */
 export default function DrillPieceMenu({
   onAdd,
@@ -21,6 +24,7 @@ export default function DrillPieceMenu({
   onAdd: (piece: NewPiece) => void;
   disabled?: boolean;
 }) {
+  const t = useTranslations("board.editor");
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const pick = (piece: NewPiece) => {
     setAnchor(null);
@@ -35,9 +39,9 @@ export default function DrillPieceMenu({
         disabled={disabled}
         aria-haspopup="menu"
         aria-expanded={!!anchor}
-        sx={{ minHeight: 44 }}
+        sx={{ minHeight: TOUCH_TARGET_SIZE }}
       >
-        Aggiungi
+        {t("add")}
       </Button>
       <Menu
         anchorEl={anchor}
@@ -45,33 +49,35 @@ export default function DrillPieceMenu({
         onClose={() => setAnchor(null)}
         slotProps={{ paper: { sx: { maxHeight: 420 } } }}
       >
-        <ListSubheader>Attacco (pedina piena)</ListSubheader>
+        <ListSubheader>{t("menuAttack")}</ListSubheader>
         {ROLES.map((role) => (
           <MenuItem key={`a${role}`} onClick={() => pick({ kind: "role", side: "attack", role })}>
-            Ruolo {role}
+            {t("role", { n: role })}
           </MenuItem>
         ))}
-        <ListSubheader>Difesa (pedina contornata)</ListSubheader>
+        <ListSubheader>{t("menuDefense")}</ListSubheader>
         {ROLES.map((role) => (
           <MenuItem key={`d${role}`} onClick={() => pick({ kind: "role", side: "defense", role })}>
-            Ruolo {role}
+            {t("role", { n: role })}
           </MenuItem>
         ))}
-        <ListSubheader>Senza ruolo</ListSubheader>
+        <ListSubheader>{t("menuNoRole")}</ListSubheader>
         <MenuItem onClick={() => pick({ kind: "free", side: "attack", label: "A" })}>
-          Pedina piena (file, esercizi)
+          {t("freeAttack")}
         </MenuItem>
         <MenuItem onClick={() => pick({ kind: "free", side: "defense", label: "A" })}>
-          Pedina contornata
+          {t("freeDefense")}
         </MenuItem>
-        <ListSubheader>Staff</ListSubheader>
-        <MenuItem onClick={() => pick({ kind: "coach", coach: "coach" })}>Allenatore</MenuItem>
-        <MenuItem onClick={() => pick({ kind: "coach", coach: "tutor" })}>Tutor</MenuItem>
-        <ListSubheader>Materiali</ListSubheader>
-        <MenuItem onClick={() => pick({ kind: "cone" })}>Cono</MenuItem>
-        <MenuItem onClick={() => pick({ kind: "ring" })}>Cerchio</MenuItem>
-        <MenuItem onClick={() => pick({ kind: "chair" })}>Sedia</MenuItem>
-        <MenuItem onClick={() => pick({ kind: "note", label: "Nota" })}>Nota scritta</MenuItem>
+        <ListSubheader>{t("menuStaff")}</ListSubheader>
+        <MenuItem onClick={() => pick({ kind: "coach", coach: "coach" })}>{t("coach")}</MenuItem>
+        <MenuItem onClick={() => pick({ kind: "coach", coach: "tutor" })}>{t("tutor")}</MenuItem>
+        <ListSubheader>{t("menuMaterials")}</ListSubheader>
+        <MenuItem onClick={() => pick({ kind: "cone" })}>{t("cone")}</MenuItem>
+        <MenuItem onClick={() => pick({ kind: "ring" })}>{t("ring")}</MenuItem>
+        <MenuItem onClick={() => pick({ kind: "chair" })}>{t("chair")}</MenuItem>
+        <MenuItem onClick={() => pick({ kind: "note", label: t("noteDefault") })}>
+          {t("note")}
+        </MenuItem>
       </Menu>
     </>
   );

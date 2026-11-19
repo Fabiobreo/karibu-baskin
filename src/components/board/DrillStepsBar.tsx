@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Box, Button, IconButton, Menu, MenuItem, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useTranslations } from "next-intl";
 import { MAX_STEP_TEXT, MAX_STEPS } from "@/lib/board/content";
 import { RADIUS } from "@/lib/radius";
 import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
@@ -23,7 +24,7 @@ interface DrillStepsBarProps {
 /**
  * Striscia dei passi dell'editor (UX-72): un bottone per passo, "+ Passo"
  * (riparte da dove si era rimasti), e nel "⋯" sposta ed elimina. Sotto, la
- * riga che spiega il passo.
+ * riga che spiega il passo. Condivisa con l'editor delle proposte (UX-73).
  */
 export default function DrillStepsBar({
   total,
@@ -36,6 +37,7 @@ export default function DrillStepsBar({
   onText,
   onTextFocus,
 }: DrillStepsBarProps) {
+  const t = useTranslations("board.editor");
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const act = (fn: () => void) => () => {
     setAnchor(null);
@@ -46,11 +48,11 @@ export default function DrillStepsBar({
     <Box sx={{ display: "grid", gap: 1.5 }}>
       <Box
         role="group"
-        aria-label="Passi"
+        aria-label={t("steps")}
         sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}
       >
         <Typography variant="subtitle2" component="p" sx={{ mr: 0.5 }}>
-          Passi
+          {t("steps")}
         </Typography>
         {Array.from({ length: total }, (_, i) => (
           <Button
@@ -58,7 +60,7 @@ export default function DrillStepsBar({
             variant={i === current ? "contained" : "outlined"}
             onClick={() => onPick(i)}
             aria-current={i === current ? "step" : undefined}
-            aria-label={`Passo ${i + 1}`}
+            aria-label={t("stepN", { n: i + 1 })}
             sx={{
               minWidth: TOUCH_TARGET_SIZE,
               height: TOUCH_TARGET_SIZE,
@@ -76,10 +78,10 @@ export default function DrillStepsBar({
           disabled={total >= MAX_STEPS}
           sx={{ minHeight: TOUCH_TARGET_SIZE }}
         >
-          Passo
+          {t("addStep")}
         </Button>
         <IconButton
-          aria-label={`Altro sul passo ${current + 1}`}
+          aria-label={t("stepMore", { n: current + 1 })}
           onClick={(e) => setAnchor(e.currentTarget)}
           sx={{ width: TOUCH_TARGET_SIZE, height: TOUCH_TARGET_SIZE }}
         >
@@ -87,23 +89,23 @@ export default function DrillStepsBar({
         </IconButton>
         <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
           <MenuItem onClick={act(() => onMove(-1))} disabled={current === 0}>
-            Sposta prima
+            {t("moveBefore")}
           </MenuItem>
           <MenuItem onClick={act(() => onMove(1))} disabled={current >= total - 1}>
-            Sposta dopo
+            {t("moveAfter")}
           </MenuItem>
           <MenuItem onClick={act(onRemove)} disabled={total <= 1}>
-            Elimina il passo {current + 1}
+            {t("removeStep", { n: current + 1 })}
           </MenuItem>
         </Menu>
       </Box>
       <TextField
-        label={`Cosa succede nel passo ${current + 1}`}
-        placeholder="Il 3 riceve e va al settore centrale"
+        label={t("stepText", { n: current + 1 })}
+        placeholder={t("stepTextPlaceholder")}
         value={text}
         onChange={(e) => onText(e.target.value)}
         onFocus={onTextFocus}
-        helperText={`${text.length}/${MAX_STEP_TEXT} · si legge sopra il campo`}
+        helperText={t("stepTextHelp", { count: text.length, max: MAX_STEP_TEXT })}
         slotProps={{ htmlInput: { maxLength: MAX_STEP_TEXT } }}
         fullWidth
       />

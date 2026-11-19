@@ -13,6 +13,7 @@ import {
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
+import { useTranslations } from "next-intl";
 import {
   MAX_FREE_LABEL,
   MAX_NOTE_TEXT,
@@ -22,24 +23,26 @@ import {
 } from "@/lib/board/content";
 import { RADIUS } from "@/lib/radius";
 
-/** Nome di un pezzo per lo staff: "Ruolo 3, attacco", "Cono", "Tutor". */
-export function pieceLabel(piece: DrillPiece): string {
-  const side = piece.side === "defense" ? "difesa" : "attacco";
+type EditorT = ReturnType<typeof useTranslations<"board.editor">>;
+
+/** Nome di un pezzo: "Ruolo 3, attacco", "Cono", "Tutor". */
+export function pieceLabel(piece: DrillPiece, t: EditorT): string {
+  const side = piece.side === "defense" ? t("sideDefense") : t("sideAttack");
   switch (piece.kind) {
     case "role":
-      return `Ruolo ${piece.role}, ${side}`;
+      return t("pieceRole", { n: piece.role ?? 1, side });
     case "free":
-      return `Pedina ${piece.label ?? ""}, ${side}`;
+      return t("pieceFree", { label: piece.label ?? "", side });
     case "coach":
-      return piece.coach === "tutor" ? "Tutor" : "Allenatore";
+      return piece.coach === "tutor" ? t("tutor") : t("coach");
     case "cone":
-      return "Cono";
+      return t("cone");
     case "ring":
-      return "Cerchio";
+      return t("ring");
     case "chair":
-      return "Sedia";
+      return t("chair");
     case "note":
-      return `Nota "${piece.label ?? ""}"`;
+      return t("pieceNote", { label: piece.label ?? "" });
   }
 }
 
@@ -79,6 +82,7 @@ export default function DrillSelectionPanel({
   onRemove,
   onBringBack,
 }: DrillSelectionPanelProps) {
+  const t = useTranslations("board.editor");
   const piece = pieces.find((p) => p.id === selectedId) ?? null;
   const offCourt = pieces.filter((p) => !step.at[p.id]);
   const holder = step.ball && "holder" in step.ball ? step.ball.holder : null;
@@ -88,15 +92,15 @@ export default function DrillSelectionPanel({
     <Paper variant="outlined" sx={{ p: 2, borderRadius: RADIUS.lg, display: "grid", gap: 2 }}>
       {screenMode ? (
         <Typography variant="body2" role="status">
-          Tocca il campo dove arriva il blocco. Esc per annullare.
+          {t("screenHint")}
         </Typography>
       ) : selectedId === "ball" ? (
         <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
           <Typography variant="subtitle2" component="p" sx={{ flex: "1 1 100%" }}>
-            Palla
+            {t("ball")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ flex: "1 1 100%" }}>
-            Trascinala vicino a un giocatore per dargliela, o lasciala dove serve.
+            {t("ballHint")}
           </Typography>
           <Button
             variant="text"
@@ -104,20 +108,20 @@ export default function DrillSelectionPanel({
             startIcon={<DeleteOutlineIcon />}
             onClick={onRemoveBall}
           >
-            Togli la palla da questo passo
+            {t("removeBallStep")}
           </Button>
         </Box>
       ) : piece ? (
         <Box sx={{ display: "grid", gap: 1.5 }}>
           <Typography variant="subtitle2" component="p">
-            {pieceLabel(piece)}
+            {pieceLabel(piece, t)}
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, alignItems: "center" }}>
             {piece.kind === "role" && (
               <TextField
                 select
                 size="small"
-                label="Ruolo"
+                label={t("roleLabel")}
                 value={piece.role}
                 onChange={(e) =>
                   onUpdate(piece.id, { role: Number(e.target.value) as DrillPiece["role"] })
@@ -126,7 +130,7 @@ export default function DrillSelectionPanel({
               >
                 {[1, 2, 3, 4, 5].map((r) => (
                   <MenuItem key={r} value={r}>
-                    Ruolo {r}
+                    {t("role", { n: r })}
                   </MenuItem>
                 ))}
               </TextField>
@@ -137,17 +141,17 @@ export default function DrillSelectionPanel({
                 size="small"
                 value={piece.side}
                 onChange={(_, v) => v && onUpdate(piece.id, { side: v })}
-                aria-label="Attacco o difesa"
+                aria-label={t("sideLabel")}
                 sx={{ "& .MuiToggleButton-root": { minHeight: 40 } }}
               >
-                <ToggleButton value="attack">Attacco</ToggleButton>
-                <ToggleButton value="defense">Difesa</ToggleButton>
+                <ToggleButton value="attack">{t("attack")}</ToggleButton>
+                <ToggleButton value="defense">{t("defense")}</ToggleButton>
               </ToggleButtonGroup>
             )}
             {piece.kind === "free" && (
               <TextField
                 size="small"
-                label="Lettera o numero"
+                label={t("freeLabel")}
                 value={piece.label ?? ""}
                 onChange={(e) =>
                   onUpdate(piece.id, {
@@ -160,7 +164,7 @@ export default function DrillSelectionPanel({
             {piece.kind === "note" && (
               <TextField
                 size="small"
-                label="Testo della nota"
+                label={t("noteLabel")}
                 value={piece.label ?? ""}
                 onChange={(e) =>
                   onUpdate(piece.id, { label: e.target.value.slice(0, MAX_NOTE_TEXT) })
@@ -175,11 +179,11 @@ export default function DrillSelectionPanel({
                 size="small"
                 value={piece.coach}
                 onChange={(_, v) => v && onUpdate(piece.id, { coach: v })}
-                aria-label="Allenatore o tutor"
+                aria-label={t("coachLabel")}
                 sx={{ "& .MuiToggleButton-root": { minHeight: 40 } }}
               >
-                <ToggleButton value="coach">Allenatore</ToggleButton>
-                <ToggleButton value="tutor">Tutor</ToggleButton>
+                <ToggleButton value="coach">{t("coach")}</ToggleButton>
+                <ToggleButton value="tutor">{t("tutor")}</ToggleButton>
               </ToggleButtonGroup>
             )}
           </Box>
@@ -190,17 +194,17 @@ export default function DrillSelectionPanel({
                 startIcon={<SportsBasketballIcon />}
                 onClick={() => onGiveBall(piece.id)}
               >
-                Dagli la palla
+                {t("giveBall")}
               </Button>
             )}
             {isPlayerPiece(piece) &&
               (hasScreen ? (
                 <Button variant="outlined" onClick={() => onRemoveScreen(piece.id)}>
-                  Togli il blocco
+                  {t("removeScreen")}
                 </Button>
               ) : (
                 <Button variant="outlined" onClick={onStartScreen}>
-                  Blocco
+                  {t("screen")}
                 </Button>
               ))}
             <Button
@@ -209,7 +213,7 @@ export default function DrillSelectionPanel({
               startIcon={<LogoutIcon />}
               onClick={() => onLeave(piece.id)}
             >
-              {stepIndex === 0 ? "Fuori dal campo" : "Esce da questo passo"}
+              {stepIndex === 0 ? t("offCourt") : t("leaveStep")}
             </Button>
             <Button
               variant="text"
@@ -217,26 +221,26 @@ export default function DrillSelectionPanel({
               startIcon={<DeleteOutlineIcon />}
               onClick={() => onRemove(piece.id)}
             >
-              Elimina da tutti i passi
+              {t("removeEverywhere")}
             </Button>
           </Box>
         </Box>
       ) : (
         <Typography variant="body2" color="text.secondary">
-          Tocca un pezzo per cambiarlo, o trascinalo. Con &ldquo;Aggiungi&rdquo; ne metti uno nuovo.
+          {t("selectHint")}
         </Typography>
       )}
 
       {offCourt.length > 0 && !screenMode && (
         <Box>
           <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 0.75 }}>
-            Fuori dal campo in questo passo: tocca per rimetterlo
+            {t("offCourtList")}
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
             {offCourt.map((p) => (
               <Chip
                 key={p.id}
-                label={pieceLabel(p)}
+                label={pieceLabel(p, t)}
                 onClick={() => onBringBack(p.id)}
                 variant="outlined"
               />

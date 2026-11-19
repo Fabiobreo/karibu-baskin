@@ -44,4 +44,8 @@ export const categoryPath = (category: DrillCategory) =>
 export const drillPath = (slug: string) => `${PLAYBOOK_PATH}/${slug}`;
 
 /** Slug che non si possono dare a uno schema: sono le pagine delle due categorie. */
-export const RESERVED_DRILL_SLUGS: readonly string[] = Object.values(CATEGORY_SEGMENT);
+export const RESERVED_DRILL_SLUGS: readonly string[] = [
+  ...Object.values(CATEGORY_SEGMENT),
+  // La pagina per proporre un esercizio (UX-73).
+  "proponi",
+];
