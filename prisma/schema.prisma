@@ -747,6 +747,7 @@ enum AppNotificationType {
   SUGGESTION // suggerimento nuovo o nota/risposta su un suggerimento
   ALBUM_PUBLISHED // "Sono arrivate le foto": album nuovo, avviso facoltativo dello staff (UX-57)
   SEASON_RECAP // "La tua stagione è pronta": riepiloghi di fine stagione pubblicati (UX-60)
+  DRILL_PROPOSAL // "Nuova proposta di esercizio": a allenatori e admin (UX-73)
 }
 
 // Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione

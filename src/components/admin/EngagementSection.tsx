@@ -46,6 +46,7 @@ const TYPE_LABEL: Record<string, string> = {
   MATCH_AVAILABILITY: "Disponibilità",
   SUGGESTION: "Suggerimenti",
   ALBUM_PUBLISHED: "Nuove foto",
+  DRILL_PROPOSAL: "Proposte di esercizi",
   SEASON_RECAP: "La tua stagione",
   TEST: "Notifica di prova",
 };

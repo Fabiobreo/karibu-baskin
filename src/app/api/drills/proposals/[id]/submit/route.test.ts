@@ -55,7 +55,7 @@ describe("POST /api/drills/proposals/[id]/submit", () => {
     tx.suggestion.create.mockResolvedValue({ id: "s1" });
   });
 
-  it("invia: suggerimento ESERCIZIO collegato e avviso allo staff con il nome", async () => {
+  it("invia: suggerimento ESERCIZIO collegato e avviso dedicato allo staff, con il nome", async () => {
     p.drill.findUnique.mockResolvedValue(stored());
     expect((await submit()).status).toBe(200);
     expect(tx.suggestion.create).toHaveBeenCalledWith(
@@ -71,8 +71,9 @@ describe("POST /api/drills/proposals/[id]/submit", () => {
     const [[notices]] = (deliverNotices as Mock).mock.calls;
     expect(notices[0]).toMatchObject({
       ids: ["c1"],
-      title: "Nuovo suggerimento",
-      body: "Proposta di esercizio di Marco: Tiro al cono",
+      type: "DRILL_PROPOSAL",
+      title: "Nuova proposta di esercizio",
+      body: "Tiro al cono, di Marco",
       url: "/admin/playbook/proposte/d1",
     });
   });

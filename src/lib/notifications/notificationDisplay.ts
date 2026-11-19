@@ -27,6 +27,8 @@ const CONTENT_FIELD: Record<AppNotificationType, "title" | "body"> = {
   SUGGESTION: "body",
   // "Sono arrivate le foto": il titolo è il tipo, il titolo dell'album è nel testo.
   ALBUM_PUBLISHED: "body",
+  // "Nuova proposta di esercizio" (UX-73): il titolo è il tipo, l'esercizio è nel testo.
+  DRILL_PROPOSAL: "body",
   MATCH_RESULT: "title",
   LINK_REQUEST: "title",
   LINK_RESPONSE: "title",

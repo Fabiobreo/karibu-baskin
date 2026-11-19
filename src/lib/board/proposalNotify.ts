@@ -4,7 +4,8 @@ import { adminProposalPath } from "./proposals";
 
 /**
  * Avvisi delle proposte di esercizi (UX-73), funzioni pure. Lo staff riceve
- * l'avviso dei suggerimenti (con il nome: le proposte sono firmate); l'autore
+ * un avviso proprio, `DRILL_PROPOSAL` (con il nome: le proposte sono firmate),
+ * non quello generico dei suggerimenti; l'autore
  * legge la risposta automatica dell'adozione e, alla pubblicazione, che il suo
  * esercizio e' nel Playbook.
  */
@@ -25,10 +26,10 @@ export function proposalSubmittedNotice(
   if (ids.length === 0) return null;
   const who = firstName(p.authorName);
   return {
-    type: "SUGGESTION",
+    type: "DRILL_PROPOSAL",
     ids,
-    title: "Nuovo suggerimento",
-    body: who ? `Proposta di esercizio di ${who}: ${p.title}` : `Proposta di esercizio: ${p.title}`,
+    title: "Nuova proposta di esercizio",
+    body: who ? `${p.title}, di ${who}` : p.title,
     url: adminProposalPath(p.drillId),
   };
 }

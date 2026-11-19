@@ -13,6 +13,7 @@ import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import CakeIcon from "@mui/icons-material/Cake";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import GestureIcon from "@mui/icons-material/Gesture";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import CelebrationIcon from "@mui/icons-material/Celebration";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -53,6 +54,7 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "MATCH_CALLUP") return <HowToRegIcon fontSize="small" sx={ICON_SX} />;
   if (type === "MATCH_AVAILABILITY") return <EventAvailableIcon fontSize="small" sx={ICON_SX} />;
   if (type === "SUGGESTION") return <LightbulbIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "DRILL_PROPOSAL") return <GestureIcon fontSize="small" sx={ICON_SX} />;
   if (type === "SEASON_RECAP") return <CelebrationIcon fontSize="small" sx={ICON_SX} />;
   return <NotificationsIcon fontSize="small" sx={ICON_SX} />;
 }
