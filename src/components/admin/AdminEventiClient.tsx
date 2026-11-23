@@ -34,6 +34,7 @@ import { useState, useTransition, useEffect, useMemo, useRef, type RefObject } f
 import { visuallyHidden } from "@mui/utils";
 import RowActions from "@/components/admin/RowActions";
 import { eventDeleteMessage, notifyActionLabel, notifyConfirm } from "@/lib/adminRowActions";
+import { answerLossMessage, readAnswerLoss } from "@/lib/polls/pollEdit";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
@@ -194,7 +195,47 @@ export default function AdminEventiClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSubmit = async (values: EventFormValues) => {
+  const saveOptions = (eventId: string, confirmAnswerLoss: boolean) =>
+    fetch(`/api/events/${eventId}/options`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        confirmAnswerLoss,
+        options: optionDrafts
+          .filter((o) => o.label.trim())
+          .map((o, i) => ({
+            id: o.id,
+            label: o.label.trim(),
+            startsAt: localInputToIso(o.startsAt),
+            kind: o.kind,
+            order: i,
+          })),
+      }),
+    });
+
+  const onSubmit = async (values: EventFormValues, confirmAnswerLoss = false) => {
+    // In modifica gli extra si salvano per primi: se toglierne uno cancellerebbe
+    // delle risposte si chiede conferma prima di aver scritto qualunque cosa.
+    let editedOptions: EventOptionRow[] | null = null;
+    if (editingId) {
+      const optRes = await saveOptions(editingId, confirmAnswerLoss);
+      const lost = await readAnswerLoss(optRes);
+      if (lost) {
+        openConfirm(
+          "Cancellare queste risposte?",
+          answerLossMessage(lost),
+          () => void onSubmit(values, true),
+          { confirmLabel: "Salva e cancella le risposte" }
+        );
+        return;
+      }
+      if (!optRes.ok) {
+        setError("root", { message: await readError(optRes) });
+        return;
+      }
+      editedOptions = await optRes.json();
+    }
+
     const body = {
       title: values.title.trim(),
       // L'input `datetime-local` non ha fuso: senza conversione il server (UTC)
@@ -228,23 +269,12 @@ export default function AdminEventiClient({
 
     const saved: Event = await res.json();
 
-    // Salva le sotto-opzioni (replace in blocco). L'evento deve già esistere.
-    let savedOptions: EventOptionRow[] = saved.options ?? [];
-    const optionsPayload = optionDrafts
-      .filter((o) => o.label.trim())
-      .map((o, i) => ({
-        id: o.id,
-        label: o.label.trim(),
-        startsAt: localInputToIso(o.startsAt),
-        kind: o.kind,
-        order: i,
-      }));
-    const optRes = await fetch(`/api/events/${saved.id}/options`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ options: optionsPayload }),
-    });
-    if (optRes.ok) savedOptions = await optRes.json();
+    // Evento nuovo: gli extra si salvano adesso che l'evento esiste.
+    let savedOptions: EventOptionRow[] = editedOptions ?? saved.options ?? [];
+    if (!editingId) {
+      const optRes = await saveOptions(saved.id, false);
+      if (optRes.ok) savedOptions = await optRes.json();
+    }
 
     const savedWithOptions: Event = { ...saved, options: savedOptions };
     if (editingId) {
@@ -400,7 +430,7 @@ export default function AdminEventiClient({
         <DialogTitle fontWeight={FONT_WEIGHT.semibold}>
           {editingId ? "Modifica evento" : "Nuovo evento"}
         </DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <Box component="form" onSubmit={handleSubmit((values) => onSubmit(values))}>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
               {errors.root && (

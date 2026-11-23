@@ -9,6 +9,12 @@ import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 import { inBackground } from "@/lib/background";
+import {
+  answerLossConflict,
+  lostAnswers,
+  planPollOptions,
+  type PollOptionsPlan,
+} from "@/lib/polls/pollEdit";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -73,7 +79,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const existing = await prisma.post.findUnique({
     where: { id },
-    include: { poll: true },
+    include: {
+      poll: { include: { options: { include: { _count: { select: { votes: true } } } } } },
+    },
   });
   if (!existing) return NextResponse.json({ error: "Non trovato" }, { status: 404 });
 
@@ -86,7 +94,35 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 
-  const { title, body, imageUrl, publish, unpublish, notify, poll } = parsed.data;
+  const { title, body, imageUrl, publish, unpublish, notify, poll, confirmAnswerLoss } =
+    parsed.data;
+
+  // I voti stanno attaccati alle opzioni: si aggiornano, non si ricreano, e un
+  // voto si cancella solo se chi modifica l'ha confermato.
+  let optionsPlan: PollOptionsPlan | null = null;
+  if (existing.poll && poll !== undefined) {
+    const savedOptions = existing.poll.options;
+    const counts = new Map(savedOptions.map((o) => [o.id, o._count.votes]));
+    const hasVotes = savedOptions.some((o) => o._count.votes > 0);
+    if (poll && hasVotes && poll.multiSelect !== existing.poll.multiSelect) {
+      return NextResponse.json(
+        { error: "Dopo il primo voto la selezione multipla non si può cambiare" },
+        { status: 409 }
+      );
+    }
+    if (poll) optionsPlan = planPollOptions(savedOptions, poll.options);
+    const removed = optionsPlan
+      ? savedOptions.filter((o) => optionsPlan?.removeIds.includes(o.id))
+      : savedOptions;
+    const lost = lostAnswers(
+      removed.map((o) => ({ id: o.id, label: o.text })),
+      counts
+    );
+    if (lost.length > 0 && !confirmAnswerLoss) {
+      return NextResponse.json(answerLossConflict(lost), { status: 409 });
+    }
+  }
+
   const wasPublished = !!existing.publishedAt;
   const willPublish = publish && !wasPublished;
   // L'avviso parte solo quando il post esce, e solo con la spunta accesa.
@@ -102,22 +138,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
       if (publish && !wasPublished) publishedAt = new Date();
       if (unpublish) publishedAt = null;
 
-      const updated = await tx.post.update({
-        where: { id },
-        data: {
-          ...(title ? { title } : {}),
-          ...(body ? { body: sanitizePostHtml(body) } : {}),
-          ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
-          publishedAt,
-          ...(willNotify ? { lastNotifiedAt: publishedAt } : {}),
-        },
-        include: {
-          author: { select: { name: true } },
-          poll: { include: { options: { orderBy: { order: "asc" } } } },
-        },
-      });
-
-      // Gestione poll: crea/aggiorna/elimina
+      // Gestione poll: crea/aggiorna/elimina. Prima del post, così la risposta
+      // contiene il sondaggio com'è dopo il salvataggio.
       if (poll !== undefined) {
         if (poll === null) {
           // Rimuovi poll esistente
@@ -125,18 +147,25 @@ export async function PUT(req: NextRequest, { params }: Params) {
             await tx.poll.delete({ where: { id: existing.poll.id } });
           }
         } else {
-          if (existing.poll) {
-            // Aggiorna il poll esistente: cancella le opzioni vecchie e ricrea
-            await tx.pollOption.deleteMany({ where: { pollId: existing.poll.id } });
+          if (existing.poll && optionsPlan) {
+            if (optionsPlan.removeIds.length > 0) {
+              await tx.pollOption.deleteMany({
+                where: { pollId: existing.poll.id, id: { in: optionsPlan.removeIds } },
+              });
+            }
+            for (const o of optionsPlan.update) {
+              await tx.pollOption.update({
+                where: { id: o.id },
+                data: { text: o.text, order: o.order },
+              });
+            }
             await tx.poll.update({
               where: { id: existing.poll.id },
               data: {
                 question: poll.question,
                 multiSelect: poll.multiSelect,
                 closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
-                options: {
-                  create: poll.options.map((o) => ({ text: o.text, order: o.order })),
-                },
+                options: { create: optionsPlan.create },
               },
             });
           } else {
@@ -155,7 +184,21 @@ export async function PUT(req: NextRequest, { params }: Params) {
           }
         }
       }
-      return updated;
+
+      return tx.post.update({
+        where: { id },
+        data: {
+          ...(title ? { title } : {}),
+          ...(body ? { body: sanitizePostHtml(body) } : {}),
+          ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
+          publishedAt,
+          ...(willNotify ? { lastNotifiedAt: publishedAt } : {}),
+        },
+        include: {
+          author: { select: { name: true } },
+          poll: { include: { options: { orderBy: { order: "asc" } } } },
+        },
+      });
     });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

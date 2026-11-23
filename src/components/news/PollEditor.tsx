@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import {
+  Alert,
   Box,
   Typography,
   TextField,
@@ -19,15 +20,24 @@ export interface PollDraft {
   question: string;
   multiSelect: boolean;
   closesAt: string | null;
-  options: { text: string; order: number }[];
+  options: { id?: string; text: string; order: number }[];
+}
+
+/** Chi ha già votato: l'editor lo dice e non lascia cambiare il tipo di voto. */
+export interface PollVotesInfo {
+  voterCount: number;
+  byOption: Record<string, number>;
 }
 
 interface PollEditorProps {
   value: PollDraft;
   onChange: (draft: PollDraft) => void;
+  votes?: PollVotesInfo | null;
 }
 
-export default function PollEditor({ value, onChange }: PollEditorProps) {
+export default function PollEditor({ value, onChange, votes }: PollEditorProps) {
+  const voterCount = votes?.voterCount ?? 0;
+
   function update(patch: Partial<PollDraft>) {
     onChange({ ...value, ...patch });
   }
@@ -53,6 +63,12 @@ export default function PollEditor({ value, onChange }: PollEditorProps) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      {voterCount > 0 && (
+        <Alert severity="info">
+          {voterCount === 1 ? "Ha già votato 1 persona" : `Hanno già votato ${voterCount} persone`}.
+          I voti restano: correggi pure i refusi, ma non cambiare il senso delle opzioni.
+        </Alert>
+      )}
       <TextField
         label="Domanda del sondaggio"
         value={value.question}
@@ -68,7 +84,7 @@ export default function PollEditor({ value, onChange }: PollEditorProps) {
           Opzioni (min 2, max 8)
         </Typography>
         {value.options.map((opt, i) => (
-          <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box key={opt.id ?? `new-${i}`} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <DragIndicatorIcon fontSize="small" sx={{ color: "text.secondary", flexShrink: 0 }} />
             <TextField
               value={opt.text}
@@ -77,6 +93,11 @@ export default function PollEditor({ value, onChange }: PollEditorProps) {
               size="small"
               fullWidth
               inputProps={{ maxLength: 200 }}
+              helperText={
+                opt.id && votes?.byOption[opt.id]
+                  ? `${votes.byOption[opt.id]} ${votes.byOption[opt.id] === 1 ? "voto" : "voti"}`
+                  : undefined
+              }
             />
             <Tooltip title="Rimuovi opzione">
               <span>
@@ -112,9 +133,14 @@ export default function PollEditor({ value, onChange }: PollEditorProps) {
               checked={value.multiSelect}
               onChange={(e) => update({ multiSelect: e.target.checked })}
               size="small"
+              disabled={voterCount > 0}
             />
           }
-          label="Selezione multipla"
+          label={
+            voterCount > 0
+              ? "Selezione multipla (non si cambia dopo il primo voto)"
+              : "Selezione multipla"
+          }
         />
 
         <TextField

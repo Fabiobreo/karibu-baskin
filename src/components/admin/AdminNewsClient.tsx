@@ -33,7 +33,9 @@ import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import dynamic from "next/dynamic";
-import PollEditor, { type PollDraft } from "@/components/news/PollEditor";
+import PollEditor, { type PollDraft, type PollVotesInfo } from "@/components/news/PollEditor";
+import { answerLossMessage, readAnswerLoss } from "@/lib/polls/pollEdit";
+import type { PollResults } from "@/lib/polls/pollResults";
 import PollResultsDialog from "@/components/news/PollResultsDialog";
 import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
@@ -98,6 +100,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
   const [now] = useState(() => Date.now());
   const [hasPoll, setHasPoll] = useState(false);
   const [poll, setPoll] = useState<PollDraft>(EMPTY_POLL);
+  const [pollVotes, setPollVotes] = useState<PollVotesInfo | null>(null);
   const [saving, setSaving] = useState(false);
   const [resultsPollId, setResultsPollId] = useState<string | null>(null);
   // Dopo un'eliminazione il focus torna su "Nuovo post": la riga non c'è più.
@@ -119,6 +122,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     setNotify(true);
     setHasPoll(false);
     setPoll(EMPTY_POLL);
+    setPollVotes(null);
     setOpen(true);
   }
 
@@ -132,6 +136,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
     setNotify(!post.lastNotifiedAt);
     setHasPoll(!!post.poll);
     setPoll(EMPTY_POLL);
+    setPollVotes(null);
     setOpen(true);
 
     // Carica il contenuto completo (body + opzioni del sondaggio)
@@ -151,15 +156,27 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
           closesAt: isoToLocalInput(full.poll.closesAt),
           options:
             Array.isArray(full.poll.options) && full.poll.options.length >= 2
-              ? full.poll.options.map((o: { text: string; order: number }, i: number) => ({
-                  text: o.text,
-                  order: typeof o.order === "number" ? o.order : i,
-                }))
+              ? full.poll.options.map(
+                  (o: { id: string; text: string; order: number }, i: number) => ({
+                    id: o.id,
+                    text: o.text,
+                    order: typeof o.order === "number" ? o.order : i,
+                  })
+                )
               : [
                   { text: "", order: 0 },
                   { text: "", order: 1 },
                 ],
         });
+        // Solo per gli avvisi nell'editor: se manca, i voti li protegge il server.
+        const votesRes = await fetch(`/api/polls/${full.poll.id}/results`);
+        if (votesRes.ok) {
+          const results: PollResults = await votesRes.json();
+          setPollVotes({
+            voterCount: results.voterCount,
+            byOption: Object.fromEntries(results.options.map((o) => [o.id, o.count])),
+          });
+        }
       } else {
         setHasPoll(false);
         setPoll(EMPTY_POLL);
@@ -186,7 +203,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
   const goesLive = publish && !editPost?.publishedAt;
   const willNotify = goesLive && notify;
 
-  async function handleSave() {
+  async function handleSave(confirmAnswerLoss = false) {
     if (!title.trim()) {
       showToast({ message: "Il titolo è obbligatorio", severity: "warning" });
       return;
@@ -228,10 +245,23 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
             ? {
                 ...payload,
                 unpublish: editPost.publishedAt && !publish ? true : undefined,
+                confirmAnswerLoss,
               }
             : payload
         ),
       });
+      const lost = await readAnswerLoss(res);
+      if (lost) {
+        openConfirm(
+          "Cancellare questi voti?",
+          answerLossMessage(lost),
+          () => void handleSave(true),
+          {
+            confirmLabel: "Salva e cancella i voti",
+          }
+        );
+        return;
+      }
       if (!res.ok) throw new Error(await readError(res));
       const saved = await res.json();
 
@@ -596,7 +626,7 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
             />
             {hasPoll && (
               <Box sx={{ mt: 1.5, pl: 1 }}>
-                <PollEditor value={poll} onChange={setPoll} />
+                <PollEditor value={poll} onChange={setPoll} votes={pollVotes} />
               </Box>
             )}
           </Box>
@@ -629,7 +659,12 @@ export default function AdminNewsClient({ initialPosts, readOnly = false }: Admi
           <Button onClick={() => setOpen(false)} disabled={saving}>
             Annulla
           </Button>
-          <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => void handleSave()}
+            disabled={saving}
+          >
             {saving
               ? "Salvataggio..."
               : goesLive

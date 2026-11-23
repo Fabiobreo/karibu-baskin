@@ -47,6 +47,8 @@ export const EventOptionInputSchema = z.object({
 // Sostituisce in blocco l'elenco opzioni di un evento.
 export const EventOptionsReplaceSchema = z.object({
   options: z.array(EventOptionInputSchema).max(50),
+  // Chi modifica ha confermato di cancellare le risposte degli extra tolti.
+  confirmAnswerLoss: z.boolean().default(false),
 });
 
 // Risposta a un evento con opzioni: presenza all'evento, opzioni (extra) e note,

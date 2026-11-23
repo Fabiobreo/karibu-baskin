@@ -70,4 +70,41 @@ describe("PUT /api/events/[eventId]/options", () => {
     const json = await res.json();
     expect(json[0].label).toBe("Sabato");
   });
+
+  describe("risposte già date", () => {
+    beforeEach(() => {
+      p.eventOption.findMany.mockResolvedValue([
+        { id: "o1", label: "Pranzo", kind: "PASTO", order: 0, _count: { selections: 4 } },
+      ]);
+    });
+
+    it("togliere un extra con risposte chiede conferma e non scrive", async () => {
+      const res = await PUT(makePut({ options: [] }), params);
+      expect(res.status).toBe(409);
+      expect((await res.json()).lost).toEqual([{ label: "Pranzo", count: 4 }]);
+      expect(p.$transaction).not.toHaveBeenCalled();
+    });
+
+    it("con la conferma lo toglie", async () => {
+      const res = await PUT(makePut({ options: [], confirmAnswerLoss: true }), params);
+      expect(res.status).toBe(200);
+      expect(p.eventOption.deleteMany).toHaveBeenCalledWith({
+        where: { eventId: "evt-1", id: { in: ["o1"] } },
+      });
+    });
+
+    it("rinominarlo non chiede niente e non cancella", async () => {
+      const res = await PUT(makePut({ options: [{ id: "o1", label: "Pranzo sociale" }] }), params);
+      expect(res.status).toBe(200);
+      expect(p.eventOption.deleteMany).toHaveBeenCalledWith({
+        where: { eventId: "evt-1", id: { in: [] } },
+      });
+    });
+
+    it("rifiuta l'id di un extra di un altro evento", async () => {
+      const res = await PUT(makePut({ options: [{ id: "altrui", label: "X" }] }), params);
+      expect(res.status).toBe(409);
+      expect(p.$transaction).not.toHaveBeenCalled();
+    });
+  });
 });

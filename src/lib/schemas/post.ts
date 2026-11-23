@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const PollOptionSchema = z.object({
+  // L'id tiene i voti attaccati all'opzione quando se ne corregge il testo.
+  id: z.string().optional(),
   text: z.string().min(1, "Il testo dell'opzione è obbligatorio").max(200),
   order: z.number().int().min(0).default(0),
 });
@@ -33,6 +35,8 @@ export const PostUpdateSchema = z.object({
   unpublish: z.boolean().optional(),
   notify: z.boolean().default(true),
   poll: PollSchema.nullable().optional(),
+  // Chi modifica ha confermato di cancellare i voti delle opzioni tolte.
+  confirmAnswerLoss: z.boolean().default(false),
 });
 
 export const PollVoteSchema = z.object({
