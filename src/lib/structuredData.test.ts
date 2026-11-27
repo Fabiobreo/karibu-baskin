@@ -116,7 +116,31 @@ describe("structuredData", () => {
 
     const ev = eventJsonLd({ name: "Torneo", slug: "torneo", startDate: new Date("2026-11-01Z") });
     expect(ev).not.toHaveProperty("location");
-    expect(ev).not.toHaveProperty("endDate");
+    // Senza fine salvata: fine della giornata a Roma (come nelle pagine).
+    expect(ev.endDate).toBe("2026-11-01T22:59:59.999Z");
+  });
+
+  it("dà a eventi e partite i campi chiesti da Search Console", () => {
+    const ev = eventJsonLd({
+      name: "Cena",
+      slug: "cena",
+      startDate: new Date("2026-11-01T18:00:00Z"),
+      endDate: new Date("2026-11-01T21:00:00Z"),
+    });
+    expect(ev.endDate).toBe("2026-11-01T21:00:00.000Z");
+    expect(ev.organizer).toMatchObject({ name: expect.any(String), url: expect.any(String) });
+    expect(ev.performer).toMatchObject({ name: expect.any(String) });
+
+    const match = sportsEventJsonLd({
+      slug: "x",
+      date: new Date("2026-10-04T15:00:00Z"),
+      ourTeam: "Montekki",
+      opponent: "Orsi",
+      isHome: true,
+    });
+    expect(match.endDate).toBe("2026-10-04T17:00:00.000Z");
+    expect(match.organizer).toMatchObject({ name: expect.any(String), url: expect.any(String) });
+    expect(match.performer.map((t) => t.name)).toEqual(["Montekki", "Orsi"]);
   });
 
   it("neutralizza </script> nella serializzazione", () => {

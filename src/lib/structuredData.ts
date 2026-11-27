@@ -9,6 +9,7 @@ import {
 } from "@/lib/clubContacts";
 import { CLUB_VENUE, CLUB_VENUE_GEO, type MatchLocation } from "@/lib/clubVenue";
 import type { FaqCategory } from "@/lib/content/faqs";
+import { eventEnd } from "@/lib/events";
 
 /**
  * Dati strutturati schema.org (JSON-LD) per le pagine pubbliche (KB-12).
@@ -39,8 +40,23 @@ const HOME_VENUE = {
   },
 } as const;
 
-/** Riferimento compatto all'associazione, per `organizer` e `publisher`. */
+/** Riferimento compatto all'associazione, per `publisher`. */
 const organizationRef = { "@id": ORGANIZATION_ID };
+
+/**
+ * L'associazione come `organizer` e `performer` di eventi e partite. Con il solo
+ * `@id` Google non trova nome e sito (sulle pagine di eventi e partite il blocco
+ * dell'associazione non c'è) e Search Console segnala "name" e "url" mancanti.
+ */
+const organizationInline = {
+  "@type": "SportsOrganization",
+  "@id": ORGANIZATION_ID,
+  name: CLUB_LEGAL_NAME,
+  url: SITE_URL,
+} as const;
+
+/** Durata indicativa di una partita, per `endDate` (il calendario non la salva). */
+const MATCH_DURATION_MS = 2 * 60 * 60 * 1000;
 
 /**
  * L'associazione, in home e in Contatti (UX-62). Due tipi insieme:
@@ -152,7 +168,8 @@ export function eventJsonLd(e: EventInput) {
     name: e.name,
     url: `${SITE_URL}/eventi/${e.slug}`,
     startDate: e.startDate.toISOString(),
-    ...(e.endDate ? { endDate: e.endDate.toISOString() } : {}),
+    // Senza fine salvata vale la stessa regola delle pagine: fine giornata a Roma.
+    endDate: eventEnd({ date: e.startDate, endDate: e.endDate ?? null }).toISOString(),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     ...(e.location
@@ -160,7 +177,8 @@ export function eventJsonLd(e: EventInput) {
       : {}),
     ...(e.description ? { description: e.description } : {}),
     ...(e.imageUrl ? { image: [e.imageUrl] } : {}),
-    organizer: organizationRef,
+    organizer: organizationInline,
+    performer: organizationInline,
   };
 }
 
@@ -193,12 +211,15 @@ export function sportsEventJsonLd(m: MatchInput) {
     url: `${SITE_URL}/partite/${m.slug}`,
     sport: "Baskin",
     startDate: m.date.toISOString(),
+    endDate: new Date(m.date.getTime() + MATCH_DURATION_MS).toISOString(),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     homeTeam: home,
     awayTeam: away,
+    // Chi gioca sono le due squadre, mai le persone (niente markup Person).
+    performer: [home, away],
     ...(location ? { location } : {}),
-    organizer: organizationRef,
+    organizer: organizationInline,
   };
 }
 
